@@ -6,10 +6,49 @@ import Link from "next/link";
 export default function AdminAuthPanel() {
   const [enter, setEnter] = useState(false);
 
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
   useEffect(() => {
     const t = setTimeout(() => setEnter(true), 200); // 背景先出现，200ms 后卡片入场
     return () => clearTimeout(t);
   }, []);
+
+  async function onSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (loading) return;
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const res = await fetch("/api/admin/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = (await res.json().catch(() => ({}))) as {
+        ok?: boolean;
+        message?: string;
+      };
+
+      if (!res.ok) {
+        setError(data.message ?? "登录失败");
+        setLoading(false);
+        return;
+      }
+
+      // ✅ 登录成功：跳 CMS
+      window.location.href = "/admin/cms";
+    } catch (err) {
+      setError("网络错误，请稍后再试");
+      setLoading(false);
+    }
+  }
 
   return (
     <div
@@ -29,34 +68,63 @@ export default function AdminAuthPanel() {
         登录后可编辑首页内容（图片 / 视频 / 文案）。
       </p>
 
-      <form className="mt-7 space-y-4">
+      <form onSubmit={onSubmit} className="mt-7 space-y-4">
         <div>
           <label className="text-xs text-black/70">邮箱</label>
           <input
-            className="mt-2 w-full rounded-xl border border-black/10 bg-white/70 px-4 py-3 text-sm outline-none focus:border-black/30"
+            className="
+              mt-2 w-full rounded-xl
+              border border-black/10
+              bg-white/70
+              px-4 py-3
+              text-sm text-black
+              placeholder:text-black/30
+              outline-none
+              focus:border-black/30
+            "
             placeholder="email@example.com"
             type="email"
             autoComplete="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            disabled={loading}
           />
         </div>
+
         <div>
           <label className="text-xs text-black/70">密码</label>
           <input
-            className="mt-2 w-full rounded-xl border border-black/10 bg-white/70 px-4 py-3 text-sm outline-none focus:border-black/30"
+            className="
+              mt-2 w-full rounded-xl
+              border border-black/10
+              bg-white/70
+              px-4 py-3
+              text-sm text-black
+              placeholder:text-black/30
+              outline-none
+              focus:border-black/30
+            "
             placeholder="••••••••"
             type="password"
             autoComplete="current-password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            disabled={loading}
           />
         </div>
 
+        {error && (
+          <div className="text-center text-xs text-red-600/80">{error}</div>
+        )}
+
         <button
-          type="button"
-          className="mt-2 w-full rounded-xl bg-black py-3 text-sm font-medium text-white hover:bg-black/90"
+          type="submit"
+          className="mt-2 w-full rounded-xl bg-black py-3 text-sm font-medium text-white hover:bg-black/90 disabled:opacity-60"
+          disabled={loading}
         >
-          登录
+          {loading ? "登录中..." : "登录"}
         </button>
 
-        {/* 👇 你说的“忘记密码/注册”放这里 */}
         <div className="pt-2 text-center text-xs text-black/55">
           <a className="hover:text-black" href="#">
             忘记密码

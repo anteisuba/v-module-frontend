@@ -17,6 +17,8 @@ export default function RegisterPanel() {
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (loading) return;
+
     setError(null);
     setDone(false);
 
@@ -37,20 +39,21 @@ export default function RegisterPanel() {
 
     try {
       setLoading(true);
+
       const res = await fetch("/api/admin/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
-      const data = await res.json().catch(() => ({}));
+      const data = (await res.json().catch(() => ({}))) as { message?: string };
+
       if (!res.ok) {
-        setError(data?.message ?? "注册失败");
+        setError(data.message ?? "注册失败");
         return;
       }
 
       setDone(true);
-      // 你想要“注册完跳登录”就这样：
       setTimeout(() => router.push("/admin"), 600);
     } catch {
       setError("网络错误，请重试");
@@ -61,7 +64,6 @@ export default function RegisterPanel() {
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden">
-      {/* 背景同一套审美 */}
       <div className="absolute inset-0">
         <div
           className="absolute inset-0 bg-cover bg-center"
@@ -84,35 +86,65 @@ export default function RegisterPanel() {
             <div>
               <label className="text-xs text-black/70">邮箱</label>
               <input
-                className="mt-2 w-full rounded-xl border border-black/10 bg-white/70 px-4 py-3 text-sm outline-none focus:border-black/30"
-                type="email"
+                className="
+                  mt-2 w-full rounded-xl
+                  border border-black/10
+                  bg-white/70
+                  px-4 py-3
+                  text-sm text-black
+                  placeholder:text-black/30
+                  outline-none
+                  focus:border-black/30
+                "
                 placeholder="email@example.com"
+                type="email"
+                autoComplete="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                autoComplete="email"
+                disabled={loading}
               />
             </div>
 
             <div>
               <label className="text-xs text-black/70">密码</label>
               <input
-                className="mt-2 w-full rounded-xl border border-black/10 bg-white/70 px-4 py-3 text-sm outline-none focus:border-black/30"
+                className="
+                  mt-2 w-full rounded-xl
+                  border border-black/10
+                  bg-white/70
+                  px-4 py-3
+                  text-sm text-black
+                  placeholder:text-black/30
+                  outline-none
+                  focus:border-black/30
+                "
+                placeholder="••••••••"
                 type="password"
-                placeholder="至少 8 位"
+                autoComplete="new-password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                autoComplete="new-password"
+                disabled={loading}
               />
             </div>
 
             <div>
               <label className="text-xs text-black/70">显示名（可选）</label>
               <input
-                className="mt-2 w-full rounded-xl border border-black/10 bg-white/70 px-4 py-3 text-sm outline-none focus:border-black/30"
+                className="
+                  mt-2 w-full rounded-xl
+                  border border-black/10
+                  bg-white/70
+                  px-4 py-3
+                  text-sm text-black
+                  placeholder:text-black/30
+                  outline-none
+                  focus:border-black/30
+                "
                 type="text"
-                placeholder="比如：fulina"
+                placeholder="比如: fulina"
                 value={displayName}
                 onChange={(e) => setDisplayName(e.target.value)}
+                disabled={loading}
               />
             </div>
 

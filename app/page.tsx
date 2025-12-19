@@ -1,10 +1,10 @@
 // src/app/page.tsx
-import HeroSection from "../components/home/HeroSection";
+import HomeHero from "@/components/home/HomeHero";
 
 export default function Home() {
   return (
     <main className="bg-black text-white">
-      <HeroSection />
+      <HomeHero />
       <div className="h-[200vh]" />
     </main>
   );

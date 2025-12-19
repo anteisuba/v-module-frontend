@@ -15,18 +15,23 @@ const DEFAULT_SLIDES: HeroSlide[] = [
   { src: "/hero/3.jpeg", alt: "hero 3" },
 ];
 
-export default function HeroSection() {
+export default function HeroSection({
+  initialSlides,
+}: {
+  initialSlides?: HeroSlide[];
+}) {
   const menu = useHeroMenu();
 
-  // 你可以调：Hero 滚动长度（越大越“慢”）
   const HERO_SCROLL_HEIGHT_VH = 150;
-
-  // 你可以调：图片本体高度（越大可露出的下方越多）
   const HERO_IMAGE_HEIGHT_VH = 150;
 
-  const slides = useMemo(() => DEFAULT_SLIDES, []);
+  const slides = useMemo(() => {
+    // ✅ 有 CMS 的就用 CMS 的；没有就 fallback 到 DEFAULT_SLIDES
+    return initialSlides && initialSlides.length > 0
+      ? initialSlides
+      : DEFAULT_SLIDES;
+  }, [initialSlides]);
 
-  // 轮播 + fade
   const {
     slides: allSlides,
     current,
@@ -34,12 +39,8 @@ export default function HeroSection() {
     fadeIn,
     fadeMs,
     goTo,
-  } = useHeroSlides(slides, {
-    intervalMs: 20000,
-    fadeMs: 1000,
-  });
+  } = useHeroSlides(slides, { intervalMs: 20000, fadeMs: 1000 });
 
-  // sticky-scroll progress
   const sectionRef = useRef<HTMLElement | null>(null);
   const { progress, vh } = useStickyProgress(sectionRef);
 
@@ -50,7 +51,6 @@ export default function HeroSection() {
       className="relative w-full bg-black"
       style={{ height: `${HERO_SCROLL_HEIGHT_VH}vh` }}
     >
-      {/* sticky 视窗 */}
       <div className="sticky top-0 h-screen w-full overflow-hidden">
         <HeroBackground
           src={current.src}
@@ -64,13 +64,10 @@ export default function HeroSection() {
 
         <HeroHeader onMenuClick={menu.toggleMenu} />
 
-        {/* 临时占位字（你要删随时删） */}
         <div className="absolute inset-0 flex items-center justify-center text-white">
           <span className="text-2xl tracking-[0.4em] opacity-80">HERO</span>
         </div>
 
-        {/* ✅ 下一步你要的：底部三图轮播放这里 */}
-        {/* <div className="absolute bottom-10 left-0 right-0 z-40">...</div> */}
         <HeroThumbStrip
           slides={allSlides}
           currentIndex={index}
