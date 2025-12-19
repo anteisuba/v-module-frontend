@@ -5,6 +5,7 @@ export default function Home() {
   return (
     <main className="bg-black text-white">
       <HeroSection />
+      <div className="h-[200vh]" />
     </main>
   );
 }
