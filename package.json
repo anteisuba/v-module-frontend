@@ -9,6 +9,8 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@prisma/client": "6.19.1",
+    "bcryptjs": "^3.0.3",
     "next": "16.0.10",
     "react": "19.2.1",
     "react-dom": "19.2.1"
@@ -21,6 +23,7 @@
     "daisyui": "^5.5.14",
     "eslint": "^9",
     "eslint-config-next": "16.0.10",
+    "prisma": "^6.19.1",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

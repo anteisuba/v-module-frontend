@@ -6,8 +6,8 @@ type Props = {
 };
 
 const ITEMS = [
-  { label: "NEWS", href: "#news" },
-  { label: "LIVE", href: "#live" },
+  { label: "LOGIN", href: "/admin" },
+  { label: "BLOG", href: "#blog" },
   { label: "MEDIA", href: "#media" },
   { label: "PROFILE", href: "#profile" },
   { label: "CONTACT", href: "#contact" },

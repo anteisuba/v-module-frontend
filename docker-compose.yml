@@ -1,0 +1,16 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: vtuber_pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: vtuber
+    ports:
+      - "5432:5432"
+    volumes:
+      - vtuber_pg:/var/lib/postgresql/data
+
+volumes:
+  vtuber_pg:
