@@ -9,12 +9,17 @@ type Props = {
   onPick: (i: number) => void;
 };
 
+// 判断是否为外部 URL
+function isExternalUrl(src: string): boolean {
+  return src.startsWith("http://") || src.startsWith("https://");
+}
+
 export default function HeroThumbStrip({
   slides,
   currentIndex,
   onPick,
 }: Props) {
-  // 只显示 3 张：当前、下一张、下下张（ano那种“底部条”感觉）
+  // 只显示 3 张：当前、下一张、下下张（ano那种"底部条"感觉）
   const visible = (() => {
     const res: number[] = [];
     for (let k = 0; k < Math.min(3, slides.length); k++) {
@@ -31,9 +36,12 @@ export default function HeroThumbStrip({
         <div className="flex items-end justify-center gap-4">
           {visible.map((i) => {
             const active = i === currentIndex;
+            const slide = slides[i];
+            const isExternal = isExternalUrl(slide.src);
+            
             return (
               <button
-                key={slides[i].src}
+                key={slide.src}
                 type="button"
                 onClick={() => onPick(i)}
                 className={[
@@ -46,13 +54,25 @@ export default function HeroThumbStrip({
                 ].join(" ")}
                 aria-label={`Go to slide ${i + 1}`}
               >
-                <Image
-                  src={slides[i].src}
-                  alt={slides[i].alt ?? `thumb ${i + 1}`}
-                  fill
-                  sizes="160px"
-                  className="object-cover"
-                />
+                {isExternal ? (
+                  // 外部 URL 使用普通的 img 标签
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={slide.src}
+                    alt={slide.alt ?? `thumb ${i + 1}`}
+                    className="h-full w-full object-cover"
+                    style={{ width: "100%", height: "100%" }}
+                  />
+                ) : (
+                  // 本地路径使用 Next.js Image 组件
+                  <Image
+                    src={slide.src}
+                    alt={slide.alt ?? `thumb ${i + 1}`}
+                    fill
+                    sizes="160px"
+                    className="object-cover"
+                  />
+                )}
                 <div className="absolute inset-0 bg-black/10" />
               </button>
             );
