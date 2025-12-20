@@ -1,20 +1,19 @@
-import { AdminAuthPanel } from "@/features/admin-auth";
+import { ForgotPasswordPanel } from "@/features/admin-auth";
 import { BackButton } from "@/components/ui";
 
-export default function AdminPage() {
+export default function ForgotPasswordPage() {
   return (
     <main className="relative min-h-screen w-full overflow-hidden">
-      <BackButton href="/" label="返回首页" />
+      <BackButton href="/admin" label="返回登录" />
       {/* 背景图：铺满 */}
       <div className="absolute inset-0">
-        {/* 你也可以换成 next/image，这里先用 div 更省事 */}
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: "url(/login/login-b.jpeg)" }}
         />
         {/* 雾面淡化层：参考图那种纸面灰 */}
         <div className="absolute inset-0 bg-white/70" />
-        {/* 轻微暗角（更“官网”） */}
+        {/* 轻微暗角（更"官网"） */}
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/15" />
       </div>
 
@@ -25,7 +24,7 @@ export default function AdminPage() {
           <div className="mx-auto inline-flex items-center gap-3">
             <div className="text-5xl font-black tracking-tight">ZUTOMAYO</div>
             <span className="inline-flex items-center bg-black px-3 py-1 text-sm font-bold tracking-[0.2em] text-white">
-              LOGIN
+              RESET
             </span>
           </div>
           <div className="mt-3 text-xs tracking-[0.25em] text-black/70">
@@ -35,7 +34,7 @@ export default function AdminPage() {
 
         {/* 表单卡片 */}
         <div className="flex flex-1 items-center justify-center py-10">
-          <AdminAuthPanel />
+          <ForgotPasswordPanel />
         </div>
 
         {/* 底部链接栏（先占位） */}

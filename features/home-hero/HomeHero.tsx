@@ -1,4 +1,4 @@
-import HeroSection from "@/components/home/HeroSection";
+import HeroSection from "./components/HeroSection";
 import { getPublicHeroSlides } from "@/domain/hero";
 
 export default async function HomeHero() {

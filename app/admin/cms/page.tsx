@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { BackButton } from "@/components/ui";
 
 type HeroSlide = {
   slot: 1 | 2 | 3;
@@ -98,6 +99,7 @@ export default function CMSPage() {
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden">
+      <BackButton href="/admin" label="返回管理" />
       {/* ✅ 背景图：public/login 下的图片 */}
       <div className="absolute inset-0">
         <div

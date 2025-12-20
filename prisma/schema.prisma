@@ -15,8 +15,9 @@ model AdminUser {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
 
-  siteConfig   SiteConfig?
-  mediaAssets  MediaAsset[]
+  siteConfig          SiteConfig?
+  mediaAssets         MediaAsset[]
+  passwordResetTokens PasswordResetToken[]
 }
 
 model SiteConfig {
@@ -46,5 +47,18 @@ model MediaAsset {
   createdAt   DateTime @default(now())
 
   @@index([adminUserId, createdAt])
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  tokenHash String   @unique // 哈希后的 token（用于查找和验证）
+  userId    String   // AdminUser.id
+  user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 

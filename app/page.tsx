@@ -1,5 +1,5 @@
 // src/app/page.tsx
-import HomeHero from "@/components/home/HomeHero";
+import { HomeHero } from "@/features/home-hero";
 
 export default function Home() {
   return (
