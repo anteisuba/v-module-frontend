@@ -18,10 +18,12 @@
 ### 页面与路由
 
 #### 公开页面
+
 - `/`：首页 Hero（固定模板）
 - `/u/[slug]`：用户公开页面（例如：`/u/testuser`）
 
 #### 用户管理
+
 - `/admin`：用户登录
 - `/admin/register`：用户注册
 - `/admin/forgot-password`：忘记密码（请求重置链接）
@@ -31,6 +33,7 @@
 ### API
 
 #### 用户相关
+
 - `POST /api/user/register`：注册新用户
 - `POST /api/user/login`：用户登录
 - `GET /api/user/me`：获取当前用户信息（需要认证）
@@ -38,6 +41,7 @@
 - `POST /api/user/reset-password`：重置密码
 
 #### 页面配置相关
+
 - `GET /api/page/[slug]`：获取用户的公开页面配置（无需认证）
 - `GET /api/page/me`：获取当前用户的草稿配置（需要认证）
 - `PUT /api/page/me`：更新当前用户的草稿配置（需要认证）
@@ -87,11 +91,13 @@ vtuber-site/
 ### 本地开发
 
 1. **准备 PostgreSQL**
+
    ```bash
    docker compose up -d
    ```
 
 2. **配置环境变量 `.env`**
+
    ```bash
    DATABASE_URL=postgresql://postgres:postgres@localhost:5432/vtuber
    SESSION_PASSWORD=replace-with-a-long-random-string
@@ -99,15 +105,26 @@ vtuber-site/
    # 邮件服务配置（密码重置功能需要）
    # 开发环境：可以不配置，邮件内容会输出到控制台
    # 生产环境：需要配置 SMTP 服务
-   SMTP_HOST=smtp.gmail.com
+   #
+   # 推荐使用 Resend（最简单）：
+   # SMTP_HOST=smtp.resend.com
+   # SMTP_PORT=587
+   # SMTP_USER=resend
+   # SMTP_PASSWORD=re_你的API_KEY
+   # SMTP_FROM=noreply@resend.dev
+   #
+   # 详细配置指南请查看 SMTP_SETUP_GUIDE.md
+
+   SMTP_HOST=smtp.resend.com
    SMTP_PORT=587
-   SMTP_USER=your-email@gmail.com
-   SMTP_PASSWORD=your-app-password
-   SMTP_FROM=noreply@vtuber-site.com
+   SMTP_USER=resend
+   SMTP_PASSWORD=your-resend-api-key
+   SMTP_FROM=noreply@resend.dev
    NEXT_PUBLIC_BASE_URL=http://localhost:3000
    ```
 
 3. **安装依赖并迁移数据库**
+
    ```bash
    pnpm install
    pnpm db:migrate
@@ -115,6 +132,7 @@ vtuber-site/
    ```
 
 4. **启动开发服务器**
+
    ```bash
    pnpm dev
    ```
@@ -146,6 +164,7 @@ pnpm build
 ### 测试用户
 
 运行 `pnpm db:seed` 后会创建测试用户：
+
 - Email: `test@example.com`
 - Password: `123456`
 - Slug: `testuser`
@@ -168,10 +187,12 @@ VTuber 向けのマルチユーザーページ管理システム。Next.js App R
 ### ページ/ルート
 
 #### 公開ページ
+
 - `/`：トップページ Hero（固定テンプレート）
 - `/u/[slug]`：ユーザー公開ページ（例：`/u/testuser`）
 
 #### ユーザー管理
+
 - `/admin`：ユーザーログイン
 - `/admin/register`：ユーザー登録
 - `/admin/forgot-password`：パスワード忘れ（リセットリンク要求）
@@ -181,6 +202,7 @@ VTuber 向けのマルチユーザーページ管理システム。Next.js App R
 ### API
 
 #### ユーザー関連
+
 - `POST /api/user/register`：新規ユーザー登録
 - `POST /api/user/login`：ユーザーログイン
 - `GET /api/user/me`：現在のユーザー情報取得（認証必要）
@@ -188,6 +210,7 @@ VTuber 向けのマルチユーザーページ管理システム。Next.js App R
 - `POST /api/user/reset-password`：パスワードリセット
 
 #### ページ設定関連
+
 - `GET /api/page/[slug]`：ユーザーの公開ページ設定取得（認証不要）
 - `GET /api/page/me`：現在のユーザーの下書き設定取得（認証必要）
 - `PUT /api/page/me`：現在のユーザーの下書き設定更新（認証必要）
@@ -206,22 +229,25 @@ VTuber 向けのマルチユーザーページ管理システム。Next.js App R
 
 - `User`：ユーザーアカウント（slug、email、passwordHash）
 - `Page`：ページ設定（draftConfig、publishedConfig）
-- `UserPasswordResetToken`：パスワードリセットトークン（24時間有効期限、一回限り）
+- `UserPasswordResetToken`：パスワードリセットトークン（24 時間有効期限、一回限り）
 
 ### ローカル開発
 
 1. **PostgreSQL を用意**
+
    ```bash
    docker compose up -d
    ```
 
 2. **環境変数 `.env`**
+
    ```bash
    DATABASE_URL=postgresql://postgres:postgres@localhost:5432/vtuber
    SESSION_PASSWORD=replace-with-a-long-random-string
    ```
 
 3. **依存関係とマイグレーション**
+
    ```bash
    pnpm install
    pnpm db:migrate

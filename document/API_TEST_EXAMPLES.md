@@ -29,6 +29,7 @@ curl -X POST http://localhost:3000/api/user/register \
 ```
 
 **响应**：
+
 ```json
 {
   "ok": true,
@@ -55,6 +56,7 @@ curl -X POST http://localhost:3000/api/user/login \
 ```
 
 **响应**：
+
 ```json
 { "ok": true }
 ```
@@ -73,6 +75,7 @@ curl http://localhost:3000/api/user/me \
 ```
 
 **响应**：
+
 ```json
 {
   "ok": true,
@@ -100,6 +103,7 @@ curl -X POST http://localhost:3000/api/user/forgot-password \
 ```
 
 **响应（邮箱已注册）**：
+
 ```json
 {
   "message": "我们已发送重置密码链接到您的邮箱",
@@ -108,12 +112,14 @@ curl -X POST http://localhost:3000/api/user/forgot-password \
 ```
 
 **响应（邮箱未注册）**：
+
 ```json
 {
   "message": "该邮箱未注册",
   "emailExists": false
 }
 ```
+
 状态码：`404`
 
 ---
@@ -134,6 +140,7 @@ curl -X POST http://localhost:3000/api/user/reset-password \
 ```
 
 **响应**：
+
 ```json
 {
   "message": "密码重置成功"
@@ -153,6 +160,7 @@ curl http://localhost:3000/api/page/testuser
 ```
 
 **响应**：
+
 ```json
 {
   "slug": "testuser",
@@ -189,9 +197,11 @@ curl http://localhost:3000/api/page/testuser
 ```
 
 **测试不存在的用户**：
+
 ```bash
 curl http://localhost:3000/api/page/nonexistent
 ```
+
 预期响应：`404 Not Found`
 
 ---
@@ -208,6 +218,7 @@ curl http://localhost:3000/api/page/me \
 ```
 
 **响应**：
+
 ```json
 {
   "draftConfig": {
@@ -299,6 +310,7 @@ curl -X PUT http://localhost:3000/api/page/me \
 ```
 
 **响应**：
+
 ```json
 {
   "ok": true,
@@ -311,6 +323,7 @@ curl -X PUT http://localhost:3000/api/page/me \
 ```
 
 **测试无效配置（zod 校验）**：
+
 ```bash
 curl -X PUT http://localhost:3000/api/page/me \
   -H "Content-Type: application/json" \
@@ -325,14 +338,17 @@ curl -X PUT http://localhost:3000/api/page/me \
     }
   }'
 ```
+
 预期响应：`400 Bad Request` 包含验证错误详情
 
 **测试未登录**：
+
 ```bash
 curl -X PUT http://localhost:3000/api/page/me \
   -H "Content-Type: application/json" \
   -d '{"draftConfig": {...}}'
 ```
+
 预期响应：`401 Unauthorized`
 
 ---
@@ -350,6 +366,7 @@ curl -X POST http://localhost:3000/api/page/me/publish \
 ```
 
 **响应**：
+
 ```json
 {
   "ok": true,
@@ -363,11 +380,13 @@ curl -X POST http://localhost:3000/api/page/me/publish \
 
 **验证发布结果**：
 发布后，访问公开 API 应该看到更新后的配置：
+
 ```bash
 curl http://localhost:3000/api/page/testuser
 ```
 
 或访问页面：
+
 ```
 http://localhost:3000/u/testuser
 ```
@@ -387,6 +406,7 @@ curl -X POST http://localhost:3000/api/page/me/upload \
 ```
 
 **响应**：
+
 ```json
 {
   "ok": true,
@@ -395,7 +415,8 @@ curl -X POST http://localhost:3000/api/page/me/upload \
 ```
 
 **文件限制**：
-- 只支持图片格式（image/*）
+
+- 只支持图片格式（image/\*）
 - 最大文件大小：10MB
 - 文件保存到：`public/uploads/{userSlug}/`
 

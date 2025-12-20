@@ -297,6 +297,7 @@ npx prisma migrate status
 #### 6.1 选项 A: 使用 Vercel Blob Storage（推荐）
 
 1. 安装 `@vercel/blob`：
+
    ```bash
    pnpm add @vercel/blob
    ```
@@ -310,6 +311,7 @@ npx prisma migrate status
 1. 创建 S3 bucket
 2. 配置 IAM 用户和访问密钥
 3. 安装 AWS SDK：
+
    ```bash
    pnpm add @aws-sdk/client-s3
    ```
@@ -320,6 +322,7 @@ npx prisma migrate status
 
 1. 注册 Cloudinary 账号
 2. 安装 SDK：
+
    ```bash
    pnpm add cloudinary
    ```
@@ -416,4 +419,3 @@ npx prisma migrate status
 - 定期更新依赖包
 - 定期更新 Prisma 和数据库驱动
 - 定期检查安全更新
-

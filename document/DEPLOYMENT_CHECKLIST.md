@@ -107,6 +107,7 @@ npx prisma db pull
 ### 问题：Prisma Client 未生成
 
 **解决**：确保 `package.json` 中有 `postinstall` 脚本：
+
 ```json
 {
   "scripts": {
@@ -175,4 +176,3 @@ Prisma 在 Serverless 环境中会自动管理连接池，但建议：
 1. 启用 Next.js Image Optimization
 2. 配置 CDN（Vercel 自动提供）
 3. 使用 ISR（Incremental Static Regeneration）缓存用户页面（可选）
-
