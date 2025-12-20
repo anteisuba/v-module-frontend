@@ -7,6 +7,13 @@ export type HeroSlideDB = {
   alt?: string; // ✅ 注意：这里不要 null
 };
 
+// ✅ 默认 Hero slides（用于补齐缺失的 slot）
+export const DEFAULT_HERO_SLIDES: HeroSlideDB[] = [
+  { slot: 1, src: "/hero/nakajima.jpeg", alt: "hero 1" },
+  { slot: 2, src: "/hero/2.jpeg", alt: "hero 2" },
+  { slot: 3, src: "/hero/3.jpeg", alt: "hero 3" },
+];
+
 export function normalizeSlides(v: unknown): HeroSlideDB[] {
   if (!Array.isArray(v)) return [];
 
@@ -36,11 +43,34 @@ export function normalizeSlides(v: unknown): HeroSlideDB[] {
   return [1, 2, 3].map((n) => bySlot.get(n)).filter(Boolean) as HeroSlideDB[];
 }
 
-export async function getPublicHeroSlides(): Promise<HeroSlideDB[]> {
+/**
+ * 补齐 Hero slides 到 3 张
+ * 如果 DB 中只有 1-2 张，用 DEFAULT_HERO_SLIDES 填充缺失的 slot
+ */
+export function fillSlidesWithDefaults(dbSlides: HeroSlideDB[]): HeroSlideDB[] {
+  const bySlot = new Map<number, HeroSlideDB>();
+  for (const slide of dbSlides) {
+    bySlot.set(slide.slot, slide);
+  }
+
+  // 确保返回 3 张，缺失的用 DEFAULT 填充
+  return [1, 2, 3].map((slot) => {
+    return bySlot.get(slot) ?? DEFAULT_HERO_SLIDES[slot - 1];
+  });
+}
+
+export async function getPublicHeroSlides(
+  siteKey?: string
+): Promise<HeroSlideDB[]> {
+  // ✅ 当前实现：取最新一条配置（未来可通过 siteKey 扩展多站点支持）
+  // TODO: 未来如果需要多站点，可以在 SiteConfig 中添加 siteKey 字段
   const config = await prisma.siteConfig.findFirst({
     orderBy: { updatedAt: "desc" },
     select: { heroSlides: true },
   });
 
-  return normalizeSlides(config?.heroSlides);
+  const dbSlides = normalizeSlides(config?.heroSlides);
+
+  // ✅ 补齐到 3 张（缺失的用 DEFAULT 填充）
+  return fillSlidesWithDefaults(dbSlides);
 }

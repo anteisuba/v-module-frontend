@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
-import path from "path";
-import { promises as fs } from "fs";
 import { prisma } from "@/lib/prisma";
 import { getAdminSession } from "@/lib/session";
 import { Prisma } from "@prisma/client";
+import { deleteUploadedFile } from "@/lib/fileUtils";
 
 export const runtime = "nodejs";
 
@@ -37,10 +36,9 @@ export async function DELETE(req: Request) {
   const slides = (cfg?.heroSlides ?? []) as unknown as HeroSlide[];
   const target = slides.find((s) => s.slot === slot);
 
-  // 只删 upload-img1 下的
-  if (target?.src?.startsWith("/upload-img1/")) {
-    const abs = path.join(process.cwd(), "public", target.src);
-    await fs.unlink(abs).catch(() => {});
+  // ✅ 使用工具函数安全删除文件
+  if (target?.src) {
+    await deleteUploadedFile(target.src);
   }
 
   const nextSlides = slides

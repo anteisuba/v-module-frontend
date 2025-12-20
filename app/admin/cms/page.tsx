@@ -97,22 +97,24 @@ export default function CMSPage() {
   }
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden bg-black text-white">
+    <main className="relative min-h-screen w-full overflow-hidden">
       {/* ✅ 背景图：public/login 下的图片 */}
       <div className="absolute inset-0">
         <div
           className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url(/login/login-b.jpeg)" }}
+          style={{ backgroundImage: "url(/login/login-c.jpeg)" }}
         />
-        <div className="absolute inset-0 bg-black/70" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/55 to-black/80" />
+        {/* 雾面淡化层：参考登录页那种纸面灰 */}
+        <div className="absolute inset-0 bg-white/70" />
+        {/* 轻微暗角（更"官网"） */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/15" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-5xl px-6 py-10">
         <div className="flex items-end justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold">CMS</h1>
-            <p className="mt-2 text-sm text-white/60">
+            <h1 className="text-2xl font-semibold text-black">CMS</h1>
+            <p className="mt-2 text-sm text-black/70">
               这里编辑 Hero / 上传图片（slot 1~3）。
             </p>
           </div>
@@ -120,20 +122,20 @@ export default function CMSPage() {
           <button
             onClick={refresh}
             disabled={loading || busySlot !== null}
-            className="rounded-xl bg-white/10 px-4 py-2 text-sm hover:bg-white/15 disabled:opacity-50"
+            className="rounded-xl border border-black/10 bg-white/70 px-4 py-2 text-sm text-black hover:bg-white/80 disabled:opacity-50"
           >
             {loading ? "刷新中…" : "刷新"}
           </button>
         </div>
 
         {error && (
-          <div className="mt-5 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+          <div className="mt-5 rounded-2xl border border-red-500/30 bg-red-50 px-4 py-3 text-sm text-red-700">
             {error}
           </div>
         )}
 
         {ok && (
-          <div className="mt-5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+          <div className="mt-5 rounded-2xl border border-emerald-500/30 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
             {ok}
           </div>
         )}
@@ -152,18 +154,20 @@ export default function CMSPage() {
             return (
               <div
                 key={slot}
-                className="rounded-2xl border border-white/10 bg-white/5 p-4 backdrop-blur"
+                className="rounded-2xl border border-black/10 bg-white/55 p-4 backdrop-blur-xl shadow-2xl"
               >
                 <div className="flex items-center justify-between">
-                  <div className="text-sm font-medium">Hero Slot {slot}</div>
+                  <div className="text-sm font-medium text-black">
+                    Hero Slot {slot}
+                  </div>
                   {busy && (
-                    <div className="text-xs text-white/60">{busyText}</div>
+                    <div className="text-xs text-black/60">{busyText}</div>
                   )}
                 </div>
 
-                <div className="mt-4 aspect-[4/3] overflow-hidden rounded-xl border border-white/10 bg-black/40">
+                <div className="mt-4 aspect-[4/3] overflow-hidden rounded-xl border border-black/10 bg-black/5">
                   {loading ? (
-                    <div className="flex h-full items-center justify-center text-xs text-white/50">
+                    <div className="flex h-full items-center justify-center text-xs text-black/50">
                       加载中…
                     </div>
                   ) : s?.src ? (
@@ -174,7 +178,7 @@ export default function CMSPage() {
                       className="h-full w-full object-cover"
                     />
                   ) : (
-                    <div className="flex h-full items-center justify-center text-xs text-white/50">
+                    <div className="flex h-full items-center justify-center text-xs text-black/50">
                       未设置
                     </div>
                   )}
@@ -182,13 +186,13 @@ export default function CMSPage() {
 
                 <div className="mt-4 space-y-3">
                   <label className="block">
-                    <div className="text-xs text-white/70">
+                    <div className="text-xs text-black/70">
                       {s?.src ? "替换图片" : "上传图片"}
                     </div>
                     <input
                       type="file"
                       accept="image/png,image/jpeg,image/webp"
-                      className="mt-2 block w-full text-xs text-white/80 file:mr-3 file:rounded-lg file:border-0 file:bg-white/10 file:px-3 file:py-2 file:text-xs file:text-white hover:file:bg-white/15"
+                      className="mt-2 block w-full text-xs text-black/80 file:mr-3 file:rounded-lg file:border-0 file:bg-black file:px-3 file:py-2 file:text-xs file:text-white hover:file:bg-black/90"
                       disabled={busy || busySlot !== null}
                       onChange={(e) => {
                         const f = e.target.files?.[0];
@@ -200,19 +204,19 @@ export default function CMSPage() {
                   </label>
 
                   <button
-                    className="w-full rounded-xl bg-white/10 py-2 text-sm hover:bg-white/15 disabled:opacity-50"
+                    className="w-full rounded-xl bg-black py-2 text-sm font-medium text-white hover:bg-black/90 disabled:opacity-50"
                     disabled={busy || busySlot !== null || !s?.src}
                     onClick={() => remove(slot as 1 | 2 | 3)}
                   >
                     删除该 Slot
                   </button>
 
-                  <div className="text-[11px] text-white/55 break-all">
+                  <div className="text-[11px] text-black/55 break-all">
                     {s?.src ? (
                       <>
                         当前：{s.src}{" "}
                         <a
-                          className="ml-2 underline text-white/70 hover:text-white"
+                          className="ml-2 underline text-black/70 hover:text-black"
                           href={s.src}
                           target="_blank"
                           rel="noreferrer"
@@ -230,9 +234,12 @@ export default function CMSPage() {
           })}
         </div>
 
-        <div className="mt-10 text-xs text-white/50">
-          说明：上传文件会保存到 <code>public/upload-img1</code>，并把路径写进
-          <code> SiteConfig.heroSlides</code>（按 slot 存 1/2/3）。
+        <div className="mt-10 text-xs text-black/60">
+          说明：上传文件会保存到{" "}
+          <code className="text-black/80">public/upload-img1</code>
+          ，并把路径写进
+          <code className="text-black/80"> SiteConfig.heroSlides</code>（按 slot
+          存 1/2/3）。
         </div>
       </div>
     </main>

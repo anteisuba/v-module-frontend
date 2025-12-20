@@ -9,7 +9,8 @@ import HeroThumbStrip from "./hero/components/HeroThumbStrip";
 import HeroMenu from "./hero/components/HeroMenu";
 import { useHeroMenu } from "./hero/hooks/useHeroMenu";
 
-const DEFAULT_SLIDES: HeroSlide[] = [
+// ✅ Fallback slides（仅在服务端失败时使用）
+const FALLBACK_SLIDES: HeroSlide[] = [
   { src: "/hero/nakajima.jpeg", alt: "hero 1" },
   { src: "/hero/2.jpeg", alt: "hero 2" },
   { src: "/hero/3.jpeg", alt: "hero 3" },
@@ -26,10 +27,12 @@ export default function HeroSection({
   const HERO_IMAGE_HEIGHT_VH = 150;
 
   const slides = useMemo(() => {
-    // ✅ 有 CMS 的就用 CMS 的；没有就 fallback 到 DEFAULT_SLIDES
-    return initialSlides && initialSlides.length > 0
-      ? initialSlides
-      : DEFAULT_SLIDES;
+    // ✅ 服务端已保证返回 3 张（补齐逻辑），这里只做 fallback 保护
+    if (initialSlides && initialSlides.length > 0) {
+      return initialSlides;
+    }
+    // 仅在服务端失败时使用 fallback
+    return FALLBACK_SLIDES;
   }, [initialSlides]);
 
   const {

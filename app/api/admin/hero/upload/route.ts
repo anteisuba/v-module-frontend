@@ -5,6 +5,7 @@ import crypto from "crypto";
 import { prisma } from "@/lib/prisma";
 import { getAdminSession } from "@/lib/session";
 import { Prisma } from "@prisma/client";
+import { deleteUploadedFile } from "@/lib/fileUtils";
 
 export const runtime = "nodejs";
 
@@ -33,7 +34,9 @@ export async function POST(req: Request) {
   }
   const slot = slotNum as 1 | 2 | 3;
 
-  const alt = form.get("alt") ? String(form.get("alt")) : null;
+  const altRaw = form.get("alt");
+  const alt =
+    typeof altRaw === "string" && altRaw.trim() ? altRaw.trim() : undefined;
 
   const file = form.get("file");
   if (!file || !(file instanceof File)) {
@@ -77,16 +80,15 @@ export async function POST(req: Request) {
 
   const slides = (existing.heroSlides ?? []) as unknown as HeroSlide[];
 
-  // 替换同 slot：删除旧文件（仅限 upload-img1）
+  // ✅ 替换同 slot：使用工具函数安全删除旧文件
   const old = slides.find((s) => s.slot === slot);
-  if (old?.src?.startsWith("/upload-img1/")) {
-    const oldAbs = path.join(process.cwd(), "public", old.src);
-    await fs.unlink(oldAbs).catch(() => {});
+  if (old?.src) {
+    await deleteUploadedFile(old.src);
   }
 
-  const nextSlides: HeroSlide[] = [
+  const nextSlides = [
     ...slides.filter((s) => s.slot !== slot),
-    { slot, src: publicPath, alt },
+    { slot, src: publicPath, ...(alt ? { alt } : {}) },
   ].sort((a, b) => a.slot - b.slot);
 
   await prisma.siteConfig.update({

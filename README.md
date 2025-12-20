@@ -1,36 +1,113 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# vtuber-site
 
-## Getting Started
+[中文](#中文) | [日本語](#日本語)
 
-First, run the development server:
+## 中文
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+面向 VTuber 站点的 Next.js App Router 项目，包含首页 Hero 视觉、后台登录/注册与 CMS 图片管理。
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 功能概览
+- 首页 Hero：粘性滚动背景、自动轮播淡入淡出、缩略图切换
+- 管理端登录/注册：基于 `iron-session` 的会话与 `bcryptjs` 密码校验
+- CMS：上传/替换/删除 3 个 Hero Slot 图片，文件写入 `public/upload-img1`
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 页面与路由
+- `/`：首页 Hero
+- `/admin`：管理端登录
+- `/admin/register`：管理端注册
+- `/admin/cms`：Hero 图片管理
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### API
+- `POST /api/admin/register`：注册管理员
+- `POST /api/admin/login`：登录并写入 session
+- `GET /api/admin/me`：获取当前管理员信息
+- `GET /api/admin/hero/slides`：读取 Hero 配置
+- `POST /api/admin/hero/upload`：上传 Hero 图片（slot 1~3）
+- `DELETE /api/admin/hero/slide?slot=1`：删除指定 slot
 
-## Learn More
+### 技术栈
+- Next.js 16 / React 19（App Router）
+- Tailwind CSS v4 + daisyUI
+- Prisma + PostgreSQL
+- iron-session、bcryptjs
 
-To learn more about Next.js, take a look at the following resources:
+### 数据库模型（Prisma）
+- `AdminUser`：管理员账号
+- `SiteConfig`：站点配置（`heroSlides` JSON）
+- `MediaAsset`：媒体资源记录（当前未直接使用）
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 本地开发
+1. 准备 PostgreSQL（可选）
+   ```bash
+   docker compose up -d
+   ```
+2. 配置环境变量 `.env`
+   ```bash
+   DATABASE_URL=postgresql://postgres:postgres@localhost:5432/vtuber
+   SESSION_PASSWORD=replace-with-a-long-random-string
+   ```
+3. 安装依赖并迁移数据库
+   ```bash
+   pnpm install
+   npx prisma migrate dev
+   ```
+4. 启动开发服务器
+   ```bash
+   pnpm dev
+   ```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+---
 
-## Deploy on Vercel
+## 日本語
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+VTuber 向けサイトの Next.js App Router プロジェクト。トップの Hero 表現、管理ログイン/登録、CMS 画像管理を備えています。
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### 主な機能
+- Hero セクション：スクロール追従、フェード切替、自動スライド、サムネイル選択
+- 管理ログイン/登録：`iron-session` のセッションと `bcryptjs` のパスワード検証
+- CMS：Hero の 3 枚をアップロード/差し替え/削除（`public/upload-img1` に保存）
+
+### ページ/ルート
+- `/`：トップ
+- `/admin`：管理ログイン
+- `/admin/register`：管理登録
+- `/admin/cms`：Hero 画像管理
+
+### API
+- `POST /api/admin/register`
+- `POST /api/admin/login`
+- `GET /api/admin/me`
+- `GET /api/admin/hero/slides`
+- `POST /api/admin/hero/upload`
+- `DELETE /api/admin/hero/slide?slot=1`
+
+### 技術スタック
+- Next.js 16 / React 19（App Router）
+- Tailwind CSS v4 + daisyUI
+- Prisma + PostgreSQL
+- iron-session、bcryptjs
+
+### データモデル（Prisma）
+- `AdminUser`：管理者
+- `SiteConfig`：サイト設定（`heroSlides` JSON）
+- `MediaAsset`：メディア資産（現状は未使用）
+
+### ローカル開発
+1. PostgreSQL を用意（任意）
+   ```bash
+   docker compose up -d
+   ```
+2. 環境変数 `.env`
+   ```bash
+   DATABASE_URL=postgresql://postgres:postgres@localhost:5432/vtuber
+   SESSION_PASSWORD=replace-with-a-long-random-string
+   ```
+3. 依存関係とマイグレーション
+   ```bash
+   pnpm install
+   npx prisma migrate dev
+   ```
+4. 開発サーバー起動
+   ```bash
+   pnpm dev
+   ```
