@@ -11,4 +11,9 @@ export const prisma =
     log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
   });
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+// Cache Prisma Client in global object to reuse connections
+// This is especially important in serverless environments (Vercel)
+// where the same container may handle multiple requests
+if (!globalForPrisma.prisma) {
+  globalForPrisma.prisma = prisma;
+}

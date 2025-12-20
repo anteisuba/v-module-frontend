@@ -1,16 +1,9 @@
 import HeroSection from "./components/HeroSection";
-import { getPublicHeroSlides } from "@/domain/hero";
+import { FALLBACK_SLIDES } from "./constants";
 
-export default async function HomeHero() {
-  // ✅ 支持通过环境变量指定站点标识（未来多站点）
-  const siteKey = process.env.NEXT_PUBLIC_SITE_KEY;
-  const dbSlides = await getPublicHeroSlides(siteKey);
-
-  // DB -> UI（已补齐到 3 张）
-  const slides = dbSlides.map((s) => ({
-    src: s.src,
-    alt: s.alt,
-  }));
+export default function HomeHero() {
+  // 首页使用固定的默认 slides（不再从数据库读取）
+  const slides = FALLBACK_SLIDES;
 
   return <HeroSection initialSlides={slides} />;
 }

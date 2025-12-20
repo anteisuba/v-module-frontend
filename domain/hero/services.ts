@@ -48,18 +48,11 @@ export function fillSlidesWithDefaults(dbSlides: HeroSlideDB[]): HeroSlideDB[] {
   });
 }
 
+// 此函数已废弃，首页现在直接使用默认配置
+// 保留函数定义以避免编译错误，但不再从数据库读取
 export async function getPublicHeroSlides(
   siteKey?: string
 ): Promise<HeroSlideDB[]> {
-  // ✅ 当前实现：取最新一条配置（未来可通过 siteKey 扩展多站点支持）
-  // TODO: 未来如果需要多站点，可以在 SiteConfig 中添加 siteKey 字段
-  const config = await prisma.siteConfig.findFirst({
-    orderBy: { updatedAt: "desc" },
-    select: { heroSlides: true },
-  });
-
-  const dbSlides = normalizeSlides(config?.heroSlides);
-
-  // ✅ 补齐到 3 张（缺失的用 DEFAULT 填充）
-  return fillSlidesWithDefaults(dbSlides);
+  // 直接返回默认配置
+  return DEFAULT_HERO_SLIDES;
 }
