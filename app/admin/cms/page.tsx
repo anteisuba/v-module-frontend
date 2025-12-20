@@ -163,7 +163,7 @@ export default function CMSPage() {
   // 更新 hero section 的图片
   function updateHeroSlide(index: number, src: string, alt?: string) {
     const heroSection = getHeroSection();
-    if (!heroSection) return;
+    if (!heroSection || heroSection.type !== 'hero') return;
 
     const slides = [...(heroSection.props.slides || [])];
     
@@ -179,17 +179,19 @@ export default function CMSPage() {
 
     setConfig({
       ...config,
-      sections: config.sections.map((s) =>
-        s.id === heroSection.id && s.type === 'hero'
-          ? {
-              ...s,
-              props: {
-                ...heroSection.props,
-                slides: slides, // 保留所有 slides（包括可能的空值，保存时会过滤）
-              } as HeroSectionProps,
-            }
-          : s
-      ),
+      sections: config.sections.map((s) => {
+        if (s.id === heroSection.id && s.type === 'hero') {
+          return {
+            ...s,
+            type: 'hero' as const,
+            props: {
+              ...heroSection.props,
+              slides: slides, // 保留所有 slides（包括可能的空值，保存时会过滤）
+            },
+          };
+        }
+        return s;
+      }),
     });
   }
 
