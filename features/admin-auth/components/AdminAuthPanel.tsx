@@ -25,7 +25,7 @@ export default function AdminAuthPanel() {
     setError(null);
 
     try {
-      const res = await fetch("/api/admin/login", {
+      const res = await fetch("/api/user/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
@@ -65,7 +65,7 @@ export default function AdminAuthPanel() {
         管理入口
       </h1>
       <p className="mt-2 text-sm text-black/60">
-        登录后可编辑首页内容（图片 / 视频 / 文案）。
+        登录后可编辑你的个人页面内容。
       </p>
 
       <form onSubmit={onSubmit} className="mt-7 space-y-4">
@@ -131,7 +131,7 @@ export default function AdminAuthPanel() {
           </Link>
           <span className="px-2 text-black/25">/</span>
           <Link className="hover:text-black" href="/admin/register">
-            注册
+            注册账号
           </Link>
         </div>
       </form>
