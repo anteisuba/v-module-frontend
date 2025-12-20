@@ -21,39 +21,99 @@ model AdminUser {
 }
 
 model SiteConfig {
-  id          String    @id @default(cuid())
+  id String @id @default(cuid())
 
   adminUserId String    @unique
   adminUser   AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
 
   // Hero 的三张图：[{slot:1, assetId:"xxx", src:"/upload-img1/xx.jpg", alt:"..."}, ...]
-  heroSlides  Json?
+  heroSlides Json?
 
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 model MediaAsset {
-  id          String   @id @default(cuid())
+  id          String    @id @default(cuid())
   adminUserId String
   adminUser   AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
 
   // public 路径，比如：/upload-img1/xxx.jpg
-  src         String
-  mimeType    String
-  size        Int
+  src          String
+  mimeType     String
+  size         Int
   originalName String?
 
-  createdAt   DateTime @default(now())
+  createdAt DateTime @default(now())
 
   @@index([adminUserId, createdAt])
 }
 
 model PasswordResetToken {
+  id        String    @id @default(cuid())
+  tokenHash String    @unique // 哈希后的 token（用于查找和验证）
+  userId    String // AdminUser.id
+  user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  used      Boolean   @default(false)
+  createdAt DateTime  @default(now())
+
+  @@index([userId])
+  @@index([expiresAt])
+}
+
+// ============================================
+// 新增：普通用户（VTuber）
+// ============================================
+model User {
+  id           String   @id @default(cuid())
+  slug         String   @unique // URL 友好标识，用于 /u/[slug]
+  email        String   @unique // 登录邮箱
+  passwordHash String // bcrypt 加密后的密码
+  displayName  String? // 显示名称（可选）
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  // 关系
+  page                Page? // 1:1，每个用户一个页面
+  passwordResetTokens UserPasswordResetToken[]
+
+  // 索引
+  @@index([slug])
+  @@index([email])
+}
+
+// ============================================
+// 新增：页面配置（分离草稿和发布版本）
+// ============================================
+model Page {
+  id     String @id @default(cuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  slug String @unique // 页面 slug，用于 /u/[slug] 路由
+
+  // 草稿配置（编辑时保存）
+  draftConfig Json? // 完整的页面配置 JSON（可包含未完成的编辑）
+
+  // 发布配置（发布时从 draftConfig 复制过来）
+  publishedConfig Json? // 公开可见的配置（/u/[slug] 读取这个）
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId])
+  @@index([slug])
+}
+
+// ============================================
+// 用户密码重置 Token
+// ============================================
+model UserPasswordResetToken {
   id        String   @id @default(cuid())
   tokenHash String   @unique // 哈希后的 token（用于查找和验证）
-  userId    String   // AdminUser.id
-  user      AdminUser @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    String // User.id
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   expiresAt DateTime
   used      Boolean  @default(false)
   createdAt DateTime @default(now())
@@ -61,4 +121,3 @@ model PasswordResetToken {
   @@index([userId])
   @@index([expiresAt])
 }
-
