@@ -6,6 +6,7 @@
 
 - **前端**: Vercel (Next.js)
 - **数据库**: AWS RDS PostgreSQL
+- **文件存储**: AWS S3 或 Vercel Blob Storage（推荐，因为 Serverless 环境文件系统是只读的）
 
 ---
 
@@ -13,20 +14,16 @@
 
 ### 代码修改（最小改动）
 
-1. **API 路由 - 添加 runtime 配置**
+1. **API 路由 - 添加 runtime 配置** ✅ 已完成
 
-   - `app/api/admin/login/route.ts` - 添加 `export const runtime = "nodejs"`
-   - `app/api/admin/register/route.ts` - 添加 `export const runtime = "nodejs"`
-   - `app/api/admin/forgot-password/route.ts` - 添加 `export const runtime = "nodejs"`
-   - `app/api/admin/reset-password/route.ts` - 添加 `export const runtime = "nodejs"`
-   - `app/api/admin/me/route.ts` - 添加 `export const runtime = "nodejs"`（虽然不使用 Prisma，但使用 session，建议添加）
+   - 所有使用 Prisma 的 API 路由已添加 `export const runtime = "nodejs"`
 
 2. **Next.js 配置**
 
    - `next.config.ts` - 确保 Prisma 在构建时正确生成
 
 3. **构建脚本**
-   - `package.json` - 添加 `postinstall` 脚本用于 Prisma 生成
+   - `package.json` - 添加 `postinstall` 脚本用于 Prisma 生成（如果使用 Vercel）
 
 ### 配置文件（新建）
 
@@ -108,14 +105,6 @@
 - 考虑使用 AWS Secrets Manager 管理密码
 - 监控数据库访问日志
 
-**选项 B: 私有访问（更安全，但需要 VPN 或 AWS Lambda）**
-
-1. 将 RDS 放在私有子网
-2. 使用 AWS Lambda 作为数据库代理
-3. 或使用 AWS Systems Manager Session Manager 通过 SSH 隧道连接
-
-**推荐**：对于个人项目，选项 A 更简单，配合强密码和定期监控即可。
-
 #### 1.3 获取连接信息
 
 创建完成后，在 RDS 控制台找到：
@@ -150,13 +139,21 @@ npx prisma db pull  # 测试连接
 
 ### 阶段 2: 代码准备
 
-#### 2.1 修复 API 路由 runtime 配置
+#### 2.1 验证 API 路由 runtime 配置
 
-为所有使用 Prisma 的 API 路由添加 `runtime = "nodejs"`。
+所有使用 Prisma 的 API 路由已添加 `runtime = "nodejs"`。
 
-#### 2.2 更新 package.json
+#### 2.2 更新 package.json（可选）
 
-添加 `postinstall` 脚本，确保 Prisma Client 在 Vercel 构建时生成。
+如果需要，添加 `postinstall` 脚本：
+
+```json
+{
+  "scripts": {
+    "postinstall": "prisma generate"
+  }
+}
+```
 
 #### 2.3 验证 Prisma 配置
 
@@ -275,12 +272,6 @@ npx prisma migrate status
 - 成本低（$0.10/1000 封）
 - 需要验证域名
 
-**选项 D: Gmail SMTP**
-
-- 免费，但有限制
-- 需要应用专用密码
-- 不推荐用于生产环境
-
 #### 5.2 配置 SendGrid（示例）
 
 1. 注册 SendGrid 账号
@@ -296,6 +287,44 @@ npx prisma migrate status
 #### 5.3 验证邮件发送
 
 部署后，测试密码重置功能，确认邮件正常发送。
+
+---
+
+### 阶段 6: 文件存储配置（重要）
+
+**⚠️ 重要**：Vercel Serverless 环境的文件系统是只读的，上传的文件在函数执行结束后会丢失。
+
+#### 6.1 选项 A: 使用 Vercel Blob Storage（推荐）
+
+1. 安装 `@vercel/blob`：
+   ```bash
+   pnpm add @vercel/blob
+   ```
+
+2. 在 Vercel 项目设置中启用 Blob Storage
+
+3. 修改上传 API 使用 Blob Storage
+
+#### 6.2 选项 B: 使用 AWS S3
+
+1. 创建 S3 bucket
+2. 配置 IAM 用户和访问密钥
+3. 安装 AWS SDK：
+   ```bash
+   pnpm add @aws-sdk/client-s3
+   ```
+
+4. 修改上传 API 使用 S3
+
+#### 6.3 选项 C: 使用 Cloudinary
+
+1. 注册 Cloudinary 账号
+2. 安装 SDK：
+   ```bash
+   pnpm add cloudinary
+   ```
+
+3. 修改上传 API 使用 Cloudinary
 
 ---
 
@@ -336,6 +365,12 @@ npx prisma migrate status
 2. **域名验证**：使用自己的域名发送邮件（提高送达率）
 3. **SPF/DKIM 记录**：配置 DNS 记录以提高邮件送达率
 
+### 文件存储
+
+1. **Serverless 限制**：不能使用本地文件系统存储上传的文件
+2. **必须使用对象存储**：S3、Blob Storage、Cloudinary 等
+3. **图片优化**：考虑使用图片 CDN 服务
+
 ---
 
 ## 🧪 部署后验证清单
@@ -344,7 +379,10 @@ npx prisma migrate status
 - [ ] 数据库连接正常（可以登录/注册）
 - [ ] Session 功能正常（登录后可以访问 CMS）
 - [ ] 密码重置功能正常（可以发送和接收邮件）
-- [ ] 文件上传功能正常（Hero 图片上传）
+- [ ] 文件上传功能正常（图片上传到对象存储）
+- [ ] 页面配置编辑功能正常
+- [ ] 发布功能正常（配置可以发布）
+- [ ] 用户公开页面可以访问（`/u/[slug]`）
 - [ ] 所有 API 端点响应正常
 - [ ] 生产环境日志无错误
 
@@ -356,6 +394,7 @@ npx prisma migrate status
 - [AWS RDS 文档](https://docs.aws.amazon.com/rds/)
 - [Prisma 部署指南](https://www.prisma.io/docs/guides/deployment)
 - [SendGrid 文档](https://docs.sendgrid.com/)
+- [Vercel Blob Storage](https://vercel.com/docs/storage/vercel-blob)
 
 ---
 
@@ -377,3 +416,4 @@ npx prisma migrate status
 - 定期更新依赖包
 - 定期更新 Prisma 和数据库驱动
 - 定期检查安全更新
+

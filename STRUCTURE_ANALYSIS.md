@@ -1,4 +1,6 @@
-# 项目结构优化分析报告
+# 项目结构分析报告
+
+> **注意**：本文档记录了项目从单用户系统迁移到多用户系统的结构分析。当前项目已采用 Feature-Sliced Design 架构。
 
 ## A. 当前目录树与标注
 
@@ -655,3 +657,28 @@ vtuber-site/
 - 类型集中：domain 层定义基础类型，features 层扩展
 
 等待确认后开始执行迁移。
+
+---
+
+## F. 当前项目状态（2025-12-20）
+
+### 已完成迁移
+
+项目已成功迁移到 Feature-Sliced Design 架构，并实现了多用户系统：
+
+- ✅ 用户系统（User model）
+- ✅ 页面配置系统（PageConfig）
+- ✅ 用户公开页面（/u/[slug]）
+- ✅ CMS 编辑器
+- ✅ 密码重置功能
+
+### 当前架构
+
+项目采用 Feature-Sliced Design 架构：
+
+- `app/` - 路由层（页面组合）
+- `features/` - 功能域（自包含）
+- `domain/` - 业务领域层
+- `lib/` - 工具层
+
+详细结构请参考 `MIGRATION_SUMMARY.md`。
