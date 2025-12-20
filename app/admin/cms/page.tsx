@@ -180,13 +180,13 @@ export default function CMSPage() {
     setConfig({
       ...config,
       sections: config.sections.map((s) =>
-        s.id === heroSection.id
+        s.id === heroSection.id && s.type === 'hero'
           ? {
               ...s,
               props: {
                 ...heroSection.props,
                 slides: slides, // 保留所有 slides（包括可能的空值，保存时会过滤）
-              },
+              } as HeroSectionProps,
             }
           : s
       ),
