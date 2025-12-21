@@ -11,6 +11,32 @@ export const DEFAULT_PAGE_CONFIG: PageConfig = {
     type: "color",
     value: "#000000", // 默认黑色背景
   },
+  logo: {
+    // 默认不设置图片，显示文字 "ano"
+  },
+  socialLinks: [
+    {
+      id: "social-1",
+      name: "Twitter",
+      url: "https://twitter.com/example",
+      icon: "X",
+      enabled: true,
+    },
+    {
+      id: "social-2",
+      name: "YouTube",
+      url: "https://youtube.com/example",
+      icon: "YT",
+      enabled: true,
+    },
+    {
+      id: "social-3",
+      name: "GitHub",
+      url: "https://github.com/example",
+      icon: "GH",
+      enabled: true,
+    },
+  ],
   sections: [
     {
       id: "hero-1",

@@ -42,8 +42,8 @@ export default function AdminAuthPanel() {
         return;
       }
 
-      // ✅ 登录成功：跳 CMS
-      window.location.href = "/admin/cms";
+      // ✅ 登录成功：跳转到编辑目录
+      window.location.href = "/admin/dashboard";
     } catch (err) {
       setError("网络错误，请稍后再试");
       setLoading(false);

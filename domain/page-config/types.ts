@@ -45,12 +45,29 @@ export type SectionConfig =
   | { id: string; type: 'links'; props: LinksSectionProps; enabled: boolean; order: number }
   | { id: string; type: 'gallery'; props: GallerySectionProps; enabled: boolean; order: number };
 
+export type SocialLinkItem = {
+  id: string; // 唯一标识
+  name: string; // 显示名称（如 "Twitter"、"YouTube"）
+  url: string; // 链接地址
+  icon?: string; // 图标（emoji 或文字，如 "X"、"YT"、"GH"）
+  enabled: boolean; // 是否显示
+};
+
 export type PageConfig = {
   // 页面背景（全局）
   background: BackgroundConfig;
   
   // 所有 sections（按 order 排序后渲染）
   sections: SectionConfig[];
+  
+  // Logo 配置（左上角 ano 位置）
+  logo?: {
+    src?: string; // 图片路径，如果为空则显示文字 "ano"
+    alt?: string;
+  };
+  
+  // 社交链接配置（右上角）- 动态数组
+  socialLinks?: SocialLinkItem[];
   
   // 元数据（可选）
   meta?: {

@@ -23,7 +23,13 @@ export default function PageRenderer({ config }: { config: PageConfig }) {
 
   return (
     <main className="min-h-screen" style={backgroundStyle}>
-      {sortedSections.map((section) => renderSection(section))}
+      {sortedSections.map((section) => {
+        // 如果是 hero section，传递 pageConfig 以支持 logo 和 socialLinks
+        if (section.type === "hero") {
+          return renderSection(section, config);
+        }
+        return renderSection(section);
+      })}
     </main>
   );
 }

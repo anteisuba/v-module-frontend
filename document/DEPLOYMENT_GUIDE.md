@@ -134,36 +134,33 @@ NEXT_PUBLIC_BASE_URL=https://your-domain.com
 
 ## 📦 数据库配置
 
-### 使用 Vercel Postgres（推荐）
+### 推荐：使用 Supabase（免费且功能完整）
 
-1. **在 Vercel 创建数据库**
+**为什么推荐 Supabase？**
 
-   - 进入项目 → Storage → Create Database → Postgres
-   - 选择地区（建议选择靠近用户的地区）
-   - 创建数据库
+- ✅ 免费套餐：500MB 数据库 + 2GB 带宽
+- ✅ 功能完整：PostgreSQL 数据库，包含 Dashboard
+- ✅ 易于使用：5 分钟即可配置完成
+- ✅ 适合小型项目
 
-2. **获取连接字符串**
+**详细步骤请查看：** `document/DATABASE_SETUP.md`
 
-   - 在数据库页面找到 "Connection String"
-   - 复制 `DATABASE_URL`
+**快速步骤：**
 
-3. **运行迁移**
-   ```bash
-   # 本地运行迁移（使用生产数据库 URL）
-   DATABASE_URL="你的生产数据库URL" pnpm db:migrate
-   ```
-   或使用 Vercel CLI：
-   ```bash
-   vercel env pull .env.production
-   DATABASE_URL=$(grep DATABASE_URL .env.production | cut -d '=' -f2) pnpm db:migrate
-   ```
+1. 访问 [Supabase](https://supabase.com) 并创建项目
+2. 获取数据库连接字符串（Settings → Database → Connection string）
+3. 在 Vercel 环境变量中配置 `DATABASE_URL`
+4. 在本地运行迁移：`DATABASE_URL="你的Supabase连接字符串" pnpm db:migrate`
+5. 重新部署应用
 
-### 使用其他数据库服务
+### 其他选项
 
-- **Supabase**（免费套餐可用）
-- **Railway**（免费套餐可用）
-- **Neon**（免费套餐可用）
-- **AWS RDS**、**Google Cloud SQL** 等
+- **Vercel Postgres**：与 Vercel 集成最好，免费套餐 256MB
+- **Railway**：免费 $5 额度，适合小型项目
+- **Neon**：免费 0.5GB，基于 PostgreSQL
+- **AWS RDS**：**不推荐**小型项目使用（最小实例约 $15/月）
+
+详细对比和配置步骤请查看：`document/DATABASE_SETUP.md`
 
 ## ✅ 部署后检查清单
 

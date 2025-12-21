@@ -5,7 +5,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BackButton } from "@/components/ui";
-import type { PageConfig, HeroSectionProps } from "@/domain/page-config/types";
+import type { PageConfig, HeroSectionProps, SocialLinkItem } from "@/domain/page-config/types";
 import { DEFAULT_PAGE_CONFIG } from "@/domain/page-config/constants";
 
 export default function CMSPage() {
@@ -33,6 +33,7 @@ export default function CMSPage() {
       const userRes = await fetch("/api/user/me", { cache: "no-store" });
       if (!userRes.ok) {
         if (userRes.status === 401) {
+          // 未登录，重定向到登录页面（middleware 会处理，但客户端也做一次保护）
           router.push("/admin");
           return;
         }
@@ -326,11 +327,81 @@ export default function CMSPage() {
           </div>
         )}
 
-        {/* Hero Section 图片编辑 */}
+        {/* Hero Section 编辑 */}
         <div className="mb-8 rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
           <h2 className="mb-4 text-lg font-semibold text-black">
-            Hero Section - 顶部轮播图片（3张）
+            Hero Section - 顶部内容
           </h2>
+
+          {/* Title 和 Subtitle 编辑 */}
+          <div className="mb-6 space-y-4 rounded-lg border border-black/10 bg-white/70 p-4">
+            <div>
+              <label className="block text-sm font-medium text-black mb-2">
+                标题（Title）
+              </label>
+              <input
+                type="text"
+                value={heroSection?.props.title || ""}
+                onChange={(e) => {
+                  const heroSection = getHeroSection();
+                  if (!heroSection || heroSection.type !== 'hero') return;
+                  
+                  setConfig({
+                    ...config,
+                    sections: config.sections.map((s) =>
+                      s.id === heroSection.id && s.type === 'hero'
+                        ? {
+                            ...s,
+                            props: {
+                              ...s.props,
+                              title: e.target.value || undefined,
+                            },
+                          }
+                        : s
+                    ),
+                  });
+                }}
+                placeholder="例如：Welcome"
+                className="w-full rounded-lg border border-black/10 bg-white px-4 py-2 text-sm text-black"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-black mb-2">
+                副标题（Subtitle）
+              </label>
+              <input
+                type="text"
+                value={heroSection?.props.subtitle || ""}
+                onChange={(e) => {
+                  const heroSection = getHeroSection();
+                  if (!heroSection || heroSection.type !== 'hero') return;
+                  
+                  setConfig({
+                    ...config,
+                    sections: config.sections.map((s) =>
+                      s.id === heroSection.id && s.type === 'hero'
+                        ? {
+                            ...s,
+                            props: {
+                              ...s.props,
+                              subtitle: e.target.value || undefined,
+                            },
+                          }
+                        : s
+                    ),
+                  });
+                }}
+                placeholder="例如：VTuber Personal Page"
+                className="w-full rounded-lg border border-black/10 bg-white px-4 py-2 text-sm text-black"
+              />
+            </div>
+          </div>
+
+          {/* 图片编辑 */}
+          <div className="mb-4">
+            <h3 className="mb-4 text-base font-semibold text-black">
+              轮播图片（3张）
+            </h3>
 
           <div className="grid gap-6 md:grid-cols-3">
             {[0, 1, 2].map((index) => {
@@ -374,9 +445,13 @@ export default function CMSPage() {
                       disabled={isUploading || saving || publishing}
                       onChange={(e) => {
                         const file = e.target.files?.[0];
+                        const inputElement = e.currentTarget;
                         if (file) {
                           uploadImage(index, file);
-                          e.currentTarget.value = "";
+                          // 立即清理 input 值，允许重复选择同一文件
+                          if (inputElement) {
+                            inputElement.value = "";
+                          }
                         }
                       }}
                     />
@@ -403,6 +478,298 @@ export default function CMSPage() {
                 </div>
               );
             })}
+          </div>
+          </div>
+        </div>
+
+        {/* Logo 编辑（左上角 ano 位置） */}
+        <div className="mb-8 rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
+          <h2 className="mb-4 text-lg font-semibold text-black">Logo（左上角）</h2>
+          <div className="space-y-4">
+            <div>
+              <label className="block text-sm text-black/70 mb-2">
+                Logo 图片 URL（留空则显示文字 "ano"）
+              </label>
+              <div className="flex gap-4">
+                <input
+                  type="text"
+                  value={config.logo?.src || ""}
+                  onChange={(e) =>
+                    setConfig({
+                      ...config,
+                      logo: {
+                        ...config.logo,
+                        src: e.target.value || undefined,
+                        alt: config.logo?.alt || "Logo",
+                      },
+                    })
+                  }
+                  placeholder="/path/to/logo.png 或 https://example.com/logo.png"
+                  className="flex-1 rounded-lg border border-black/10 bg-white/70 px-4 py-2 text-sm text-black"
+                />
+                {/* Logo 预览 */}
+                <div className="h-14 w-14 rounded-sm bg-white/10 backdrop-blur flex items-center justify-center border border-white/15 overflow-hidden flex-shrink-0">
+                  {config.logo?.src ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={config.logo.src}
+                      alt={config.logo.alt || "Logo"}
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <span className="text-white text-xs tracking-[0.25em]">ano</span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div>
+              <label className="block text-sm text-black/70 mb-2">上传 Logo 图片</label>
+              <input
+                type="file"
+                accept="image/*"
+                className="block w-full text-xs text-black/80 file:mr-3 file:rounded-lg file:border-0 file:bg-black file:px-3 file:py-2 file:text-xs file:text-white hover:file:bg-black/90"
+                disabled={saving || publishing}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  const inputElement = e.currentTarget;
+                  if (file) {
+                    try {
+                      const formData = new FormData();
+                      formData.append("file", file);
+                      const res = await fetch("/api/page/me/upload", {
+                        method: "POST",
+                        body: formData,
+                      });
+                      const data = await res.json();
+                      if (res.ok) {
+                        setConfig({
+                          ...config,
+                          logo: {
+                            ...config.logo,
+                            src: data.src,
+                            alt: config.logo?.alt || "Logo",
+                          },
+                        });
+                        toastOk("Logo 上传成功");
+                      } else {
+                        setError(data.error || "上传失败");
+                      }
+                    } catch (err) {
+                      setError("上传失败");
+                    } finally {
+                      // 在 finally 中清理，并检查 inputElement 是否存在
+                      if (inputElement) {
+                        inputElement.value = "";
+                      }
+                    }
+                  }
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* 社交链接编辑（右上角） */}
+        <div className="mb-8 rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-black">社交链接（右上角）</h2>
+            <button
+              onClick={() => {
+                const newLink: SocialLinkItem = {
+                  id: `social-${Date.now()}`,
+                  name: "新链接",
+                  url: "",
+                  icon: "",
+                  enabled: true,
+                };
+                setConfig({
+                  ...config,
+                  socialLinks: [...(config.socialLinks || []), newLink],
+                });
+              }}
+              className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/90"
+            >
+              + 新增链接
+            </button>
+          </div>
+          <div className="space-y-4">
+            {(config.socialLinks || []).map((link, index) => (
+              <div
+                key={link.id}
+                className="rounded-lg border border-black/10 bg-white/70 p-4"
+              >
+                <div className="mb-4 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs text-black/50">#{index + 1}</span>
+                    <label className="flex items-center gap-2 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={link.enabled}
+                        onChange={(e) => {
+                          const updated = [...(config.socialLinks || [])];
+                          updated[index] = { ...link, enabled: e.target.checked };
+                          setConfig({
+                            ...config,
+                            socialLinks: updated,
+                          });
+                        }}
+                        className="toggle toggle-sm"
+                      />
+                      <span className="text-xs text-black/70">显示</span>
+                    </label>
+                  </div>
+                  <button
+                    onClick={() => {
+                      const updated = (config.socialLinks || []).filter(
+                        (_, i) => i !== index
+                      );
+                      setConfig({
+                        ...config,
+                        socialLinks: updated,
+                      });
+                    }}
+                    className="rounded-lg border border-red-300 bg-red-50 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-100"
+                  >
+                    删除
+                  </button>
+                </div>
+
+                <div className="space-y-3">
+                  {/* 名称 */}
+                  <div>
+                    <label className="block text-xs text-black/70 mb-1">名称</label>
+                    <input
+                      type="text"
+                      value={link.name}
+                      onChange={(e) => {
+                        const updated = [...(config.socialLinks || [])];
+                        updated[index] = { ...link, name: e.target.value };
+                        setConfig({
+                          ...config,
+                          socialLinks: updated,
+                        });
+                      }}
+                      placeholder="例如：Twitter、YouTube、GitHub"
+                      className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black"
+                    />
+                  </div>
+
+                  {/* 链接 */}
+                  <div>
+                    <label className="block text-xs text-black/70 mb-1">链接 URL</label>
+                    <input
+                      type="text"
+                      value={link.url}
+                      onChange={(e) => {
+                        const updated = [...(config.socialLinks || [])];
+                        updated[index] = { ...link, url: e.target.value };
+                        setConfig({
+                          ...config,
+                          socialLinks: updated,
+                        });
+                      }}
+                      placeholder="https://example.com"
+                      className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black"
+                    />
+                  </div>
+
+                  {/* 图标 */}
+                  <div>
+                    <label className="block text-xs text-black/70 mb-1">
+                      图标（可选：文字如 "X"、"YT"，emoji 如 🐦，或图片 URL）
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={link.icon || ""}
+                        onChange={(e) => {
+                          const updated = [...(config.socialLinks || [])];
+                          updated[index] = { ...link, icon: e.target.value || undefined };
+                          setConfig({
+                            ...config,
+                            socialLinks: updated,
+                          });
+                        }}
+                        placeholder="X、YT、GH 或 🐦、📺、💻 或 /icon.png"
+                        className="flex-1 rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black"
+                      />
+                      {/* 图标预览 */}
+                      {link.icon && (
+                        <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-black/10 bg-white/70">
+                          {link.icon.match(/\.(jpg|jpeg|png|gif|svg|webp|ico)$/i) || 
+                           link.icon.startsWith("http://") || 
+                           link.icon.startsWith("https://") ||
+                           link.icon.startsWith("/") ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={link.icon}
+                              alt="icon preview"
+                              className="h-6 w-6 object-contain"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display = "none";
+                              }}
+                            />
+                          ) : (
+                            <span className="text-lg">{link.icon}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    {/* 上传图标图片 */}
+                    <div className="mt-2">
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="block w-full text-xs text-black/80 file:mr-3 file:rounded-lg file:border-0 file:bg-black/80 file:px-3 file:py-1.5 file:text-xs file:text-white hover:file:bg-black/90"
+                        disabled={saving || publishing}
+                        onChange={async (e) => {
+                          const file = e.target.files?.[0];
+                          const inputElement = e.currentTarget;
+                          if (file) {
+                            try {
+                              const formData = new FormData();
+                              formData.append("file", file);
+                              const res = await fetch("/api/page/me/upload", {
+                                method: "POST",
+                                body: formData,
+                              });
+                              const data = await res.json();
+                              if (res.ok) {
+                                const updated = [...(config.socialLinks || [])];
+                                updated[index] = { ...link, icon: data.src };
+                                setConfig({
+                                  ...config,
+                                  socialLinks: updated,
+                                });
+                                toastOk("图标上传成功");
+                              } else {
+                                setError(data.error || "上传失败");
+                              }
+                            } catch (err) {
+                              setError("上传失败");
+                            } finally {
+                              // 在 finally 中清理，并检查 inputElement 是否存在
+                              if (inputElement) {
+                                inputElement.value = "";
+                              }
+                            }
+                          }
+                        }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+
+            {(!config.socialLinks || config.socialLinks.length === 0) && (
+              <div className="rounded-lg border border-dashed border-black/20 bg-white/50 p-8 text-center text-sm text-black/50">
+                暂无社交链接，点击上方"新增链接"按钮添加
+              </div>
+            )}
           </div>
         </div>
 

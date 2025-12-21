@@ -11,10 +11,20 @@ import { useHeroMenu } from "../hooks/useHeroMenu";
 import type { HeroSlide } from "../types";
 import { FALLBACK_SLIDES } from "../constants";
 
+import type { SocialLinkItem } from "@/domain/page-config/types";
+
 export default function HeroSection({
   initialSlides,
+  logo,
+  socialLinks,
+  title,
+  subtitle,
 }: {
   initialSlides?: HeroSlide[];
+  logo?: { src?: string; alt?: string };
+  socialLinks?: SocialLinkItem[];
+  title?: string;
+  subtitle?: string;
 }) {
   const menu = useHeroMenu();
 
@@ -60,7 +70,26 @@ export default function HeroSection({
           imageHeightVh={HERO_IMAGE_HEIGHT_VH}
         />
 
-        <HeroHeader onMenuClick={menu.toggleMenu} />
+        <HeroHeader 
+          onMenuClick={menu.toggleMenu}
+          logo={logo}
+          socialLinks={socialLinks}
+        />
+
+        {/* Title 和 Subtitle - 菜单打开时隐藏 */}
+        {title && (
+          <div 
+            className={[
+              "absolute top-20 left-0 right-0 z-[5] text-center transition-opacity duration-300",
+              menu.open ? "opacity-0 pointer-events-none" : "opacity-100"
+            ].join(" ")}
+          >
+            <h1 className="text-4xl font-bold text-white drop-shadow-lg">{title}</h1>
+            {subtitle && (
+              <p className="mt-2 text-xl text-white/80 drop-shadow-md">{subtitle}</p>
+            )}
+          </div>
+        )}
 
         <div className="absolute inset-0 flex items-center justify-center text-white">
           <span className="text-2xl tracking-[0.4em] opacity-80">HERO</span>

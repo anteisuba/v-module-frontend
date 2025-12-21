@@ -77,9 +77,24 @@ const SectionConfigSchema: z.ZodType<any> = z.discriminatedUnion("type", [
   }),
 ]);
 
+const SocialLinkItemSchema = z.object({
+  id: z.string().min(1),
+  name: z.string().min(1),
+  url: z.string().url(),
+  icon: z.string().optional(),
+  enabled: z.boolean(),
+});
+
 export const PageConfigSchema = z.object({
   background: BackgroundConfigSchema,
   sections: z.array(SectionConfigSchema).max(20), // 最多 20 个 sections
+  logo: z
+    .object({
+      src: z.string().optional(),
+      alt: z.string().optional(),
+    })
+    .optional(),
+  socialLinks: z.array(SocialLinkItemSchema).max(10).optional(), // 最多 10 个社交链接
   meta: z
     .object({
       title: z.string().optional(),

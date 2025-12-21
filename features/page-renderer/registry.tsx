@@ -1,34 +1,53 @@
 // features/page-renderer/registry.tsx
 
-import type { SectionConfig } from "@/domain/page-config/types";
+import type { SectionConfig, PageConfig } from "@/domain/page-config/types";
 import HeroSectionRenderer from "./components/renderers/HeroSectionRenderer";
 import LinksSectionRenderer from "./components/renderers/LinksSectionRenderer";
 import GallerySectionRenderer from "./components/renderers/GallerySectionRenderer";
 
-// 组件注册表：type -> React Component
-export const SECTION_RENDERERS: Record<
-  SectionConfig["type"],
-  React.ComponentType<{ props: any; id: string }>
-> = {
-  hero: HeroSectionRenderer,
-  links: LinksSectionRenderer,
-  gallery: GallerySectionRenderer,
-};
-
 // 类型安全的渲染函数
-export function renderSection(section: SectionConfig): React.ReactNode {
-  const RendererComponent = SECTION_RENDERERS[section.type];
-  if (!RendererComponent) {
-    console.warn(`Unknown section type: ${section.type}`);
-    return null;
-  }
-
+export function renderSection(section: SectionConfig, pageConfig?: PageConfig): React.ReactNode {
   if (!section.enabled) {
     return null; // 跳过禁用的 section
   }
 
-  return (
-    <RendererComponent key={section.id} id={section.id} props={section.props} />
-  );
+  // Hero section 需要传递 pageConfig
+  if (section.type === "hero") {
+    return (
+      <HeroSectionRenderer
+        key={section.id}
+        id={section.id}
+        props={section.props}
+        pageConfig={pageConfig}
+      />
+    );
+  }
+
+  // Links section
+  if (section.type === "links") {
+    return (
+      <LinksSectionRenderer
+        key={section.id}
+        id={section.id}
+        props={section.props}
+      />
+    );
+  }
+
+  // Gallery section
+  if (section.type === "gallery") {
+    return (
+      <GallerySectionRenderer
+        key={section.id}
+        id={section.id}
+        props={section.props}
+      />
+    );
+  }
+
+  // TypeScript exhaustive check
+  const _exhaustive: never = section;
+  console.warn(`Unknown section type: ${(_exhaustive as any).type}`);
+  return null;
 }
 

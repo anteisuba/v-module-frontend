@@ -1,16 +1,16 @@
 // scripts/clear-rate-limit.ts
-// 清理指定邮箱的速率限制（删除 15 分钟内的重置请求记录）
+// 清理指定邮箱的速率限制（删除 1 分钟内的重置请求记录）
 
 import { prisma } from "../lib/prisma";
 
 async function clearRateLimit(email: string) {
-  const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+  const oneMinuteAgo = new Date(Date.now() - 1 * 60 * 1000);
 
-  // 查找 15 分钟内的请求记录
+  // 查找 1 分钟内的请求记录
   const recentRequests = await prisma.userPasswordResetToken.findMany({
     where: {
       user: { email },
-      createdAt: { gte: fifteenMinutesAgo },
+      createdAt: { gte: oneMinuteAgo },
     },
   });
 
@@ -25,7 +25,7 @@ async function clearRateLimit(email: string) {
   const result = await prisma.userPasswordResetToken.deleteMany({
     where: {
       user: { email },
-      createdAt: { gte: fifteenMinutesAgo },
+      createdAt: { gte: oneMinuteAgo },
     },
   });
 

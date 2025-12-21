@@ -29,18 +29,18 @@ export function verifyToken(token: string, storedHash: string): boolean {
 }
 
 /**
- * 检查速率限制：同一邮箱在 15 分钟内只能请求一次重置
- * 
+ * 检查速率限制：同一邮箱在 1 分钟内只能请求一次重置
+ *
  * @param email 用户邮箱
  * @returns true 如果允许请求，false 如果被限制
  */
 export async function checkRateLimitForUser(email: string): Promise<boolean> {
-  const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
+  const oneMinuteAgo = new Date(Date.now() - 1 * 60 * 1000);
 
   const recentRequest = await prisma.userPasswordResetToken.findFirst({
     where: {
       user: { email },
-      createdAt: { gte: fifteenMinutesAgo },
+      createdAt: { gte: oneMinuteAgo },
       used: false, // 只检查未使用的 token
     },
     orderBy: { createdAt: "desc" },
@@ -58,4 +58,3 @@ export async function sendPasswordResetEmail(
 ): Promise<void> {
   await sendEmail(email, token);
 }
-

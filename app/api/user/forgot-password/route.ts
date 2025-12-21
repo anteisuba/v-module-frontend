@@ -33,11 +33,11 @@ export async function POST(req: Request) {
     }, { status: 404 });
   }
 
-  // 检查速率限制（15 分钟内只能请求一次）
+  // 检查速率限制（1 分钟内只能请求一次）
   const canRequest = await checkRateLimitForUser(user.email);
   if (!canRequest) {
     return NextResponse.json({
-      message: "请求过于频繁，请 15 分钟后再试",
+      message: "请求过于频繁，请 1 分钟后再试",
     }, { status: 429 });
   }
 
