@@ -5,18 +5,25 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BackButton } from "@/components/ui";
-import type { PageConfig, HeroSectionProps, SocialLinkItem } from "@/domain/page-config/types";
+import { pageApi } from "@/lib/api";
+import { ApiError, NetworkError } from "@/lib/api/errors";
+import { useUser } from "@/lib/context/UserContext";
+import type {
+  PageConfig,
+  HeroSectionProps,
+  SocialLinkItem,
+} from "@/domain/page-config/types";
 import { DEFAULT_PAGE_CONFIG } from "@/domain/page-config/constants";
 
 export default function CMSPage() {
   const router = useRouter();
+  const { user } = useUser();
   const [config, setConfig] = useState<PageConfig>(DEFAULT_PAGE_CONFIG);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
-  const [userSlug, setUserSlug] = useState<string | null>(null);
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
 
   function toastOk(msg: string) {
@@ -24,43 +31,24 @@ export default function CMSPage() {
     setTimeout(() => setOk(null), 1800);
   }
 
-  // 获取当前用户信息和草稿配置
+  // 获取草稿配置
   async function loadConfig() {
     setError(null);
     setLoading(true);
     try {
-      // 先获取用户信息（用于 slug）
-      const userRes = await fetch("/api/user/me", { cache: "no-store" });
-      if (!userRes.ok) {
-        if (userRes.status === 401) {
-          // 未登录，重定向到登录页面（middleware 会处理，但客户端也做一次保护）
-          router.push("/admin");
-          return;
-        }
-        throw new Error("获取用户信息失败");
+      const draftConfig = await pageApi.getDraftConfig();
+      if (draftConfig) {
+        setConfig(draftConfig);
+      } else {
+        setConfig(DEFAULT_PAGE_CONFIG);
       }
-      const userData = await userRes.json();
-      setUserSlug(userData.user?.slug || null);
-
-      // 获取草稿配置
-      const configRes = await fetch("/api/page/me", {
-        method: "GET",
-        cache: "no-store",
-      });
-
-      if (configRes.ok) {
-        const data = await configRes.json();
-        if (data.draftConfig) {
-          setConfig(data.draftConfig);
-        }
-      } else if (configRes.status === 404) {
+    } catch (e) {
+      if (e instanceof ApiError && e.status === 404) {
         // 如果还没有配置，使用默认配置
         setConfig(DEFAULT_PAGE_CONFIG);
       } else {
-        throw new Error("读取配置失败");
+        setError(e instanceof Error ? e.message : "加载失败");
       }
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "加载失败");
     } finally {
       setLoading(false);
     }
@@ -80,7 +68,7 @@ export default function CMSPage() {
           const validSlides = section.props.slides.filter(
             (slide) => slide.src && slide.src.trim().length > 0
           );
-          
+
           return {
             ...section,
             props: {
@@ -101,26 +89,23 @@ export default function CMSPage() {
       // 清理配置数据
       const cleanedConfig = cleanConfig(config);
 
-      const res = await fetch("/api/page/me", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ draftConfig: cleanedConfig }),
-      });
-
-      const data = await res.json().catch(() => ({}));
-      
-      if (!res.ok) {
-        const errorMsg = data.error || data.message || `保存失败 (${res.status})`;
-        const details = data.details ? `\n详情: ${JSON.stringify(data.details, null, 2)}` : "";
-        throw new Error(errorMsg + details);
-      }
+      await pageApi.updateDraftConfig(cleanedConfig);
 
       toastOk("草稿已保存");
       // 更新本地配置为清理后的版本
       setConfig(cleanedConfig);
     } catch (e) {
       console.error("Save draft error:", e);
-      setError(e instanceof Error ? e.message : "保存失败");
+      if (e instanceof ApiError) {
+        const details = e.details
+          ? `\n详情: ${JSON.stringify(e.details, null, 2)}`
+          : "";
+        setError(e.message + details);
+      } else if (e instanceof NetworkError) {
+        setError(e.message);
+      } else {
+        setError(e instanceof Error ? e.message : "保存失败");
+      }
     } finally {
       setSaving(false);
     }
@@ -134,23 +119,21 @@ export default function CMSPage() {
       await saveDraft();
 
       // 然后发布
-      const res = await fetch("/api/page/me/publish", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-      });
-
-      const data = await res.json().catch(() => ({}));
-      
-      if (!res.ok) {
-        const errorMsg = data.error || data.message || `发布失败 (${res.status})`;
-        const details = data.details ? `\n详情: ${JSON.stringify(data.details, null, 2)}` : "";
-        throw new Error(errorMsg + details);
-      }
+      await pageApi.publish();
 
       toastOk("已发布！");
     } catch (e) {
       console.error("Publish error:", e);
-      setError(e instanceof Error ? e.message : "发布失败");
+      if (e instanceof ApiError) {
+        const details = e.details
+          ? `\n详情: ${JSON.stringify(e.details, null, 2)}`
+          : "";
+        setError(e.message + details);
+      } else if (e instanceof NetworkError) {
+        setError(e.message);
+      } else {
+        setError(e instanceof Error ? e.message : "发布失败");
+      }
     } finally {
       setPublishing(false);
     }
@@ -164,27 +147,27 @@ export default function CMSPage() {
   // 更新 hero section 的图片
   function updateHeroSlide(index: number, src: string, alt?: string) {
     const heroSection = getHeroSection();
-    if (!heroSection || heroSection.type !== 'hero') return;
+    if (!heroSection || heroSection.type !== "hero") return;
 
     const slides = [...(heroSection.props.slides || [])];
-    
+
     // 确保至少有 index+1 个元素
     while (slides.length <= index) {
       slides.push({ src: "", alt: "" });
     }
 
-    slides[index] = { 
-      src: src.trim(), 
-      alt: alt?.trim() || slides[index]?.alt?.trim() || "" 
+    slides[index] = {
+      src: src.trim(),
+      alt: alt?.trim() || slides[index]?.alt?.trim() || "",
     };
 
     setConfig({
       ...config,
       sections: config.sections.map((s) => {
-        if (s.id === heroSection.id && s.type === 'hero') {
+        if (s.id === heroSection.id && s.type === "hero") {
           return {
             ...s,
-            type: 'hero' as const,
+            type: "hero" as const,
             props: {
               ...heroSection.props,
               slides: slides, // 保留所有 slides（包括可能的空值，保存时会过滤）
@@ -201,23 +184,15 @@ export default function CMSPage() {
     setUploadingIndex(index);
     setError(null);
     try {
-      const formData = new FormData();
-      formData.append("file", file);
-
-      const res = await fetch("/api/page/me/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) {
-        throw new Error(data.error || "上传失败");
-      }
-
-      updateHeroSlide(index, data.src);
+      const result = await pageApi.uploadImage(file);
+      updateHeroSlide(index, result.src);
       toastOk(`图片 ${index + 1} 上传成功`);
     } catch (e) {
-      setError(e instanceof Error ? e.message : "上传失败");
+      if (e instanceof ApiError || e instanceof NetworkError) {
+        setError(e.message);
+      } else {
+        setError(e instanceof Error ? e.message : "上传失败");
+      }
     } finally {
       setUploadingIndex(null);
     }
@@ -248,12 +223,12 @@ export default function CMSPage() {
 
   const heroSection = getHeroSection();
   let heroSlides = heroSection?.props.slides || [];
-  
+
   // 确保至少有 3 个位置（用于 UI 显示），但允许空的 src
   while (heroSlides.length < 3) {
     heroSlides.push({ src: "", alt: "" });
   }
-  
+
   // 限制为最多 3 张
   heroSlides = heroSlides.slice(0, 3);
 
@@ -276,21 +251,19 @@ export default function CMSPage() {
         <div className="mb-6 flex items-center justify-between gap-4">
           <div>
             <h1 className="text-2xl font-semibold text-black">页面编辑器</h1>
-            <p className="mt-2 text-sm text-black/70">
-              编辑你的个人页面配置
-            </p>
+            <p className="mt-2 text-sm text-black/70">编辑你的个人页面配置</p>
           </div>
 
           <div className="flex items-center gap-3">
             {/* 预览按钮 */}
-            {userSlug && (
+            {user?.slug && (
               <a
-                href={`/u/${userSlug}`}
+                href={`/u/${user.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="rounded-xl border border-black/20 bg-white/70 px-4 py-2 text-sm font-medium text-black hover:bg-white/80"
               >
-                预览页面
+                打开页面
               </a>
             )}
 
@@ -344,12 +317,12 @@ export default function CMSPage() {
                 value={heroSection?.props.title || ""}
                 onChange={(e) => {
                   const heroSection = getHeroSection();
-                  if (!heroSection || heroSection.type !== 'hero') return;
-                  
+                  if (!heroSection || heroSection.type !== "hero") return;
+
                   setConfig({
                     ...config,
                     sections: config.sections.map((s) =>
-                      s.id === heroSection.id && s.type === 'hero'
+                      s.id === heroSection.id && s.type === "hero"
                         ? {
                             ...s,
                             props: {
@@ -374,12 +347,12 @@ export default function CMSPage() {
                 value={heroSection?.props.subtitle || ""}
                 onChange={(e) => {
                   const heroSection = getHeroSection();
-                  if (!heroSection || heroSection.type !== 'hero') return;
-                  
+                  if (!heroSection || heroSection.type !== "hero") return;
+
                   setConfig({
                     ...config,
                     sections: config.sections.map((s) =>
-                      s.id === heroSection.id && s.type === 'hero'
+                      s.id === heroSection.id && s.type === "hero"
                         ? {
                             ...s,
                             props: {
@@ -403,88 +376,92 @@ export default function CMSPage() {
               轮播图片（3张）
             </h3>
 
-          <div className="grid gap-6 md:grid-cols-3">
-            {[0, 1, 2].map((index) => {
-              const slide = heroSlides[index];
-              const isUploading = uploadingIndex === index;
+            <div className="grid gap-6 md:grid-cols-3">
+              {[0, 1, 2].map((index) => {
+                const slide = heroSlides[index];
+                const isUploading = uploadingIndex === index;
 
-              return (
-                <div
-                  key={index}
-                  className="rounded-xl border border-black/10 bg-white/70 p-4"
-                >
-                  <div className="mb-3 text-sm font-medium text-black">
-                    图片 {index + 1}
-                  </div>
+                return (
+                  <div
+                    key={index}
+                    className="rounded-xl border border-black/10 bg-white/70 p-4"
+                  >
+                    <div className="mb-3 text-sm font-medium text-black">
+                      图片 {index + 1}
+                    </div>
 
-                  {/* 预览 */}
-                  <div className="mb-4 aspect-[4/3] overflow-hidden rounded-lg border border-black/10 bg-black/5">
-                    {slide?.src ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={slide.src}
-                        alt={slide.alt || `Hero ${index + 1}`}
-                        className="h-full w-full object-cover"
+                    {/* 预览 */}
+                    <div className="mb-4 aspect-[4/3] overflow-hidden rounded-lg border border-black/10 bg-black/5">
+                      {slide?.src ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={slide.src}
+                          alt={slide.alt || `Hero ${index + 1}`}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full items-center justify-center text-xs text-black/50">
+                          暂无图片
+                        </div>
+                      )}
+                    </div>
+
+                    {/* 上传文件 */}
+                    <div className="mb-3">
+                      <label className="block text-xs text-black/70">
+                        上传本地图片
+                      </label>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="mt-2 block w-full text-xs text-black/80 file:mr-3 file:rounded-lg file:border-0 file:bg-black file:px-3 file:py-2 file:text-xs file:text-white hover:file:bg-black/90"
+                        disabled={isUploading || saving || publishing}
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          const inputElement = e.currentTarget;
+                          if (file) {
+                            uploadImage(index, file);
+                            // 立即清理 input 值，允许重复选择同一文件
+                            if (inputElement) {
+                              inputElement.value = "";
+                            }
+                          }
+                        }}
                       />
-                    ) : (
-                      <div className="flex h-full items-center justify-center text-xs text-black/50">
-                        暂无图片
+                    </div>
+
+                    {/* 或使用图片链接 */}
+                    <div>
+                      <label className="block text-xs text-black/70">
+                        或输入图片链接
+                      </label>
+                      <input
+                        type="text"
+                        value={slide?.src || ""}
+                        onChange={(e) => useImageUrl(index, e.target.value)}
+                        placeholder="https://example.com/image.jpg 或 /path/to/image.jpg"
+                        className="mt-2 w-full rounded-lg border border-black/10 bg-white/70 px-3 py-2 text-xs text-black placeholder:text-black/30"
+                        disabled={isUploading || saving || publishing}
+                      />
+                    </div>
+
+                    {isUploading && (
+                      <div className="mt-2 text-xs text-black/60">
+                        上传中...
                       </div>
                     )}
                   </div>
-
-                  {/* 上传文件 */}
-                  <div className="mb-3">
-                    <label className="block text-xs text-black/70">
-                      上传本地图片
-                    </label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="mt-2 block w-full text-xs text-black/80 file:mr-3 file:rounded-lg file:border-0 file:bg-black file:px-3 file:py-2 file:text-xs file:text-white hover:file:bg-black/90"
-                      disabled={isUploading || saving || publishing}
-                      onChange={(e) => {
-                        const file = e.target.files?.[0];
-                        const inputElement = e.currentTarget;
-                        if (file) {
-                          uploadImage(index, file);
-                          // 立即清理 input 值，允许重复选择同一文件
-                          if (inputElement) {
-                            inputElement.value = "";
-                          }
-                        }
-                      }}
-                    />
-                  </div>
-
-                  {/* 或使用图片链接 */}
-                  <div>
-                    <label className="block text-xs text-black/70">
-                      或输入图片链接
-                    </label>
-                    <input
-                      type="text"
-                      value={slide?.src || ""}
-                      onChange={(e) => useImageUrl(index, e.target.value)}
-                      placeholder="https://example.com/image.jpg 或 /path/to/image.jpg"
-                      className="mt-2 w-full rounded-lg border border-black/10 bg-white/70 px-3 py-2 text-xs text-black placeholder:text-black/30"
-                      disabled={isUploading || saving || publishing}
-                    />
-                  </div>
-
-                  {isUploading && (
-                    <div className="mt-2 text-xs text-black/60">上传中...</div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
           </div>
         </div>
 
         {/* Logo 编辑（左上角 ano 位置） */}
         <div className="mb-8 rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
-          <h2 className="mb-4 text-lg font-semibold text-black">Logo（左上角）</h2>
+          <h2 className="mb-4 text-lg font-semibold text-black">
+            Logo（左上角）
+          </h2>
           <div className="space-y-4">
             <div>
               <label className="block text-sm text-black/70 mb-2">
@@ -520,13 +497,17 @@ export default function CMSPage() {
                       }}
                     />
                   ) : (
-                    <span className="text-white text-xs tracking-[0.25em]">ano</span>
+                    <span className="text-white text-xs tracking-[0.25em]">
+                      ano
+                    </span>
                   )}
                 </div>
               </div>
             </div>
             <div>
-              <label className="block text-sm text-black/70 mb-2">上传 Logo 图片</label>
+              <label className="block text-sm text-black/70 mb-2">
+                上传 Logo 图片
+              </label>
               <input
                 type="file"
                 accept="image/*"
@@ -537,28 +518,25 @@ export default function CMSPage() {
                   const inputElement = e.currentTarget;
                   if (file) {
                     try {
-                      const formData = new FormData();
-                      formData.append("file", file);
-                      const res = await fetch("/api/page/me/upload", {
-                        method: "POST",
-                        body: formData,
+                      const result = await pageApi.uploadImage(file);
+                      setConfig({
+                        ...config,
+                        logo: {
+                          ...config.logo,
+                          src: result.src,
+                          alt: config.logo?.alt || "Logo",
+                        },
                       });
-                      const data = await res.json();
-                      if (res.ok) {
-                        setConfig({
-                          ...config,
-                          logo: {
-                            ...config.logo,
-                            src: data.src,
-                            alt: config.logo?.alt || "Logo",
-                          },
-                        });
-                        toastOk("Logo 上传成功");
-                      } else {
-                        setError(data.error || "上传失败");
-                      }
+                      toastOk("Logo 上传成功");
                     } catch (err) {
-                      setError("上传失败");
+                      if (
+                        err instanceof ApiError ||
+                        err instanceof NetworkError
+                      ) {
+                        setError(err.message);
+                      } else {
+                        setError("上传失败");
+                      }
                     } finally {
                       // 在 finally 中清理，并检查 inputElement 是否存在
                       if (inputElement) {
@@ -575,7 +553,9 @@ export default function CMSPage() {
         {/* 社交链接编辑（右上角） */}
         <div className="mb-8 rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-black">社交链接（右上角）</h2>
+            <h2 className="text-lg font-semibold text-black">
+              社交链接（右上角）
+            </h2>
             <button
               onClick={() => {
                 const newLink: SocialLinkItem = {
@@ -610,7 +590,10 @@ export default function CMSPage() {
                         checked={link.enabled}
                         onChange={(e) => {
                           const updated = [...(config.socialLinks || [])];
-                          updated[index] = { ...link, enabled: e.target.checked };
+                          updated[index] = {
+                            ...link,
+                            enabled: e.target.checked,
+                          };
                           setConfig({
                             ...config,
                             socialLinks: updated,
@@ -640,7 +623,9 @@ export default function CMSPage() {
                 <div className="space-y-3">
                   {/* 名称 */}
                   <div>
-                    <label className="block text-xs text-black/70 mb-1">名称</label>
+                    <label className="block text-xs text-black/70 mb-1">
+                      名称
+                    </label>
                     <input
                       type="text"
                       value={link.name}
@@ -659,7 +644,9 @@ export default function CMSPage() {
 
                   {/* 链接 */}
                   <div>
-                    <label className="block text-xs text-black/70 mb-1">链接 URL</label>
+                    <label className="block text-xs text-black/70 mb-1">
+                      链接 URL
+                    </label>
                     <input
                       type="text"
                       value={link.url}
@@ -687,7 +674,10 @@ export default function CMSPage() {
                         value={link.icon || ""}
                         onChange={(e) => {
                           const updated = [...(config.socialLinks || [])];
-                          updated[index] = { ...link, icon: e.target.value || undefined };
+                          updated[index] = {
+                            ...link,
+                            icon: e.target.value || undefined,
+                          };
                           setConfig({
                             ...config,
                             socialLinks: updated,
@@ -699,17 +689,20 @@ export default function CMSPage() {
                       {/* 图标预览 */}
                       {link.icon && (
                         <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-black/10 bg-white/70">
-                          {link.icon.match(/\.(jpg|jpeg|png|gif|svg|webp|ico)$/i) || 
-                           link.icon.startsWith("http://") || 
-                           link.icon.startsWith("https://") ||
-                           link.icon.startsWith("/") ? (
+                          {link.icon.match(
+                            /\.(jpg|jpeg|png|gif|svg|webp|ico)$/i
+                          ) ||
+                          link.icon.startsWith("http://") ||
+                          link.icon.startsWith("https://") ||
+                          link.icon.startsWith("/") ? (
                             // eslint-disable-next-line @next/next/no-img-element
                             <img
                               src={link.icon}
                               alt="icon preview"
                               className="h-6 w-6 object-contain"
                               onError={(e) => {
-                                (e.target as HTMLImageElement).style.display = "none";
+                                (e.target as HTMLImageElement).style.display =
+                                  "none";
                               }}
                             />
                           ) : (
@@ -730,26 +723,23 @@ export default function CMSPage() {
                           const inputElement = e.currentTarget;
                           if (file) {
                             try {
-                              const formData = new FormData();
-                              formData.append("file", file);
-                              const res = await fetch("/api/page/me/upload", {
-                                method: "POST",
-                                body: formData,
+                              const result = await pageApi.uploadImage(file);
+                              const updated = [...(config.socialLinks || [])];
+                              updated[index] = { ...link, icon: result.src };
+                              setConfig({
+                                ...config,
+                                socialLinks: updated,
                               });
-                              const data = await res.json();
-                              if (res.ok) {
-                                const updated = [...(config.socialLinks || [])];
-                                updated[index] = { ...link, icon: data.src };
-                                setConfig({
-                                  ...config,
-                                  socialLinks: updated,
-                                });
-                                toastOk("图标上传成功");
-                              } else {
-                                setError(data.error || "上传失败");
-                              }
+                              toastOk("图标上传成功");
                             } catch (err) {
-                              setError("上传失败");
+                              if (
+                                err instanceof ApiError ||
+                                err instanceof NetworkError
+                              ) {
+                                setError(err.message);
+                              } else {
+                                setError("上传失败");
+                              }
                             } finally {
                               // 在 finally 中清理，并检查 inputElement 是否存在
                               if (inputElement) {

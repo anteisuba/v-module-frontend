@@ -2,9 +2,9 @@
 
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { BackButton } from "@/components/ui";
+import { useUser } from "@/lib/context/UserContext";
 
 type EditPageOption = {
   id: string;
@@ -40,32 +40,8 @@ const EDIT_PAGES: EditPageOption[] = [
 
 export default function DashboardPage() {
   const router = useRouter();
-  const [loading, setLoading] = useState(true);
-  const [user, setUser] = useState<{ slug?: string; email?: string; displayName?: string | null } | null>(null);
+  const { user, loading, logout } = useUser();
   const [selectedPage, setSelectedPage] = useState<string>("cms");
-
-  useEffect(() => {
-    async function loadUser() {
-      try {
-        const res = await fetch("/api/user/me", { cache: "no-store" });
-        if (!res.ok) {
-          if (res.status === 401) {
-            router.push("/admin");
-            return;
-          }
-          throw new Error("获取用户信息失败");
-        }
-        const data = await res.json();
-        setUser(data.user || null);
-      } catch (e) {
-        console.error("Load user error:", e);
-        router.push("/admin");
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadUser();
-  }, [router]);
 
   function handleNavigate() {
     const page = EDIT_PAGES.find((p) => p.id === selectedPage);
@@ -75,14 +51,7 @@ export default function DashboardPage() {
   }
 
   async function handleLogout() {
-    try {
-      await fetch("/api/user/logout", { method: "POST" });
-      router.push("/admin");
-    } catch (error) {
-      console.error("Logout error:", error);
-      // 即使 API 失败，也重定向到登录页面
-      router.push("/admin");
-    }
+    await logout();
   }
 
   if (loading) {

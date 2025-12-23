@@ -5,6 +5,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { BackButton } from "@/components/ui";
+import { userApi } from "@/lib/api";
+import { ApiError, NetworkError } from "@/lib/api/errors";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
@@ -21,31 +23,21 @@ export default function ForgotPasswordPage() {
     setSuccess(false);
 
     try {
-      const res = await fetch("/api/user/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
-      });
-
-      const data = (await res.json().catch(() => ({}))) as {
-        message?: string;
-        emailExists?: boolean;
-      };
-
-      if (!res.ok) {
-        // 404 表示邮箱未注册
-        if (res.status === 404) {
-          setError(data.message ?? "该邮箱未注册");
-        } else {
-          setError(data.message ?? "请求失败");
-        }
-        setLoading(false);
-        return;
-      }
-
+      await userApi.forgotPassword(email);
       setSuccess(true);
     } catch (err) {
-      setError("网络错误，请稍后再试");
+      if (err instanceof ApiError) {
+        // 404 表示邮箱未注册
+        if (err.status === 404) {
+          setError("该邮箱未注册");
+        } else {
+          setError(err.message);
+        }
+      } else if (err instanceof NetworkError) {
+        setError(err.message);
+      } else {
+        setError("请求失败，请稍后再试");
+      }
     } finally {
       setLoading(false);
     }

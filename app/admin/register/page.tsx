@@ -6,6 +6,8 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { BackButton } from "@/components/ui";
+import { userApi } from "@/lib/api";
+import { ApiError, NetworkError } from "@/lib/api/errors";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -24,32 +26,24 @@ export default function RegisterPage() {
     setError(null);
 
     try {
-      const res = await fetch("/api/user/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: email.trim(),
-          password,
-          displayName: displayName.trim() || undefined,
-          slug: slug.trim() || undefined,
-        }),
+      await userApi.register({
+        email,
+        password,
+        displayName,
+        slug,
       });
-
-      const data = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        message?: string;
-      };
-
-      if (!res.ok) {
-        setError(data.message ?? "注册失败");
-        setLoading(false);
-        return;
-      }
 
       // 注册成功，跳转到登录页
       router.push("/admin?registered=true");
     } catch (err) {
-      setError("网络错误，请稍后再试");
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else if (err instanceof NetworkError) {
+        setError(err.message);
+      } else {
+        setError("注册失败，请稍后再试");
+      }
+    } finally {
       setLoading(false);
     }
   }

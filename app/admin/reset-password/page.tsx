@@ -6,6 +6,8 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { BackButton } from "@/components/ui";
+import { userApi } from "@/lib/api";
+import { ApiError, NetworkError } from "@/lib/api/errors";
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
@@ -42,28 +44,20 @@ function ResetPasswordForm() {
     setError(null);
 
     try {
-      const res = await fetch("/api/user/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ token, password }),
-      });
-
-      const data = (await res.json().catch(() => ({}))) as {
-        message?: string;
-      };
-
-      if (!res.ok) {
-        setError(data.message ?? "重置失败");
-        setLoading(false);
-        return;
-      }
-
+      await userApi.resetPassword(token, password);
       setSuccess(true);
       setTimeout(() => {
         router.push("/admin");
       }, 2000);
     } catch (err) {
-      setError("网络错误，请稍后再试");
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else if (err instanceof NetworkError) {
+        setError(err.message);
+      } else {
+        setError("重置失败，请稍后再试");
+      }
+    } finally {
       setLoading(false);
     }
   }

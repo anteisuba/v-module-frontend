@@ -2,8 +2,14 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { userApi } from "@/lib/api";
+import { ApiError, NetworkError } from "@/lib/api/errors";
+import { useUser } from "@/lib/context/UserContext";
 
 export default function AdminAuthPanel() {
+  const router = useRouter();
+  const { refreshUser } = useUser();
   const [enter, setEnter] = useState(false);
 
   const [email, setEmail] = useState("");
@@ -25,27 +31,22 @@ export default function AdminAuthPanel() {
     setError(null);
 
     try {
-      const res = await fetch("/api/user/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = (await res.json().catch(() => ({}))) as {
-        ok?: boolean;
-        message?: string;
-      };
-
-      if (!res.ok) {
-        setError(data.message ?? "登录失败");
-        setLoading(false);
-        return;
-      }
-
+      await userApi.login(email, password);
+      
+      // 刷新用户信息
+      await refreshUser();
+      
       // ✅ 登录成功：跳转到编辑目录
-      window.location.href = "/admin/dashboard";
+      router.push("/admin/dashboard");
     } catch (err) {
-      setError("网络错误，请稍后再试");
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else if (err instanceof NetworkError) {
+        setError(err.message);
+      } else {
+        setError("登录失败，请稍后再试");
+      }
+    } finally {
       setLoading(false);
     }
   }

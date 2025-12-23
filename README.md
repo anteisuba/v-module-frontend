@@ -1,3 +1,23 @@
+### login 界面
+
+![login page](./public/readme/loginpage.jpeg)
+
+### forget password 界面
+
+![forget page](./public/readme/forgetpasswordpage.jpeg)
+
+### edit page 界面
+
+![edit page](./public/readme/editpage.png)
+
+### create page 界面
+
+![create page](./public/readme/createpage.jpeg)
+
+### menu page 界面
+
+![menu page](./public/readme/menupage.jpeg)
+
 # vtuber-site
 
 [中文](#中文) | [日本語](#日本語)
@@ -9,11 +29,14 @@
 ### 功能概览
 
 - **多用户系统**：用户注册、登录、密码重置
+- **用户 Dashboard**：登录后的编辑目录页面，统一管理各类编辑入口
 - **页面配置系统**：支持草稿和发布版本，配置驱动渲染
 - **用户公开页面**：`/u/[slug]` 动态路由展示用户发布的页面
 - **CMS 编辑器**：可视化编辑页面配置（背景、Hero Section、Links、Gallery）
 - **图片管理**：支持本地图片上传和外部图片 URL
 - **首页 Hero**：粘性滚动背景、自动轮播淡入淡出、缩略图切换
+- **全局状态管理**：基于 React Context 的用户状态管理
+- **统一 API 客户端**：封装的 API 调用接口，统一的错误处理
 
 ### 页面与路由
 
@@ -24,11 +47,12 @@
 
 #### 用户管理
 
-- `/admin`：用户登录
+- `/admin`：用户登录（登录成功后跳转到 `/admin/dashboard`）
 - `/admin/register`：用户注册
 - `/admin/forgot-password`：忘记密码（请求重置链接）
 - `/admin/reset-password?token=xxx`：重置密码（设置新密码）
-- `/admin/cms`：页面编辑器（需要登录）
+- `/admin/dashboard`：编辑目录页面（需要登录），选择要编辑的页面类型
+- `/admin/cms`：首页编辑器（需要登录），编辑个人首页配置
 
 ### API
 
@@ -55,6 +79,8 @@
 - **数据库**：Prisma + PostgreSQL
 - **认证**：iron-session、bcryptjs
 - **验证**：Zod
+- **状态管理**：React Context API
+- **API 客户端**：统一的 API 调用封装，支持错误处理和类型安全
 
 ### 数据库模型（Prisma）
 
@@ -81,6 +107,14 @@ vtuber-site/
 │   ├── page-config/       # 页面配置领域
 │   └── hero/              # Hero 领域
 ├── lib/                   # 工具层
+│   ├── api/               # API 客户端封装
+│   │   ├── client.ts      # API 客户端基础类
+│   │   ├── endpoints.ts   # API 端点封装（userApi, pageApi）
+│   │   ├── errors.ts      # 错误处理
+│   │   └── types.ts        # API 类型定义
+│   ├── context/           # React Context
+│   │   ├── UserContext.tsx # 用户状态管理
+│   │   └── UserProviderWrapper.tsx # Provider 包装器
 │   ├── validation/        # Zod 校验 schemas
 │   ├── session/           # Session 管理
 │   └── prisma.ts          # Prisma Client
@@ -140,6 +174,8 @@ vtuber-site/
 5. **访问应用**
    - 首页：http://localhost:3000
    - 登录：http://localhost:3000/admin
+   - 编辑目录（登录后）：http://localhost:3000/admin/dashboard
+   - CMS 编辑器：http://localhost:3000/admin/cms
    - 测试用户页面：http://localhost:3000/u/testuser
 
 ### 开发命令
@@ -169,6 +205,15 @@ pnpm build
 - Password: `123456`
 - Slug: `testuser`
 
+### 使用流程
+
+1. **注册/登录**：访问 `/admin` 进行注册或登录
+2. **选择编辑页面**：登录成功后自动跳转到 `/admin/dashboard`，选择要编辑的页面类型
+3. **编辑内容**：进入对应的编辑器（如 CMS 编辑器）进行内容编辑
+4. **保存草稿**：编辑过程中可以随时保存草稿
+5. **发布页面**：编辑完成后点击发布，将草稿配置发布为公开页面
+6. **查看效果**：访问 `/u/[你的slug]` 查看公开页面效果
+
 ---
 
 ## 日本語
@@ -193,11 +238,12 @@ VTuber 向けのマルチユーザーページ管理システム。Next.js App R
 
 #### ユーザー管理
 
-- `/admin`：ユーザーログイン
+- `/admin`：ユーザーログイン（ログイン成功後 `/admin/dashboard` にリダイレクト）
 - `/admin/register`：ユーザー登録
 - `/admin/forgot-password`：パスワード忘れ（リセットリンク要求）
 - `/admin/reset-password?token=xxx`：パスワードリセット（新パスワード設定）
-- `/admin/cms`：ページエディター（ログイン必要）
+- `/admin/dashboard`：編集ディレクトリページ（ログイン必要）、編集するページタイプを選択
+- `/admin/cms`：ホームページエディター（ログイン必要）、個人ホームページ設定を編集
 
 ### API
 
@@ -224,6 +270,8 @@ VTuber 向けのマルチユーザーページ管理システム。Next.js App R
 - **データベース**：Prisma + PostgreSQL
 - **認証**：iron-session、bcryptjs
 - **検証**：Zod
+- **状態管理**：React Context API
+- **API クライアント**：統一された API 呼び出しラッパー、エラーハンドリングと型安全性をサポート
 
 ### データモデル（Prisma）
 
