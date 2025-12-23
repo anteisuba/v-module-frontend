@@ -14,6 +14,7 @@
     "clear-rate-limit": "tsx scripts/clear-rate-limit.ts"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.957.0",
     "@prisma/client": "6.19.1",
     "bcryptjs": "^3.0.3",
     "iron-session": "^8.0.4",
