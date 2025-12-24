@@ -50,7 +50,7 @@ export default function CMSPage() {
         link.url.includes("example.com") ||
         link.url.includes("twitter.com/example")
     );
-    return hasDefaultSections || hasDefaultSocialLinks;
+    return Boolean(hasDefaultSections || hasDefaultSocialLinks);
   }
 
   // 获取草稿配置
