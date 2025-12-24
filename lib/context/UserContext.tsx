@@ -67,15 +67,25 @@ export function UserProvider({ children }: UserProviderProps) {
   }, [router]);
 
   // 初始化时加载用户信息
-  // 但如果当前在登录页，跳过自动加载，避免无限循环
+  // 只在需要用户信息的页面（/admin/* 但排除登录页）才自动加载
   useEffect(() => {
-    // 检查当前路径，如果在登录页（/admin），不自动加载用户信息
-    // 因为登录页不需要用户信息，而且可能会触发 401 导致重定向循环
-    if (typeof window !== "undefined" && window.location.pathname.startsWith("/admin")) {
-      // 在登录页，设置 loading 为 false，但不加载用户信息
+    if (typeof window === "undefined") return;
+    
+    const pathname = window.location.pathname;
+    
+    // 如果是登录页或公开页面（/、/u/* 等），不自动加载用户信息
+    // 避免在公开页面因为无效 cookie 导致重定向到登录页
+    if (pathname === "/admin" || 
+        pathname === "/admin/register" || 
+        pathname === "/admin/forgot-password" || 
+        pathname === "/admin/reset-password" ||
+        !pathname.startsWith("/admin")) {
+      // 在登录页或公开页面，设置 loading 为 false，但不加载用户信息
       setLoading(false);
       return;
     }
+    
+    // 只在需要认证的管理页面才自动加载用户信息
     refreshUser();
   }, [refreshUser]);
 

@@ -69,11 +69,15 @@ class ApiClient {
       // 处理未授权错误（401）
       if (response.status === 401 && !skipAuth) {
         // 在客户端环境下重定向到登录页
-        // 但如果当前已经在登录页，避免无限循环
+        // 但只在管理页面（/admin/*）才重定向，公开页面不应该重定向
         if (typeof window !== "undefined") {
           const currentPath = window.location.pathname;
-          // 如果当前路径已经是 /admin，不要再次重定向，避免无限循环
-          if (!currentPath.startsWith("/admin")) {
+          // 只在管理页面（非登录页）才重定向，避免在公开页面（/、/u/*）重定向
+          if (currentPath.startsWith("/admin") && 
+              currentPath !== "/admin" && 
+              currentPath !== "/admin/register" && 
+              currentPath !== "/admin/forgot-password" && 
+              currentPath !== "/admin/reset-password") {
             window.location.href = `/admin?redirect=${encodeURIComponent(currentPath)}`;
           }
         }
@@ -208,10 +212,14 @@ class ApiClient {
       }
 
       if (response.status === 401 && !options.skipAuth) {
-        // 如果当前路径已经是 /admin，不要再次重定向，避免无限循环
+        // 只在管理页面（非登录页）才重定向，公开页面不应该重定向
         if (typeof window !== "undefined") {
           const currentPath = window.location.pathname;
-          if (!currentPath.startsWith("/admin")) {
+          if (currentPath.startsWith("/admin") && 
+              currentPath !== "/admin" && 
+              currentPath !== "/admin/register" && 
+              currentPath !== "/admin/forgot-password" && 
+              currentPath !== "/admin/reset-password") {
             window.location.href = `/admin?redirect=${encodeURIComponent(currentPath)}`;
           }
         }
