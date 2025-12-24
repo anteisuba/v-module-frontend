@@ -53,7 +53,19 @@ const GallerySectionPropsSchema = z.object({
   gap: z.enum(["sm", "md", "lg"]).optional(),
 });
 
-const SectionConfigSchema: z.ZodType<any> = z.discriminatedUnion("type", [
+const NewsSectionPropsSchema = z.object({
+  items: z.array(
+    z.object({
+      id: z.string(),
+      src: z.string().min(1),
+      alt: z.string().optional(),
+      href: z.string().min(1), // 外部链接，必填
+      objectPosition: z.string().optional(), // 图片位置
+    })
+  ),
+});
+
+const SectionConfigSchema = z.discriminatedUnion("type", [
   z.object({
     id: z.string(),
     type: z.literal("hero"),
@@ -72,6 +84,13 @@ const SectionConfigSchema: z.ZodType<any> = z.discriminatedUnion("type", [
     id: z.string(),
     type: z.literal("gallery"),
     props: GallerySectionPropsSchema,
+    enabled: z.boolean(),
+    order: z.number().int().min(0),
+  }),
+  z.object({
+    id: z.string(),
+    type: z.literal("news"),
+    props: NewsSectionPropsSchema,
     enabled: z.boolean(),
     order: z.number().int().min(0),
   }),
@@ -95,6 +114,9 @@ export const PageConfigSchema = z.object({
     })
     .optional(),
   socialLinks: z.array(SocialLinkItemSchema).max(10).optional(), // 最多 10 个社交链接
+  showHeroThumbStrip: z.boolean().optional(), // 是否显示 Hero 缩略图条
+  showLogo: z.boolean().optional(), // 是否显示 Logo
+  showSocialLinks: z.boolean().optional(), // 是否显示社交链接
   meta: z
     .object({
       title: z.string().optional(),
@@ -104,4 +126,3 @@ export const PageConfigSchema = z.object({
 });
 
 export type ValidatedPageConfig = z.infer<typeof PageConfigSchema>;
-

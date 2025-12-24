@@ -162,3 +162,26 @@ export const pageApi = {
   },
 };
 
+/**
+ * 新闻轮播相关 API
+ */
+export const newsApi = {
+  /**
+   * 获取新闻图片列表（从 public/upload-img2/ 目录读取）
+   */
+  async getNewsItems(): Promise<Array<{
+    id: string;
+    src: string;
+    alt: string;
+    href: string;
+  }>> {
+    const response = await apiClient.get<{ items: Array<{
+      id: string;
+      src: string;
+      alt: string;
+      href: string;
+    }> }>("/api/news", { skipAuth: true });
+    return response.items || [];
+  },
+};
+

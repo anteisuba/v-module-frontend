@@ -94,6 +94,9 @@ export const DEFAULT_PAGE_CONFIG: PageConfig = {
       },
     },
   ],
+  showHeroThumbStrip: true, // 默认显示 Hero 缩略图条
+  showLogo: true, // 默认显示 Logo
+  showSocialLinks: true, // 默认显示社交链接
   meta: {
     title: "My VTuber Page",
     description: "Welcome to my personal page",

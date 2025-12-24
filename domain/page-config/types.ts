@@ -2,7 +2,7 @@
 
 export type BackgroundType = 'color' | 'image';
 
-export type SectionType = 'hero' | 'links' | 'gallery';
+export type SectionType = 'hero' | 'links' | 'gallery' | 'news';
 
 export type BackgroundConfig = 
   | { type: 'color'; value: string }  // hex color, e.g. "#000000"
@@ -40,10 +40,21 @@ export type GallerySectionProps = {
   gap?: 'sm' | 'md' | 'lg';
 };
 
+export type NewsSectionProps = {
+  items: Array<{
+    id: string;
+    src: string;
+    alt?: string;
+    href: string; // 外部链接
+    objectPosition?: string; // 图片位置，如 "center", "top", "bottom", "50% 50%" 等
+  }>;
+};
+
 export type SectionConfig = 
   | { id: string; type: 'hero'; props: HeroSectionProps; enabled: boolean; order: number }
   | { id: string; type: 'links'; props: LinksSectionProps; enabled: boolean; order: number }
-  | { id: string; type: 'gallery'; props: GallerySectionProps; enabled: boolean; order: number };
+  | { id: string; type: 'gallery'; props: GallerySectionProps; enabled: boolean; order: number }
+  | { id: string; type: 'news'; props: NewsSectionProps; enabled: boolean; order: number };
 
 export type SocialLinkItem = {
   id: string; // 唯一标识
@@ -68,6 +79,15 @@ export type PageConfig = {
   
   // 社交链接配置（右上角）- 动态数组
   socialLinks?: SocialLinkItem[];
+  
+  // 是否显示 Hero 轮播缩略图条（HeroThumbStrip）
+  showHeroThumbStrip?: boolean;
+  
+  // 是否显示 Logo
+  showLogo?: boolean;
+  
+  // 是否显示社交链接
+  showSocialLinks?: boolean;
   
   // 元数据（可选）
   meta?: {

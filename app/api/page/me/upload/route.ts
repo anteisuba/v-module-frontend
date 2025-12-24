@@ -113,6 +113,30 @@ export async function POST(request: Request) {
 
       const publicUrl = `${process.env.R2_PUBLIC_URL.replace(/\/$/, "")}/${key}`;
 
+      // 将图片信息记录到数据库（MediaAsset 表）- S3 和数据库联动
+      // 注意：需要先运行迁移：npx prisma migrate dev --name add_user_media_asset
+      try {
+        // 检查 MediaAsset 表是否支持 userId（迁移后）
+        // 如果迁移未运行，这里会失败，但不影响上传
+        await prisma.mediaAsset.create({
+          data: {
+            userId: userId, // 关联到 User（迁移后支持）
+            src: publicUrl, // S3/R2 URL
+            mimeType: file.type,
+            size: file.size,
+            originalName: file.name,
+            // adminUserId 留空（null），因为这是普通用户上传
+          },
+        });
+      } catch (error: any) {
+        // 如果 MediaAsset 创建失败（可能是迁移未运行），不影响上传流程
+        if (error?.code === 'P2003' || error?.message?.includes('adminUser')) {
+          console.warn("MediaAsset table may need migration. Run: npx prisma migrate dev --name add_user_media_asset");
+        } else {
+          console.warn("Failed to create MediaAsset record (upload still succeeded):", error);
+        }
+      }
+
       return NextResponse.json({ ok: true, src: publicUrl });
     } else if (isVercel) {
       // 在 Vercel 上但没有配置 R2，返回错误
@@ -159,6 +183,31 @@ export async function POST(request: Request) {
 
       // 返回文件路径（相对于 public）
       const publicPath = `/uploads/${user.slug}/${filename}`;
+      
+      // 将图片信息记录到数据库（MediaAsset 表）- 本地文件系统
+      // 注意：需要先运行迁移：npx prisma migrate dev --name add_user_media_asset
+      try {
+        // 检查 MediaAsset 表是否支持 userId（迁移后）
+        // 如果迁移未运行，这里会失败，但不影响上传
+        await prisma.mediaAsset.create({
+          data: {
+            userId: userId, // 关联到 User（迁移后支持）
+            src: publicPath, // 本地路径
+            mimeType: file.type,
+            size: file.size,
+            originalName: file.name,
+            // adminUserId 留空（null），因为这是普通用户上传
+          },
+        });
+      } catch (error: any) {
+        // 如果 MediaAsset 创建失败（可能是迁移未运行），不影响上传流程
+        if (error?.code === 'P2003' || error?.message?.includes('adminUser')) {
+          console.warn("MediaAsset table may need migration. Run: npx prisma migrate dev --name add_user_media_asset");
+        } else {
+          console.warn("Failed to create MediaAsset record (upload still succeeded):", error);
+        }
+      }
+
       return NextResponse.json({ ok: true, src: publicPath });
     }
   } catch (error) {

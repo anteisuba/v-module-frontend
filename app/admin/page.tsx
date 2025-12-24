@@ -23,9 +23,8 @@ export default function AdminPage() {
         {/* 顶部大标题区（像参考图那样） */}
         <header className="pt-10 text-center">
           <div className="mx-auto inline-flex items-center gap-3">
-            <div className="text-5xl font-black tracking-tight">ZUTOMAYO</div>
-            <span className="inline-flex items-center bg-black px-3 py-1 text-sm font-bold tracking-[0.2em] text-white">
-              LOGIN
+            <span className="inline-flex items-center bg-black px-3 py-1 text-2xl font-bold tracking-[0.2em] text-white">
+              Welcome to Web Admin
             </span>
           </div>
           <div className="mt-3 text-xs tracking-[0.25em] text-black/70">

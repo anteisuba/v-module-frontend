@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BackButton } from "@/components/ui";
+import { BackButton, ImagePositionEditor } from "@/components/ui";
 import { pageApi } from "@/lib/api";
 import { ApiError, NetworkError } from "@/lib/api/errors";
 import { useUser } from "@/lib/context/UserContext";
@@ -58,7 +58,7 @@ export default function CMSPage() {
     loadConfig();
   }, []);
 
-  // 清理配置数据（过滤掉空的 slides）
+  // 清理配置数据（过滤掉空的 slides 和 news items）
   function cleanConfig(config: PageConfig): PageConfig {
     return {
       ...config,
@@ -74,6 +74,19 @@ export default function CMSPage() {
             props: {
               ...section.props,
               slides: validSlides, // 允许空数组
+            },
+          };
+        }
+        if (section.type === "news") {
+          // 过滤掉 src 或 href 为空的 items
+          const validItems = section.props.items.filter(
+            (item) => item.src && item.src.trim().length > 0 && item.href && item.href.trim().length > 0
+          );
+
+          return {
+            ...section,
+            props: {
+              items: validItems, // 允许空数组
             },
           };
         }
@@ -142,6 +155,209 @@ export default function CMSPage() {
   // 获取 hero section
   function getHeroSection() {
     return config.sections.find((s) => s.type === "hero");
+  }
+
+  // 切换 section 的 enabled 状态
+  function toggleSectionEnabled(sectionId: string) {
+    setConfig({
+      ...config,
+      sections: config.sections.map((s) =>
+        s.id === sectionId ? { ...s, enabled: !s.enabled } : s
+      ),
+    });
+  }
+
+  // 切换 Logo 显示
+  function toggleLogoEnabled() {
+    const currentValue = config.showLogo !== false;
+    setConfig({
+      ...config,
+      showLogo: !currentValue,
+    });
+  }
+
+  // 切换社交链接显示
+  function toggleSocialLinksEnabled() {
+    const currentValue = config.showSocialLinks !== false;
+    setConfig({
+      ...config,
+      showSocialLinks: !currentValue,
+    });
+  }
+
+  // 通用开关组件
+  function ToggleSwitch({
+    enabled,
+    onChange,
+    disabled,
+  }: {
+    enabled: boolean;
+    onChange: () => void;
+    disabled?: boolean;
+  }) {
+    return (
+      <div className="flex items-center gap-2">
+        <label className="text-sm text-black/70">是否显示</label>
+        <button
+          type="button"
+          onClick={onChange}
+          disabled={disabled}
+          className={[
+            "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-black/20 focus:ring-offset-2",
+            enabled ? "bg-black" : "bg-black/30",
+            disabled && "opacity-50 cursor-not-allowed",
+          ].join(" ")}
+          aria-label="Toggle visibility"
+        >
+          <span
+            className={[
+              "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+              enabled ? "translate-x-6" : "translate-x-1",
+            ].join(" ")}
+          />
+        </button>
+      </div>
+    );
+  }
+
+  // 获取 news section（不自动创建）
+  function getNewsSection() {
+    return config.sections.find((s) => s.type === "news");
+  }
+
+  // 确保 news section 存在
+  function ensureNewsSection() {
+    let newsSection = getNewsSection();
+    if (!newsSection) {
+      // 如果不存在，创建一个新的 news section
+      const maxOrder = Math.max(...config.sections.map((s) => s.order), -1);
+      newsSection = {
+        id: `news-${Date.now()}`,
+        type: "news",
+        enabled: true,
+        order: maxOrder + 1,
+        props: {
+          items: [],
+        },
+      };
+      // 添加到 sections
+      setConfig({
+        ...config,
+        sections: [...config.sections, newsSection],
+      });
+    }
+    return newsSection;
+  }
+
+  // 更新 news section 的 items
+  function updateNewsItems(items: Array<{ id: string; src: string; alt?: string; href: string }>) {
+    const newsSection = ensureNewsSection();
+    if (!newsSection || newsSection.type !== "news") return;
+
+    setConfig({
+      ...config,
+      sections: config.sections.map((s) => {
+        if (s.id === newsSection.id && s.type === "news") {
+          return {
+            ...s,
+            type: "news" as const,
+            props: {
+              items: items,
+            },
+          };
+        }
+        return s;
+      }),
+    });
+  }
+
+  // 添加新闻图片
+  function addNewsItem() {
+    let newsSection = getNewsSection();
+    const newItem = {
+      id: `news-item-${Date.now()}`,
+      src: "",
+      alt: "",
+      href: "",
+    };
+
+    // 如果不存在，创建新的 section 并添加 item
+    if (!newsSection) {
+      const maxOrder = Math.max(...config.sections.map((s) => s.order), -1);
+      const newSection = {
+        id: `news-${Date.now()}`,
+        type: "news" as const,
+        enabled: true,
+        order: maxOrder + 1,
+        props: {
+          items: [newItem],
+        },
+      };
+      setConfig({
+        ...config,
+        sections: [...config.sections, newSection],
+      });
+      return;
+    }
+
+    // 如果已存在，添加 item
+    setConfig({
+      ...config,
+      sections: config.sections.map((s) => {
+        if (s.id === newsSection.id && s.type === "news") {
+          return {
+            ...s,
+            type: "news" as const,
+            props: {
+              items: [...s.props.items, newItem],
+            },
+          };
+        }
+        return s;
+      }),
+    });
+  }
+
+  // 删除新闻图片
+  function removeNewsItem(itemId: string) {
+    const newsSection = getNewsSection();
+    if (!newsSection || newsSection.type !== "news") return;
+
+    updateNewsItems(newsSection.props.items.filter((item) => item.id !== itemId));
+  }
+
+  // 更新新闻图片
+  function updateNewsItem(
+    itemId: string,
+    updates: { src?: string; alt?: string; href?: string; objectPosition?: string }
+  ) {
+    const newsSection = ensureNewsSection();
+    if (!newsSection || newsSection.type !== "news") return;
+
+    updateNewsItems(
+      newsSection.props.items.map((item) =>
+        item.id === itemId ? { ...item, ...updates } : item
+      )
+    );
+  }
+
+  // 上传新闻图片
+  async function uploadNewsImage(itemId: string, file: File) {
+    setUploadingIndex(-1); // 使用 -1 表示新闻图片上传中
+    setError(null);
+    try {
+      const result = await pageApi.uploadImage(file);
+      updateNewsItem(itemId, { src: result.src });
+      toastOk("图片上传成功");
+    } catch (e) {
+      if (e instanceof ApiError || e instanceof NetworkError) {
+        setError(e.message);
+      } else {
+        setError(e instanceof Error ? e.message : "上传失败");
+      }
+    } finally {
+      setUploadingIndex(null);
+    }
   }
 
   // 更新 hero section 的图片
@@ -261,7 +477,7 @@ export default function CMSPage() {
                 href={`/u/${user.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="rounded-xl border border-black/20 bg-white/70 px-4 py-2 text-sm font-medium text-black hover:bg-white/80"
+                className="cursor-pointer rounded-xl border border-black/20 bg-white/70 px-4 py-2 text-sm font-medium text-black transition-colors duration-200 hover:bg-white/80"
               >
                 打开页面
               </a>
@@ -271,7 +487,7 @@ export default function CMSPage() {
             <button
               onClick={saveDraft}
               disabled={saving || publishing}
-              className="rounded-xl border border-black/20 bg-white/70 px-4 py-2 text-sm font-medium text-black hover:bg-white/80 disabled:opacity-50"
+              className="cursor-pointer rounded-xl border border-black/20 bg-white/70 px-4 py-2 text-sm font-medium text-black transition-colors duration-200 hover:bg-white/80 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? "保存中..." : "保存草稿"}
             </button>
@@ -280,7 +496,7 @@ export default function CMSPage() {
             <button
               onClick={publish}
               disabled={saving || publishing}
-              className="rounded-xl bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/90 disabled:opacity-50"
+              className="cursor-pointer rounded-xl bg-black px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {publishing ? "发布中..." : "发布"}
             </button>
@@ -302,9 +518,18 @@ export default function CMSPage() {
 
         {/* Hero Section 编辑 */}
         <div className="mb-8 rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
-          <h2 className="mb-4 text-lg font-semibold text-black">
-            Hero Section - 顶部内容
-          </h2>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-black">
+              Hero Section - 顶部内容
+            </h2>
+            {getHeroSection() && (
+              <ToggleSwitch
+                enabled={getHeroSection()!.enabled}
+                onChange={() => toggleSectionEnabled(getHeroSection()!.id)}
+                disabled={saving || publishing}
+              />
+            )}
+          </div>
 
           {/* Title 和 Subtitle 编辑 */}
           <div className="mb-6 space-y-4 rounded-lg border border-black/10 bg-white/70 p-4">
@@ -372,9 +597,45 @@ export default function CMSPage() {
 
           {/* 图片编辑 */}
           <div className="mb-4">
-            <h3 className="mb-4 text-base font-semibold text-black">
-              轮播图片（3张）
-            </h3>
+            <div className="mb-4 flex items-center justify-between">
+              <h3 className="text-base font-semibold text-black">
+                轮播图片（3张）
+              </h3>
+              {/* Hero 缩略图条显示开关 */}
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-black/70">
+                  是否显示
+                </label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const currentValue = config.showHeroThumbStrip ?? true;
+                    setConfig({
+                      ...config,
+                      showHeroThumbStrip: !currentValue,
+                    });
+                  }}
+                  disabled={saving || publishing}
+                  className={[
+                    "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-black/20 focus:ring-offset-2",
+                    (config.showHeroThumbStrip ?? true)
+                      ? "bg-black"
+                      : "bg-black/30",
+                    (saving || publishing) && "opacity-50 cursor-not-allowed",
+                  ].join(" ")}
+                  aria-label="Toggle hero thumb strip"
+                >
+                  <span
+                    className={[
+                      "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                      (config.showHeroThumbStrip ?? true)
+                        ? "translate-x-6"
+                        : "translate-x-1",
+                    ].join(" ")}
+                  />
+                </button>
+              </div>
+            </div>
 
             <div className="grid gap-6 md:grid-cols-3">
               {[0, 1, 2].map((index) => {
@@ -414,7 +675,7 @@ export default function CMSPage() {
                       <input
                         type="file"
                         accept="image/*"
-                        className="mt-2 block w-full text-xs text-black/80 file:mr-3 file:rounded-lg file:border-0 file:bg-black file:px-3 file:py-2 file:text-xs file:text-white hover:file:bg-black/90"
+                        className="mt-2 block w-full text-xs text-black/80 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-black file:px-3 file:py-2 file:text-xs file:text-white file:transition-colors file:duration-200 hover:file:bg-black/90"
                         disabled={isUploading || saving || publishing}
                         onChange={(e) => {
                           const file = e.target.files?.[0];
@@ -457,11 +718,224 @@ export default function CMSPage() {
           </div>
         </div>
 
+        {/* 新闻轮播编辑 */}
+        <div className="mb-8 rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-black">新闻轮播</h2>
+            <div className="flex items-center gap-3">
+              {getNewsSection() && (
+                <ToggleSwitch
+                  enabled={getNewsSection()!.enabled}
+                  onChange={() => toggleSectionEnabled(getNewsSection()!.id)}
+                  disabled={saving || publishing}
+                />
+              )}
+              <button
+              type="button"
+              onClick={addNewsItem}
+              disabled={saving || publishing}
+              className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                添加图片
+              </button>
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            {(getNewsSection()?.props.items || []).map((item, index) => (
+              <div
+                key={item.id}
+                className="rounded-xl border border-black/10 bg-white/70 p-4"
+              >
+                <div className="mb-3 flex items-center justify-between">
+                  <div className="text-sm font-medium text-black">
+                    图片 {index + 1}
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeNewsItem(item.id)}
+                    disabled={saving || publishing}
+                    className="rounded-lg bg-red-500/10 px-3 py-1 text-xs font-medium text-red-600 transition-colors duration-200 hover:bg-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    删除
+                  </button>
+                </div>
+
+                {/* 预览 - 可拖拽编辑位置 */}
+                <div className="mb-4">
+                  {item.src ? (
+                    <ImagePositionEditor
+                      src={item.src}
+                      alt={item.alt || `News ${index + 1}`}
+                      objectPosition={item.objectPosition || "center"}
+                      onChange={(position) =>
+                        updateNewsItem(item.id, { objectPosition: position })
+                      }
+                      disabled={uploadingIndex === -1 || saving || publishing}
+                    />
+                  ) : (
+                    <div className="aspect-[4/3] flex items-center justify-center rounded-lg border border-black/10 bg-black/5 text-xs text-black/50">
+                      暂无图片
+                    </div>
+                  )}
+                </div>
+
+                {/* 上传文件 */}
+                <div className="mb-3">
+                  <label className="block text-xs text-black/70">
+                    上传本地图片
+                  </label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="mt-2 block w-full text-xs text-black/80 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-black file:px-3 file:py-2 file:text-xs file:text-white file:transition-colors file:duration-200 hover:file:bg-black/90"
+                    disabled={uploadingIndex === -1 || saving || publishing}
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+                      const inputElement = e.currentTarget;
+                      if (file) {
+                        uploadNewsImage(item.id, file);
+                        if (inputElement) {
+                          inputElement.value = "";
+                        }
+                      }
+                    }}
+                  />
+                </div>
+
+                {/* 图片链接 */}
+                <div className="mb-3">
+                  <label className="block text-xs text-black/70">
+                    图片链接
+                  </label>
+                  <input
+                    type="text"
+                    value={item.src || ""}
+                    onChange={(e) =>
+                      updateNewsItem(item.id, { src: e.target.value })
+                    }
+                    placeholder="https://example.com/image.jpg 或 /path/to/image.jpg"
+                    className="mt-2 w-full rounded-lg border border-black/10 bg-white/70 px-3 py-2 text-xs text-black placeholder:text-black/30"
+                    disabled={uploadingIndex === -1 || saving || publishing}
+                  />
+                </div>
+
+                {/* 外部链接 */}
+                <div className="mb-3">
+                  <label className="block text-xs text-black/70">
+                    外部链接（必填）
+                  </label>
+                  <input
+                    type="text"
+                    value={item.href || ""}
+                    onChange={(e) =>
+                      updateNewsItem(item.id, { href: e.target.value })
+                    }
+                    placeholder="https://example.com/news/1"
+                    className="mt-2 w-full rounded-lg border border-black/10 bg-white/70 px-3 py-2 text-xs text-black placeholder:text-black/30"
+                    disabled={uploadingIndex === -1 || saving || publishing}
+                  />
+                </div>
+
+                {/* Alt 文本 */}
+                <div className="mb-3">
+                  <label className="block text-xs text-black/70">
+                    Alt 文本（可选）
+                  </label>
+                  <input
+                    type="text"
+                    value={item.alt || ""}
+                    onChange={(e) =>
+                      updateNewsItem(item.id, { alt: e.target.value })
+                    }
+                    placeholder="图片描述"
+                    className="mt-2 w-full rounded-lg border border-black/10 bg-white/70 px-3 py-2 text-xs text-black placeholder:text-black/30"
+                    disabled={uploadingIndex === -1 || saving || publishing}
+                  />
+                </div>
+
+                {/* 图片位置 */}
+                <div>
+                  <label className="block text-xs text-black/70 mb-2">
+                    图片位置（当图片大于容器时）
+                  </label>
+                  <div className="grid grid-cols-3 gap-2 mb-2">
+                    {[
+                      { value: "center", label: "居中" },
+                      { value: "top", label: "顶部" },
+                      { value: "bottom", label: "底部" },
+                      { value: "left", label: "左侧" },
+                      { value: "right", label: "右侧" },
+                      { value: "top left", label: "左上" },
+                      { value: "top right", label: "右上" },
+                      { value: "bottom left", label: "左下" },
+                      { value: "bottom right", label: "右下" },
+                    ].map((pos) => (
+                      <button
+                        key={pos.value}
+                        type="button"
+                        onClick={() =>
+                          updateNewsItem(item.id, { objectPosition: pos.value })
+                        }
+                        disabled={uploadingIndex === -1 || saving || publishing}
+                        className={[
+                          "rounded-lg px-3 py-2 text-xs font-medium transition-colors",
+                          (item.objectPosition || "center") === pos.value
+                            ? "bg-black text-white"
+                            : "bg-white/70 text-black hover:bg-white/90",
+                          (uploadingIndex === -1 || saving || publishing) &&
+                            "opacity-50 cursor-not-allowed",
+                        ].join(" ")}
+                      >
+                        {pos.label}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="mt-2">
+                    <label className="block text-xs text-black/70 mb-1">
+                      自定义位置（如：50% 30%）
+                    </label>
+                    <input
+                      type="text"
+                      value={item.objectPosition || ""}
+                      onChange={(e) =>
+                        updateNewsItem(item.id, {
+                          objectPosition: e.target.value || undefined,
+                        })
+                      }
+                      placeholder="center 或 50% 50%"
+                      className="w-full rounded-lg border border-black/10 bg-white/70 px-3 py-2 text-xs text-black placeholder:text-black/30"
+                      disabled={uploadingIndex === -1 || saving || publishing}
+                    />
+                  </div>
+                </div>
+
+                {uploadingIndex === -1 && (
+                  <div className="mt-2 text-xs text-black/60">上传中...</div>
+                )}
+              </div>
+            ))}
+
+            {(!getNewsSection() || getNewsSection()?.props.items.length === 0) && (
+              <div className="py-8 text-center text-sm text-black/50">
+                暂无新闻图片，点击"添加图片"开始添加
+              </div>
+            )}
+          </div>
+        </div>
+
         {/* Logo 编辑（左上角 ano 位置） */}
         <div className="mb-8 rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
-          <h2 className="mb-4 text-lg font-semibold text-black">
-            Logo（左上角）
-          </h2>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-black">
+              Logo（左上角）
+            </h2>
+            <ToggleSwitch
+              enabled={config.showLogo !== false}
+              onChange={toggleLogoEnabled}
+              disabled={saving || publishing}
+            />
+          </div>
           <div className="space-y-4">
             <div>
               <label className="block text-sm text-black/70 mb-2">
@@ -511,7 +985,7 @@ export default function CMSPage() {
               <input
                 type="file"
                 accept="image/*"
-                className="block w-full text-xs text-black/80 file:mr-3 file:rounded-lg file:border-0 file:bg-black file:px-3 file:py-2 file:text-xs file:text-white hover:file:bg-black/90"
+                className="block w-full text-xs text-black/80 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-black file:px-3 file:py-2 file:text-xs file:text-white file:transition-colors file:duration-200 hover:file:bg-black/90"
                 disabled={saving || publishing}
                 onChange={async (e) => {
                   const file = e.target.files?.[0];
@@ -556,7 +1030,13 @@ export default function CMSPage() {
             <h2 className="text-lg font-semibold text-black">
               社交链接（右上角）
             </h2>
-            <button
+            <div className="flex items-center gap-3">
+              <ToggleSwitch
+                enabled={config.showSocialLinks !== false}
+                onChange={toggleSocialLinksEnabled}
+                disabled={saving || publishing}
+              />
+              <button
               onClick={() => {
                 const newLink: SocialLinkItem = {
                   id: `social-${Date.now()}`,
@@ -570,10 +1050,11 @@ export default function CMSPage() {
                   socialLinks: [...(config.socialLinks || []), newLink],
                 });
               }}
-              className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/90"
-            >
-              + 新增链接
-            </button>
+              className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                + 新增链接
+              </button>
+            </div>
           </div>
           <div className="space-y-4">
             {(config.socialLinks || []).map((link, index) => (
@@ -716,7 +1197,7 @@ export default function CMSPage() {
                       <input
                         type="file"
                         accept="image/*"
-                        className="block w-full text-xs text-black/80 file:mr-3 file:rounded-lg file:border-0 file:bg-black/80 file:px-3 file:py-1.5 file:text-xs file:text-white hover:file:bg-black/90"
+                        className="block w-full text-xs text-black/80 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-black/80 file:px-3 file:py-1.5 file:text-xs file:text-white file:transition-colors file:duration-200 hover:file:bg-black/90"
                         disabled={saving || publishing}
                         onChange={async (e) => {
                           const file = e.target.files?.[0];
@@ -765,7 +1246,12 @@ export default function CMSPage() {
 
         {/* 背景编辑 */}
         <div className="mb-8 rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
-          <h2 className="mb-4 text-lg font-semibold text-black">页面背景</h2>
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-semibold text-black">页面背景</h2>
+            <div className="text-sm text-black/50">
+              {/* 页面背景始终显示，不需要开关 */}
+            </div>
+          </div>
           <div className="space-y-4">
             <div>
               <label className="text-sm text-black/70">背景类型</label>

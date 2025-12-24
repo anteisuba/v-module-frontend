@@ -2,8 +2,8 @@
 
 import type { SectionConfig, PageConfig } from "@/domain/page-config/types";
 import HeroSectionRenderer from "./components/renderers/HeroSectionRenderer";
-import LinksSectionRenderer from "./components/renderers/LinksSectionRenderer";
 import GallerySectionRenderer from "./components/renderers/GallerySectionRenderer";
+import NewsSectionRenderer from "./components/renderers/NewsSectionRenderer";
 
 // 类型安全的渲染函数
 export function renderSection(section: SectionConfig, pageConfig?: PageConfig): React.ReactNode {
@@ -23,10 +23,15 @@ export function renderSection(section: SectionConfig, pageConfig?: PageConfig): 
     );
   }
 
-  // Links section
+  // Links section - 已移除
   if (section.type === "links") {
+    return null;
+  }
+
+  // Gallery section
+  if (section.type === "gallery") {
     return (
-      <LinksSectionRenderer
+      <GallerySectionRenderer
         key={section.id}
         id={section.id}
         props={section.props}
@@ -34,10 +39,10 @@ export function renderSection(section: SectionConfig, pageConfig?: PageConfig): 
     );
   }
 
-  // Gallery section
-  if (section.type === "gallery") {
+  // News section
+  if (section.type === "news") {
     return (
-      <GallerySectionRenderer
+      <NewsSectionRenderer
         key={section.id}
         id={section.id}
         props={section.props}

@@ -21,6 +21,11 @@ export default function HeroSectionRenderer({
     href: s.href || null,
   }));
 
+  // 明确判断：如果配置为 false，则不显示；否则显示（包括 undefined 时使用默认值 true）
+  const showThumbStrip = pageConfig?.showHeroThumbStrip ?? true;
+  const showLogo = pageConfig?.showLogo ?? true;
+  const showSocialLinks = pageConfig?.showSocialLinks ?? true;
+
   return (
     <div data-section-id={id} data-section-type="hero">
       <HeroSection 
@@ -29,6 +34,9 @@ export default function HeroSectionRenderer({
         socialLinks={pageConfig?.socialLinks}
         title={props.title}
         subtitle={props.subtitle}
+        showThumbStrip={showThumbStrip}
+        showLogo={showLogo}
+        showSocialLinks={showSocialLinks}
       />
     </div>
   );

@@ -7,6 +7,8 @@ type Props = {
   onMenuClick?: () => void;
   logo?: { src?: string; alt?: string };
   socialLinks?: SocialLinkItem[];
+  showLogo?: boolean;
+  showSocialLinks?: boolean;
 };
 
 const isExternalUrl = (url: string) => url.startsWith("http://") || url.startsWith("https://");
@@ -65,14 +67,21 @@ function renderIcon(icon: string | undefined, fallbackName: string) {
   return <span>{icon}</span>;
 }
 
-export default function HeroHeader({ onMenuClick, logo, socialLinks }: Props) {
+export default function HeroHeader({ 
+  onMenuClick, 
+  logo, 
+  socialLinks,
+  showLogo = true,
+  showSocialLinks = true,
+}: Props) {
   // 过滤出启用的社交链接
   const enabledLinks = socialLinks?.filter((link) => link.enabled && link.url) || [];
 
   return (
     <>
       {/* 左上角 Logo / Tag */}
-      <div className="absolute top-6 left-6 z-50">
+      {showLogo && (
+        <div className="absolute top-6 left-6 z-50">
         <a
           href="#top"
           aria-label="Home"
@@ -102,10 +111,11 @@ export default function HeroHeader({ onMenuClick, logo, socialLinks }: Props) {
           </div>
         </a>
       </div>
+      )}
 
       {/* 右上角 SNS + Menu */}
       <div className="absolute top-6 right-6 z-50 flex items-center gap-4 text-white">
-        {enabledLinks.map((link) => (
+        {showSocialLinks && enabledLinks.map((link) => (
           <a
             key={link.id}
             className="flex items-center text-sm opacity-80 hover:opacity-100 transition"

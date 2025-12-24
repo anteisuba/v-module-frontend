@@ -35,10 +35,15 @@ model SiteConfig {
 
 model MediaAsset {
   id          String    @id @default(cuid())
-  adminUserId String
-  adminUser   AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+  adminUserId String?   // 可选：管理员用户 ID
+  adminUser   AdminUser? @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+  
+  userId      String?   // 可选：普通用户 ID
+  user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // public 路径，比如：/upload-img1/xxx.jpg
+  // 图片 URL（本地路径或 S3/R2 URL）
+  // 本地：/uploads/user-slug/filename.jpg
+  // S3/R2：https://your-domain.com/uploads/user-slug/filename.jpg
   src          String
   mimeType     String
   size         Int
@@ -47,6 +52,7 @@ model MediaAsset {
   createdAt DateTime @default(now())
 
   @@index([adminUserId, createdAt])
+  @@index([userId, createdAt])
 }
 
 model PasswordResetToken {
@@ -77,6 +83,7 @@ model User {
   // 关系
   page                Page? // 1:1，每个用户一个页面
   passwordResetTokens UserPasswordResetToken[]
+  mediaAssets         MediaAsset[] // 用户上传的媒体资源
 
   // 索引
   @@index([slug])

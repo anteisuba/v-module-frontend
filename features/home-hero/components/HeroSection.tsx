@@ -19,12 +19,18 @@ export default function HeroSection({
   socialLinks,
   title,
   subtitle,
+  showThumbStrip = true,
+  showLogo = true,
+  showSocialLinks = true,
 }: {
   initialSlides?: HeroSlide[];
   logo?: { src?: string; alt?: string };
   socialLinks?: SocialLinkItem[];
   title?: string;
   subtitle?: string;
+  showThumbStrip?: boolean;
+  showLogo?: boolean;
+  showSocialLinks?: boolean;
 }) {
   const menu = useHeroMenu();
 
@@ -40,6 +46,8 @@ export default function HeroSection({
     return FALLBACK_SLIDES;
   }, [initialSlides]);
 
+  // 轮播逻辑：无论 showThumbStrip 如何，轮播功能都会持续工作
+  // 这个 hook 会每 20 秒自动切换图片，与 HeroThumbStrip 的显示无关
   const {
     slides: allSlides,
     current,
@@ -60,6 +68,7 @@ export default function HeroSection({
       style={{ height: `${HERO_SCROLL_HEIGHT_VH}vh` }}
     >
       <div className="sticky top-0 h-screen w-full overflow-hidden">
+        {/* 背景图片轮播：始终工作，不受 showThumbStrip 影响 */}
         <HeroBackground
           src={current.src}
           alt={current.alt}
@@ -74,6 +83,8 @@ export default function HeroSection({
           onMenuClick={menu.toggleMenu}
           logo={logo}
           socialLinks={socialLinks}
+          showLogo={showLogo}
+          showSocialLinks={showSocialLinks}
         />
 
         {/* Title 和 Subtitle - 菜单打开时隐藏 */}
@@ -95,11 +106,14 @@ export default function HeroSection({
           <span className="text-2xl tracking-[0.4em] opacity-80">HERO</span>
         </div>
 
-        <HeroThumbStrip
-          slides={allSlides}
-          currentIndex={index}
-          onPick={(i) => goTo(i)}
-        />
+        {/* 底部缩略图条：仅控制显示/隐藏，不影响轮播功能 */}
+        {showThumbStrip === true ? (
+          <HeroThumbStrip
+            slides={allSlides}
+            currentIndex={index}
+            onPick={(i) => goTo(i)}
+          />
+        ) : null}
         <HeroMenu open={menu.open} onClose={menu.closeMenu} />
       </div>
     </section>
