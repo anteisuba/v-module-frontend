@@ -139,6 +139,7 @@ export const PageConfigSchema = z.object({
       description: z.string().optional(),
     })
     .optional(),
+  hasPublished: z.boolean().optional(), // 是否已发布过
 });
 
 export type ValidatedPageConfig = z.infer<typeof PageConfigSchema>;

@@ -108,5 +108,8 @@ export type PageConfig = {
     title?: string;
     description?: string;
   };
+
+  // 是否已发布过（用于防止清空已发布的配置）
+  hasPublished?: boolean;
 };
 

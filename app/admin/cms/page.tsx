@@ -36,21 +36,114 @@ export default function CMSPage() {
   }
 
   // 检查配置是否是默认配置（需要清空）
+  // 改进：不仅检查 id 和链接，还要检查内容是否被修改过
   function isDefaultConfig(config: PageConfig): boolean {
+    // 如果已发布过，不再清空
+    if (config.hasPublished) {
+      return false;
+    }
+
     // 检查是否有默认的 sections（hero-1, links-1, gallery-1）
-    const hasDefaultSections = config.sections.some(
-      (section) =>
-        section.id === "hero-1" ||
-        section.id === "links-1" ||
-        section.id === "gallery-1"
+    const defaultSectionIds = ["hero-1", "links-1", "gallery-1"];
+    const hasDefaultSectionIds = config.sections.some((section) =>
+      defaultSectionIds.includes(section.id)
     );
+
+    if (!hasDefaultSectionIds) {
+      // 如果没有默认的 section id，说明已经被修改过
+      return false;
+    }
+
+    // 检查默认 sections 的内容是否被修改
+    const heroSection = config.sections.find(
+      (s) => s.id === "hero-1" && s.type === "hero"
+    );
+    if (heroSection && heroSection.type === "hero") {
+      // 检查 title 或 subtitle 是否被修改
+      if (heroSection.props.title && heroSection.props.title !== "Welcome") {
+        return false; // 内容已修改
+      }
+      if (
+        heroSection.props.subtitle &&
+        heroSection.props.subtitle !== "VTuber Personal Page"
+      ) {
+        return false; // 内容已修改
+      }
+      // 检查 slides 是否被修改（数量或内容）
+      const defaultSlides = [
+        { src: "/hero/nakajima.jpeg", alt: "Hero 1" },
+        { src: "/hero/2.jpeg", alt: "Hero 2" },
+        { src: "/hero/3.jpeg", alt: "Hero 3" },
+      ];
+      if (heroSection.props.slides.length !== defaultSlides.length) {
+        return false; // 数量已修改
+      }
+      // 检查是否有 slide 的 src 被修改
+      const hasModifiedSlide = heroSection.props.slides.some((slide, index) => {
+        const defaultSlide = defaultSlides[index];
+        return (
+          !defaultSlide ||
+          slide.src !== defaultSlide.src ||
+          slide.alt !== defaultSlide.alt
+        );
+      });
+      if (hasModifiedSlide) {
+        return false; // 内容已修改
+      }
+    }
+
+    // 检查默认的 links section
+    const linksSection = config.sections.find(
+      (s) => s.id === "links-1" && s.type === "links"
+    );
+    if (linksSection && linksSection.type === "links") {
+      const defaultLinks = [
+        {
+          id: "link-1",
+          label: "Twitter",
+          href: "https://twitter.com/example",
+          icon: "🐦",
+        },
+        {
+          id: "link-2",
+          label: "YouTube",
+          href: "https://youtube.com/example",
+          icon: "📺",
+        },
+        {
+          id: "link-3",
+          label: "GitHub",
+          href: "https://github.com/example",
+          icon: "💻",
+        },
+      ];
+      if (linksSection.props.items.length !== defaultLinks.length) {
+        return false; // 数量已修改
+      }
+      // 检查是否有 link 的内容被修改
+      const hasModifiedLink = linksSection.props.items.some((item, index) => {
+        const defaultLink = defaultLinks[index];
+        return (
+          !defaultLink ||
+          item.label !== defaultLink.label ||
+          item.href !== defaultLink.href ||
+          item.icon !== defaultLink.icon
+        );
+      });
+      if (hasModifiedLink) {
+        return false; // 内容已修改
+      }
+    }
+
     // 检查是否有默认的社交链接
     const hasDefaultSocialLinks = config.socialLinks?.some(
       (link) =>
         link.url.includes("example.com") ||
         link.url.includes("twitter.com/example")
     );
-    return Boolean(hasDefaultSections || hasDefaultSocialLinks);
+
+    // 如果只有默认的 section id 和社交链接，且内容未被修改，才认为是默认配置
+    return Boolean(hasDefaultSectionIds && hasDefaultSocialLinks);
   }
 
   // 获取草稿配置
@@ -60,8 +153,12 @@ export default function CMSPage() {
     try {
       const draftConfig = await pageApi.getDraftConfig();
       if (draftConfig) {
-        // 如果是默认配置，清空为空白配置
-        if (isDefaultConfig(draftConfig)) {
+        // 优化：只在首次访问且未发布时清空默认配置
+        // 如果已发布过，不再清空
+        if (draftConfig.hasPublished) {
+          setConfig(draftConfig);
+        } else if (isDefaultConfig(draftConfig)) {
+          // 只在首次访问且是默认配置时清空
           setConfig(EMPTY_PAGE_CONFIG);
         } else {
           setConfig(draftConfig);
@@ -161,11 +258,19 @@ export default function CMSPage() {
     setPublishing(true);
     setError(null);
     try {
-      // 先保存草稿
-      await saveDraft();
+      // 先保存草稿（带 hasPublished 标记）
+      const configToSave = {
+        ...config,
+        hasPublished: true, // 标记为已发布
+      };
+      const cleanedConfig = cleanConfig(configToSave);
+      await pageApi.updateDraftConfig(cleanedConfig);
 
       // 然后发布
       await pageApi.publish();
+
+      // 更新本地配置，设置 hasPublished 标记
+      setConfig(cleanedConfig);
 
       toastOk("已发布！");
     } catch (e) {
