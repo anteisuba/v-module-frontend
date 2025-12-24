@@ -69,9 +69,13 @@ class ApiClient {
       // 处理未授权错误（401）
       if (response.status === 401 && !skipAuth) {
         // 在客户端环境下重定向到登录页
+        // 但如果当前已经在登录页，避免无限循环
         if (typeof window !== "undefined") {
           const currentPath = window.location.pathname;
-          window.location.href = `/admin?redirect=${encodeURIComponent(currentPath)}`;
+          // 如果当前路径已经是 /admin，不要再次重定向，避免无限循环
+          if (!currentPath.startsWith("/admin")) {
+            window.location.href = `/admin?redirect=${encodeURIComponent(currentPath)}`;
+          }
         }
         throw new ApiError("未授权，请先登录", 401, "UNAUTHORIZED");
       }
@@ -204,9 +208,12 @@ class ApiClient {
       }
 
       if (response.status === 401 && !options.skipAuth) {
+        // 如果当前路径已经是 /admin，不要再次重定向，避免无限循环
         if (typeof window !== "undefined") {
           const currentPath = window.location.pathname;
-          window.location.href = `/admin?redirect=${encodeURIComponent(currentPath)}`;
+          if (!currentPath.startsWith("/admin")) {
+            window.location.href = `/admin?redirect=${encodeURIComponent(currentPath)}`;
+          }
         }
         throw new ApiError("未授权，请先登录", 401, "UNAUTHORIZED");
       }

@@ -67,7 +67,15 @@ export function UserProvider({ children }: UserProviderProps) {
   }, [router]);
 
   // 初始化时加载用户信息
+  // 但如果当前在登录页，跳过自动加载，避免无限循环
   useEffect(() => {
+    // 检查当前路径，如果在登录页（/admin），不自动加载用户信息
+    // 因为登录页不需要用户信息，而且可能会触发 401 导致重定向循环
+    if (typeof window !== "undefined" && window.location.pathname.startsWith("/admin")) {
+      // 在登录页，设置 loading 为 false，但不加载用户信息
+      setLoading(false);
+      return;
+    }
     refreshUser();
   }, [refreshUser]);
 
