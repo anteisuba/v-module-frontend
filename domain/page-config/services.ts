@@ -1,11 +1,11 @@
 // domain/page-config/services.ts
 
 import { prisma } from "@/lib/prisma";
-import { DEFAULT_PAGE_CONFIG } from "./constants";
+import { DEFAULT_PAGE_CONFIG, EMPTY_PAGE_CONFIG } from "./constants";
 import type { PageConfig } from "./types";
 
 /**
- * 确保用户有 Page 记录，如果没有则创建并填充默认配置
+ * 确保用户有 Page 记录，如果没有则创建并填充空配置
  * 用于首次登录时自动创建页面
  */
 export async function ensureUserPage(
@@ -24,18 +24,18 @@ export async function ensureUserPage(
   if (existing) {
     return {
       id: existing.id,
-      draftConfig: (existing.draftConfig as PageConfig) || DEFAULT_PAGE_CONFIG,
+      draftConfig: (existing.draftConfig as PageConfig) || EMPTY_PAGE_CONFIG,
       publishedConfig: (existing.publishedConfig as PageConfig) || null,
     };
   }
 
-  // 创建新的 Page 记录，同时填充 draftConfig 和 publishedConfig
+  // 创建新的 Page 记录，使用空配置（首次访问时显示空白状态）
   const page = await prisma.page.create({
     data: {
       userId,
       slug,
-      draftConfig: DEFAULT_PAGE_CONFIG,
-      publishedConfig: DEFAULT_PAGE_CONFIG, // 初始状态：草稿和发布配置相同
+      draftConfig: EMPTY_PAGE_CONFIG,
+      publishedConfig: EMPTY_PAGE_CONFIG, // 初始状态：草稿和发布配置相同（都是空的）
     },
   });
 

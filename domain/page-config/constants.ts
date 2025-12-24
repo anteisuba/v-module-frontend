@@ -3,6 +3,21 @@
 import type { PageConfig } from "./types";
 
 /**
+ * 空页面配置
+ * 用于首次访问 CMS 时显示空白状态
+ */
+export const EMPTY_PAGE_CONFIG: PageConfig = {
+  background: {
+    type: "color",
+    value: "#000000", // 默认黑色背景
+  },
+  sections: [],
+  showHeroThumbStrip: true,
+  showLogo: true,
+  showSocialLinks: true,
+};
+
+/**
  * 默认页面配置
  * 用于首次创建页面时填充 draftConfig 和 publishedConfig
  */

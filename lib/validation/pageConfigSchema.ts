@@ -20,11 +20,19 @@ const HeroSectionPropsSchema = z.object({
         src: z.string().min(1),
         alt: z.string().optional(),
         href: z.string().optional(),
+        objectPosition: z.string().optional(), // 图片位置
       })
     )
     .max(10), // 允许空数组，最多 10 张
   title: z.string().optional(),
   subtitle: z.string().optional(),
+  layout: z
+    .object({
+      heightVh: z.number().min(50).max(300).optional(), // 高度（vh），50-300
+      backgroundColor: z.string().optional(), // 背景颜色
+      backgroundOpacity: z.number().min(0).max(1).optional(), // 背景透明度 0-1
+    })
+    .optional(),
 });
 
 const LinksSectionPropsSchema = z.object({
@@ -63,6 +71,14 @@ const NewsSectionPropsSchema = z.object({
       objectPosition: z.string().optional(), // 图片位置
     })
   ),
+  layout: z
+    .object({
+      paddingY: z.number().min(0).max(200).optional(), // 上下内边距（px），0-200
+      backgroundColor: z.string().optional(), // 背景颜色
+      backgroundOpacity: z.number().min(0).max(1).optional(), // 背景透明度 0-1
+      maxWidth: z.string().optional(), // 最大宽度，如 "7xl", "6xl", "full" 等
+    })
+    .optional(),
 });
 
 const SectionConfigSchema = z.discriminatedUnion("type", [

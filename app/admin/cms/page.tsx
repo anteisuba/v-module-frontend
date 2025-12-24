@@ -11,14 +11,18 @@ import { useUser } from "@/lib/context/UserContext";
 import type {
   PageConfig,
   HeroSectionProps,
+  NewsSectionProps,
   SocialLinkItem,
 } from "@/domain/page-config/types";
-import { DEFAULT_PAGE_CONFIG } from "@/domain/page-config/constants";
+import {
+  DEFAULT_PAGE_CONFIG,
+  EMPTY_PAGE_CONFIG,
+} from "@/domain/page-config/constants";
 
 export default function CMSPage() {
   const router = useRouter();
   const { user } = useUser();
-  const [config, setConfig] = useState<PageConfig>(DEFAULT_PAGE_CONFIG);
+  const [config, setConfig] = useState<PageConfig>(EMPTY_PAGE_CONFIG);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
@@ -31,6 +35,24 @@ export default function CMSPage() {
     setTimeout(() => setOk(null), 1800);
   }
 
+  // 检查配置是否是默认配置（需要清空）
+  function isDefaultConfig(config: PageConfig): boolean {
+    // 检查是否有默认的 sections（hero-1, links-1, gallery-1）
+    const hasDefaultSections = config.sections.some(
+      (section) =>
+        section.id === "hero-1" ||
+        section.id === "links-1" ||
+        section.id === "gallery-1"
+    );
+    // 检查是否有默认的社交链接
+    const hasDefaultSocialLinks = config.socialLinks?.some(
+      (link) =>
+        link.url.includes("example.com") ||
+        link.url.includes("twitter.com/example")
+    );
+    return hasDefaultSections || hasDefaultSocialLinks;
+  }
+
   // 获取草稿配置
   async function loadConfig() {
     setError(null);
@@ -38,14 +60,20 @@ export default function CMSPage() {
     try {
       const draftConfig = await pageApi.getDraftConfig();
       if (draftConfig) {
-        setConfig(draftConfig);
+        // 如果是默认配置，清空为空白配置
+        if (isDefaultConfig(draftConfig)) {
+          setConfig(EMPTY_PAGE_CONFIG);
+        } else {
+          setConfig(draftConfig);
+        }
       } else {
-        setConfig(DEFAULT_PAGE_CONFIG);
+        // 如果没有配置，使用空配置（首次访问）
+        setConfig(EMPTY_PAGE_CONFIG);
       }
     } catch (e) {
       if (e instanceof ApiError && e.status === 404) {
-        // 如果还没有配置，使用默认配置
-        setConfig(DEFAULT_PAGE_CONFIG);
+        // 如果还没有配置，使用空配置（首次访问）
+        setConfig(EMPTY_PAGE_CONFIG);
       } else {
         setError(e instanceof Error ? e.message : "加载失败");
       }
@@ -80,12 +108,17 @@ export default function CMSPage() {
         if (section.type === "news") {
           // 过滤掉 src 或 href 为空的 items
           const validItems = section.props.items.filter(
-            (item) => item.src && item.src.trim().length > 0 && item.href && item.href.trim().length > 0
+            (item) =>
+              item.src &&
+              item.src.trim().length > 0 &&
+              item.href &&
+              item.href.trim().length > 0
           );
 
           return {
             ...section,
             props: {
+              ...section.props, // 保留现有的 props（包括 layout）
               items: validItems, // 允许空数组
             },
           };
@@ -155,6 +188,46 @@ export default function CMSPage() {
   // 获取 hero section
   function getHeroSection() {
     return config.sections.find((s) => s.type === "hero");
+  }
+
+  // 确保 hero section 存在（如果不存在则创建）
+  function ensureHeroSection(): {
+    id: string;
+    type: "hero";
+    enabled: boolean;
+    order: number;
+    props: HeroSectionProps;
+  } {
+    const heroSection = getHeroSection();
+    if (!heroSection) {
+      // 如果不存在，创建一个新的 hero section
+      // Hero section 的 order 始终为 0，确保它排在最前面
+      const newHeroSection: {
+        id: string;
+        type: "hero";
+        enabled: boolean;
+        order: number;
+        props: HeroSectionProps;
+      } = {
+        id: `hero-${Date.now()}`,
+        type: "hero",
+        enabled: true,
+        order: 0, // Hero section 始终排在最前面
+        props: {
+          slides: [],
+          title: "",
+          subtitle: "",
+        },
+      };
+      // 同步更新 config，确保后续操作可以使用
+      setConfig((prevConfig) => ({
+        ...prevConfig,
+        sections: [...prevConfig.sections, newHeroSection],
+      }));
+      // 返回新创建的 section
+      return newHeroSection;
+    }
+    return heroSection;
   }
 
   // 切换 section 的 enabled 状态
@@ -230,50 +303,95 @@ export default function CMSPage() {
     let newsSection = getNewsSection();
     if (!newsSection) {
       // 如果不存在，创建一个新的 news section
-      const maxOrder = Math.max(...config.sections.map((s) => s.order), -1);
-      newsSection = {
-        id: `news-${Date.now()}`,
-        type: "news",
-        enabled: true,
-        order: maxOrder + 1,
-        props: {
-          items: [],
-        },
-      };
-      // 添加到 sections
-      setConfig({
-        ...config,
-        sections: [...config.sections, newsSection],
+      setConfig((prevConfig) => {
+        const maxOrder = Math.max(
+          ...prevConfig.sections.map((s) => s.order),
+          -1
+        );
+        const newSection = {
+          id: `news-${Date.now()}`,
+          type: "news" as const,
+          enabled: true,
+          order: maxOrder + 1,
+          props: {
+            items: [],
+            // layout 会在用户首次设置时创建，这里不设置默认值
+          },
+        };
+        return {
+          ...prevConfig,
+          sections: [...prevConfig.sections, newSection],
+        };
       });
+      // 重新获取新创建的 section
+      newsSection = getNewsSection();
     }
     return newsSection;
   }
 
   // 更新 news section 的 items
-  function updateNewsItems(items: Array<{ id: string; src: string; alt?: string; href: string }>) {
-    const newsSection = ensureNewsSection();
-    if (!newsSection || newsSection.type !== "news") return;
+  function updateNewsItems(
+    items: Array<{ id: string; src: string; alt?: string; href: string }>
+  ) {
+    // 确保 section 存在
+    ensureNewsSection();
 
-    setConfig({
-      ...config,
-      sections: config.sections.map((s) => {
-        if (s.id === newsSection.id && s.type === "news") {
-          return {
-            ...s,
-            type: "news" as const,
-            props: {
-              items: items,
-            },
-          };
-        }
-        return s;
-      }),
+    setConfig((prevConfig) => {
+      // 从最新的 config 中获取 news section
+      const newsSection = prevConfig.sections.find((s) => s.type === "news") as
+        | {
+            id: string;
+            type: "news";
+            props: NewsSectionProps;
+            enabled: boolean;
+            order: number;
+          }
+        | undefined;
+
+      if (!newsSection || newsSection.type !== "news") {
+        // 如果不存在，创建一个新的（这种情况理论上不应该发生，因为 ensureNewsSection 已经创建了）
+        const maxOrder = Math.max(
+          ...prevConfig.sections.map((s) => s.order),
+          -1
+        );
+        const newSection = {
+          id: `news-${Date.now()}`,
+          type: "news" as const,
+          enabled: true,
+          order: maxOrder + 1,
+          props: {
+            items: items,
+          },
+        };
+        return {
+          ...prevConfig,
+          sections: [...prevConfig.sections, newSection],
+        };
+      }
+
+      // 更新 items，同时保留所有现有的 props（包括 layout）
+      return {
+        ...prevConfig,
+        sections: prevConfig.sections.map((s) => {
+          if (s.id === newsSection.id && s.type === "news") {
+            return {
+              ...s,
+              type: "news" as const,
+              props: {
+                ...s.props, // 保留现有的 props（包括 layout）
+                items: items,
+              },
+            };
+          }
+          return s;
+        }),
+      };
     });
   }
 
   // 添加新闻图片
   function addNewsItem() {
-    let newsSection = getNewsSection();
+    const newsSection = getNewsSection();
     const newItem = {
       id: `news-item-${Date.now()}`,
       src: "",
@@ -283,39 +401,46 @@ export default function CMSPage() {
 
     // 如果不存在，创建新的 section 并添加 item
     if (!newsSection) {
-      const maxOrder = Math.max(...config.sections.map((s) => s.order), -1);
-      const newSection = {
-        id: `news-${Date.now()}`,
-        type: "news" as const,
-        enabled: true,
-        order: maxOrder + 1,
-        props: {
-          items: [newItem],
-        },
-      };
-      setConfig({
-        ...config,
-        sections: [...config.sections, newSection],
+      setConfig((prevConfig) => {
+        const maxOrder = Math.max(
+          ...prevConfig.sections.map((s) => s.order),
+          -1
+        );
+        const newSection = {
+          id: `news-${Date.now()}`,
+          type: "news" as const,
+          enabled: true,
+          order: maxOrder + 1,
+          props: {
+            items: [newItem],
+            // layout 会在用户首次设置时创建，这里不设置默认值
+          },
+        };
+        return {
+          ...prevConfig,
+          sections: [...prevConfig.sections, newSection],
+        };
       });
       return;
     }
 
     // 如果已存在，添加 item
-    setConfig({
-      ...config,
-      sections: config.sections.map((s) => {
+    setConfig((prevConfig) => ({
+      ...prevConfig,
+      sections: prevConfig.sections.map((s) => {
         if (s.id === newsSection.id && s.type === "news") {
           return {
             ...s,
             type: "news" as const,
             props: {
+              ...s.props, // 保留现有的 props（包括 layout）
               items: [...s.props.items, newItem],
             },
           };
         }
         return s;
       }),
-    });
+    }));
   }
 
   // 删除新闻图片
@@ -323,22 +448,84 @@ export default function CMSPage() {
     const newsSection = getNewsSection();
     if (!newsSection || newsSection.type !== "news") return;
 
-    updateNewsItems(newsSection.props.items.filter((item) => item.id !== itemId));
+    updateNewsItems(
+      newsSection.props.items.filter((item) => item.id !== itemId)
+    );
   }
 
   // 更新新闻图片
   function updateNewsItem(
     itemId: string,
-    updates: { src?: string; alt?: string; href?: string; objectPosition?: string }
+    updates: {
+      src?: string;
+      alt?: string;
+      href?: string;
+      objectPosition?: string;
+    }
   ) {
-    const newsSection = ensureNewsSection();
-    if (!newsSection || newsSection.type !== "news") return;
+    // 确保 section 存在
+    ensureNewsSection();
 
-    updateNewsItems(
-      newsSection.props.items.map((item) =>
-        item.id === itemId ? { ...item, ...updates } : item
-      )
-    );
+    setConfig((prevConfig) => {
+      // 从最新的 config 中获取 news section
+      const newsSection = prevConfig.sections.find((s) => s.type === "news") as
+        | {
+            id: string;
+            type: "news";
+            props: NewsSectionProps;
+            enabled: boolean;
+            order: number;
+          }
+        | undefined;
+
+      if (!newsSection || newsSection.type !== "news") {
+        // 如果不存在，创建一个新的
+        const maxOrder = Math.max(
+          ...prevConfig.sections.map((s) => s.order),
+          -1
+        );
+        const newItem = {
+          id: itemId,
+          src: updates.src || "",
+          alt: updates.alt || "",
+          href: updates.href || "",
+          objectPosition: updates.objectPosition,
+        };
+        const newSection = {
+          id: `news-${Date.now()}`,
+          type: "news" as const,
+          enabled: true,
+          order: maxOrder + 1,
+          props: {
+            items: [newItem],
+          },
+        };
+        return {
+          ...prevConfig,
+          sections: [...prevConfig.sections, newSection],
+        };
+      }
+
+      // 更新 item，同时保留所有现有的 props（包括 layout）
+      return {
+        ...prevConfig,
+        sections: prevConfig.sections.map((s) => {
+          if (s.id === newsSection.id && s.type === "news") {
+            return {
+              ...s,
+              type: "news" as const,
+              props: {
+                ...s.props, // 保留现有的 props（包括 layout）
+                items: s.props.items.map((item) =>
+                  item.id === itemId ? { ...item, ...updates } : item
+                ),
+              },
+            };
+          }
+          return s;
+        }),
+      };
+    });
   }
 
   // 上传新闻图片
@@ -361,9 +548,16 @@ export default function CMSPage() {
   }
 
   // 更新 hero section 的图片
-  function updateHeroSlide(index: number, src: string, alt?: string) {
-    const heroSection = getHeroSection();
-    if (!heroSection || heroSection.type !== "hero") return;
+  function updateHeroSlide(
+    index: number,
+    updates: {
+      src?: string;
+      alt?: string;
+      objectPosition?: string;
+    }
+  ) {
+    const heroSection = ensureHeroSection();
+    if (heroSection.type !== "hero") return;
 
     const slides = [...(heroSection.props.slides || [])];
 
@@ -373,25 +567,40 @@ export default function CMSPage() {
     }
 
     slides[index] = {
-      src: src.trim(),
-      alt: alt?.trim() || slides[index]?.alt?.trim() || "",
+      ...slides[index],
+      ...(updates.src !== undefined && { src: updates.src.trim() }),
+      ...(updates.alt !== undefined && {
+        alt: updates.alt?.trim() || slides[index]?.alt?.trim() || "",
+      }),
+      ...(updates.objectPosition !== undefined && {
+        objectPosition: updates.objectPosition,
+      }),
     };
 
-    setConfig({
-      ...config,
-      sections: config.sections.map((s) => {
-        if (s.id === heroSection.id && s.type === "hero") {
-          return {
-            ...s,
-            type: "hero" as const,
-            props: {
-              ...heroSection.props,
-              slides: slides, // 保留所有 slides（包括可能的空值，保存时会过滤）
-            },
-          };
-        }
-        return s;
-      }),
+    setConfig((prevConfig) => {
+      const currentHeroSection = prevConfig.sections.find(
+        (s) => s.id === heroSection.id && s.type === "hero"
+      );
+      if (!currentHeroSection || currentHeroSection.type !== "hero") {
+        // 如果找不到，说明状态还没更新，返回原配置
+        return prevConfig;
+      }
+      return {
+        ...prevConfig,
+        sections: prevConfig.sections.map((s) => {
+          if (s.id === heroSection.id && s.type === "hero") {
+            return {
+              ...s,
+              type: "hero" as const,
+              props: {
+                ...currentHeroSection.props,
+                slides: slides, // 保留所有 slides（包括可能的空值，保存时会过滤）
+              },
+            };
+          }
+          return s;
+        }),
+      };
     });
   }
 
@@ -401,7 +610,7 @@ export default function CMSPage() {
     setError(null);
     try {
       const result = await pageApi.uploadImage(file);
-      updateHeroSlide(index, result.src);
+      updateHeroSlide(index, { src: result.src });
       toastOk(`图片 ${index + 1} 上传成功`);
     } catch (e) {
       if (e instanceof ApiError || e instanceof NetworkError) {
@@ -416,7 +625,7 @@ export default function CMSPage() {
 
   // 使用图片链接
   function useImageUrl(index: number, url: string) {
-    updateHeroSlide(index, url);
+    updateHeroSlide(index, { src: url });
     toastOk(`图片 ${index + 1} 已更新`);
   }
 
@@ -522,13 +731,16 @@ export default function CMSPage() {
             <h2 className="text-lg font-semibold text-black">
               Hero Section - 顶部内容
             </h2>
-            {getHeroSection() && (
-              <ToggleSwitch
-                enabled={getHeroSection()!.enabled}
-                onChange={() => toggleSectionEnabled(getHeroSection()!.id)}
-                disabled={saving || publishing}
-              />
-            )}
+            {(() => {
+              const heroSection = getHeroSection();
+              return heroSection ? (
+                <ToggleSwitch
+                  enabled={heroSection.enabled}
+                  onChange={() => toggleSectionEnabled(heroSection.id)}
+                  disabled={saving || publishing}
+                />
+              ) : null;
+            })()}
           </div>
 
           {/* Title 和 Subtitle 编辑 */}
@@ -541,23 +753,23 @@ export default function CMSPage() {
                 type="text"
                 value={heroSection?.props.title || ""}
                 onChange={(e) => {
-                  const heroSection = getHeroSection();
-                  if (!heroSection || heroSection.type !== "hero") return;
+                  const heroSection = ensureHeroSection();
+                  const newTitle = e.target.value || undefined;
 
-                  setConfig({
-                    ...config,
-                    sections: config.sections.map((s) =>
+                  setConfig((prevConfig) => ({
+                    ...prevConfig,
+                    sections: prevConfig.sections.map((s) =>
                       s.id === heroSection.id && s.type === "hero"
                         ? {
                             ...s,
                             props: {
                               ...s.props,
-                              title: e.target.value || undefined,
+                              title: newTitle,
                             },
                           }
                         : s
                     ),
-                  });
+                  }));
                 }}
                 placeholder="例如：Welcome"
                 className="w-full rounded-lg border border-black/10 bg-white px-4 py-2 text-sm text-black"
@@ -571,27 +783,143 @@ export default function CMSPage() {
                 type="text"
                 value={heroSection?.props.subtitle || ""}
                 onChange={(e) => {
-                  const heroSection = getHeroSection();
-                  if (!heroSection || heroSection.type !== "hero") return;
+                  const heroSection = ensureHeroSection();
+                  const newSubtitle = e.target.value || undefined;
 
-                  setConfig({
-                    ...config,
-                    sections: config.sections.map((s) =>
+                  setConfig((prevConfig) => ({
+                    ...prevConfig,
+                    sections: prevConfig.sections.map((s) =>
                       s.id === heroSection.id && s.type === "hero"
                         ? {
                             ...s,
                             props: {
                               ...s.props,
-                              subtitle: e.target.value || undefined,
+                              subtitle: newSubtitle,
                             },
                           }
                         : s
                     ),
-                  });
+                  }));
                 }}
                 placeholder="例如：VTuber Personal Page"
                 className="w-full rounded-lg border border-black/10 bg-white px-4 py-2 text-sm text-black"
               />
+            </div>
+          </div>
+
+          {/* 布局配置 */}
+          <div className="mb-6 space-y-4 rounded-lg border border-black/10 bg-white/70 p-4">
+            <h3 className="text-sm font-semibold text-black mb-3">布局设置</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {/* 高度设置 */}
+              <div>
+                <label className="block text-xs text-black/70 mb-2">
+                  高度（vh）：{heroSection?.props.layout?.heightVh ?? 150}
+                </label>
+                <input
+                  type="range"
+                  min="50"
+                  max="300"
+                  value={heroSection?.props.layout?.heightVh ?? 150}
+                  onChange={(e) => {
+                    const heroSection = ensureHeroSection();
+                    setConfig((prevConfig) => ({
+                      ...prevConfig,
+                      sections: prevConfig.sections.map((s) =>
+                        s.id === heroSection.id && s.type === "hero"
+                          ? {
+                              ...s,
+                              props: {
+                                ...s.props,
+                                layout: {
+                                  ...s.props.layout,
+                                  heightVh: parseInt(e.target.value),
+                                },
+                              },
+                            }
+                          : s
+                      ),
+                    }));
+                  }}
+                  className="w-full"
+                  disabled={saving || publishing}
+                />
+              </div>
+              {/* 背景颜色 */}
+              <div>
+                <label className="block text-xs text-black/70 mb-2">
+                  背景颜色
+                </label>
+                <input
+                  type="color"
+                  value={
+                    heroSection?.props.layout?.backgroundColor || "#000000"
+                  }
+                  onChange={(e) => {
+                    const heroSection = ensureHeroSection();
+                    setConfig((prevConfig) => ({
+                      ...prevConfig,
+                      sections: prevConfig.sections.map((s) =>
+                        s.id === heroSection.id && s.type === "hero"
+                          ? {
+                              ...s,
+                              props: {
+                                ...s.props,
+                                layout: {
+                                  ...s.props.layout,
+                                  backgroundColor: e.target.value,
+                                },
+                              },
+                            }
+                          : s
+                      ),
+                    }));
+                  }}
+                  className="w-full h-8 rounded border border-black/10"
+                  disabled={saving || publishing}
+                />
+              </div>
+              {/* 背景透明度 */}
+              <div>
+                <label className="block text-xs text-black/70 mb-2">
+                  背景透明度：
+                  {(
+                    (heroSection?.props.layout?.backgroundOpacity ?? 1) * 100
+                  ).toFixed(0)}
+                  %
+                </label>
+                <input
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={
+                    (heroSection?.props.layout?.backgroundOpacity ?? 1) * 100
+                  }
+                  onChange={(e) => {
+                    const heroSection = ensureHeroSection();
+                    setConfig((prevConfig) => ({
+                      ...prevConfig,
+                      sections: prevConfig.sections.map((s) =>
+                        s.id === heroSection.id && s.type === "hero"
+                          ? {
+                              ...s,
+                              props: {
+                                ...s.props,
+                                layout: {
+                                  ...s.props.layout,
+                                  backgroundOpacity:
+                                    parseInt(e.target.value) / 100,
+                                },
+                              },
+                            }
+                          : s
+                      ),
+                    }));
+                  }}
+                  className="w-full"
+                  disabled={saving || publishing}
+                />
+              </div>
             </div>
           </div>
 
@@ -603,9 +931,7 @@ export default function CMSPage() {
               </h3>
               {/* Hero 缩略图条显示开关 */}
               <div className="flex items-center gap-2">
-                <label className="text-sm text-black/70">
-                  是否显示
-                </label>
+                <label className="text-sm text-black/70">是否显示</label>
                 <button
                   type="button"
                   onClick={() => {
@@ -618,7 +944,7 @@ export default function CMSPage() {
                   disabled={saving || publishing}
                   className={[
                     "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-black/20 focus:ring-offset-2",
-                    (config.showHeroThumbStrip ?? true)
+                    config.showHeroThumbStrip ?? true
                       ? "bg-black"
                       : "bg-black/30",
                     (saving || publishing) && "opacity-50 cursor-not-allowed",
@@ -628,7 +954,7 @@ export default function CMSPage() {
                   <span
                     className={[
                       "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
-                      (config.showHeroThumbStrip ?? true)
+                      config.showHeroThumbStrip ?? true
                         ? "translate-x-6"
                         : "translate-x-1",
                     ].join(" ")}
@@ -651,17 +977,20 @@ export default function CMSPage() {
                       图片 {index + 1}
                     </div>
 
-                    {/* 预览 */}
-                    <div className="mb-4 aspect-[4/3] overflow-hidden rounded-lg border border-black/10 bg-black/5">
+                    {/* 预览 - 可拖拽编辑位置 */}
+                    <div className="mb-4">
                       {slide?.src ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <ImagePositionEditor
                           src={slide.src}
                           alt={slide.alt || `Hero ${index + 1}`}
-                          className="h-full w-full object-cover"
+                          objectPosition={slide.objectPosition || "center"}
+                          onChange={(position) =>
+                            updateHeroSlide(index, { objectPosition: position })
+                          }
+                          disabled={isUploading || saving || publishing}
                         />
                       ) : (
-                        <div className="flex h-full items-center justify-center text-xs text-black/50">
+                        <div className="aspect-[4/3] flex items-center justify-center rounded-lg border border-black/10 bg-black/5 text-xs text-black/50">
                           暂无图片
                         </div>
                       )}
@@ -731,15 +1060,180 @@ export default function CMSPage() {
                 />
               )}
               <button
-              type="button"
-              onClick={addNewsItem}
-              disabled={saving || publishing}
-              className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                type="button"
+                onClick={addNewsItem}
+                disabled={saving || publishing}
+                className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 添加图片
               </button>
             </div>
           </div>
+
+          {/* 布局配置 */}
+          {getNewsSection() && (
+            <div className="mb-6 space-y-4 rounded-lg border border-black/10 bg-white/70 p-4">
+              <h3 className="text-sm font-semibold text-black mb-3">
+                布局设置
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                {/* 上下内边距 */}
+                <div>
+                  <label className="block text-xs text-black/70 mb-2">
+                    上下内边距（px）：
+                    {getNewsSection()?.props.layout?.paddingY ?? 64}
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="200"
+                    value={getNewsSection()?.props.layout?.paddingY ?? 64}
+                    onChange={(e) => {
+                      const newsSection = ensureNewsSection();
+                      if (!newsSection || newsSection.type !== "news") return;
+                      setConfig((prevConfig) => ({
+                        ...prevConfig,
+                        sections: prevConfig.sections.map((s) =>
+                          s.id === newsSection.id && s.type === "news"
+                            ? {
+                                ...s,
+                                props: {
+                                  ...s.props,
+                                  layout: {
+                                    ...s.props.layout,
+                                    paddingY: parseInt(e.target.value),
+                                  },
+                                },
+                              }
+                            : s
+                        ),
+                      }));
+                    }}
+                    className="w-full"
+                    disabled={saving || publishing}
+                  />
+                </div>
+                {/* 背景颜色 */}
+                <div>
+                  <label className="block text-xs text-black/70 mb-2">
+                    背景颜色
+                  </label>
+                  <input
+                    type="color"
+                    value={
+                      getNewsSection()?.props.layout?.backgroundColor ||
+                      "#000000"
+                    }
+                    onChange={(e) => {
+                      const newsSection = ensureNewsSection();
+                      if (!newsSection || newsSection.type !== "news") return;
+                      setConfig((prevConfig) => ({
+                        ...prevConfig,
+                        sections: prevConfig.sections.map((s) =>
+                          s.id === newsSection.id && s.type === "news"
+                            ? {
+                                ...s,
+                                props: {
+                                  ...s.props,
+                                  layout: {
+                                    ...s.props.layout,
+                                    backgroundColor: e.target.value,
+                                  },
+                                },
+                              }
+                            : s
+                        ),
+                      }));
+                    }}
+                    className="w-full h-8 rounded border border-black/10"
+                    disabled={saving || publishing}
+                  />
+                </div>
+                {/* 背景透明度 */}
+                <div>
+                  <label className="block text-xs text-black/70 mb-2">
+                    背景透明度：
+                    {(
+                      (getNewsSection()?.props.layout?.backgroundOpacity ?? 1) *
+                      100
+                    ).toFixed(0)}
+                    %
+                  </label>
+                  <input
+                    type="range"
+                    min="0"
+                    max="100"
+                    value={
+                      (getNewsSection()?.props.layout?.backgroundOpacity ?? 1) *
+                      100
+                    }
+                    onChange={(e) => {
+                      const newsSection = ensureNewsSection();
+                      if (!newsSection || newsSection.type !== "news") return;
+                      setConfig((prevConfig) => ({
+                        ...prevConfig,
+                        sections: prevConfig.sections.map((s) =>
+                          s.id === newsSection.id && s.type === "news"
+                            ? {
+                                ...s,
+                                props: {
+                                  ...s.props,
+                                  layout: {
+                                    ...s.props.layout,
+                                    backgroundOpacity:
+                                      parseInt(e.target.value) / 100,
+                                  },
+                                },
+                              }
+                            : s
+                        ),
+                      }));
+                    }}
+                    className="w-full"
+                    disabled={saving || publishing}
+                  />
+                </div>
+                {/* 最大宽度 */}
+                <div>
+                  <label className="block text-xs text-black/70 mb-2">
+                    最大宽度
+                  </label>
+                  <select
+                    value={getNewsSection()?.props.layout?.maxWidth || "7xl"}
+                    onChange={(e) => {
+                      const newsSection = ensureNewsSection();
+                      if (!newsSection || newsSection.type !== "news") return;
+                      setConfig((prevConfig) => ({
+                        ...prevConfig,
+                        sections: prevConfig.sections.map((s) =>
+                          s.id === newsSection.id && s.type === "news"
+                            ? {
+                                ...s,
+                                props: {
+                                  ...s.props,
+                                  layout: {
+                                    ...s.props.layout,
+                                    maxWidth: e.target.value,
+                                  },
+                                },
+                              }
+                            : s
+                        ),
+                      }));
+                    }}
+                    className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-xs text-black"
+                    disabled={saving || publishing}
+                  >
+                    <option value="full">全宽</option>
+                    <option value="7xl">7xl (最大)</option>
+                    <option value="6xl">6xl</option>
+                    <option value="5xl">5xl</option>
+                    <option value="4xl">4xl</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="space-y-4">
             {(getNewsSection()?.props.items || []).map((item, index) => (
@@ -916,7 +1410,8 @@ export default function CMSPage() {
               </div>
             ))}
 
-            {(!getNewsSection() || getNewsSection()?.props.items.length === 0) && (
+            {(!getNewsSection() ||
+              getNewsSection()?.props.items.length === 0) && (
               <div className="py-8 text-center text-sm text-black/50">
                 暂无新闻图片，点击"添加图片"开始添加
               </div>
@@ -927,9 +1422,7 @@ export default function CMSPage() {
         {/* Logo 编辑（左上角 ano 位置） */}
         <div className="mb-8 rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-black">
-              Logo（左上角）
-            </h2>
+            <h2 className="text-lg font-semibold text-black">Logo（左上角）</h2>
             <ToggleSwitch
               enabled={config.showLogo !== false}
               onChange={toggleLogoEnabled}
@@ -1037,20 +1530,20 @@ export default function CMSPage() {
                 disabled={saving || publishing}
               />
               <button
-              onClick={() => {
-                const newLink: SocialLinkItem = {
-                  id: `social-${Date.now()}`,
-                  name: "新链接",
-                  url: "",
-                  icon: "",
-                  enabled: true,
-                };
-                setConfig({
-                  ...config,
-                  socialLinks: [...(config.socialLinks || []), newLink],
-                });
-              }}
-              className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                onClick={() => {
+                  const newLink: SocialLinkItem = {
+                    id: `social-${Date.now()}`,
+                    name: "新链接",
+                    url: "",
+                    icon: "",
+                    enabled: true,
+                  };
+                  setConfig({
+                    ...config,
+                    socialLinks: [...(config.socialLinks || []), newLink],
+                  });
+                }}
+                className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 + 新增链接
               </button>

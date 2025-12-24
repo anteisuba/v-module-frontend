@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 import { PageRenderer } from "@/features/page-renderer";
 import {
   getPublishedConfigBySlug,
-  DEFAULT_PAGE_CONFIG,
+  EMPTY_PAGE_CONFIG,
 } from "@/domain/page-config";
 import type { PageConfig } from "@/domain/page-config/types";
 
@@ -25,8 +25,8 @@ export default async function UserPage({
     notFound();
   }
 
-  // 读取配置：优先使用 publishedConfig，否则使用默认配置
-  let config: PageConfig = DEFAULT_PAGE_CONFIG;
+  // 读取配置：优先使用 publishedConfig，否则使用空配置
+  let config: PageConfig = EMPTY_PAGE_CONFIG;
 
   const publishedConfig = await getPublishedConfigBySlug(slug);
   if (publishedConfig) {

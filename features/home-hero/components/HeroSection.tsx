@@ -22,6 +22,7 @@ export default function HeroSection({
   showThumbStrip = true,
   showLogo = true,
   showSocialLinks = true,
+  layout,
 }: {
   initialSlides?: HeroSlide[];
   logo?: { src?: string; alt?: string };
@@ -31,11 +32,33 @@ export default function HeroSection({
   showThumbStrip?: boolean;
   showLogo?: boolean;
   showSocialLinks?: boolean;
+  layout?: {
+    heightVh?: number;
+    backgroundColor?: string;
+    backgroundOpacity?: number;
+  };
 }) {
   const menu = useHeroMenu();
 
-  const HERO_SCROLL_HEIGHT_VH = 150;
-  const HERO_IMAGE_HEIGHT_VH = 150;
+  const HERO_SCROLL_HEIGHT_VH = layout?.heightVh ?? 150;
+  const HERO_IMAGE_HEIGHT_VH = layout?.heightVh ?? 150;
+  const backgroundColor = layout?.backgroundColor || "#000000";
+  const backgroundOpacity = layout?.backgroundOpacity ?? 1;
+
+  // 将背景颜色和透明度转换为 rgba
+  const hexToRgb = (hex: string) => {
+    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+    return result
+      ? {
+          r: parseInt(result[1], 16),
+          g: parseInt(result[2], 16),
+          b: parseInt(result[3], 16),
+        }
+      : { r: 0, g: 0, b: 0 };
+  };
+
+  const rgb = hexToRgb(backgroundColor);
+  const backgroundColorWithOpacity = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${backgroundOpacity})`;
 
   const slides = useMemo(() => {
     // ✅ 服务端已保证返回 3 张（补齐逻辑），这里只做 fallback 保护
@@ -64,8 +87,11 @@ export default function HeroSection({
     <section
       ref={sectionRef}
       id="top"
-      className="relative w-full bg-black"
-      style={{ height: `${HERO_SCROLL_HEIGHT_VH}vh` }}
+      className="relative w-full"
+      style={{
+        height: `${HERO_SCROLL_HEIGHT_VH}vh`,
+        backgroundColor: backgroundColorWithOpacity,
+      }}
     >
       <div className="sticky top-0 h-screen w-full overflow-hidden">
         {/* 背景图片轮播：始终工作，不受 showThumbStrip 影响 */}
@@ -74,6 +100,7 @@ export default function HeroSection({
           alt={current.alt}
           fadeIn={fadeIn}
           fadeMs={fadeMs}
+          objectPosition={current.objectPosition}
           progress={progress}
           vh={vh}
           imageHeightVh={HERO_IMAGE_HEIGHT_VH}

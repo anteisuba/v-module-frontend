@@ -13,9 +13,16 @@ export type HeroSectionProps = {
     src: string;
     alt?: string;
     href?: string;
+    objectPosition?: string; // 图片位置，如 "center", "top", "bottom", "50% 50%" 等
   }>;
   title?: string;
   subtitle?: string;
+  // 布局配置
+  layout?: {
+    heightVh?: number; // 高度（vh单位），默认 150
+    backgroundColor?: string; // 背景颜色，默认 "black"
+    backgroundOpacity?: number; // 背景透明度（0-1），默认 1
+  };
 };
 
 export type LinksSectionProps = {
@@ -48,6 +55,13 @@ export type NewsSectionProps = {
     href: string; // 外部链接
     objectPosition?: string; // 图片位置，如 "center", "top", "bottom", "50% 50%" 等
   }>;
+  // 布局配置
+  layout?: {
+    paddingY?: number; // 上下内边距（px），默认 64 (py-16)
+    backgroundColor?: string; // 背景颜色，默认 "black"
+    backgroundOpacity?: number; // 背景透明度（0-1），默认 1
+    maxWidth?: string; // 最大宽度，默认 "7xl"
+  };
 };
 
 export type SectionConfig = 

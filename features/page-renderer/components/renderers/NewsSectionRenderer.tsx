@@ -18,7 +18,7 @@ export default function NewsSectionRenderer({
 
   return (
     <div data-section-id={id} data-section-type="news">
-      <NewsCarousel items={props.items} />
+      <NewsCarousel items={props.items} layout={props.layout} />
     </div>
   );
 }

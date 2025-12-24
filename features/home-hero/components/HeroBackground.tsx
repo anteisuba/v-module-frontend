@@ -7,10 +7,9 @@ type Props = {
   alt?: string;
   fadeIn: boolean;
   fadeMs: number;
-
+  objectPosition?: string; // 图片位置，如 "center", "top", "bottom", "50% 50%" 等
   progress: number; // 0..1
   vh: number;
-
   imageHeightVh: number; // 比如 150
 };
 
@@ -24,6 +23,7 @@ export default function HeroBackground({
   alt,
   fadeIn,
   fadeMs,
+  objectPosition = "center",
   progress,
   vh,
   imageHeightVh,
@@ -55,8 +55,12 @@ export default function HeroBackground({
           <img
             src={src}
             alt={alt ?? "hero"}
-            className="h-full w-full object-cover object-top"
-            style={{ width: "100%", height: "100%" }}
+            className="h-full w-full object-cover"
+            style={{
+              width: "100%",
+              height: "100%",
+              objectPosition: objectPosition,
+            }}
           />
         ) : (
           // 本地路径使用 Next.js Image 组件（享受优化）
@@ -66,7 +70,8 @@ export default function HeroBackground({
             fill
             priority
             sizes="100vw"
-            className="object-cover object-top"
+            className="object-cover"
+            style={{ objectPosition: objectPosition }}
           />
         )}
       </div>

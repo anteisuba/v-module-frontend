@@ -19,6 +19,7 @@ export default function HeroSectionRenderer({
     src: s.src,
     alt: s.alt,
     href: s.href || null,
+    objectPosition: s.objectPosition,
   }));
 
   // 明确判断：如果配置为 false，则不显示；否则显示（包括 undefined 时使用默认值 true）
@@ -37,6 +38,7 @@ export default function HeroSectionRenderer({
         showThumbStrip={showThumbStrip}
         showLogo={showLogo}
         showSocialLinks={showSocialLinks}
+        layout={props.layout}
       />
     </div>
   );
