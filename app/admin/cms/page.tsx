@@ -4,7 +4,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BackButton, ImagePositionEditor } from "@/components/ui";
+import { BackButton, ImagePositionEditor, IconPicker } from "@/components/ui";
 import { pageApi } from "@/lib/api";
 import { ApiError, NetworkError } from "@/lib/api/errors";
 import { useUser } from "@/lib/context/UserContext";
@@ -29,6 +29,8 @@ export default function CMSPage() {
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  const [backgroundImageError, setBackgroundImageError] = useState(false);
+  const [uploadingBackground, setUploadingBackground] = useState(false);
 
   function toastOk(msg: string) {
     setOk(msg);
@@ -741,6 +743,26 @@ export default function CMSPage() {
     });
   }
 
+  // 上传背景图片
+  async function uploadBackgroundImage(file: File) {
+    setUploadingBackground(true);
+    setError(null);
+    setBackgroundImageError(false);
+    try {
+      const result = await pageApi.uploadImage(file);
+      handleBackgroundChange("image", result.src);
+      toastOk("背景图片上传成功");
+    } catch (e) {
+      if (e instanceof ApiError || e instanceof NetworkError) {
+        setError(e.message);
+      } else {
+        setError(e instanceof Error ? e.message : "上传失败");
+      }
+    } finally {
+      setUploadingBackground(false);
+    }
+  }
+
   if (loading) {
     return (
       <main className="relative min-h-screen w-full overflow-hidden">
@@ -776,22 +798,22 @@ export default function CMSPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/15" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-6xl px-6 py-10">
+      <div className="relative z-10 mx-auto max-w-5xl px-4 py-8">
         {/* 头部：标题和操作按钮 */}
-        <div className="mb-6 flex items-center justify-between gap-4">
+        <div className="mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-semibold text-black">页面编辑器</h1>
-            <p className="mt-2 text-sm text-black/70">编辑你的个人页面配置</p>
+            <h1 className="text-xl font-semibold text-black">页面编辑器</h1>
+            <p className="mt-1 text-xs text-black/70">编辑你的个人页面配置</p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-2">
             {/* 预览按钮 */}
             {user?.slug && (
               <a
                 href={`/u/${user.slug}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="cursor-pointer rounded-xl border border-black/20 bg-white/70 px-4 py-2 text-sm font-medium text-black transition-colors duration-200 hover:bg-white/80"
+                className="cursor-pointer rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black transition-colors duration-200 hover:bg-white/80"
               >
                 打开页面
               </a>
@@ -801,7 +823,7 @@ export default function CMSPage() {
             <button
               onClick={saveDraft}
               disabled={saving || publishing}
-              className="cursor-pointer rounded-xl border border-black/20 bg-white/70 px-4 py-2 text-sm font-medium text-black transition-colors duration-200 hover:bg-white/80 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="cursor-pointer rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black transition-colors duration-200 hover:bg-white/80 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {saving ? "保存中..." : "保存草稿"}
             </button>
@@ -810,7 +832,7 @@ export default function CMSPage() {
             <button
               onClick={publish}
               disabled={saving || publishing}
-              className="cursor-pointer rounded-xl bg-black px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="cursor-pointer rounded-lg bg-black px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {publishing ? "发布中..." : "发布"}
             </button>
@@ -819,22 +841,22 @@ export default function CMSPage() {
 
         {/* 错误和成功提示 */}
         {error && (
-          <div className="mb-5 rounded-2xl border border-red-500/30 bg-red-50 px-4 py-3 text-sm text-red-700">
+          <div className="mb-4 rounded-lg border border-red-500/30 bg-red-50 px-3 py-2 text-xs text-red-700">
             {error}
           </div>
         )}
 
         {ok && (
-          <div className="mb-5 rounded-2xl border border-emerald-500/30 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
+          <div className="mb-4 rounded-lg border border-emerald-500/30 bg-emerald-50 px-3 py-2 text-xs text-emerald-700">
             {ok}
           </div>
         )}
 
         {/* Hero Section 编辑 */}
-        <div className="mb-8 rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
+        <div className="mb-6 rounded-xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-black">
-              Hero Section - 顶部内容
+            <h2 className="text-base font-semibold text-black">
+              顶部内容 (Hero Section)
             </h2>
             {(() => {
               const heroSection = getHeroSection();
@@ -848,10 +870,308 @@ export default function CMSPage() {
             })()}
           </div>
 
-          {/* Title 和 Subtitle 编辑 */}
-          <div className="mb-6 space-y-4 rounded-lg border border-black/10 bg-white/70 p-4">
+          {/* Logo 编辑（左上角） */}
+          <div className="mb-4 space-y-3 rounded-lg border border-black/10 bg-white/70 p-3">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-semibold text-black">Logo（左上角）</h3>
+              <ToggleSwitch
+                enabled={config.showLogo !== false}
+                onChange={toggleLogoEnabled}
+                disabled={saving || publishing}
+              />
+            </div>
             <div>
-              <label className="block text-sm font-medium text-black mb-2">
+              <label className="block text-xs text-black/70 mb-2">
+                Logo 图片 URL（留空则显示文字 "ano"）
+              </label>
+              <div className="flex gap-4">
+                <input
+                  type="text"
+                  value={config.logo?.src || ""}
+                  onChange={(e) =>
+                    setConfig({
+                      ...config,
+                      logo: {
+                        ...config.logo,
+                        src: e.target.value || undefined,
+                        alt: config.logo?.alt || "Logo",
+                      },
+                    })
+                  }
+                  placeholder="/path/to/logo.png 或 https://example.com/logo.png"
+                  className="flex-1 rounded-lg border border-black/10 bg-white px-3 py-2 text-xs text-black"
+                />
+                {/* Logo 预览 */}
+                <div className="h-12 w-12 rounded-sm bg-white/10 backdrop-blur flex items-center justify-center border border-white/15 overflow-hidden flex-shrink-0">
+                  {config.logo?.src ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={config.logo.src}
+                      alt={config.logo.alt || "Logo"}
+                      className="h-full w-full object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = "none";
+                      }}
+                    />
+                  ) : (
+                    <span className="text-white text-xs tracking-[0.25em]">
+                      ano
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+            <div>
+              <label className="block text-xs text-black/70 mb-2">
+                上传 Logo 图片
+              </label>
+              <input
+                type="file"
+                accept="image/*"
+                className="block w-full text-xs text-black/80 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-black file:px-3 file:py-2 file:text-xs file:text-white file:transition-colors file:duration-200 hover:file:bg-black/90"
+                disabled={saving || publishing}
+                onChange={async (e) => {
+                  const file = e.target.files?.[0];
+                  const inputElement = e.currentTarget;
+                  if (file) {
+                    try {
+                      const result = await pageApi.uploadImage(file);
+                      setConfig({
+                        ...config,
+                        logo: {
+                          ...config.logo,
+                          src: result.src,
+                          alt: config.logo?.alt || "Logo",
+                        },
+                      });
+                      toastOk("Logo 上传成功");
+                    } catch (err) {
+                      if (
+                        err instanceof ApiError ||
+                        err instanceof NetworkError
+                      ) {
+                        setError(err.message);
+                      } else {
+                        setError("上传失败");
+                      }
+                    } finally {
+                      if (inputElement) {
+                        inputElement.value = "";
+                      }
+                    }
+                  }
+                }}
+              />
+            </div>
+          </div>
+
+          {/* 社交链接编辑（右上角） */}
+          <div className="mb-4 space-y-3 rounded-lg border border-black/10 bg-white/70 p-3">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-xs font-semibold text-black">社交链接（右上角）</h3>
+              <div className="flex items-center gap-3">
+                <ToggleSwitch
+                  enabled={config.showSocialLinks !== false}
+                  onChange={toggleSocialLinksEnabled}
+                  disabled={saving || publishing}
+                />
+                <button
+                  onClick={() => {
+                    const newLink: SocialLinkItem = {
+                      id: `social-${Date.now()}`,
+                      name: "新链接",
+                      url: "",
+                      icon: "",
+                      enabled: true,
+                    };
+                    setConfig({
+                      ...config,
+                      socialLinks: [...(config.socialLinks || []), newLink],
+                    });
+                  }}
+                  className="rounded-lg bg-black px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  + 新增
+                </button>
+              </div>
+            </div>
+            <div className="space-y-3">
+              {(config.socialLinks || []).map((link, index) => (
+                <div
+                  key={link.id}
+                  className="rounded-lg border border-black/10 bg-white/70 p-3"
+                >
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[10px] text-black/50">#{index + 1}</span>
+                      <label className="flex items-center gap-2 cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={link.enabled}
+                          onChange={(e) => {
+                            const updated = [...(config.socialLinks || [])];
+                            updated[index] = {
+                              ...link,
+                              enabled: e.target.checked,
+                            };
+                            setConfig({
+                              ...config,
+                              socialLinks: updated,
+                            });
+                          }}
+                          className="toggle toggle-sm"
+                        />
+                        <span className="text-[10px] text-black/70">显示</span>
+                      </label>
+                    </div>
+                    <button
+                      onClick={() => {
+                        const updated = (config.socialLinks || []).filter(
+                          (_, i) => i !== index
+                        );
+                        setConfig({
+                          ...config,
+                          socialLinks: updated,
+                        });
+                      }}
+                      className="rounded border border-red-300 bg-red-50 px-2 py-0.5 text-[10px] font-medium text-red-600 hover:bg-red-100"
+                    >
+                      删除
+                    </button>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                    {/* 名称 */}
+                    <div>
+                      <label className="block text-[10px] text-black/70 mb-1">
+                        名称
+                      </label>
+                      <input
+                        type="text"
+                        value={link.name}
+                        onChange={(e) => {
+                          const updated = [...(config.socialLinks || [])];
+                          updated[index] = { ...link, name: e.target.value };
+                          setConfig({
+                            ...config,
+                            socialLinks: updated,
+                          });
+                        }}
+                        placeholder="例如：Twitter"
+                        className="w-full rounded border border-black/10 bg-white px-2 py-1 text-xs text-black"
+                      />
+                    </div>
+
+                    {/* 链接 */}
+                    <div>
+                      <label className="block text-[10px] text-black/70 mb-1">
+                        链接 URL
+                      </label>
+                      <input
+                        type="text"
+                        value={link.url}
+                        onChange={(e) => {
+                          const updated = [...(config.socialLinks || [])];
+                          updated[index] = { ...link, url: e.target.value };
+                          setConfig({
+                            ...config,
+                            socialLinks: updated,
+                          });
+                        }}
+                        placeholder="https://example.com"
+                        className="w-full rounded border border-black/10 bg-white px-2 py-1 text-xs text-black"
+                      />
+                    </div>
+                  </div>
+
+                  {/* 图标 - 使用 IconPicker */}
+                  <div className="mt-2">
+                    <label className="block text-[10px] text-black/70 mb-1">
+                      图标（可选：选择图标、输入文字如 "X"、"YT"，emoji 如 🐦，或图片 URL）
+                    </label>
+                    <div className="flex gap-2">
+                      <div className="flex-1 relative">
+                        <IconPicker
+                          value={link.icon?.startsWith("icon:") ? link.icon.replace("icon:", "") : undefined}
+                          onChange={(iconId) => {
+                            const updated = [...(config.socialLinks || [])];
+                            updated[index] = {
+                              ...link,
+                              icon: iconId ? `icon:${iconId}` : "",
+                            };
+                            setConfig({
+                              ...config,
+                              socialLinks: updated,
+                            });
+                          }}
+                          disabled={saving || publishing}
+                        />
+                      </div>
+                      <input
+                        type="text"
+                        value={link.icon?.startsWith("icon:") ? "" : (link.icon || "")}
+                        onChange={(e) => {
+                          const updated = [...(config.socialLinks || [])];
+                          updated[index] = {
+                            ...link,
+                            icon: e.target.value || undefined,
+                          };
+                          setConfig({
+                            ...config,
+                            socialLinks: updated,
+                          });
+                        }}
+                        placeholder="或输入文字/emoji/图片URL"
+                        className="flex-1 rounded border border-black/10 bg-white px-2 py-1 text-xs text-black"
+                      />
+                      {/* 图标预览 */}
+                      {link.icon && (
+                        <div className="flex h-8 w-8 items-center justify-center rounded border border-black/10 bg-white/70 flex-shrink-0">
+                          {link.icon.startsWith("icon:") ? (
+                            (() => {
+                              // 动态导入图标组件进行预览
+                              const iconId = link.icon.replace("icon:", "");
+                              // 这里使用一个简单的占位符，实际渲染会在前端页面中完成
+                              return <span className="text-xs text-black/50">✓</span>;
+                            })()
+                          ) : (link.icon.match(
+                            /\.(jpg|jpeg|png|gif|svg|webp|ico)$/i
+                          ) ||
+                          link.icon.startsWith("http://") ||
+                          link.icon.startsWith("https://") ||
+                          link.icon.startsWith("/")) ? (
+                            // eslint-disable-next-line @next/next/no-img-element
+                            <img
+                              src={link.icon}
+                              alt="icon preview"
+                              className="h-5 w-5 object-contain"
+                              onError={(e) => {
+                                (e.target as HTMLImageElement).style.display =
+                                  "none";
+                              }}
+                            />
+                          ) : (
+                            <span className="text-sm">{link.icon}</span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              {(!config.socialLinks || config.socialLinks.length === 0) && (
+                <div className="rounded border border-dashed border-black/20 bg-white/50 p-4 text-center text-xs text-black/50">
+                  暂无社交链接，点击上方"新增"按钮添加
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Title 和 Subtitle 编辑 */}
+          <div className="mb-4 space-y-3 rounded-lg border border-black/10 bg-white/70 p-3">
+            <div>
+              <label className="block text-xs font-medium text-black mb-1.5">
                 标题（Title）
               </label>
               <input
@@ -877,11 +1197,11 @@ export default function CMSPage() {
                   }));
                 }}
                 placeholder="例如：Welcome"
-                className="w-full rounded-lg border border-black/10 bg-white px-4 py-2 text-sm text-black"
+                className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-black mb-2">
+              <label className="block text-xs font-medium text-black mb-1.5">
                 副标题（Subtitle）
               </label>
               <input
@@ -907,15 +1227,15 @@ export default function CMSPage() {
                   }));
                 }}
                 placeholder="例如：VTuber Personal Page"
-                className="w-full rounded-lg border border-black/10 bg-white px-4 py-2 text-sm text-black"
+                className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
               />
             </div>
           </div>
 
           {/* 布局配置 */}
-          <div className="mb-6 space-y-4 rounded-lg border border-black/10 bg-white/70 p-4">
-            <h3 className="text-sm font-semibold text-black mb-3">布局设置</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="mb-4 space-y-3 rounded-lg border border-black/10 bg-white/70 p-3">
+            <h3 className="text-xs font-semibold text-black mb-2">布局设置</h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               {/* 高度设置 */}
               <div>
                 <label className="block text-xs text-black/70 mb-2">
@@ -1029,9 +1349,9 @@ export default function CMSPage() {
           </div>
 
           {/* 图片编辑 */}
-          <div className="mb-4">
-            <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-base font-semibold text-black">
+          <div className="mb-3">
+            <div className="mb-3 flex items-center justify-between">
+              <h3 className="text-xs font-semibold text-black">
                 轮播图片（3张）
               </h3>
               {/* Hero 缩略图条显示开关 */}
@@ -1068,7 +1388,7 @@ export default function CMSPage() {
               </div>
             </div>
 
-            <div className="grid gap-6 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-3">
               {[0, 1, 2].map((index) => {
                 const slide = heroSlides[index];
                 const isUploading = uploadingIndex === index;
@@ -1076,9 +1396,9 @@ export default function CMSPage() {
                 return (
                   <div
                     key={index}
-                    className="rounded-xl border border-black/10 bg-white/70 p-4"
+                    className="rounded-lg border border-black/10 bg-white/70 p-3"
                   >
-                    <div className="mb-3 text-sm font-medium text-black">
+                    <div className="mb-2 text-xs font-medium text-black">
                       图片 {index + 1}
                     </div>
 
@@ -1152,10 +1472,10 @@ export default function CMSPage() {
           </div>
         </div>
 
-        {/* 新闻轮播编辑 */}
-        <div className="mb-8 rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
+        {/* 图片导航编辑 - 优化为更紧凑的布局 */}
+        <div className="mb-6 rounded-2xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-black">新闻轮播</h2>
+            <h2 className="text-lg font-semibold text-black">图片导航</h2>
             <div className="flex items-center gap-3">
               {getNewsSection() && (
                 <ToggleSwitch
@@ -1168,20 +1488,20 @@ export default function CMSPage() {
                 type="button"
                 onClick={addNewsItem}
                 disabled={saving || publishing}
-                className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded-lg bg-black px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 添加图片
               </button>
             </div>
           </div>
 
-          {/* 布局配置 */}
+          {/* 布局配置 - 更紧凑 */}
           {getNewsSection() && (
-            <div className="mb-6 space-y-4 rounded-lg border border-black/10 bg-white/70 p-4">
-              <h3 className="text-sm font-semibold text-black mb-3">
+            <div className="mb-4 space-y-3 rounded-lg border border-black/10 bg-white/70 p-3">
+              <h3 className="text-xs font-semibold text-black mb-2">
                 布局设置
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {/* 上下内边距 */}
                 <div>
                   <label className="block text-xs text-black/70 mb-2">
@@ -1340,170 +1660,119 @@ export default function CMSPage() {
             </div>
           )}
 
-          <div className="space-y-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             {(getNewsSection()?.props.items || []).map((item, index) => (
               <div
                 key={item.id}
-                className="rounded-xl border border-black/10 bg-white/70 p-4"
+                className="rounded-lg border border-black/10 bg-white/70 p-3"
               >
-                <div className="mb-3 flex items-center justify-between">
-                  <div className="text-sm font-medium text-black">
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="text-xs font-medium text-black">
                     图片 {index + 1}
                   </div>
                   <button
                     type="button"
                     onClick={() => removeNewsItem(item.id)}
                     disabled={saving || publishing}
-                    className="rounded-lg bg-red-500/10 px-3 py-1 text-xs font-medium text-red-600 transition-colors duration-200 hover:bg-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="rounded bg-red-500/10 px-2 py-0.5 text-xs font-medium text-red-600 transition-colors duration-200 hover:bg-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     删除
                   </button>
                 </div>
 
                 {/* 预览 - 可拖拽编辑位置 */}
-                <div className="mb-4">
+                <div className="mb-3">
                   {item.src ? (
-                    <ImagePositionEditor
-                      src={item.src}
-                      alt={item.alt || `News ${index + 1}`}
-                      objectPosition={item.objectPosition || "center"}
-                      onChange={(position) =>
-                        updateNewsItem(item.id, { objectPosition: position })
-                      }
-                      disabled={uploadingIndex === -1 || saving || publishing}
-                    />
+                    <div className="aspect-[4/3] max-h-48 overflow-hidden rounded-lg border border-black/10">
+                      <ImagePositionEditor
+                        src={item.src}
+                        alt={item.alt || `News ${index + 1}`}
+                        objectPosition={item.objectPosition || "center"}
+                        onChange={(position) =>
+                          updateNewsItem(item.id, { objectPosition: position })
+                        }
+                        disabled={uploadingIndex === -1 || saving || publishing}
+                      />
+                    </div>
                   ) : (
-                    <div className="aspect-[4/3] flex items-center justify-center rounded-lg border border-black/10 bg-black/5 text-xs text-black/50">
+                    <div className="aspect-[4/3] max-h-48 flex items-center justify-center rounded-lg border border-black/10 bg-black/5 text-xs text-black/50">
                       暂无图片
                     </div>
                   )}
                 </div>
 
-                {/* 上传文件 */}
-                <div className="mb-3">
-                  <label className="block text-xs text-black/70">
-                    上传本地图片
-                  </label>
-                  <input
-                    type="file"
-                    accept="image/*"
-                    className="mt-2 block w-full text-xs text-black/80 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-black file:px-3 file:py-2 file:text-xs file:text-white file:transition-colors file:duration-200 hover:file:bg-black/90"
-                    disabled={uploadingIndex === -1 || saving || publishing}
-                    onChange={(e) => {
-                      const file = e.target.files?.[0];
-                      const inputElement = e.currentTarget;
-                      if (file) {
-                        uploadNewsImage(item.id, file);
-                        if (inputElement) {
-                          inputElement.value = "";
+                {/* 表单字段 - 垂直排列 */}
+                <div className="space-y-2">
+                  {/* 上传文件 */}
+                  <div>
+                    <label className="block text-[10px] text-black/70 mb-1">
+                      上传图片
+                    </label>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="block w-full text-[10px] text-black/80 file:mr-2 file:cursor-pointer file:rounded file:border-0 file:bg-black file:px-2 file:py-1 file:text-[10px] file:text-white file:transition-colors file:duration-200 hover:file:bg-black/90"
+                      disabled={uploadingIndex === -1 || saving || publishing}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        const inputElement = e.currentTarget;
+                        if (file) {
+                          uploadNewsImage(item.id, file);
+                          if (inputElement) {
+                            inputElement.value = "";
+                          }
                         }
-                      }
-                    }}
-                  />
-                </div>
-
-                {/* 图片链接 */}
-                <div className="mb-3">
-                  <label className="block text-xs text-black/70">
-                    图片链接
-                  </label>
-                  <input
-                    type="text"
-                    value={item.src || ""}
-                    onChange={(e) =>
-                      updateNewsItem(item.id, { src: e.target.value })
-                    }
-                    placeholder="https://example.com/image.jpg 或 /path/to/image.jpg"
-                    className="mt-2 w-full rounded-lg border border-black/10 bg-white/70 px-3 py-2 text-xs text-black placeholder:text-black/30"
-                    disabled={uploadingIndex === -1 || saving || publishing}
-                  />
-                </div>
-
-                {/* 外部链接 */}
-                <div className="mb-3">
-                  <label className="block text-xs text-black/70">
-                    外部链接（必填）
-                  </label>
-                  <input
-                    type="text"
-                    value={item.href || ""}
-                    onChange={(e) =>
-                      updateNewsItem(item.id, { href: e.target.value })
-                    }
-                    placeholder="https://example.com/news/1"
-                    className="mt-2 w-full rounded-lg border border-black/10 bg-white/70 px-3 py-2 text-xs text-black placeholder:text-black/30"
-                    disabled={uploadingIndex === -1 || saving || publishing}
-                  />
-                </div>
-
-                {/* Alt 文本 */}
-                <div className="mb-3">
-                  <label className="block text-xs text-black/70">
-                    Alt 文本（可选）
-                  </label>
-                  <input
-                    type="text"
-                    value={item.alt || ""}
-                    onChange={(e) =>
-                      updateNewsItem(item.id, { alt: e.target.value })
-                    }
-                    placeholder="图片描述"
-                    className="mt-2 w-full rounded-lg border border-black/10 bg-white/70 px-3 py-2 text-xs text-black placeholder:text-black/30"
-                    disabled={uploadingIndex === -1 || saving || publishing}
-                  />
-                </div>
-
-                {/* 图片位置 */}
-                <div>
-                  <label className="block text-xs text-black/70 mb-2">
-                    图片位置（当图片大于容器时）
-                  </label>
-                  <div className="grid grid-cols-3 gap-2 mb-2">
-                    {[
-                      { value: "center", label: "居中" },
-                      { value: "top", label: "顶部" },
-                      { value: "bottom", label: "底部" },
-                      { value: "left", label: "左侧" },
-                      { value: "right", label: "右侧" },
-                      { value: "top left", label: "左上" },
-                      { value: "top right", label: "右上" },
-                      { value: "bottom left", label: "左下" },
-                      { value: "bottom right", label: "右下" },
-                    ].map((pos) => (
-                      <button
-                        key={pos.value}
-                        type="button"
-                        onClick={() =>
-                          updateNewsItem(item.id, { objectPosition: pos.value })
-                        }
-                        disabled={uploadingIndex === -1 || saving || publishing}
-                        className={[
-                          "rounded-lg px-3 py-2 text-xs font-medium transition-colors",
-                          (item.objectPosition || "center") === pos.value
-                            ? "bg-black text-white"
-                            : "bg-white/70 text-black hover:bg-white/90",
-                          (uploadingIndex === -1 || saving || publishing) &&
-                            "opacity-50 cursor-not-allowed",
-                        ].join(" ")}
-                      >
-                        {pos.label}
-                      </button>
-                    ))}
+                      }}
+                    />
                   </div>
-                  <div className="mt-2">
-                    <label className="block text-xs text-black/70 mb-1">
-                      自定义位置（如：50% 30%）
+
+                  {/* 图片链接 */}
+                  <div>
+                    <label className="block text-[10px] text-black/70 mb-1">
+                      图片链接
                     </label>
                     <input
                       type="text"
-                      value={item.objectPosition || ""}
+                      value={item.src || ""}
                       onChange={(e) =>
-                        updateNewsItem(item.id, {
-                          objectPosition: e.target.value || undefined,
-                        })
+                        updateNewsItem(item.id, { src: e.target.value })
                       }
-                      placeholder="center 或 50% 50%"
-                      className="w-full rounded-lg border border-black/10 bg-white/70 px-3 py-2 text-xs text-black placeholder:text-black/30"
+                      placeholder="图片 URL"
+                      className="w-full rounded border border-black/10 bg-white/70 px-2 py-1 text-[10px] text-black placeholder:text-black/30"
+                      disabled={uploadingIndex === -1 || saving || publishing}
+                    />
+                  </div>
+
+                  {/* 外部链接 */}
+                  <div>
+                    <label className="block text-[10px] text-black/70 mb-1">
+                      外部链接
+                    </label>
+                    <input
+                      type="text"
+                      value={item.href || ""}
+                      onChange={(e) =>
+                        updateNewsItem(item.id, { href: e.target.value })
+                      }
+                      placeholder="跳转 URL"
+                      className="w-full rounded border border-black/10 bg-white/70 px-2 py-1 text-[10px] text-black placeholder:text-black/30"
+                      disabled={uploadingIndex === -1 || saving || publishing}
+                    />
+                  </div>
+
+                  {/* Alt 文本 */}
+                  <div>
+                    <label className="block text-[10px] text-black/70 mb-1">
+                      Alt 文本
+                    </label>
+                    <input
+                      type="text"
+                      value={item.alt || ""}
+                      onChange={(e) =>
+                        updateNewsItem(item.id, { alt: e.target.value })
+                      }
+                      placeholder="图片描述"
+                      className="w-full rounded border border-black/10 bg-white/70 px-2 py-1 text-[10px] text-black placeholder:text-black/30"
                       disabled={uploadingIndex === -1 || saving || publishing}
                     />
                   </div>
@@ -1517,351 +1786,30 @@ export default function CMSPage() {
 
             {(!getNewsSection() ||
               getNewsSection()?.props.items.length === 0) && (
-              <div className="py-8 text-center text-sm text-black/50">
-                暂无新闻图片，点击"添加图片"开始添加
-              </div>
-            )}
-          </div>
-        </div>
-
-        {/* Logo 编辑（左上角 ano 位置） */}
-        <div className="mb-8 rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-black">Logo（左上角）</h2>
-            <ToggleSwitch
-              enabled={config.showLogo !== false}
-              onChange={toggleLogoEnabled}
-              disabled={saving || publishing}
-            />
-          </div>
-          <div className="space-y-4">
-            <div>
-              <label className="block text-sm text-black/70 mb-2">
-                Logo 图片 URL（留空则显示文字 "ano"）
-              </label>
-              <div className="flex gap-4">
-                <input
-                  type="text"
-                  value={config.logo?.src || ""}
-                  onChange={(e) =>
-                    setConfig({
-                      ...config,
-                      logo: {
-                        ...config.logo,
-                        src: e.target.value || undefined,
-                        alt: config.logo?.alt || "Logo",
-                      },
-                    })
-                  }
-                  placeholder="/path/to/logo.png 或 https://example.com/logo.png"
-                  className="flex-1 rounded-lg border border-black/10 bg-white/70 px-4 py-2 text-sm text-black"
-                />
-                {/* Logo 预览 */}
-                <div className="h-14 w-14 rounded-sm bg-white/10 backdrop-blur flex items-center justify-center border border-white/15 overflow-hidden flex-shrink-0">
-                  {config.logo?.src ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={config.logo.src}
-                      alt={config.logo.alt || "Logo"}
-                      className="h-full w-full object-cover"
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).style.display = "none";
-                      }}
-                    />
-                  ) : (
-                    <span className="text-white text-xs tracking-[0.25em]">
-                      ano
-                    </span>
-                  )}
-                </div>
-              </div>
-            </div>
-            <div>
-              <label className="block text-sm text-black/70 mb-2">
-                上传 Logo 图片
-              </label>
-              <input
-                type="file"
-                accept="image/*"
-                className="block w-full text-xs text-black/80 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-black file:px-3 file:py-2 file:text-xs file:text-white file:transition-colors file:duration-200 hover:file:bg-black/90"
-                disabled={saving || publishing}
-                onChange={async (e) => {
-                  const file = e.target.files?.[0];
-                  const inputElement = e.currentTarget;
-                  if (file) {
-                    try {
-                      const result = await pageApi.uploadImage(file);
-                      setConfig({
-                        ...config,
-                        logo: {
-                          ...config.logo,
-                          src: result.src,
-                          alt: config.logo?.alt || "Logo",
-                        },
-                      });
-                      toastOk("Logo 上传成功");
-                    } catch (err) {
-                      if (
-                        err instanceof ApiError ||
-                        err instanceof NetworkError
-                      ) {
-                        setError(err.message);
-                      } else {
-                        setError("上传失败");
-                      }
-                    } finally {
-                      // 在 finally 中清理，并检查 inputElement 是否存在
-                      if (inputElement) {
-                        inputElement.value = "";
-                      }
-                    }
-                  }
-                }}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* 社交链接编辑（右上角） */}
-        <div className="mb-8 rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-black">
-              社交链接（右上角）
-            </h2>
-            <div className="flex items-center gap-3">
-              <ToggleSwitch
-                enabled={config.showSocialLinks !== false}
-                onChange={toggleSocialLinksEnabled}
-                disabled={saving || publishing}
-              />
-              <button
-                onClick={() => {
-                  const newLink: SocialLinkItem = {
-                    id: `social-${Date.now()}`,
-                    name: "新链接",
-                    url: "",
-                    icon: "",
-                    enabled: true,
-                  };
-                  setConfig({
-                    ...config,
-                    socialLinks: [...(config.socialLinks || []), newLink],
-                  });
-                }}
-                className="rounded-lg bg-black px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                + 新增链接
-              </button>
-            </div>
-          </div>
-          <div className="space-y-4">
-            {(config.socialLinks || []).map((link, index) => (
-              <div
-                key={link.id}
-                className="rounded-lg border border-black/10 bg-white/70 p-4"
-              >
-                <div className="mb-4 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs text-black/50">#{index + 1}</span>
-                    <label className="flex items-center gap-2 cursor-pointer">
-                      <input
-                        type="checkbox"
-                        checked={link.enabled}
-                        onChange={(e) => {
-                          const updated = [...(config.socialLinks || [])];
-                          updated[index] = {
-                            ...link,
-                            enabled: e.target.checked,
-                          };
-                          setConfig({
-                            ...config,
-                            socialLinks: updated,
-                          });
-                        }}
-                        className="toggle toggle-sm"
-                      />
-                      <span className="text-xs text-black/70">显示</span>
-                    </label>
-                  </div>
-                  <button
-                    onClick={() => {
-                      const updated = (config.socialLinks || []).filter(
-                        (_, i) => i !== index
-                      );
-                      setConfig({
-                        ...config,
-                        socialLinks: updated,
-                      });
-                    }}
-                    className="rounded-lg border border-red-300 bg-red-50 px-3 py-1 text-xs font-medium text-red-600 hover:bg-red-100"
-                  >
-                    删除
-                  </button>
-                </div>
-
-                <div className="space-y-3">
-                  {/* 名称 */}
-                  <div>
-                    <label className="block text-xs text-black/70 mb-1">
-                      名称
-                    </label>
-                    <input
-                      type="text"
-                      value={link.name}
-                      onChange={(e) => {
-                        const updated = [...(config.socialLinks || [])];
-                        updated[index] = { ...link, name: e.target.value };
-                        setConfig({
-                          ...config,
-                          socialLinks: updated,
-                        });
-                      }}
-                      placeholder="例如：Twitter、YouTube、GitHub"
-                      className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black"
-                    />
-                  </div>
-
-                  {/* 链接 */}
-                  <div>
-                    <label className="block text-xs text-black/70 mb-1">
-                      链接 URL
-                    </label>
-                    <input
-                      type="text"
-                      value={link.url}
-                      onChange={(e) => {
-                        const updated = [...(config.socialLinks || [])];
-                        updated[index] = { ...link, url: e.target.value };
-                        setConfig({
-                          ...config,
-                          socialLinks: updated,
-                        });
-                      }}
-                      placeholder="https://example.com"
-                      className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black"
-                    />
-                  </div>
-
-                  {/* 图标 */}
-                  <div>
-                    <label className="block text-xs text-black/70 mb-1">
-                      图标（可选：文字如 "X"、"YT"，emoji 如 🐦，或图片 URL）
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={link.icon || ""}
-                        onChange={(e) => {
-                          const updated = [...(config.socialLinks || [])];
-                          updated[index] = {
-                            ...link,
-                            icon: e.target.value || undefined,
-                          };
-                          setConfig({
-                            ...config,
-                            socialLinks: updated,
-                          });
-                        }}
-                        placeholder="X、YT、GH 或 🐦、📺、💻 或 /icon.png"
-                        className="flex-1 rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black"
-                      />
-                      {/* 图标预览 */}
-                      {link.icon && (
-                        <div className="flex h-10 w-10 items-center justify-center rounded-lg border border-black/10 bg-white/70">
-                          {link.icon.match(
-                            /\.(jpg|jpeg|png|gif|svg|webp|ico)$/i
-                          ) ||
-                          link.icon.startsWith("http://") ||
-                          link.icon.startsWith("https://") ||
-                          link.icon.startsWith("/") ? (
-                            // eslint-disable-next-line @next/next/no-img-element
-                            <img
-                              src={link.icon}
-                              alt="icon preview"
-                              className="h-6 w-6 object-contain"
-                              onError={(e) => {
-                                (e.target as HTMLImageElement).style.display =
-                                  "none";
-                              }}
-                            />
-                          ) : (
-                            <span className="text-lg">{link.icon}</span>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                    {/* 上传图标图片 */}
-                    <div className="mt-2">
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="block w-full text-xs text-black/80 file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-black/80 file:px-3 file:py-1.5 file:text-xs file:text-white file:transition-colors file:duration-200 hover:file:bg-black/90"
-                        disabled={saving || publishing}
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          const inputElement = e.currentTarget;
-                          if (file) {
-                            try {
-                              const result = await pageApi.uploadImage(file);
-                              const updated = [...(config.socialLinks || [])];
-                              updated[index] = { ...link, icon: result.src };
-                              setConfig({
-                                ...config,
-                                socialLinks: updated,
-                              });
-                              toastOk("图标上传成功");
-                            } catch (err) {
-                              if (
-                                err instanceof ApiError ||
-                                err instanceof NetworkError
-                              ) {
-                                setError(err.message);
-                              } else {
-                                setError("上传失败");
-                              }
-                            } finally {
-                              // 在 finally 中清理，并检查 inputElement 是否存在
-                              if (inputElement) {
-                                inputElement.value = "";
-                              }
-                            }
-                          }
-                        }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-
-            {(!config.socialLinks || config.socialLinks.length === 0) && (
-              <div className="rounded-lg border border-dashed border-black/20 bg-white/50 p-8 text-center text-sm text-black/50">
-                暂无社交链接，点击上方"新增链接"按钮添加
+              <div className="py-6 text-center text-xs text-black/50">
+                暂无图片，点击"添加图片"开始添加
               </div>
             )}
           </div>
         </div>
 
         {/* 背景编辑 */}
-        <div className="mb-8 rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
-          <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-lg font-semibold text-black">页面背景</h2>
-            <div className="text-sm text-black/50">
-              {/* 页面背景始终显示，不需要开关 */}
-            </div>
+        <div className="mb-6 rounded-xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl">
+          <div className="mb-3 flex items-center justify-between">
+            <h2 className="text-base font-semibold text-black">页面背景</h2>
           </div>
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div>
-              <label className="text-sm text-black/70">背景类型</label>
-              <div className="mt-2 flex gap-3">
+              <label className="text-xs text-black/70 mb-1.5 block">背景类型</label>
+              <div className="flex gap-2">
                 <button
                   onClick={() =>
                     handleBackgroundChange("color", config.background.value)
                   }
-                  className={`rounded-lg px-4 py-2 text-sm ${
+                  className={`rounded px-3 py-1.5 text-xs transition-colors ${
                     config.background.type === "color"
                       ? "bg-black text-white"
-                      : "bg-white/70 text-black"
+                      : "bg-white/70 text-black hover:bg-white/90"
                   }`}
                 >
                   颜色
@@ -1870,10 +1818,10 @@ export default function CMSPage() {
                   onClick={() =>
                     handleBackgroundChange("image", config.background.value)
                   }
-                  className={`rounded-lg px-4 py-2 text-sm ${
+                  className={`rounded px-3 py-1.5 text-xs transition-colors ${
                     config.background.type === "image"
                       ? "bg-black text-white"
-                      : "bg-white/70 text-black"
+                      : "bg-white/70 text-black hover:bg-white/90"
                   }`}
                 >
                   图片
@@ -1883,34 +1831,82 @@ export default function CMSPage() {
 
             {config.background.type === "color" ? (
               <div>
-                <label className="text-sm text-black/70">背景颜色</label>
+                <label className="text-xs text-black/70 mb-1.5 block">背景颜色</label>
                 <input
                   type="color"
                   value={config.background.value}
                   onChange={(e) =>
                     handleBackgroundChange("color", e.target.value)
                   }
-                  className="mt-2 h-10 w-full rounded-lg border border-black/10"
+                  className="h-8 w-full rounded border border-black/10"
                 />
+                {/* 颜色预览 */}
+                <div className="mt-2 h-24 w-full rounded border border-black/10" style={{ backgroundColor: config.background.value }} />
               </div>
             ) : (
               <div>
-                <label className="text-sm text-black/70">图片 URL</label>
+                <label className="text-xs text-black/70 mb-1.5 block">图片 URL</label>
                 <input
                   type="text"
                   value={config.background.value}
-                  onChange={(e) =>
-                    handleBackgroundChange("image", e.target.value)
-                  }
+                  onChange={(e) => {
+                    setBackgroundImageError(false);
+                    handleBackgroundChange("image", e.target.value);
+                  }}
                   placeholder="/path/to/image.jpg 或 https://example.com/image.jpg"
-                  className="mt-2 w-full rounded-lg border border-black/10 bg-white/70 px-4 py-2 text-sm text-black"
+                  className="w-full rounded border border-black/10 bg-white/70 px-3 py-1.5 text-xs text-black mb-2"
+                  disabled={uploadingBackground || saving || publishing}
                 />
+                {/* 上传本地图片 */}
+                <div className="mb-2">
+                  <label className="block text-xs text-black/70 mb-1.5">上传本地图片</label>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="block w-full text-[10px] text-black/80 file:mr-2 file:cursor-pointer file:rounded file:border-0 file:bg-black file:px-2 file:py-1 file:text-[10px] file:text-white file:transition-colors file:duration-200 hover:file:bg-black/90"
+                    disabled={uploadingBackground || saving || publishing}
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0];
+                      const inputElement = e.currentTarget;
+                      if (file) {
+                        await uploadBackgroundImage(file);
+                        if (inputElement) {
+                          inputElement.value = "";
+                        }
+                      }
+                    }}
+                  />
+                  {uploadingBackground && (
+                    <div className="mt-1 text-[10px] text-black/60">上传中...</div>
+                  )}
+                </div>
+                {/* 图片预览 */}
+                <div className="mt-2 h-48 w-full rounded border border-black/10 overflow-hidden bg-black/5 relative">
+                  {config.background.value && !backgroundImageError ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={config.background.value}
+                      alt="背景预览"
+                      className="h-full w-full object-cover"
+                      onError={() => setBackgroundImageError(true)}
+                      onLoad={() => setBackgroundImageError(false)}
+                    />
+                  ) : config.background.value && backgroundImageError ? (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-xs text-black/50">图片加载失败</div>
+                    </div>
+                  ) : (
+                    <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="text-xs text-black/50">暂无图片</div>
+                    </div>
+                  )}
+                </div>
               </div>
             )}
           </div>
         </div>
 
-        <div className="mt-10 text-xs text-black/60">
+        <div className="mt-6 text-[10px] text-black/50 text-center">
           说明：编辑配置后点击"保存草稿"保存到草稿，点击"发布"后才会在公开页面显示。
         </div>
       </div>

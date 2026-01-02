@@ -1,0 +1,78 @@
+# .github/workflows/pre-deploy-check.yml
+# GitHub Actions 预部署检查工作流
+
+name: Pre-Deploy Check
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:14
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: test_db
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "pnpm"
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 10
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Setup Prisma
+        run: npx prisma generate
+
+      - name: Run database migrations
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+        run: npx prisma migrate deploy
+
+      - name: TypeScript type check
+        run: npx tsc --noEmit
+
+      - name: ESLint check
+        run: pnpm lint
+
+      - name: Prisma validate
+        run: npx prisma validate
+
+      - name: Production build test
+        env:
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/test_db
+          SESSION_PASSWORD: test-session-password-for-ci-only
+          NODE_ENV: production
+        run: pnpm build
+
+      - name: Check build output
+        run: |
+          if [ ! -d ".next" ]; then
+            echo "❌ Build output directory not found"
+            exit 1
+          fi
+          echo "✅ Build output verified"
+
