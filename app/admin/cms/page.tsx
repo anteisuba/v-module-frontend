@@ -916,13 +916,6 @@ export default function CMSPage() {
               throw e;
             }
           }}
-          globalBackground={config.background}
-          onGlobalBackgroundChange={(background) => {
-            setConfig({
-              ...config,
-              background,
-            });
-          }}
         />
 
         <div className="mt-6 text-[10px] text-black/50 text-center">

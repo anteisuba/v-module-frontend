@@ -11,10 +11,9 @@ import type { NewsArticle } from "@/lib/api/types";
 interface NewsListSectionProps {
   slug?: string; // 用户 slug，用于返回链接
   limit?: number; // 显示的文章数量
-  background?: { type: "color" | "image"; value: string }; // 全局背景配置
 }
 
-export default function NewsListSection({ slug, limit = 3, background }: NewsListSectionProps) {
+export default function NewsListSection({ slug, limit = 3 }: NewsListSectionProps) {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -50,20 +49,8 @@ export default function NewsListSection({ slug, limit = 3, background }: NewsLis
   // 构建返回链接
   const newsHref = slug ? `/news?from=/u/${slug}` : "/news";
 
-  // 获取背景样式
-  const backgroundStyle: React.CSSProperties = background
-    ? background.type === "color"
-      ? { backgroundColor: background.value }
-      : {
-          backgroundImage: `url(${background.value})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-        }
-    : { backgroundColor: "#000000" };
-
   return (
-    <section className="text-white py-16 px-6" style={backgroundStyle}>
+    <section className="bg-black text-white py-16 px-6">
       <div className="max-w-4xl mx-auto">
         {/* 标题 */}
         <h2 className="text-4xl font-bold tracking-wider mb-8 text-center">NEWS</h2>

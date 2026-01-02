@@ -7,7 +7,6 @@ export default function Home() {
     <main className="bg-black text-white">
       <HomeHero />
       <NewsCarouselSection />
-      <div className="h-[200vh]" />
     </main>
   );
 }

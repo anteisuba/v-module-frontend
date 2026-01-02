@@ -5,10 +5,9 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { newsArticleApi, pageApi } from "@/lib/api";
+import { newsArticleApi } from "@/lib/api";
 import { ApiError, NetworkError } from "@/lib/api/errors";
 import type { NewsArticle } from "@/lib/api/types";
-import type { PageConfig } from "@/domain/page-config/types";
 
 function NewsListContent() {
   const router = useRouter();
@@ -18,7 +17,6 @@ function NewsListContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [error, setError] = useState<string | null>(null);
-  const [pageConfig, setPageConfig] = useState<PageConfig | null>(null);
 
   // 获取返回链接：优先使用 referrer 或 URL 参数，否则使用默认值
   const getBackUrl = () => {
@@ -29,23 +27,6 @@ function NewsListContent() {
     // 默认返回到 /u/xiuruisu
     return "/u/xiuruisu";
   };
-
-  // 加载页面配置（用于获取背景）
-  useEffect(() => {
-    async function loadPageConfig() {
-      try {
-        const fromParam = searchParams.get("from");
-        if (fromParam && fromParam.startsWith("/u/")) {
-          const slug = fromParam.replace("/u/", "");
-          const config = await pageApi.getPublishedConfig(slug);
-          setPageConfig(config);
-        }
-      } catch (err) {
-        console.error("Failed to load page config:", err);
-      }
-    }
-    loadPageConfig();
-  }, [searchParams]);
 
   const loadArticles = async () => {
     setLoading(true);
@@ -74,20 +55,8 @@ function NewsListContent() {
     loadArticles();
   }, [currentPage]);
 
-  // 获取背景样式
-  const backgroundStyle: React.CSSProperties = pageConfig?.background
-    ? pageConfig.background.type === "color"
-      ? { backgroundColor: pageConfig.background.value }
-      : {
-          backgroundImage: `url(${pageConfig.background.value})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-        }
-    : { backgroundColor: "#000000" };
-
   return (
-    <main className="min-h-screen text-white" style={backgroundStyle}>
+    <main className="min-h-screen bg-black text-white">
       <div className="mx-auto max-w-4xl px-4 py-16">
         {/* 标题 */}
         <div className="mb-8 flex items-center justify-between">

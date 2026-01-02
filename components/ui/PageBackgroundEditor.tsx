@@ -49,7 +49,7 @@ export default function PageBackgroundEditor({
   return (
     <div className="mb-6 rounded-xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-base font-semibold text-black">页面背景</h2>
+        <h2 className="text-base font-semibold text-black">页面背景（控制 /u/[slug] 页面）</h2>
       </div>
       <div className="space-y-3">
         <div>

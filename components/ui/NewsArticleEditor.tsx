@@ -12,9 +12,6 @@ interface NewsArticleEditorProps {
   onToast?: (message: string) => void;
   onError?: (message: string) => void;
   onUploadImage?: (file: File) => Promise<{ src: string }>;
-  // 全局背景配置（用于列表页和用户页）
-  globalBackground?: { type: "color" | "image"; value: string };
-  onGlobalBackgroundChange?: (background: { type: "color" | "image"; value: string }) => void;
 }
 
 const CATEGORIES = ["ALL", "MEDIA", "MAGAZINE", "あの", "ANO"];
@@ -29,8 +26,6 @@ export default function NewsArticleEditor({
   onToast,
   onError,
   onUploadImage,
-  globalBackground,
-  onGlobalBackgroundChange,
 }: NewsArticleEditorProps) {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -43,8 +38,6 @@ export default function NewsArticleEditor({
   const [newTag, setNewTag] = useState(""); // 新标签输入
   const [uploadingBackground, setUploadingBackground] = useState(false);
   const [backgroundImageError, setBackgroundImageError] = useState(false);
-  const [globalBgImageError, setGlobalBgImageError] = useState(false);
-  const [uploadingGlobalBackground, setUploadingGlobalBackground] = useState(false);
 
   // 表单状态
   const [formData, setFormData] = useState({
@@ -287,149 +280,6 @@ export default function NewsArticleEditor({
         </button>
       </div>
 
-      {/* 全局背景设置（用于列表页和用户页） */}
-      {globalBackground && onGlobalBackgroundChange && (
-        <div className="mb-4 rounded-lg border border-black/10 bg-white/70 p-4">
-          <label className="block text-xs font-medium text-black mb-1.5">
-            全局背景设置（控制 /u/[slug] 和 /news 页面）
-          </label>
-          <div className="space-y-2">
-            <div className="flex gap-2">
-              <button
-                type="button"
-                onClick={() =>
-                  onGlobalBackgroundChange({
-                    type: "color",
-                    value: globalBackground.value,
-                  })
-                }
-                className={`rounded px-3 py-1.5 text-xs transition-colors ${
-                  globalBackground.type === "color"
-                    ? "bg-black text-white"
-                    : "bg-white/70 text-black hover:bg-white/90"
-                }`}
-                disabled={disabled}
-              >
-                颜色
-              </button>
-              <button
-                type="button"
-                onClick={() =>
-                  onGlobalBackgroundChange({
-                    type: "image",
-                    value: globalBackground.value,
-                  })
-                }
-                className={`rounded px-3 py-1.5 text-xs transition-colors ${
-                  globalBackground.type === "image"
-                    ? "bg-black text-white"
-                    : "bg-white/70 text-black hover:bg-white/90"
-                }`}
-                disabled={disabled}
-              >
-                图片
-              </button>
-            </div>
-
-            {globalBackground.type === "color" ? (
-              <div>
-                <input
-                  type="color"
-                  value={globalBackground.value}
-                  onChange={(e) =>
-                    onGlobalBackgroundChange({
-                      type: "color",
-                      value: e.target.value,
-                    })
-                  }
-                  className="h-8 w-full rounded border border-black/10"
-                  disabled={disabled}
-                />
-                <div
-                  className="mt-2 h-16 w-full rounded border border-black/10"
-                  style={{ backgroundColor: globalBackground.value }}
-                />
-              </div>
-            ) : (
-              <div>
-                <input
-                  type="text"
-                  value={globalBackground.value}
-                  onChange={(e) => {
-                    setGlobalBgImageError(false);
-                    onGlobalBackgroundChange({
-                      type: "image",
-                      value: e.target.value,
-                    });
-                  }}
-                  placeholder="/path/to/image.jpg 或 https://example.com/image.jpg"
-                  className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black mb-2"
-                  disabled={uploadingGlobalBackground || disabled}
-                />
-                {onUploadImage && (
-                  <div className="mb-2">
-                    <label className="block text-xs text-black/70 mb-1.5">
-                      上传本地图片
-                    </label>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      className="block w-full text-[10px] text-black/80 file:mr-2 file:cursor-pointer file:rounded file:border-0 file:bg-black file:px-2 file:py-1 file:text-[10px] file:text-white file:transition-colors file:duration-200 hover:file:bg-black/90"
-                      disabled={uploadingGlobalBackground || disabled}
-                      onChange={async (e) => {
-                        const file = e.target.files?.[0];
-                        const inputElement = e.currentTarget;
-                        if (file && onUploadImage) {
-                          setUploadingGlobalBackground(true);
-                          setGlobalBgImageError(false);
-                          try {
-                            const result = await onUploadImage(file);
-                            onGlobalBackgroundChange({
-                              type: "image",
-                              value: result.src,
-                            });
-                            onToast?.("全局背景图片上传成功");
-                          } catch (e) {
-                            onError?.(e instanceof Error ? e.message : "上传失败");
-                          } finally {
-                            setUploadingGlobalBackground(false);
-                            if (inputElement) {
-                              inputElement.value = "";
-                            }
-                          }
-                        }
-                      }}
-                    />
-                    {uploadingGlobalBackground && (
-                      <div className="mt-1 text-[10px] text-black/60">上传中...</div>
-                    )}
-                  </div>
-                )}
-                <div className="mt-2 h-32 w-full rounded border border-black/10 overflow-hidden bg-black/5 relative">
-                  {globalBackground.value && !globalBgImageError ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img
-                      src={globalBackground.value}
-                      alt="全局背景预览"
-                      className="h-full w-full object-cover"
-                      onError={() => setGlobalBgImageError(true)}
-                      onLoad={() => setGlobalBgImageError(false)}
-                    />
-                  ) : globalBackground.value && globalBgImageError ? (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-xs text-black/50">图片加载失败</div>
-                    </div>
-                  ) : (
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <div className="text-xs text-black/50">暂无图片</div>
-                    </div>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
 
       {/* 标签过滤（替代分类过滤） */}
       <div className="mb-4">
@@ -572,10 +422,10 @@ export default function NewsArticleEditor({
             </div>
           </div>
 
-          {/* 背景编辑 */}
+          {/* 背景编辑（仅用于文章详情页） */}
           <div>
             <label className="block text-xs font-medium text-black mb-1.5">
-              背景设置
+              文章详情页背景设置（仅控制 /news/[id] 页面）
             </label>
             <div className="space-y-2">
               <div className="flex gap-2">
