@@ -81,3 +81,37 @@ export interface ResetPasswordResponse {
   message?: string;
 }
 
+/**
+ * 新闻文章类型
+ */
+export interface NewsArticle {
+  id: string;
+  userId: string;
+  title: string;
+  content: string;
+  category: string;
+  tag?: string | null;
+  shareUrl?: string | null;
+  shareChannels?: Array<{ platform: string; enabled: boolean }> | null;
+  backgroundType?: string | null; // "color" | "image"
+  backgroundValue?: string | null; // 颜色值或图片 URL
+  published: boolean;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt?: string | null;
+}
+
+export interface NewsArticleListResponse {
+  articles: NewsArticle[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface NewsArticleResponse {
+  article: NewsArticle;
+}
+

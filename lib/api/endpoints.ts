@@ -13,6 +13,9 @@ import type {
   UploadResponse,
   ForgotPasswordResponse,
   ResetPasswordResponse,
+  NewsArticle,
+  NewsArticleListResponse,
+  NewsArticleResponse,
 } from "./types";
 import type { PageConfig } from "@/domain/page-config/types";
 
@@ -163,7 +166,7 @@ export const pageApi = {
 };
 
 /**
- * 新闻轮播相关 API
+ * 新闻轮播相关 API（图片导航）
  */
 export const newsApi = {
   /**
@@ -182,6 +185,96 @@ export const newsApi = {
       href: string;
     }> }>("/api/news", { skipAuth: true });
     return response.items || [];
+  },
+};
+
+/**
+ * 新闻文章相关 API
+ */
+export const newsArticleApi = {
+  /**
+   * 获取新闻文章列表
+   */
+  async getArticles(params?: {
+    page?: number;
+    limit?: number;
+    category?: string;
+    published?: boolean | null;
+  }): Promise<NewsArticleListResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set("page", params.page.toString());
+    if (params?.limit) searchParams.set("limit", params.limit.toString());
+    if (params?.category) searchParams.set("category", params.category);
+    if (params?.published !== undefined) {
+      searchParams.set("published", params.published === null ? "null" : params.published.toString());
+    }
+    const query = searchParams.toString();
+    return apiClient.get<NewsArticleListResponse>(
+      `/api/news/articles${query ? `?${query}` : ""}`
+    );
+  },
+
+  /**
+   * 获取单篇文章
+   */
+  async getArticle(id: string): Promise<NewsArticle> {
+    const response = await apiClient.get<NewsArticleResponse>(
+      `/api/news/articles/${id}`,
+      { skipAuth: true } // 公开文章无需认证
+    );
+    return response.article;
+  },
+
+  /**
+   * 创建新文章
+   */
+  async createArticle(data: {
+    title: string;
+    content: string;
+    category: string;
+    tag?: string;
+    shareUrl?: string;
+    shareChannels?: Array<{ platform: string; enabled: boolean }>;
+    backgroundType?: string;
+    backgroundValue?: string;
+    published?: boolean;
+  }): Promise<NewsArticle> {
+    const response = await apiClient.post<NewsArticleResponse>(
+      "/api/news/articles",
+      data
+    );
+    return response.article;
+  },
+
+  /**
+   * 更新文章
+   */
+  async updateArticle(
+    id: string,
+    data: {
+      title?: string;
+      content?: string;
+      category?: string;
+      tag?: string;
+      shareUrl?: string;
+      shareChannels?: Array<{ platform: string; enabled: boolean }>;
+      backgroundType?: string;
+      backgroundValue?: string;
+      published?: boolean;
+    }
+  ): Promise<NewsArticle> {
+    const response = await apiClient.put<NewsArticleResponse>(
+      `/api/news/articles/${id}`,
+      data
+    );
+    return response.article;
+  },
+
+  /**
+   * 删除文章
+   */
+  async deleteArticle(id: string): Promise<void> {
+    await apiClient.delete(`/api/news/articles/${id}`);
   },
 };
 

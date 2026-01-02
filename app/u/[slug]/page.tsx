@@ -3,6 +3,7 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { PageRenderer } from "@/features/page-renderer";
+import { NewsListSection } from "@/features/news-list";
 import {
   getPublishedConfigBySlug,
   EMPTY_PAGE_CONFIG,
@@ -33,7 +34,16 @@ export default async function UserPage({
     config = publishedConfig;
   }
 
-  return <PageRenderer config={config} />;
+  return (
+    <>
+      <PageRenderer config={config} />
+      <NewsListSection 
+        slug={slug} 
+        limit={3} 
+        background={config.background}
+      />
+    </>
+  );
 }
 
 // 生成 metadata（SEO）

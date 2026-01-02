@@ -84,6 +84,7 @@ model User {
   page                Page? // 1:1，每个用户一个页面
   passwordResetTokens UserPasswordResetToken[]
   mediaAssets         MediaAsset[] // 用户上传的媒体资源
+  newsArticles        NewsArticle[] // 用户创建的新闻文章
 
   // 索引
   @@index([slug])
@@ -127,4 +128,37 @@ model UserPasswordResetToken {
 
   @@index([userId])
   @@index([expiresAt])
+}
+
+// ============================================
+// 新闻文章
+// ============================================
+model NewsArticle {
+  id        String   @id @default(cuid())
+  userId    String   // 所属用户
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 基本信息
+  title     String   // 标题
+  content   String   @db.Text // 内容（支持 Markdown）
+  category  String   // 分类（如 "MEDIA", "MAGAZINE", "あの", "ANO"）
+  tag       String?  // 标签（如 "あの"）
+
+  // 分享相关
+  shareUrl  String?  // 分享链接（可打开）
+  shareChannels Json? // 分享渠道配置 [{platform: "twitter", enabled: true}, ...]
+
+  // 背景相关
+  backgroundType  String?  @default("color") // "color" | "image"
+  backgroundValue String?  @default("#000000") // 颜色值或图片 URL
+
+  // 元数据
+  published Boolean  @default(false) // 是否发布
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  publishedAt DateTime? // 发布时间
+
+  @@index([userId, createdAt])
+  @@index([published, createdAt])
+  @@index([category])
 }
