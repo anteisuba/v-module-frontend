@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { newsArticleApi } from "@/lib/api";
@@ -10,7 +10,7 @@ import { ApiError, NetworkError } from "@/lib/api/errors";
 import { useUser } from "@/lib/context/UserContext";
 import type { NewsArticle } from "@/lib/api/types";
 
-export default function NewsDetailPage({
+function NewsDetailContent({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -596,6 +596,24 @@ export default function NewsDetailPage({
         )}
       </div>
     </main>
+  );
+}
+
+export default function NewsDetailPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  return (
+    <Suspense fallback={
+      <main className="relative min-h-screen w-full overflow-hidden bg-black">
+        <div className="relative z-10 mx-auto max-w-5xl px-4 py-8">
+          <div className="text-center text-white/60">加载中...</div>
+        </div>
+      </main>
+    }>
+      <NewsDetailContent params={params} />
+    </Suspense>
   );
 }
 

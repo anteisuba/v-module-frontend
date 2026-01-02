@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { newsArticleApi, pageApi } from "@/lib/api";
@@ -10,7 +10,7 @@ import { ApiError, NetworkError } from "@/lib/api/errors";
 import type { NewsArticle } from "@/lib/api/types";
 import type { PageConfig } from "@/domain/page-config/types";
 
-export default function NewsListPage() {
+function NewsListContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const [articles, setArticles] = useState<NewsArticle[]>([]);
@@ -169,6 +169,20 @@ export default function NewsListPage() {
         )}
       </div>
     </main>
+  );
+}
+
+export default function NewsListPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-black text-white">
+        <div className="mx-auto max-w-4xl px-4 py-16">
+          <div className="py-12 text-center text-white/60">加载中...</div>
+        </div>
+      </main>
+    }>
+      <NewsListContent />
+    </Suspense>
   );
 }
 
