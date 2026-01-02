@@ -46,6 +46,8 @@ export default function NewsDetailPage({
       { platform: "facebook", enabled: false },
       { platform: "line", enabled: false },
     ],
+    backgroundType: "color" as "color" | "image",
+    backgroundValue: "#000000",
     published: false,
   });
 
