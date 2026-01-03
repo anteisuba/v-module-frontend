@@ -10,3 +10,4 @@ export { default as BackgroundEditor } from "./BackgroundEditor";
 export { default as ToggleSwitch } from "./ToggleSwitch";
 export { default as Alert } from "./Alert";
 export { default as CMSHeader } from "./CMSHeader";
+export { default as LanguageSelector } from "./LanguageSelector";

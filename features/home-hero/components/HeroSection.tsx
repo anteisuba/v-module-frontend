@@ -25,7 +25,7 @@ export default function HeroSection({
   layout,
 }: {
   initialSlides?: HeroSlide[];
-  logo?: { src?: string; alt?: string };
+  logo?: { src?: string; alt?: string; opacity?: number };
   socialLinks?: SocialLinkItem[];
   title?: string;
   subtitle?: string;
@@ -128,10 +128,6 @@ export default function HeroSection({
             )}
           </div>
         )}
-
-        <div className="absolute inset-0 flex items-center justify-center text-white">
-          <span className="text-2xl tracking-[0.4em] opacity-80">HERO</span>
-        </div>
 
         {/* 底部缩略图条：仅控制显示/隐藏，不影响轮播功能 */}
         {showThumbStrip === true ? (

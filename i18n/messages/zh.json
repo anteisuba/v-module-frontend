@@ -1,0 +1,208 @@
+{
+  "admin": {
+    "title": "Welcome to Web Admin",
+    "subtitle": "PREMIUM 管理入口",
+    "backToHome": "返回首页",
+    "footer": {
+      "about": "关于",
+      "terms": "使用条款",
+      "privacy": "隐私政策",
+      "contact": "联系",
+      "copyright": "© vtuber-site"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "登录",
+      "description": "登录后可编辑你的个人页面内容。",
+      "email": "邮箱",
+      "password": "密码",
+      "submit": "登录",
+      "submitting": "登录中...",
+      "forgotPassword": "忘记密码",
+      "noAccount": "还没有账号？",
+      "register": "注册账号",
+      "error": "登录失败，请稍后再试"
+    },
+    "register": {
+      "title": "注册",
+      "email": "邮箱",
+      "password": "密码",
+      "confirmPassword": "确认密码",
+      "submit": "注册",
+      "hasAccount": "已有账号？",
+      "login": "登录"
+    },
+    "forgotPassword": {
+      "title": "忘记密码",
+      "email": "邮箱",
+      "submit": "发送重置链接",
+      "backToLogin": "返回登录"
+    },
+    "resetPassword": {
+      "title": "重置密码",
+      "password": "新密码",
+      "confirmPassword": "确认密码",
+      "submit": "重置密码"
+    }
+  },
+  "cms": {
+    "title": "页面编辑器",
+    "description": "编辑你的个人页面配置",
+    "openPage": "打开页面",
+    "saveDraft": "保存草稿",
+    "saving": "保存中...",
+    "publish": "发布",
+    "publishing": "发布中...",
+    "draftSaved": "草稿已保存",
+    "published": "已发布！",
+    "instruction": "说明：编辑配置后点击\"保存草稿\"保存到草稿，点击\"发布\"后才会在公开页面显示。"
+  },
+  "heroMenu": {
+    "login": "LOGIN",
+    "news": "New",
+    "blog": "BLOG",
+    "media": "MEDIA",
+    "profile": "PROFILE",
+    "contact": "CONTACT"
+  },
+  "common": {
+    "language": "语言",
+    "back": "返回",
+    "edit": "编辑",
+    "save": "保存",
+    "cancel": "取消",
+    "delete": "删除",
+    "loading": "加载中...",
+    "error": "错误",
+    "success": "成功",
+    "uploading": "上传中...",
+    "add": "添加",
+    "previous": "上一页",
+    "next": "下一页",
+    "published": "已发布",
+    "confirmDelete": "确定要删除这篇文章吗？"
+  },
+  "heroEditor": {
+    "title": "顶部内容 (Hero Section)",
+    "logo": {
+      "title": "Logo（左上角）",
+      "url": "Logo 图片 URL（留空则显示文字 \"ano\"）",
+      "upload": "上传 Logo 图片",
+      "uploadSuccess": "Logo 上传成功",
+      "opacity": "透明度"
+    },
+    "socialLinks": {
+      "title": "社交链接（右上角）",
+      "add": "新增",
+      "name": "名称",
+      "url": "链接 URL",
+      "icon": "图标（可选：选择图标、输入文字如 \"X\"、\"YT\"，emoji 如 🐦，或图片 URL）",
+      "show": "显示",
+      "empty": "暂无社交链接，点击上方\"新增\"按钮添加"
+    },
+    "titleSubtitle": {
+      "title": "标题（Title）",
+      "subtitle": "副标题（Subtitle）",
+      "titlePlaceholder": "例如：Welcome",
+      "subtitlePlaceholder": "例如：VTuber Personal Page"
+    },
+    "layout": {
+      "title": "布局设置",
+      "height": "高度（vh）",
+      "backgroundColor": "背景颜色",
+      "backgroundOpacity": "背景透明度："
+    },
+    "slides": {
+      "title": "轮播图片（3张）",
+      "showThumbStrip": "是否显示",
+      "image": "图片",
+      "upload": "上传本地图片",
+      "orLink": "或输入图片链接",
+      "linkPlaceholder": "https://example.com/image.jpg 或 /path/to/image.jpg",
+      "uploadSuccess": "图片 {index} 上传成功",
+      "updated": "图片 {index} 已更新",
+      "noImage": "暂无图片"
+    }
+  },
+  "newsSectionEditor": {
+    "title": "图片导航",
+    "addImage": "添加图片",
+    "layout": {
+      "title": "布局设置",
+      "paddingY": "上下内边距（px）：",
+      "backgroundColor": "背景颜色",
+      "backgroundOpacity": "背景透明度：",
+      "maxWidth": "最大宽度",
+      "full": "全宽",
+      "xl7": "7xl (最大)"
+    },
+    "image": {
+      "title": "图片",
+      "upload": "上传图片",
+      "link": "图片链接",
+      "linkPlaceholder": "图片 URL",
+      "externalLink": "外部链接",
+      "linkPlaceholder2": "跳转 URL",
+      "alt": "Alt 文本",
+      "altPlaceholder": "图片描述",
+      "delete": "删除",
+      "uploadSuccess": "图片上传成功",
+      "noImages": "暂无图片，点击\"添加图片\"开始添加"
+    }
+  },
+  "pageBackgroundEditor": {
+    "title": "页面背景（控制 /u/[slug] 页面）"
+  },
+  "backgroundEditor": {
+    "label": "背景设置",
+    "color": "颜色",
+    "image": "图片",
+    "imageUrlPlaceholder": "/path/to/image.jpg 或 https://example.com/image.jpg",
+    "uploadLocal": "上传本地图片",
+    "preview": "背景预览",
+    "imageLoadError": "图片加载失败",
+    "noImage": "暂无图片"
+  },
+  "newsArticleEditor": {
+    "title": "新闻文章管理",
+    "create": "新建文章",
+    "newsBackground": {
+      "label": "新闻页面背景设置（控制 NewsListSection、/news 和 /news/[id] 页面）",
+      "uploadSuccess": "新闻页面背景图片上传成功"
+    },
+    "tags": {
+      "add": "添加新标签",
+      "addButton": "添加"
+    },
+    "form": {
+      "title": "标题 *",
+      "titlePlaceholder": "文章标题",
+      "content": "内容 *",
+      "contentPlaceholder": "文章内容（支持 Markdown）",
+      "tag": "标签",
+      "tagPlaceholder": "例如：あの",
+      "shareUrl": "分享链接",
+      "shareChannels": "分享渠道",
+      "articleBackground": {
+        "label": "文章详情页背景设置（仅控制 /news/[id] 页面）"
+      },
+      "published": "已发布（勾选后文章会在公开页面显示）",
+      "save": "保存",
+      "cancel": "取消"
+    },
+    "list": {
+      "edit": "编辑",
+      "delete": "删除",
+      "loadFailed": "加载文章列表失败",
+      "saveFailed": "保存失败",
+      "deleteFailed": "删除失败",
+      "titleRequired": "标题和内容不能为空",
+      "saved": "文章已更新",
+      "createdPublished": "文章已创建并发布",
+      "createdDraft": "文章已创建（草稿）",
+      "deleted": "文章已删除"
+    }
+  }
+}
+

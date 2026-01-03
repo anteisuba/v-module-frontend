@@ -32,9 +32,12 @@
 - **用户 Dashboard**：登录后的编辑目录页面，统一管理各类编辑入口
 - **页面配置系统**：支持草稿和发布版本，配置驱动渲染
 - **用户公开页面**：`/u/[slug]` 动态路由展示用户发布的页面
-- **CMS 编辑器**：可视化编辑页面配置（背景、Hero Section、Links、Gallery）
+- **CMS 编辑器**：可视化编辑页面配置（背景、Hero Section、Links、Gallery、News）
+- **新闻文章管理系统**：创建、编辑、发布新闻文章，支持标签分类、分享链接和渠道配置
 - **图片管理**：支持本地图片上传和外部图片 URL
 - **首页 Hero**：粘性滚动背景、自动轮播淡入淡出、缩略图切换
+- **多语言支持**：支持中文、日文、英文三种语言切换（i18n）
+- **Logo 透明度调整**：可调整 Logo 的透明度（0-100%）
 - **全局状态管理**：基于 React Context 的用户状态管理
 - **统一 API 客户端**：封装的 API 调用接口，统一的错误处理
 
@@ -44,6 +47,8 @@
 
 - `/`：首页 Hero（固定模板）
 - `/u/[slug]`：用户公开页面（例如：`/u/testuser`）
+- `/news`：新闻列表页面（支持分页，每页最多 10 条）
+- `/news/[id]`：新闻详情页面
 
 #### 用户管理
 
@@ -72,6 +77,14 @@
 - `POST /api/page/me/publish`：发布草稿配置（需要认证）
 - `POST /api/page/me/upload`：上传图片（需要认证）
 
+#### 新闻文章相关
+
+- `GET /api/news/articles`：获取新闻文章列表（支持分页、标签过滤，公开页面仅返回已发布文章）
+- `GET /api/news/articles/[id]`：获取单篇新闻文章详情（公开页面仅返回已发布文章）
+- `POST /api/news/articles`：创建新闻文章（需要认证）
+- `PUT /api/news/articles/[id]`：更新新闻文章（需要认证，仅作者可编辑）
+- `DELETE /api/news/articles/[id]`：删除新闻文章（需要认证，仅作者可删除）
+
 ### 技术栈
 
 - **框架**：Next.js 16 / React 19（App Router）
@@ -79,6 +92,7 @@
 - **数据库**：Prisma + PostgreSQL
 - **认证**：iron-session、bcryptjs
 - **验证**：Zod
+- **国际化**：next-intl（支持中文、日文、英文）
 - **状态管理**：React Context API
 - **API 客户端**：统一的 API 调用封装，支持错误处理和类型安全
 
@@ -86,6 +100,7 @@
 
 - `User`：用户账号（slug、email、passwordHash）
 - `Page`：页面配置（draftConfig、publishedConfig）
+- `NewsArticle`：新闻文章（标题、内容、标签、分享链接、分享渠道、背景设置、发布状态）
 - `UserPasswordResetToken`：密码重置 token（24 小时过期，一次性使用）
 
 ### 项目结构
@@ -102,7 +117,9 @@ vtuber-site/
 ├── features/              # 功能域（Feature-Sliced Design）
 │   ├── home-hero/         # 首页 Hero 功能
 │   ├── admin-auth/        # 用户认证功能
-│   └── page-renderer/     # 页面渲染器
+│   ├── page-renderer/     # 页面渲染器
+│   ├── news-list/         # 新闻列表功能
+│   └── news-carousel/     # 新闻轮播功能
 ├── domain/                # 业务领域层
 │   ├── page-config/       # 页面配置领域
 │   └── hero/              # Hero 领域
@@ -115,6 +132,10 @@ vtuber-site/
 │   ├── context/           # React Context
 │   │   ├── UserContext.tsx # 用户状态管理
 │   │   └── UserProviderWrapper.tsx # Provider 包装器
+│   ├── i18n/              # 国际化
+│   │   ├── context.tsx     # i18n Context Provider
+│   │   ├── config.ts       # 语言配置
+│   │   └── messages/       # 翻译文件（zh.json, ja.json, en.json）
 │   ├── validation/        # Zod 校验 schemas
 │   ├── session/           # Session 管理
 │   └── prisma.ts          # Prisma Client
@@ -210,9 +231,37 @@ pnpm build
 1. **注册/登录**：访问 `/admin` 进行注册或登录
 2. **选择编辑页面**：登录成功后自动跳转到 `/admin/dashboard`，选择要编辑的页面类型
 3. **编辑内容**：进入对应的编辑器（如 CMS 编辑器）进行内容编辑
+   - **Hero Section**：编辑轮播图片、标题、副标题、Logo、社交链接、布局设置
+   - **News Section**：编辑图片导航、布局设置
+   - **Page Background**：设置页面背景（颜色或图片）
+   - **News Articles**：创建和管理新闻文章，设置文章背景、分享链接和渠道
 4. **保存草稿**：编辑过程中可以随时保存草稿
 5. **发布页面**：编辑完成后点击发布，将草稿配置发布为公开页面
 6. **查看效果**：访问 `/u/[你的slug]` 查看公开页面效果
+7. **语言切换**：在 `/admin` 页面右下角或 HeroMenu 底部切换语言（中文/日文/英文）
+
+### 新增功能
+
+#### 新闻文章管理系统
+- 创建、编辑、删除新闻文章
+- 支持标签分类和动态标签管理
+- 支持分享链接和分享渠道配置（Twitter/X、Facebook、LINE）
+- 支持文章详情页背景设置
+- 支持草稿和发布状态管理
+- 新闻列表页面支持分页（每页最多 10 条）
+
+#### 多语言支持（i18n）
+- 支持中文、日文、英文三种语言
+- 语言选择器位置：
+  - `/admin` 页面：右下角固定位置
+  - HeroMenu：菜单底部，VTUBER-SITE 下方
+- 语言选择保存在 localStorage，刷新后保持
+- 已翻译所有 CMS 编辑器界面文本
+
+#### Logo 透明度调整
+- 在 CMS 编辑器的 Logo 编辑部分可以调整 Logo 透明度（0-100%）
+- 实时预览效果
+- 透明度设置会应用到公开页面的 Logo 显示
 
 ---
 
@@ -225,9 +274,12 @@ VTuber 向けのマルチユーザーページ管理システム。Next.js App R
 - **マルチユーザーシステム**：ユーザー登録、ログイン、パスワードリセット
 - **ページ設定システム**：下書きと公開版をサポート、設定駆動レンダリング
 - **ユーザー公開ページ**：`/u/[slug]` 動的ルートでユーザーの公開ページを表示
-- **CMS エディター**：ページ設定を視覚的に編集（背景、Hero Section、Links、Gallery）
+- **CMS エディター**：ページ設定を視覚的に編集（背景、Hero Section、Links、Gallery、News）
+- **ニュース記事管理システム**：ニュース記事の作成、編集、公開、タグ分類、共有リンク設定
 - **画像管理**：ローカル画像アップロードと外部画像 URL をサポート
 - **トップ Hero**：スクロール追従、フェード切替、自動スライド、サムネイル選択
+- **多言語対応**：中国語、日本語、英語の3言語切り替え（i18n）
+- **Logo 透明度調整**：Logo の透明度を調整可能（0-100%）
 
 ### ページ/ルート
 

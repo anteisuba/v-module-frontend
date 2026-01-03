@@ -2,6 +2,8 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useI18n } from "@/lib/i18n/context";
+import LanguageSelector from "@/components/ui/LanguageSelector";
 
 type Props = {
   open: boolean;
@@ -9,16 +11,17 @@ type Props = {
 };
 
 const ITEMS = [
-  { label: "LOGIN", href: "/admin" },
-  { label: "New", href: "/news" },
-  { label: "BLOG", href: "/blog" },
-  { label: "MEDIA", href: "/media" },
-  { label: "PROFILE", href: "/profile" },
-  { label: "CONTACT", href: "/contact" },
+  { key: "login", href: "/admin" },
+  { key: "news", href: "/news" },
+  { key: "blog", href: "/blog" },
+  { key: "media", href: "/media" },
+  { key: "profile", href: "/profile" },
+  { key: "contact", href: "/contact" },
 ];
 
 export default function HeroMenu({ open, onClose }: Props) {
   const pathname = usePathname();
+  const { t } = useI18n();
   
   // 从路径中提取 slug（如果是 /u/[slug] 格式）
   const getNewsHref = () => {
@@ -78,11 +81,11 @@ export default function HeroMenu({ open, onClose }: Props) {
           <ul className="space-y-6">
             {ITEMS.map((item, i) => {
               // 如果是 News 链接，使用动态 href
-              const href = item.label === "New" ? getNewsHref() : item.href;
+              const href = item.key === "news" ? getNewsHref() : item.href;
               
               return (
                 <li
-                  key={item.label}
+                  key={item.key}
                   className={[
                     "transition-all duration-500 ease-out",
                     open
@@ -98,7 +101,7 @@ export default function HeroMenu({ open, onClose }: Props) {
                     onClick={onClose}
                     className="text-white text-2xl tracking-[0.2em] opacity-90 hover:opacity-100 transition"
                   >
-                    {item.label}
+                    {t(`heroMenu.${item.key}`)}
                   </Link>
                 </li>
               );
@@ -115,6 +118,17 @@ export default function HeroMenu({ open, onClose }: Props) {
             style={{ transitionDelay: open ? "520ms" : "0ms" }}
           >
             © VTUBER-SITE
+          </div>
+
+          {/* 语言选择器 */}
+          <div
+            className={[
+              "mt-6 transition-all duration-500",
+              open ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2",
+            ].join(" ")}
+            style={{ transitionDelay: open ? "590ms" : "0ms" }}
+          >
+            <LanguageSelector variant="dark" menuPosition="bottom" />
           </div>
         </nav>
       </aside>

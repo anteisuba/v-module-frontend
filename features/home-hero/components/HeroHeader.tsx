@@ -6,7 +6,7 @@ import { renderIcon } from "@/lib/utils/iconRenderer";
 
 type Props = {
   onMenuClick?: () => void;
-  logo?: { src?: string; alt?: string };
+  logo?: { src?: string; alt?: string; opacity?: number };
   socialLinks?: SocialLinkItem[];
   showLogo?: boolean;
   showSocialLinks?: boolean;
@@ -34,7 +34,10 @@ export default function HeroHeader({
           aria-label="Home"
           className="flex items-center gap-3 select-none"
         >
-          <div className="h-14 w-14 rounded-sm bg-white/10 backdrop-blur flex items-center justify-center border border-white/15 overflow-hidden">
+          <div 
+            className="h-14 w-14 rounded-sm bg-white/10 backdrop-blur flex items-center justify-center border border-white/15 overflow-hidden"
+            style={{ opacity: logo?.opacity ?? 1 }}
+          >
             {logo?.src ? (
               isExternalUrl(logo.src) ? (
                 // eslint-disable-next-line @next/next/no-img-element

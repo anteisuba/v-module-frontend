@@ -92,6 +92,7 @@ export type PageConfig = {
   logo?: {
     src?: string; // 图片路径，如果为空则显示文字 "ano"
     alt?: string;
+    opacity?: number; // Logo 透明度（0-1），默认 1
   };
   
   // 社交链接配置（右上角）- 动态数组

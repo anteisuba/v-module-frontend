@@ -1,0 +1,208 @@
+{
+  "admin": {
+    "title": "Welcome to Web Admin",
+    "subtitle": "PREMIUM 管理入口",
+    "backToHome": "ホームに戻る",
+    "footer": {
+      "about": "について",
+      "terms": "利用規約",
+      "privacy": "プライバシーポリシー",
+      "contact": "お問い合わせ",
+      "copyright": "© vtuber-site"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "ログイン",
+      "description": "ログイン後、個人ページの内容を編集できます。",
+      "email": "メールアドレス",
+      "password": "パスワード",
+      "submit": "ログイン",
+      "submitting": "ログイン中...",
+      "forgotPassword": "パスワードを忘れた場合",
+      "noAccount": "アカウントをお持ちでない場合",
+      "register": "アカウント登録",
+      "error": "ログインに失敗しました。しばらくしてからもう一度お試しください"
+    },
+    "register": {
+      "title": "登録",
+      "email": "メールアドレス",
+      "password": "パスワード",
+      "confirmPassword": "パスワード確認",
+      "submit": "登録",
+      "hasAccount": "アカウントをお持ちの場合",
+      "login": "ログイン"
+    },
+    "forgotPassword": {
+      "title": "パスワードを忘れた場合",
+      "email": "メールアドレス",
+      "submit": "リセットリンクを送信",
+      "backToLogin": "ログインに戻る"
+    },
+    "resetPassword": {
+      "title": "パスワードリセット",
+      "password": "新しいパスワード",
+      "confirmPassword": "パスワード確認",
+      "submit": "パスワードをリセット"
+    }
+  },
+  "cms": {
+    "title": "ページエディター",
+    "description": "個人ページ設定を編集",
+    "openPage": "ページを開く",
+    "saveDraft": "下書きを保存",
+    "saving": "保存中...",
+    "publish": "公開",
+    "publishing": "公開中...",
+    "draftSaved": "下書きを保存しました",
+    "published": "公開しました！",
+    "instruction": "説明：設定を編集後、「下書きを保存」をクリックして下書きに保存し、「公開」をクリックすると公開ページに表示されます。"
+  },
+  "heroMenu": {
+    "login": "LOGIN",
+    "news": "New",
+    "blog": "BLOG",
+    "media": "MEDIA",
+    "profile": "PROFILE",
+    "contact": "CONTACT"
+  },
+  "common": {
+    "language": "言語",
+    "back": "戻る",
+    "edit": "編集",
+    "save": "保存",
+    "cancel": "キャンセル",
+    "delete": "削除",
+    "loading": "読み込み中...",
+    "error": "エラー",
+    "success": "成功",
+    "uploading": "アップロード中...",
+    "add": "追加",
+    "previous": "前のページ",
+    "next": "次のページ",
+    "published": "公開済み",
+    "confirmDelete": "この記事を削除してもよろしいですか？"
+  },
+  "heroEditor": {
+    "title": "トップコンテンツ (Hero Section)",
+    "logo": {
+      "title": "Logo（左上）",
+      "url": "Logo 画像 URL（空欄の場合は文字 \"ano\" を表示）",
+      "upload": "Logo 画像をアップロード",
+      "uploadSuccess": "Logo のアップロードに成功しました",
+      "opacity": "透明度"
+    },
+    "socialLinks": {
+      "title": "ソーシャルリンク（右上）",
+      "add": "新規追加",
+      "name": "名前",
+      "url": "リンク URL",
+      "icon": "アイコン（オプション：アイコンを選択、\"X\"、\"YT\"などの文字を入力、🐦などの絵文字、または画像 URL）",
+      "show": "表示",
+      "empty": "ソーシャルリンクがありません。上の「新規追加」ボタンをクリックして追加してください"
+    },
+    "titleSubtitle": {
+      "title": "タイトル（Title）",
+      "subtitle": "サブタイトル（Subtitle）",
+      "titlePlaceholder": "例：Welcome",
+      "subtitlePlaceholder": "例：VTuber Personal Page"
+    },
+    "layout": {
+      "title": "レイアウト設定",
+      "height": "高さ（vh）",
+      "backgroundColor": "背景色",
+      "backgroundOpacity": "背景透明度："
+    },
+    "slides": {
+      "title": "スライド画像（3枚）",
+      "showThumbStrip": "表示する",
+      "image": "画像",
+      "upload": "ローカル画像をアップロード",
+      "orLink": "または画像リンクを入力",
+      "linkPlaceholder": "https://example.com/image.jpg または /path/to/image.jpg",
+      "uploadSuccess": "画像 {index} のアップロードに成功しました",
+      "updated": "画像 {index} を更新しました",
+      "noImage": "画像がありません"
+    }
+  },
+  "newsSectionEditor": {
+    "title": "画像ナビゲーション",
+    "addImage": "画像を追加",
+    "layout": {
+      "title": "レイアウト設定",
+      "paddingY": "上下パディング（px）：",
+      "backgroundColor": "背景色",
+      "backgroundOpacity": "背景透明度：",
+      "maxWidth": "最大幅",
+      "full": "全幅",
+      "xl7": "7xl（最大）"
+    },
+    "image": {
+      "title": "画像",
+      "upload": "画像をアップロード",
+      "link": "画像リンク",
+      "linkPlaceholder": "画像 URL",
+      "externalLink": "外部リンク",
+      "linkPlaceholder2": "遷移先 URL",
+      "alt": "Alt テキスト",
+      "altPlaceholder": "画像の説明",
+      "delete": "削除",
+      "uploadSuccess": "画像のアップロードに成功しました",
+      "noImages": "画像がありません。「画像を追加」をクリックして開始してください"
+    }
+  },
+  "pageBackgroundEditor": {
+    "title": "ページ背景（/u/[slug] ページを制御）"
+  },
+  "backgroundEditor": {
+    "label": "背景設定",
+    "color": "色",
+    "image": "画像",
+    "imageUrlPlaceholder": "/path/to/image.jpg または https://example.com/image.jpg",
+    "uploadLocal": "ローカル画像をアップロード",
+    "preview": "背景プレビュー",
+    "imageLoadError": "画像の読み込みに失敗しました",
+    "noImage": "画像がありません"
+  },
+  "newsArticleEditor": {
+    "title": "ニュース記事管理",
+    "create": "新しい記事",
+    "newsBackground": {
+      "label": "ニュースページ背景設定（NewsListSection、/news および /news/[id] ページを制御）",
+      "uploadSuccess": "ニュースページ背景画像のアップロードに成功しました"
+    },
+    "tags": {
+      "add": "新しいタグを追加",
+      "addButton": "追加"
+    },
+    "form": {
+      "title": "タイトル *",
+      "titlePlaceholder": "記事のタイトル",
+      "content": "内容 *",
+      "contentPlaceholder": "記事の内容（Markdown 対応）",
+      "tag": "タグ",
+      "tagPlaceholder": "例：あの",
+      "shareUrl": "共有リンク",
+      "shareChannels": "共有チャンネル",
+      "articleBackground": {
+        "label": "記事詳細ページ背景設定（/news/[id] ページのみを制御）"
+      },
+      "published": "公開済み（チェックすると記事が公開ページに表示されます）",
+      "save": "保存",
+      "cancel": "キャンセル"
+    },
+    "list": {
+      "edit": "編集",
+      "delete": "削除",
+      "loadFailed": "記事リストの読み込みに失敗しました",
+      "saveFailed": "保存に失敗しました",
+      "deleteFailed": "削除に失敗しました",
+      "titleRequired": "タイトルと内容は必須です",
+      "saved": "記事を更新しました",
+      "createdPublished": "記事を作成して公開しました",
+      "createdDraft": "記事を作成しました（下書き）",
+      "deleted": "記事を削除しました"
+    }
+  }
+}
+

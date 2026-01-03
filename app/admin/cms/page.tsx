@@ -19,6 +19,7 @@ import { useToast } from "@/hooks/useToast";
 import { useErrorHandler } from "@/hooks/useErrorHandler";
 import { usePageConfig } from "@/hooks/usePageConfig";
 import { usePageConfigActions } from "@/hooks/usePageConfigActions";
+import { useI18n } from "@/lib/i18n/context";
 import type {
   PageConfig,
   HeroSectionProps,
@@ -28,6 +29,7 @@ import type {
 
 export default function CMSPage() {
   const { user } = useUser();
+  const { t } = useI18n();
   const { message: toastMessage, showToast } = useToast();
   const { error, handleError, clearError } = useErrorHandler();
   const { config, setConfig, loading } = usePageConfig();
@@ -35,7 +37,11 @@ export default function CMSPage() {
     config,
     setConfig,
     onError: handleError,
-    onToast: showToast,
+    onToast: (msg) => {
+      // 如果消息是翻译 key，则翻译它
+      const translatedMsg = msg.startsWith("cms.") ? t(msg) : msg;
+      showToast(translatedMsg);
+    },
   });
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
 
@@ -448,7 +454,7 @@ export default function CMSPage() {
     return (
       <main className="relative min-h-screen w-full overflow-hidden">
         <div className="flex h-screen items-center justify-center">
-          <div className="text-lg text-black">加载中...</div>
+          <div className="text-lg text-black">{t("common.loading")}</div>
         </div>
       </main>
     );
@@ -456,7 +462,7 @@ export default function CMSPage() {
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden">
-      <BackButton href="/admin" label="返回登录" />
+      <BackButton href="/admin" label={t("common.back")} />
 
       {/* 背景图 */}
       <div className="absolute inset-0">
@@ -558,7 +564,7 @@ export default function CMSPage() {
         />
 
         <div className="mt-6 text-[10px] text-black/50 text-center">
-          说明：编辑配置后点击"保存草稿"保存到草稿，点击"发布"后才会在公开页面显示。
+          {t("cms.instruction")}
         </div>
       </div>
     </main>

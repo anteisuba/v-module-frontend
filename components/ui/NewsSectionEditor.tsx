@@ -3,6 +3,7 @@
 "use client";
 
 import { ImagePositionEditor } from "@/components/ui";
+import { useI18n } from "@/lib/i18n/context";
 import type { PageConfig, NewsSectionProps } from "@/domain/page-config/types";
 
 interface NewsSectionEditorProps {
@@ -25,9 +26,10 @@ function ToggleSwitch({
   onChange: () => void;
   disabled?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <div className="flex items-center gap-2">
-      <label className="text-sm text-black/70">是否显示</label>
+      <label className="text-sm text-black/70">{t("heroEditor.slides.showThumbStrip")}</label>
       <button
         type="button"
         onClick={onChange}
@@ -59,6 +61,7 @@ export default function NewsSectionEditor({
   onToast,
   onError,
 }: NewsSectionEditorProps) {
+  const { t } = useI18n();
   // 获取 news section（不自动创建）
   function getNewsSection() {
     return config.sections.find((s) => s.type === "news");
@@ -219,9 +222,9 @@ export default function NewsSectionEditor({
     try {
       const result = await onUploadImage(file);
       updateNewsItem(itemId, { src: result.src });
-      onToast?.("图片上传成功");
+      onToast?.(t("newsSectionEditor.image.uploadSuccess"));
     } catch (e) {
-      onError?.(e instanceof Error ? e.message : "上传失败");
+      onError?.(e instanceof Error ? e.message : t("common.error"));
       throw e; // 重新抛出错误，让父组件知道上传失败
     }
   }
@@ -231,7 +234,7 @@ export default function NewsSectionEditor({
   return (
     <div className="mb-6 rounded-2xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-black">图片导航</h2>
+        <h2 className="text-lg font-semibold text-black">{t("newsSectionEditor.title")}</h2>
         <div className="flex items-center gap-3">
           {newsSection && (
             <ToggleSwitch
@@ -246,7 +249,7 @@ export default function NewsSectionEditor({
             disabled={disabled}
             className="rounded-lg bg-black px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            添加图片
+            {t("newsSectionEditor.addImage")}
           </button>
         </div>
       </div>
@@ -254,12 +257,12 @@ export default function NewsSectionEditor({
       {/* 布局配置 */}
       {newsSection && (
         <div className="mb-4 space-y-3 rounded-lg border border-black/10 bg-white/70 p-3">
-          <h3 className="text-xs font-semibold text-black mb-2">布局设置</h3>
+          <h3 className="text-xs font-semibold text-black mb-2">{t("newsSectionEditor.layout.title")}</h3>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             {/* 上下内边距 */}
             <div>
               <label className="block text-xs text-black/70 mb-2">
-                上下内边距（px）：{newsSection.props.layout?.paddingY ?? 64}
+                {t("newsSectionEditor.layout.paddingY")}{newsSection.props.layout?.paddingY ?? 64}
               </label>
               <input
                 type="range"
@@ -294,7 +297,7 @@ export default function NewsSectionEditor({
             {/* 背景颜色 */}
             <div>
               <label className="block text-xs text-black/70 mb-2">
-                背景颜色
+                {t("newsSectionEditor.layout.backgroundColor")}
               </label>
               <input
                 type="color"
@@ -329,7 +332,7 @@ export default function NewsSectionEditor({
             {/* 背景透明度 */}
             <div>
               <label className="block text-xs text-black/70 mb-2">
-                背景透明度：
+                {t("newsSectionEditor.layout.backgroundOpacity")}
                 {(
                   (newsSection.props.layout?.backgroundOpacity ?? 1) * 100
                 ).toFixed(0)}
@@ -371,7 +374,7 @@ export default function NewsSectionEditor({
             {/* 最大宽度 */}
             <div>
               <label className="block text-xs text-black/70 mb-2">
-                最大宽度
+                {t("newsSectionEditor.layout.maxWidth")}
               </label>
               <select
                 value={newsSection.props.layout?.maxWidth || "7xl"}
@@ -399,8 +402,8 @@ export default function NewsSectionEditor({
                 className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-xs text-black"
                 disabled={disabled}
               >
-                <option value="full">全宽</option>
-                <option value="7xl">7xl (最大)</option>
+                <option value="full">{t("newsSectionEditor.layout.full")}</option>
+                <option value="7xl">{t("newsSectionEditor.layout.xl7")}</option>
                 <option value="6xl">6xl</option>
                 <option value="5xl">5xl</option>
                 <option value="4xl">4xl</option>
@@ -418,7 +421,7 @@ export default function NewsSectionEditor({
           >
             <div className="mb-2 flex items-center justify-between">
               <div className="text-xs font-medium text-black">
-                图片 {index + 1}
+                {t("newsSectionEditor.image.title")} {index + 1}
               </div>
               <button
                 type="button"
@@ -426,7 +429,7 @@ export default function NewsSectionEditor({
                 disabled={disabled}
                 className="rounded bg-red-500/10 px-2 py-0.5 text-xs font-medium text-red-600 transition-colors duration-200 hover:bg-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                删除
+                {t("common.delete")}
               </button>
             </div>
 
@@ -446,7 +449,7 @@ export default function NewsSectionEditor({
                 </div>
               ) : (
                 <div className="aspect-[4/3] max-h-48 flex items-center justify-center rounded-lg border border-black/10 bg-black/5 text-xs text-black/50">
-                  暂无图片
+                  {t("newsSectionEditor.image.noImages")}
                 </div>
               )}
             </div>
@@ -456,7 +459,7 @@ export default function NewsSectionEditor({
               {/* 上传文件 */}
               <div>
                 <label className="block text-[10px] text-black/70 mb-1">
-                  上传图片
+                  {t("newsSectionEditor.image.upload")}
                 </label>
                 <input
                   type="file"
@@ -479,7 +482,7 @@ export default function NewsSectionEditor({
               {/* 图片链接 */}
               <div>
                 <label className="block text-[10px] text-black/70 mb-1">
-                  图片链接
+                  {t("newsSectionEditor.image.link")}
                 </label>
                 <input
                   type="text"
@@ -487,7 +490,7 @@ export default function NewsSectionEditor({
                   onChange={(e) =>
                     updateNewsItem(item.id, { src: e.target.value })
                   }
-                  placeholder="图片 URL"
+                  placeholder={t("newsSectionEditor.image.linkPlaceholder")}
                   className="w-full rounded border border-black/10 bg-white/70 px-2 py-1 text-[10px] text-black placeholder:text-black/30"
                   disabled={uploadingIndex === -1 || disabled}
                 />
@@ -496,7 +499,7 @@ export default function NewsSectionEditor({
               {/* 外部链接 */}
               <div>
                 <label className="block text-[10px] text-black/70 mb-1">
-                  外部链接
+                  {t("newsSectionEditor.image.externalLink")}
                 </label>
                 <input
                   type="text"
@@ -504,7 +507,7 @@ export default function NewsSectionEditor({
                   onChange={(e) =>
                     updateNewsItem(item.id, { href: e.target.value })
                   }
-                  placeholder="跳转 URL"
+                  placeholder={t("newsSectionEditor.image.linkPlaceholder2")}
                   className="w-full rounded border border-black/10 bg-white/70 px-2 py-1 text-[10px] text-black placeholder:text-black/30"
                   disabled={uploadingIndex === -1 || disabled}
                 />
@@ -513,7 +516,7 @@ export default function NewsSectionEditor({
               {/* Alt 文本 */}
               <div>
                 <label className="block text-[10px] text-black/70 mb-1">
-                  Alt 文本
+                  {t("newsSectionEditor.image.alt")}
                 </label>
                 <input
                   type="text"
@@ -521,7 +524,7 @@ export default function NewsSectionEditor({
                   onChange={(e) =>
                     updateNewsItem(item.id, { alt: e.target.value })
                   }
-                  placeholder="图片描述"
+                  placeholder={t("newsSectionEditor.image.altPlaceholder")}
                   className="w-full rounded border border-black/10 bg-white/70 px-2 py-1 text-[10px] text-black placeholder:text-black/30"
                   disabled={uploadingIndex === -1 || disabled}
                 />
@@ -529,14 +532,14 @@ export default function NewsSectionEditor({
             </div>
 
             {uploadingIndex === -1 && (
-              <div className="mt-2 text-xs text-black/60">上传中...</div>
+              <div className="mt-2 text-xs text-black/60">{t("common.uploading")}</div>
             )}
           </div>
         ))}
 
         {(!newsSection || newsSection.props.items.length === 0) && (
           <div className="py-6 text-center text-xs text-black/50">
-            暂无图片，点击"添加图片"开始添加
+            {t("newsSectionEditor.image.noImages")}
           </div>
         )}
       </div>

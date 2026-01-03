@@ -7,6 +7,7 @@ import { newsArticleApi } from "@/lib/api";
 import { ApiError, NetworkError } from "@/lib/api/errors";
 import type { NewsArticle } from "@/lib/api/types";
 import BackgroundEditor from "./BackgroundEditor";
+import { useI18n } from "@/lib/i18n/context";
 
 interface NewsArticleEditorProps {
   disabled?: boolean;
@@ -33,6 +34,7 @@ export default function NewsArticleEditor({
   newsBackground,
   onNewsBackgroundChange,
 }: NewsArticleEditorProps) {
+  const { t } = useI18n();
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedTag, setSelectedTag] = useState<string>("ALL"); // 改为使用标签过滤
@@ -97,7 +99,7 @@ export default function NewsArticleEditor({
       if (err instanceof ApiError || err instanceof NetworkError) {
         onError?.(err.message);
       } else {
-        onError?.("加载文章列表失败");
+        onError?.(t("newsArticleEditor.list.loadFailed"));
       }
     } finally {
       setLoading(false);
@@ -177,7 +179,7 @@ export default function NewsArticleEditor({
   // 保存文章
   const handleSave = async () => {
     if (!formData.title?.trim() || !formData.content?.trim()) {
-      onError?.("标题和内容不能为空");
+      onError?.(t("newsArticleEditor.list.titleRequired"));
       return;
     }
 
@@ -195,7 +197,7 @@ export default function NewsArticleEditor({
           backgroundValue: formData.backgroundValue,
           published: formData.published,
         });
-        onToast?.("文章已更新");
+        onToast?.(t("newsArticleEditor.list.saved"));
       } else {
         // 创建新文章
         await newsArticleApi.createArticle({
@@ -210,9 +212,9 @@ export default function NewsArticleEditor({
           published: formData.published,
         });
         if (formData.published) {
-          onToast?.("文章已创建并发布");
+          onToast?.(t("newsArticleEditor.list.createdPublished"));
         } else {
-          onToast?.("文章已创建（草稿）");
+          onToast?.(t("newsArticleEditor.list.createdDraft"));
         }
       }
       // 保存成功后，保留表单数据，只关闭编辑状态
@@ -228,24 +230,24 @@ export default function NewsArticleEditor({
       if (err instanceof ApiError || err instanceof NetworkError) {
         onError?.(err.message);
       } else {
-        onError?.("保存失败");
+        onError?.(t("newsArticleEditor.list.saveFailed"));
       }
     }
   };
 
   // 删除文章
   const handleDelete = async (id: string) => {
-    if (!confirm("确定要删除这篇文章吗？")) return;
+    if (!confirm(t("common.confirmDelete"))) return;
 
     try {
       await newsArticleApi.deleteArticle(id);
-      onToast?.("文章已删除");
+      onToast?.(t("newsArticleEditor.list.deleted"));
       loadArticles();
     } catch (err) {
       if (err instanceof ApiError || err instanceof NetworkError) {
         onError?.(err.message);
       } else {
-        onError?.("删除失败");
+        onError?.(t("newsArticleEditor.list.deleteFailed"));
       }
     }
   };
@@ -263,7 +265,7 @@ export default function NewsArticleEditor({
   if (loading && articles.length === 0) {
     return (
       <div className="mb-6 rounded-xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl">
-        <div className="text-center text-black/60">加载中...</div>
+        <div className="text-center text-black/60">{t("common.loading")}</div>
       </div>
     );
   }
@@ -271,14 +273,14 @@ export default function NewsArticleEditor({
   return (
     <div className="mb-6 rounded-xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-base font-semibold text-black">新闻文章管理</h2>
+        <h2 className="text-base font-semibold text-black">{t("newsArticleEditor.title")}</h2>
         <button
           type="button"
           onClick={handleCreate}
           disabled={disabled || isCreating || editingArticle !== null}
           className="rounded-lg bg-black px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          + 新建文章
+          + {t("newsArticleEditor.create")}
         </button>
       </div>
 
@@ -286,12 +288,12 @@ export default function NewsArticleEditor({
       {newsBackground && onNewsBackgroundChange && (
         <div className="mb-4 rounded-lg border border-black/10 bg-white/70 p-4">
           <BackgroundEditor
-            label="新闻页面背景设置（控制 NewsListSection、/news 和 /news/[id] 页面）"
+            label={t("newsArticleEditor.newsBackground.label")}
             background={newsBackground}
             onBackgroundChange={onNewsBackgroundChange}
             disabled={disabled}
             onUploadImage={onUploadImage}
-            onToast={(msg) => onToast?.(msg || "新闻页面背景图片上传成功")}
+            onToast={(msg) => onToast?.(msg || t("newsArticleEditor.newsBackground.uploadSuccess"))}
             onError={onError}
             previewHeight="h-32"
           />
@@ -333,7 +335,7 @@ export default function NewsArticleEditor({
                 handleAddTag();
               }
             }}
-            placeholder="添加新标签"
+            placeholder={t("newsArticleEditor.tags.add")}
             className="flex-1 rounded border border-black/10 bg-white px-2 py-1 text-xs text-black"
             disabled={disabled}
           />
@@ -343,7 +345,7 @@ export default function NewsArticleEditor({
             disabled={disabled || !newTag.trim()}
             className="rounded border border-black/10 bg-white/70 px-2 py-1 text-xs font-medium text-black hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            添加
+            {t("newsArticleEditor.tags.addButton")}
           </button>
         </div>
       </div>
@@ -353,13 +355,13 @@ export default function NewsArticleEditor({
         <div className="mb-4 space-y-3 rounded-lg border border-black/10 bg-white/70 p-4">
           <div>
             <label className="block text-xs font-medium text-black mb-1.5">
-              标题 *
+              {t("newsArticleEditor.form.title")}
             </label>
             <input
               type="text"
               value={formData.title}
               onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder="文章标题"
+              placeholder={t("newsArticleEditor.form.titlePlaceholder")}
               className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
               disabled={disabled}
             />
@@ -367,14 +369,14 @@ export default function NewsArticleEditor({
 
           <div>
             <label className="block text-xs font-medium text-black mb-1.5">
-              内容 *
+              {t("newsArticleEditor.form.content")}
             </label>
             <textarea
               value={formData.content}
               onChange={(e) =>
                 setFormData({ ...formData, content: e.target.value })
               }
-              placeholder="文章内容（支持 Markdown）"
+              placeholder={t("newsArticleEditor.form.contentPlaceholder")}
               rows={8}
               className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
               disabled={disabled}
@@ -383,13 +385,13 @@ export default function NewsArticleEditor({
 
           <div>
             <label className="block text-xs font-medium text-black mb-1.5">
-              标签
+              {t("newsArticleEditor.form.tag")}
             </label>
             <input
               type="text"
               value={formData.tag}
               onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
-              placeholder="例如：あの"
+              placeholder={t("newsArticleEditor.form.tagPlaceholder")}
               className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
               disabled={disabled}
             />
@@ -397,7 +399,7 @@ export default function NewsArticleEditor({
 
           <div>
             <label className="block text-xs font-medium text-black mb-1.5">
-              分享链接
+              {t("newsArticleEditor.form.shareUrl")}
             </label>
             <input
               type="url"
@@ -413,7 +415,7 @@ export default function NewsArticleEditor({
 
           <div>
             <label className="block text-xs font-medium text-black mb-1.5">
-              分享渠道
+              {t("newsArticleEditor.form.shareChannels")}
             </label>
             <div className="flex gap-3">
               {SHARE_PLATFORMS.map((platform) => {
@@ -442,7 +444,7 @@ export default function NewsArticleEditor({
           {/* 背景编辑（仅用于文章详情页） */}
           <div>
             <BackgroundEditor
-              label="文章详情页背景设置（仅控制 /news/[id] 页面）"
+              label={t("newsArticleEditor.form.articleBackground.label")}
               background={{
                 type: formData.backgroundType,
                 value: formData.backgroundValue,
@@ -473,7 +475,7 @@ export default function NewsArticleEditor({
                 disabled={disabled}
                 className="toggle toggle-sm"
               />
-              <span className="text-xs text-black/70">已发布（勾选后文章会在公开页面显示）</span>
+              <span className="text-xs text-black/70">{t("newsArticleEditor.form.published")}</span>
             </label>
           </div>
 
@@ -484,7 +486,7 @@ export default function NewsArticleEditor({
               disabled={disabled}
               className="rounded-lg bg-black px-4 py-1.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              保存
+              {t("newsArticleEditor.form.save")}
             </button>
             <button
               type="button"
@@ -492,7 +494,7 @@ export default function NewsArticleEditor({
               disabled={disabled}
               className="rounded-lg border border-black/10 bg-white/70 px-4 py-1.5 text-xs font-medium text-black transition-colors duration-200 hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              取消
+              {t("newsArticleEditor.form.cancel")}
             </button>
           </div>
         </div>
@@ -523,7 +525,7 @@ export default function NewsArticleEditor({
                   )}
                   {article.published && (
                     <span className="rounded bg-green-500/20 px-2 py-0.5 text-[10px] text-green-700">
-                      已发布
+                      {t("common.published")}
                     </span>
                   )}
                 </div>
@@ -536,7 +538,7 @@ export default function NewsArticleEditor({
                   disabled={disabled}
                   className="rounded border border-black/10 bg-white/70 px-2 py-1 text-[10px] font-medium text-black hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  编辑
+                  {t("common.edit")}
                 </button>
                 <button
                   type="button"
@@ -544,7 +546,7 @@ export default function NewsArticleEditor({
                   disabled={disabled}
                   className="rounded border border-red-300 bg-red-50 px-2 py-1 text-[10px] font-medium text-red-600 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  删除
+                  {t("common.delete")}
                 </button>
               </div>
             </div>
@@ -561,7 +563,7 @@ export default function NewsArticleEditor({
             disabled={disabled || currentPage === 1}
             className="rounded border border-black/10 bg-white/70 px-3 py-1 text-xs text-black hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            上一页
+            {t("common.previous")}
           </button>
           <span className="text-xs text-black/60">
             {currentPage} / {totalPages}
@@ -572,7 +574,7 @@ export default function NewsArticleEditor({
             disabled={disabled || currentPage === totalPages}
             className="rounded border border-black/10 bg-white/70 px-3 py-1 text-xs text-black hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            下一页
+            {t("common.next")}
           </button>
         </div>
       )}

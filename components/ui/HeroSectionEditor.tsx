@@ -3,6 +3,7 @@
 "use client";
 
 import { ImagePositionEditor, IconPicker } from "@/components/ui";
+import { useI18n } from "@/lib/i18n/context";
 import type {
   PageConfig,
   HeroSectionProps,
@@ -29,9 +30,10 @@ function ToggleSwitch({
   onChange: () => void;
   disabled?: boolean;
 }) {
+  const { t } = useI18n();
   return (
     <div className="flex items-center gap-2">
-      <label className="text-sm text-black/70">是否显示</label>
+      <label className="text-sm text-black/70">{t("heroEditor.slides.showThumbStrip")}</label>
       <button
         type="button"
         onClick={onChange}
@@ -63,6 +65,7 @@ export default function HeroSectionEditor({
   onToast,
   onError,
 }: HeroSectionEditorProps) {
+  const { t } = useI18n();
   // 获取 hero section
   function getHeroSection() {
     return config.sections.find((s) => s.type === "hero");
@@ -186,16 +189,16 @@ export default function HeroSectionEditor({
     try {
       const result = await onUploadImage(file);
       updateHeroSlide(index, { src: result.src });
-      onToast?.(`图片 ${index + 1} 上传成功`);
+      onToast?.(t("heroEditor.slides.uploadSuccess").replace("{index}", String(index + 1)));
     } catch (e) {
-      onError?.(e instanceof Error ? e.message : "上传失败");
+      onError?.(e instanceof Error ? e.message : t("common.error"));
     }
   }
 
   // 使用图片链接
   function useImageUrl(index: number, url: string) {
     updateHeroSlide(index, { src: url });
-    onToast?.(`图片 ${index + 1} 已更新`);
+    onToast?.(t("heroEditor.slides.updated").replace("{index}", String(index + 1)));
   }
 
   const heroSection = getHeroSection();
@@ -213,7 +216,7 @@ export default function HeroSectionEditor({
     <div className="mb-6 rounded-xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-base font-semibold text-black">
-          顶部内容 (Hero Section)
+          {t("heroEditor.title")}
         </h2>
         {heroSection ? (
           <ToggleSwitch
@@ -227,7 +230,7 @@ export default function HeroSectionEditor({
       {/* Logo 编辑（左上角） */}
       <div className="mb-4 space-y-3 rounded-lg border border-black/10 bg-white/70 p-3">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-xs font-semibold text-black">Logo（左上角）</h3>
+          <h3 className="text-xs font-semibold text-black">{t("heroEditor.logo.title")}</h3>
           <ToggleSwitch
             enabled={config.showLogo !== false}
             onChange={toggleLogoEnabled}
@@ -236,7 +239,7 @@ export default function HeroSectionEditor({
         </div>
         <div>
           <label className="block text-xs text-black/70 mb-2">
-            Logo 图片 URL（留空则显示文字 "ano"）
+            {t("heroEditor.logo.url")}
           </label>
           <div className="flex gap-4">
             <input
@@ -249,14 +252,18 @@ export default function HeroSectionEditor({
                     ...config.logo,
                     src: e.target.value || undefined,
                     alt: config.logo?.alt || "Logo",
+                    opacity: config.logo?.opacity ?? 1,
                   },
                 })
               }
-              placeholder="/path/to/logo.png 或 https://example.com/logo.png"
+              placeholder={t("heroEditor.logo.url")}
               className="flex-1 rounded-lg border border-black/10 bg-white px-3 py-2 text-xs text-black"
             />
             {/* Logo 预览 */}
-            <div className="h-12 w-12 rounded-sm bg-white/10 backdrop-blur flex items-center justify-center border border-white/15 overflow-hidden flex-shrink-0">
+            <div 
+              className="h-12 w-12 rounded-sm bg-white/10 backdrop-blur flex items-center justify-center border border-white/15 overflow-hidden flex-shrink-0"
+              style={{ opacity: config.logo?.opacity ?? 1 }}
+            >
               {config.logo?.src ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -277,7 +284,7 @@ export default function HeroSectionEditor({
         </div>
         <div>
           <label className="block text-xs text-black/70 mb-2">
-            上传 Logo 图片
+            {t("heroEditor.logo.upload")}
           </label>
           <input
             type="file"
@@ -296,11 +303,12 @@ export default function HeroSectionEditor({
                       ...config.logo,
                       src: result.src,
                       alt: config.logo?.alt || "Logo",
+                      opacity: config.logo?.opacity ?? 1,
                     },
                   });
-                  onToast?.("Logo 上传成功");
+                  onToast?.(t("heroEditor.logo.uploadSuccess"));
                 } catch (err) {
-                  onError?.(err instanceof Error ? err.message : "上传失败");
+                  onError?.(err instanceof Error ? err.message : t("common.error"));
                 } finally {
                   if (inputElement) {
                     inputElement.value = "";
@@ -310,12 +318,38 @@ export default function HeroSectionEditor({
             }}
           />
         </div>
+        
+        {/* Logo 透明度调整 */}
+        <div>
+          <label className="block text-xs text-black/70 mb-2">
+            {t("heroEditor.logo.opacity")}：{Math.round((config.logo?.opacity ?? 1) * 100)}%
+          </label>
+          <input
+            type="range"
+            min="0"
+            max="100"
+            value={(config.logo?.opacity ?? 1) * 100}
+            onChange={(e) => {
+              onConfigChange({
+                ...config,
+                logo: {
+                  ...config.logo,
+                  src: config.logo?.src,
+                  alt: config.logo?.alt || "Logo",
+                  opacity: parseInt(e.target.value) / 100,
+                },
+              });
+            }}
+            className="w-full"
+            disabled={disabled}
+          />
+        </div>
       </div>
 
       {/* 社交链接编辑（右上角） */}
       <div className="mb-4 space-y-3 rounded-lg border border-black/10 bg-white/70 p-3">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-xs font-semibold text-black">社交链接（右上角）</h3>
+          <h3 className="text-xs font-semibold text-black">{t("heroEditor.socialLinks.title")}</h3>
           <div className="flex items-center gap-3">
             <ToggleSwitch
               enabled={config.showSocialLinks !== false}
@@ -326,7 +360,7 @@ export default function HeroSectionEditor({
               onClick={() => {
                 const newLink: SocialLinkItem = {
                   id: `social-${Date.now()}`,
-                  name: "新链接",
+                  name: t("heroEditor.socialLinks.add"),
                   url: "",
                   icon: "",
                   enabled: true,
@@ -339,7 +373,7 @@ export default function HeroSectionEditor({
               className="rounded-lg bg-black px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={disabled}
             >
-              + 新增
+              + {t("heroEditor.socialLinks.add")}
             </button>
           </div>
         </div>
@@ -369,7 +403,7 @@ export default function HeroSectionEditor({
                       }}
                       className="toggle toggle-sm"
                     />
-                    <span className="text-[10px] text-black/70">显示</span>
+                    <span className="text-[10px] text-black/70">{t("heroEditor.socialLinks.show")}</span>
                   </label>
                 </div>
                 <button
@@ -384,7 +418,7 @@ export default function HeroSectionEditor({
                   }}
                   className="rounded border border-red-300 bg-red-50 px-2 py-0.5 text-[10px] font-medium text-red-600 hover:bg-red-100"
                 >
-                  删除
+                  {t("common.delete")}
                 </button>
               </div>
 
@@ -392,7 +426,7 @@ export default function HeroSectionEditor({
                 {/* 名称 */}
                 <div>
                   <label className="block text-[10px] text-black/70 mb-1">
-                    名称
+                    {t("heroEditor.socialLinks.name")}
                   </label>
                   <input
                     type="text"
@@ -405,7 +439,7 @@ export default function HeroSectionEditor({
                         socialLinks: updated,
                       });
                     }}
-                    placeholder="例如：Twitter"
+                    placeholder={t("heroEditor.socialLinks.name")}
                     className="w-full rounded border border-black/10 bg-white px-2 py-1 text-xs text-black"
                   />
                 </div>
@@ -413,7 +447,7 @@ export default function HeroSectionEditor({
                 {/* 链接 */}
                 <div>
                   <label className="block text-[10px] text-black/70 mb-1">
-                    链接 URL
+                    {t("heroEditor.socialLinks.url")}
                   </label>
                   <input
                     type="text"
@@ -435,7 +469,7 @@ export default function HeroSectionEditor({
               {/* 图标 - 使用 IconPicker */}
               <div className="mt-2">
                 <label className="block text-[10px] text-black/70 mb-1">
-                  图标（可选：选择图标、输入文字如 "X"、"YT"，emoji 如 🐦，或图片 URL）
+                  {t("heroEditor.socialLinks.icon")}
                 </label>
                 <div className="flex gap-2">
                   <div className="flex-1 relative">
@@ -475,7 +509,7 @@ export default function HeroSectionEditor({
                         socialLinks: updated,
                       });
                     }}
-                    placeholder="或输入文字/emoji/图片URL"
+                    placeholder={t("heroEditor.socialLinks.icon")}
                     className="flex-1 rounded border border-black/10 bg-white px-2 py-1 text-xs text-black"
                   />
                   {/* 图标预览 */}
@@ -511,7 +545,7 @@ export default function HeroSectionEditor({
 
           {(!config.socialLinks || config.socialLinks.length === 0) && (
             <div className="rounded border border-dashed border-black/20 bg-white/50 p-4 text-center text-xs text-black/50">
-              暂无社交链接，点击上方"新增"按钮添加
+              {t("heroEditor.socialLinks.empty")}
             </div>
           )}
         </div>
@@ -520,9 +554,9 @@ export default function HeroSectionEditor({
       {/* Title 和 Subtitle 编辑 */}
       <div className="mb-4 space-y-3 rounded-lg border border-black/10 bg-white/70 p-3">
         <div>
-          <label className="block text-xs font-medium text-black mb-1.5">
-            标题（Title）
-          </label>
+            <label className="block text-xs font-medium text-black mb-1.5">
+              {t("heroEditor.titleSubtitle.title")}
+            </label>
           <input
             type="text"
             value={heroSection?.props.title || ""}
@@ -545,14 +579,14 @@ export default function HeroSectionEditor({
                 ),
               });
             }}
-            placeholder="例如：Welcome"
+            placeholder={t("heroEditor.titleSubtitle.titlePlaceholder")}
             className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
           />
         </div>
         <div>
-          <label className="block text-xs font-medium text-black mb-1.5">
-            副标题（Subtitle）
-          </label>
+            <label className="block text-xs font-medium text-black mb-1.5">
+              {t("heroEditor.titleSubtitle.subtitle")}
+            </label>
           <input
             type="text"
             value={heroSection?.props.subtitle || ""}
@@ -575,7 +609,7 @@ export default function HeroSectionEditor({
                 ),
               });
             }}
-            placeholder="例如：VTuber Personal Page"
+            placeholder={t("heroEditor.titleSubtitle.subtitlePlaceholder")}
             className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
           />
         </div>
@@ -583,12 +617,12 @@ export default function HeroSectionEditor({
 
       {/* 布局配置 */}
       <div className="mb-4 space-y-3 rounded-lg border border-black/10 bg-white/70 p-3">
-        <h3 className="text-xs font-semibold text-black mb-2">布局设置</h3>
+        <h3 className="text-xs font-semibold text-black mb-2">{t("heroEditor.layout.title")}</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
           {/* 高度设置 */}
           <div>
             <label className="block text-xs text-black/70 mb-2">
-              高度（vh）：{heroSection?.props.layout?.heightVh ?? 150}
+              {t("heroEditor.layout.height")}：{heroSection?.props.layout?.heightVh ?? 150}
             </label>
             <input
               type="range"
@@ -622,7 +656,7 @@ export default function HeroSectionEditor({
           {/* 背景颜色 */}
           <div>
             <label className="block text-xs text-black/70 mb-2">
-              背景颜色
+              {t("heroEditor.layout.backgroundColor")}
             </label>
             <input
               type="color"
@@ -656,7 +690,7 @@ export default function HeroSectionEditor({
           {/* 背景透明度 */}
           <div>
             <label className="block text-xs text-black/70 mb-2">
-              背景透明度：
+              {t("heroEditor.layout.backgroundOpacity")}
               {(
                 (heroSection?.props.layout?.backgroundOpacity ?? 1) * 100
               ).toFixed(0)}
@@ -700,11 +734,11 @@ export default function HeroSectionEditor({
       <div className="mb-3">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-xs font-semibold text-black">
-            轮播图片（3张）
+            {t("heroEditor.slides.title")}
           </h3>
           {/* Hero 缩略图条显示开关 */}
           <div className="flex items-center gap-2">
-            <label className="text-sm text-black/70">是否显示</label>
+            <label className="text-sm text-black/70">{t("heroEditor.slides.showThumbStrip")}</label>
             <button
               type="button"
               onClick={() => {
@@ -747,7 +781,7 @@ export default function HeroSectionEditor({
                 className="rounded-lg border border-black/10 bg-white/70 p-3"
               >
                 <div className="mb-2 text-xs font-medium text-black">
-                  图片 {index + 1}
+                  {t("heroEditor.slides.image")} {index + 1}
                 </div>
 
                 {/* 预览 - 可拖拽编辑位置 */}
@@ -764,7 +798,7 @@ export default function HeroSectionEditor({
                     />
                   ) : (
                     <div className="aspect-[4/3] flex items-center justify-center rounded-lg border border-black/10 bg-black/5 text-xs text-black/50">
-                      暂无图片
+                      {t("heroEditor.slides.noImage")}
                     </div>
                   )}
                 </div>
@@ -772,7 +806,7 @@ export default function HeroSectionEditor({
                 {/* 上传文件 */}
                 <div className="mb-3">
                   <label className="block text-xs text-black/70">
-                    上传本地图片
+                    {t("heroEditor.slides.upload")}
                   </label>
                   <input
                     type="file"
@@ -795,20 +829,20 @@ export default function HeroSectionEditor({
                 {/* 或使用图片链接 */}
                 <div>
                   <label className="block text-xs text-black/70">
-                    或输入图片链接
+                    {t("heroEditor.slides.orLink")}
                   </label>
                   <input
                     type="text"
                     value={slide?.src || ""}
                     onChange={(e) => useImageUrl(index, e.target.value)}
-                    placeholder="https://example.com/image.jpg 或 /path/to/image.jpg"
+                    placeholder={t("heroEditor.slides.linkPlaceholder")}
                     className="mt-2 w-full rounded-lg border border-black/10 bg-white/70 px-3 py-2 text-xs text-black placeholder:text-black/30"
                     disabled={isUploading || disabled}
                   />
                 </div>
 
                 {isUploading && (
-                  <div className="mt-2 text-xs text-black/60">上传中...</div>
+                  <div className="mt-2 text-xs text-black/60">{t("common.uploading")}</div>
                 )}
               </div>
             );

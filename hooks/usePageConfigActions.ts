@@ -31,7 +31,7 @@ export function usePageConfigActions({
 
       await pageApi.updateDraftConfig(cleanedConfig);
 
-      onToast?.("草稿已保存");
+      onToast?.("cms.draftSaved");
       // 更新本地配置为清理后的版本
       setConfig(cleanedConfig);
     } catch (e) {
@@ -58,7 +58,7 @@ export function usePageConfigActions({
       // 更新本地配置，设置 hasPublished 标记
       setConfig(cleanedConfig);
 
-      onToast?.("已发布！");
+      onToast?.("cms.published");
     } catch (e) {
       onError?.(e);
     } finally {

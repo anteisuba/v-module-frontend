@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { UserProvider } from "@/lib/context/UserProviderWrapper";
 import { InspectorWrapper } from "@/lib/context/InspectorWrapper";
+import { I18nProvider } from "@/lib/i18n/context";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -30,7 +31,9 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <InspectorWrapper>
-          <UserProvider>{children}</UserProvider>
+          <UserProvider>
+            <I18nProvider>{children}</I18nProvider>
+          </UserProvider>
         </InspectorWrapper>
       </body>
     </html>

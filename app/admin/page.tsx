@@ -1,10 +1,18 @@
+"use client";
+
 import { AdminAuthPanel } from "@/features/admin-auth";
-import { BackButton } from "@/components/ui";
+import { BackButton, LanguageSelector } from "@/components/ui";
+import { useI18n } from "@/lib/i18n/context";
 
 export default function AdminPage() {
+  const { t } = useI18n();
+
   return (
     <main className="relative min-h-screen w-full overflow-hidden">
-      <BackButton href="/" label="返回首页" />
+      <BackButton href="/" label={t("admin.backToHome")} />
+      <div className="fixed bottom-6 right-6 z-[100]">
+        <LanguageSelector position="inline" />
+      </div>
       {/* 背景图：铺满 */}
       <div className="absolute inset-0">
         {/* 你也可以换成 next/image，这里先用 div 更省事 */}
@@ -24,11 +32,11 @@ export default function AdminPage() {
         <header className="pt-10 text-center">
           <div className="mx-auto inline-flex items-center gap-3">
             <span className="inline-flex items-center bg-black px-3 py-1 text-2xl font-bold tracking-[0.2em] text-white">
-              Welcome to Web Admin
+              {t("admin.title")}
             </span>
           </div>
           <div className="mt-3 text-xs tracking-[0.25em] text-black/70">
-            PREMIUM 管理入口
+            {t("admin.subtitle")}
           </div>
         </header>
 
@@ -41,19 +49,19 @@ export default function AdminPage() {
         <footer className="pb-6 text-center text-xs text-black/60">
           <div className="flex flex-wrap justify-center gap-x-6 gap-y-2">
             <a className="hover:text-black" href="#">
-              关于
+              {t("admin.footer.about")}
             </a>
             <a className="hover:text-black" href="#">
-              使用条款
+              {t("admin.footer.terms")}
             </a>
             <a className="hover:text-black" href="#">
-              隐私政策
+              {t("admin.footer.privacy")}
             </a>
             <a className="hover:text-black" href="#">
-              联系
+              {t("admin.footer.contact")}
             </a>
           </div>
-          <div className="mt-3 text-black/40">© vtuber-site</div>
+          <div className="mt-3 text-black/40">{t("admin.footer.copyright")}</div>
         </footer>
       </div>
     </main>

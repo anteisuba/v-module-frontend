@@ -128,6 +128,7 @@ export const PageConfigSchema = z.object({
     .object({
       src: z.string().optional(),
       alt: z.string().optional(),
+      opacity: z.number().min(0).max(1).optional(), // Logo 透明度 0-1
     })
     .optional(),
   socialLinks: z.array(SocialLinkItemSchema).max(10).optional(), // 最多 10 个社交链接

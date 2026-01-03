@@ -4,6 +4,7 @@
 
 import type { PageConfig } from "@/domain/page-config/types";
 import BackgroundEditor from "./BackgroundEditor";
+import { useI18n } from "@/lib/i18n/context";
 
 interface PageBackgroundEditorProps {
   config: PageConfig;
@@ -22,10 +23,12 @@ export default function PageBackgroundEditor({
   onToast,
   onError,
 }: PageBackgroundEditorProps) {
+  const { t } = useI18n();
+  
   return (
     <div className="mb-6 rounded-xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl">
       <div className="mb-3 flex items-center justify-between">
-        <h2 className="text-base font-semibold text-black">页面背景（控制 /u/[slug] 页面）</h2>
+        <h2 className="text-base font-semibold text-black">{t("pageBackgroundEditor.title")}</h2>
       </div>
       <BackgroundEditor
         background={config.background}

@@ -1,0 +1,208 @@
+{
+  "admin": {
+    "title": "Welcome to Web Admin",
+    "subtitle": "PREMIUM Admin Portal",
+    "backToHome": "Back to Home",
+    "footer": {
+      "about": "About",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "contact": "Contact",
+      "copyright": "© vtuber-site"
+    }
+  },
+  "auth": {
+    "login": {
+      "title": "Login",
+      "description": "After logging in, you can edit your personal page content.",
+      "email": "Email",
+      "password": "Password",
+      "submit": "Login",
+      "submitting": "Logging in...",
+      "forgotPassword": "Forgot password",
+      "noAccount": "Don't have an account?",
+      "register": "Register",
+      "error": "Login failed, please try again later"
+    },
+    "register": {
+      "title": "Register",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm Password",
+      "submit": "Register",
+      "hasAccount": "Already have an account?",
+      "login": "Login"
+    },
+    "forgotPassword": {
+      "title": "Forgot Password",
+      "email": "Email",
+      "submit": "Send Reset Link",
+      "backToLogin": "Back to Login"
+    },
+    "resetPassword": {
+      "title": "Reset Password",
+      "password": "New Password",
+      "confirmPassword": "Confirm Password",
+      "submit": "Reset Password"
+    }
+  },
+  "cms": {
+    "title": "Page Editor",
+    "description": "Edit your personal page configuration",
+    "openPage": "Open Page",
+    "saveDraft": "Save Draft",
+    "saving": "Saving...",
+    "publish": "Publish",
+    "publishing": "Publishing...",
+    "draftSaved": "Draft saved",
+    "published": "Published!",
+    "instruction": "Note: After editing the configuration, click \"Save Draft\" to save to draft, and click \"Publish\" to display on the public page."
+  },
+  "heroMenu": {
+    "login": "LOGIN",
+    "news": "New",
+    "blog": "BLOG",
+    "media": "MEDIA",
+    "profile": "PROFILE",
+    "contact": "CONTACT"
+  },
+  "common": {
+    "language": "Language",
+    "back": "Back",
+    "edit": "Edit",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "loading": "Loading...",
+    "error": "Error",
+    "success": "Success",
+    "uploading": "Uploading...",
+    "add": "Add",
+    "previous": "Previous",
+    "next": "Next",
+    "published": "Published",
+    "confirmDelete": "Are you sure you want to delete this article?"
+  },
+  "heroEditor": {
+    "title": "Top Content (Hero Section)",
+    "logo": {
+      "title": "Logo (Top Left)",
+      "url": "Logo Image URL (leave empty to show text \"ano\")",
+      "upload": "Upload Logo Image",
+      "uploadSuccess": "Logo uploaded successfully",
+      "opacity": "Opacity"
+    },
+    "socialLinks": {
+      "title": "Social Links (Top Right)",
+      "add": "Add New",
+      "name": "Name",
+      "url": "Link URL",
+      "icon": "Icon (optional: select icon, enter text like \"X\", \"YT\", emoji like 🐦, or image URL)",
+      "show": "Show",
+      "empty": "No social links yet. Click \"Add New\" above to add"
+    },
+    "titleSubtitle": {
+      "title": "Title",
+      "subtitle": "Subtitle",
+      "titlePlaceholder": "e.g.: Welcome",
+      "subtitlePlaceholder": "e.g.: VTuber Personal Page"
+    },
+    "layout": {
+      "title": "Layout Settings",
+      "height": "Height (vh)",
+      "backgroundColor": "Background Color",
+      "backgroundOpacity": "Background Opacity:"
+    },
+    "slides": {
+      "title": "Carousel Images (3)",
+      "showThumbStrip": "Show",
+      "image": "Image",
+      "upload": "Upload Local Image",
+      "orLink": "Or Enter Image Link",
+      "linkPlaceholder": "https://example.com/image.jpg or /path/to/image.jpg",
+      "uploadSuccess": "Image {index} uploaded successfully",
+      "updated": "Image {index} updated",
+      "noImage": "No image"
+    }
+  },
+  "newsSectionEditor": {
+    "title": "Image Navigation",
+    "addImage": "Add Image",
+    "layout": {
+      "title": "Layout Settings",
+      "paddingY": "Vertical Padding (px):",
+      "backgroundColor": "Background Color",
+      "backgroundOpacity": "Background Opacity:",
+      "maxWidth": "Max Width",
+      "full": "Full Width",
+      "xl7": "7xl (Max)"
+    },
+    "image": {
+      "title": "Image",
+      "upload": "Upload Image",
+      "link": "Image Link",
+      "linkPlaceholder": "Image URL",
+      "externalLink": "External Link",
+      "linkPlaceholder2": "Redirect URL",
+      "alt": "Alt Text",
+      "altPlaceholder": "Image Description",
+      "delete": "Delete",
+      "uploadSuccess": "Image uploaded successfully",
+      "noImages": "No images yet. Click \"Add Image\" to start"
+    }
+  },
+  "pageBackgroundEditor": {
+    "title": "Page Background (Controls /u/[slug] page)"
+  },
+  "backgroundEditor": {
+    "label": "Background Settings",
+    "color": "Color",
+    "image": "Image",
+    "imageUrlPlaceholder": "/path/to/image.jpg or https://example.com/image.jpg",
+    "uploadLocal": "Upload Local Image",
+    "preview": "Background Preview",
+    "imageLoadError": "Image load failed",
+    "noImage": "No image"
+  },
+  "newsArticleEditor": {
+    "title": "News Article Management",
+    "create": "New Article",
+    "newsBackground": {
+      "label": "News Page Background Settings (Controls NewsListSection, /news and /news/[id] pages)",
+      "uploadSuccess": "News page background image uploaded successfully"
+    },
+    "tags": {
+      "add": "Add New Tag",
+      "addButton": "Add"
+    },
+    "form": {
+      "title": "Title *",
+      "titlePlaceholder": "Article Title",
+      "content": "Content *",
+      "contentPlaceholder": "Article Content (Markdown supported)",
+      "tag": "Tag",
+      "tagPlaceholder": "e.g.: あの",
+      "shareUrl": "Share Link",
+      "shareChannels": "Share Channels",
+      "articleBackground": {
+        "label": "Article Detail Page Background Settings (Controls /news/[id] page only)"
+      },
+      "published": "Published (check to display article on public page)",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "list": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "loadFailed": "Failed to load article list",
+      "saveFailed": "Save failed",
+      "deleteFailed": "Delete failed",
+      "titleRequired": "Title and content are required",
+      "saved": "Article updated",
+      "createdPublished": "Article created and published",
+      "createdDraft": "Article created (draft)",
+      "deleted": "Article deleted"
+    }
+  }
+}
+

@@ -2,6 +2,8 @@
 
 "use client";
 
+import { useI18n } from "@/lib/i18n/context";
+
 interface CMSHeaderProps {
   title?: string;
   description?: string;
@@ -14,8 +16,8 @@ interface CMSHeaderProps {
 }
 
 export default function CMSHeader({
-  title = "页面编辑器",
-  description = "编辑你的个人页面配置",
+  title,
+  description,
   userSlug,
   onSaveDraft,
   onPublish,
@@ -23,11 +25,12 @@ export default function CMSHeader({
   publishing = false,
   disabled = false,
 }: CMSHeaderProps) {
+  const { t } = useI18n();
   return (
     <div className="mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
       <div>
-        <h1 className="text-xl font-semibold text-black">{title}</h1>
-        <p className="mt-1 text-xs text-black/70">{description}</p>
+        <h1 className="text-xl font-semibold text-black">{title || t("cms.title")}</h1>
+        <p className="mt-1 text-xs text-black/70">{description || t("cms.description")}</p>
       </div>
 
       <div className="flex flex-wrap items-center gap-2">
@@ -39,7 +42,7 @@ export default function CMSHeader({
             rel="noopener noreferrer"
             className="cursor-pointer rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black transition-colors duration-200 hover:bg-white/80"
           >
-            打开页面
+            {t("cms.openPage")}
           </a>
         )}
 
@@ -50,7 +53,7 @@ export default function CMSHeader({
             disabled={disabled || saving || publishing}
             className="cursor-pointer rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black transition-colors duration-200 hover:bg-white/80 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {saving ? "保存中..." : "保存草稿"}
+            {saving ? t("cms.saving") : t("cms.saveDraft")}
           </button>
         )}
 
@@ -61,7 +64,7 @@ export default function CMSHeader({
             disabled={disabled || saving || publishing}
             className="cursor-pointer rounded-lg bg-black px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {publishing ? "发布中..." : "发布"}
+            {publishing ? t("cms.publishing") : t("cms.publish")}
           </button>
         )}
       </div>

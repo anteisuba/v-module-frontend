@@ -3,6 +3,7 @@
 "use client";
 
 import { useBackgroundEditor, type BackgroundConfig } from "@/hooks/useBackgroundEditor";
+import { useI18n } from "@/lib/i18n/context";
 
 interface BackgroundEditorProps {
   label?: string;
@@ -16,7 +17,7 @@ interface BackgroundEditorProps {
 }
 
 export default function BackgroundEditor({
-  label = "背景设置",
+  label,
   background,
   onBackgroundChange,
   disabled = false,
@@ -25,6 +26,7 @@ export default function BackgroundEditor({
   onError,
   previewHeight = "h-24",
 }: BackgroundEditorProps) {
+  const { t } = useI18n();
   const {
     backgroundImageError,
     uploadingBackground,
@@ -60,7 +62,7 @@ export default function BackgroundEditor({
           }`}
           disabled={disabled}
         >
-          颜色
+          {t("backgroundEditor.color")}
         </button>
         <button
           type="button"
@@ -72,7 +74,7 @@ export default function BackgroundEditor({
           }`}
           disabled={disabled}
         >
-          图片
+          {t("backgroundEditor.image")}
         </button>
       </div>
 
@@ -99,7 +101,7 @@ export default function BackgroundEditor({
             type="text"
             value={background.value}
             onChange={(e) => handleImageInputChange(e.target.value)}
-            placeholder="/path/to/image.jpg 或 https://example.com/image.jpg"
+            placeholder={t("backgroundEditor.imageUrlPlaceholder")}
             className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black mb-2"
             disabled={uploadingBackground || disabled}
           />
@@ -107,7 +109,7 @@ export default function BackgroundEditor({
           {/* 上传本地图片 */}
           {onUploadImage && (
             <div className="mb-2">
-              <label className="block text-xs text-black/70 mb-1.5">上传本地图片</label>
+              <label className="block text-xs text-black/70 mb-1.5">{t("backgroundEditor.uploadLocal")}</label>
               <input
                 type="file"
                 accept="image/*"
@@ -130,7 +132,7 @@ export default function BackgroundEditor({
                 }}
               />
               {uploadingBackground && (
-                <div className="mt-1 text-[10px] text-black/60">上传中...</div>
+                <div className="mt-1 text-[10px] text-black/60">{t("common.uploading")}</div>
               )}
             </div>
           )}
@@ -143,18 +145,18 @@ export default function BackgroundEditor({
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={background.value}
-                alt="背景预览"
+                alt={t("backgroundEditor.preview")}
                 className="h-full w-full object-cover"
                 onError={handleImageError}
                 onLoad={handleImageLoad}
               />
             ) : background.value && backgroundImageError ? (
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-xs text-black/50">图片加载失败</div>
+                <div className="text-xs text-black/50">{t("backgroundEditor.imageLoadError")}</div>
               </div>
             ) : (
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-xs text-black/50">暂无图片</div>
+                <div className="text-xs text-black/50">{t("backgroundEditor.noImage")}</div>
               </div>
             )}
           </div>
