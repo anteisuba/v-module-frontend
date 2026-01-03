@@ -123,6 +123,7 @@
       "title": "Layout Settings",
       "height": "Height (vh)",
       "backgroundColor": "Background Color",
+      "backgroundColorHelp": "Select the background color for the Hero section",
       "backgroundOpacity": "Background Opacity:"
     },
     "slides": {

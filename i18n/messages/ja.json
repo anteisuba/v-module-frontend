@@ -123,6 +123,7 @@
       "title": "レイアウト設定",
       "height": "高さ（vh）",
       "backgroundColor": "背景色",
+      "backgroundColorHelp": "Hero エリアの背景色を選択",
       "backgroundOpacity": "背景透明度："
     },
     "slides": {
