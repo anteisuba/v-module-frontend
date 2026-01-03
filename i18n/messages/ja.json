@@ -112,6 +112,8 @@
       "empty": "ソーシャルリンクがありません。上の「新規追加」ボタンをクリックして追加してください"
     },
     "titleSubtitle": {
+      "titleHelp": "Hero エリアの上部に表示されるタイトル",
+      "subtitleHelp": "タイトルの下に表示されるサブタイトル",
       "title": "タイトル（Title）",
       "subtitle": "サブタイトル（Subtitle）",
       "titlePlaceholder": "例：Welcome",

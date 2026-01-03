@@ -112,6 +112,8 @@
       "empty": "No social links yet. Click \"Add New\" above to add"
     },
     "titleSubtitle": {
+      "titleHelp": "Title displayed at the top of the Hero section",
+      "subtitleHelp": "Subtitle displayed below the title",
       "title": "Title",
       "subtitle": "Subtitle",
       "titlePlaceholder": "e.g.: Welcome",
