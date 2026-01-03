@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   BackButton,
   HeroSectionEditor,
@@ -12,6 +12,9 @@ import {
   ToggleSwitch,
   Alert,
   CMSHeader,
+  LoadingState,
+  SaveStatus,
+  ConfirmDialog,
 } from "@/components/ui";
 import { pageApi } from "@/lib/api";
 import { useUser } from "@/lib/context/UserContext";
@@ -19,6 +22,7 @@ import { useToast } from "@/hooks/useToast";
 import { useErrorHandler } from "@/hooks/useErrorHandler";
 import { usePageConfig } from "@/hooks/usePageConfig";
 import { usePageConfigActions } from "@/hooks/usePageConfigActions";
+import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useI18n } from "@/lib/i18n/context";
 import type {
   PageConfig,
@@ -32,7 +36,7 @@ export default function CMSPage() {
   const { t } = useI18n();
   const { message: toastMessage, showToast } = useToast();
   const { error, handleError, clearError } = useErrorHandler();
-  const { config, setConfig, loading } = usePageConfig();
+  const { config, setConfig, loading, hasUnsavedChanges, markAsSaved } = usePageConfig();
   const { saving, publishing, saveDraft, publish } = usePageConfigActions({
     config,
     setConfig,
@@ -44,6 +48,46 @@ export default function CMSPage() {
     },
   });
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [showPublishConfirm, setShowPublishConfirm] = useState(false);
+
+  // 键盘快捷键支持
+  useKeyboardShortcuts({
+    onSave: async () => {
+      if (!saving && !publishing) {
+        await handleSaveDraft();
+      }
+    },
+    onPublish: () => {
+      if (!saving && !publishing) {
+        setShowPublishConfirm(true);
+      }
+    },
+    enabled: !saving && !publishing,
+  });
+
+  // 保存草稿处理
+  const handleSaveDraft = async () => {
+    try {
+      await saveDraft();
+      markAsSaved();
+      setLastSaved(new Date());
+    } catch (e) {
+      // 错误已由 handleError 处理
+    }
+  };
+
+  // 发布处理
+  const handlePublish = async () => {
+    try {
+      await publish();
+      markAsSaved();
+      setLastSaved(new Date());
+      setShowPublishConfirm(false);
+    } catch (e) {
+      // 错误已由 handleError 处理
+    }
+  };
 
   // 注意：isDefaultConfig 和 cleanConfig 已移至 utils/pageConfig.ts
   // 注意：loadConfig, cleanConfig, saveDraft, publish 已移至 hooks
@@ -454,7 +498,7 @@ export default function CMSPage() {
     return (
       <main className="relative min-h-screen w-full overflow-hidden">
         <div className="flex h-screen items-center justify-center">
-          <div className="text-lg text-black">{t("common.loading")}</div>
+          <LoadingState type="spinner" size="lg" message={t("common.loading")} />
         </div>
       </main>
     );
@@ -462,8 +506,6 @@ export default function CMSPage() {
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden">
-      <BackButton href="/admin" label={t("common.back")} />
-
       {/* 背景图 */}
       <div className="absolute inset-0">
         <div
@@ -475,14 +517,33 @@ export default function CMSPage() {
       </div>
 
       <div className="relative z-10 mx-auto max-w-5xl px-4 py-8">
+        {/* 返回按钮 - 放在标题上方 */}
+        <div className="mb-4">
+          <a
+            href="/admin"
+            className="inline-flex items-center rounded-xl border border-black/10 bg-white/70 backdrop-blur-sm px-4 py-2 text-sm font-medium text-black transition-all duration-200 hover:bg-white/80 hover:border-black/20 shadow-sm hover:shadow-md"
+          >
+            ← {t("common.back")}
+          </a>
+        </div>
+
         {/* 头部：标题和操作按钮 */}
         <CMSHeader
           userSlug={user?.slug || null}
-          onSaveDraft={saveDraft}
-          onPublish={publish}
+          onSaveDraft={handleSaveDraft}
+          onPublish={() => setShowPublishConfirm(true)}
           saving={saving}
           publishing={publishing}
           disabled={saving || publishing}
+        />
+
+        {/* 保存状态显示 */}
+        <SaveStatus
+          saving={saving}
+          publishing={publishing}
+          lastSaved={lastSaved}
+          hasUnsavedChanges={hasUnsavedChanges}
+          className="mb-4"
         />
 
         {/* 错误和成功提示 */}
@@ -566,6 +627,17 @@ export default function CMSPage() {
         <div className="mt-6 text-[10px] text-black/50 text-center">
           {t("cms.instruction")}
         </div>
+
+        {/* 发布确认对话框 */}
+        <ConfirmDialog
+          open={showPublishConfirm}
+          title={t("cms.publishConfirm.title") || "确认发布"}
+          message={t("cms.publishConfirm.message") || "确定要发布页面吗？发布后将对所有访客可见。"}
+          confirmLabel={t("cms.publishConfirm.confirm") || "确定发布"}
+          cancelLabel={t("common.cancel")}
+          onConfirm={handlePublish}
+          onCancel={() => setShowPublishConfirm(false)}
+        />
       </div>
     </main>
   );

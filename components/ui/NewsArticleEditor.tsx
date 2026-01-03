@@ -8,6 +8,7 @@ import { ApiError, NetworkError } from "@/lib/api/errors";
 import type { NewsArticle } from "@/lib/api/types";
 import BackgroundEditor from "./BackgroundEditor";
 import { useI18n } from "@/lib/i18n/context";
+import { ConfirmDialog, Button } from "@/components/ui";
 
 interface NewsArticleEditorProps {
   disabled?: boolean;
@@ -44,6 +45,7 @@ export default function NewsArticleEditor({
   const [isCreating, setIsCreating] = useState(false);
   const [tags, setTags] = useState<string[]>(["ALL"]); // 动态标签列表
   const [newTag, setNewTag] = useState(""); // 新标签输入
+  const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null); // 删除确认对话框
 
   // 表单状态
   const [formData, setFormData] = useState({
@@ -237,12 +239,11 @@ export default function NewsArticleEditor({
 
   // 删除文章
   const handleDelete = async (id: string) => {
-    if (!confirm(t("common.confirmDelete"))) return;
-
     try {
       await newsArticleApi.deleteArticle(id);
       onToast?.(t("newsArticleEditor.list.deleted"));
       loadArticles();
+      setDeleteConfirmId(null);
     } catch (err) {
       if (err instanceof ApiError || err instanceof NetworkError) {
         onError?.(err.message);
@@ -274,14 +275,14 @@ export default function NewsArticleEditor({
     <div className="mb-6 rounded-xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl">
       <div className="mb-4 flex items-center justify-between">
         <h2 className="text-base font-semibold text-black">{t("newsArticleEditor.title")}</h2>
-        <button
-          type="button"
+        <Button
+          variant="primary"
+          size="md"
           onClick={handleCreate}
           disabled={disabled || isCreating || editingArticle !== null}
-          className="rounded-lg bg-black px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           + {t("newsArticleEditor.create")}
-        </button>
+        </Button>
       </div>
 
       {/* 新闻页面背景设置（用于 NewsListSection、/news 和 /news/[id] 页面） */}
@@ -350,206 +351,355 @@ export default function NewsArticleEditor({
         </div>
       </div>
 
-      {/* 编辑表单 */}
-      {(isCreating || editingArticle) && (
-        <div className="mb-4 space-y-3 rounded-lg border border-black/10 bg-white/70 p-4">
-          <div>
-            <label className="block text-xs font-medium text-black mb-1.5">
-              {t("newsArticleEditor.form.title")}
-            </label>
-            <input
-              type="text"
-              value={formData.title}
-              onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-              placeholder={t("newsArticleEditor.form.titlePlaceholder")}
-              className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
-              disabled={disabled}
-            />
-          </div>
+      {/* 文章列表 */}
+      <div className="space-y-2">
+        {/* 新建文章表单 - 显示在列表顶部 */}
+        {isCreating && (
+          <div className="space-y-3 rounded-lg border border-black/10 bg-white/70 p-4">
+            <div>
+              <label className="block text-xs font-medium text-black mb-1.5">
+                {t("newsArticleEditor.form.title")}
+              </label>
+              <input
+                type="text"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                placeholder={t("newsArticleEditor.form.titlePlaceholder")}
+                className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
+                disabled={disabled}
+              />
+            </div>
 
-          <div>
-            <label className="block text-xs font-medium text-black mb-1.5">
-              {t("newsArticleEditor.form.content")}
-            </label>
-            <textarea
-              value={formData.content}
-              onChange={(e) =>
-                setFormData({ ...formData, content: e.target.value })
-              }
-              placeholder={t("newsArticleEditor.form.contentPlaceholder")}
-              rows={8}
-              className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
-              disabled={disabled}
-            />
-          </div>
+            <div>
+              <label className="block text-xs font-medium text-black mb-1.5">
+                {t("newsArticleEditor.form.content")}
+              </label>
+              <textarea
+                value={formData.content}
+                onChange={(e) =>
+                  setFormData({ ...formData, content: e.target.value })
+                }
+                placeholder={t("newsArticleEditor.form.contentPlaceholder")}
+                rows={8}
+                className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
+                disabled={disabled}
+              />
+            </div>
 
-          <div>
-            <label className="block text-xs font-medium text-black mb-1.5">
-              {t("newsArticleEditor.form.tag")}
-            </label>
-            <input
-              type="text"
-              value={formData.tag}
-              onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
-              placeholder={t("newsArticleEditor.form.tagPlaceholder")}
-              className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
-              disabled={disabled}
-            />
-          </div>
+            <div>
+              <label className="block text-xs font-medium text-black mb-1.5">
+                {t("newsArticleEditor.form.tag")}
+              </label>
+              <input
+                type="text"
+                value={formData.tag}
+                onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
+                placeholder={t("newsArticleEditor.form.tagPlaceholder")}
+                className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
+                disabled={disabled}
+              />
+            </div>
 
-          <div>
-            <label className="block text-xs font-medium text-black mb-1.5">
-              {t("newsArticleEditor.form.shareUrl")}
-            </label>
-            <input
-              type="url"
-              value={formData.shareUrl}
-              onChange={(e) =>
-                setFormData({ ...formData, shareUrl: e.target.value })
-              }
-              placeholder="https://example.com"
-              className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
-              disabled={disabled}
-            />
-          </div>
+            <div>
+              <label className="block text-xs font-medium text-black mb-1.5">
+                {t("newsArticleEditor.form.shareUrl")}
+              </label>
+              <input
+                type="url"
+                value={formData.shareUrl}
+                onChange={(e) =>
+                  setFormData({ ...formData, shareUrl: e.target.value })
+                }
+                placeholder="https://example.com"
+                className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
+                disabled={disabled}
+              />
+            </div>
 
-          <div>
-            <label className="block text-xs font-medium text-black mb-1.5">
-              {t("newsArticleEditor.form.shareChannels")}
-            </label>
-            <div className="flex gap-3">
-              {SHARE_PLATFORMS.map((platform) => {
-                const channel = formData.shareChannels.find(
-                  (ch) => ch.platform === platform.id
-                );
-                return (
-                  <label
-                    key={platform.id}
-                    className="flex items-center gap-2 cursor-pointer"
+            <div>
+              <label className="block text-xs font-medium text-black mb-1.5">
+                {t("newsArticleEditor.form.shareChannels")}
+              </label>
+              <div className="flex gap-3">
+                {SHARE_PLATFORMS.map((platform) => {
+                  const channel = formData.shareChannels.find(
+                    (ch) => ch.platform === platform.id
+                  );
+                  return (
+                    <label
+                      key={platform.id}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={channel?.enabled || false}
+                        onChange={() => toggleShareChannel(platform.id)}
+                        disabled={disabled}
+                        className="toggle toggle-sm"
+                      />
+                      <span className="text-xs text-black/70">{platform.label}</span>
+                    </label>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* 背景编辑（仅用于文章详情页） */}
+            <div>
+              <BackgroundEditor
+                label={t("newsArticleEditor.form.articleBackground.label")}
+                background={{
+                  type: formData.backgroundType,
+                  value: formData.backgroundValue,
+                }}
+                onBackgroundChange={(background) => {
+                  setFormData({
+                    ...formData,
+                    backgroundType: background.type,
+                    backgroundValue: background.value,
+                  });
+                }}
+                disabled={disabled}
+                onUploadImage={onUploadImage}
+                onToast={onToast}
+                onError={onError}
+                previewHeight="h-16"
+              />
+            </div>
+
+            <div>
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={formData.published}
+                  onChange={(e) =>
+                    setFormData({ ...formData, published: e.target.checked })
+                  }
+                  disabled={disabled}
+                  className="toggle toggle-sm"
+                />
+                <span className="text-xs text-black/70">{t("newsArticleEditor.form.published")}</span>
+              </label>
+            </div>
+
+            <div className="flex gap-2">
+              <Button
+                variant="primary"
+                size="md"
+                onClick={handleSave}
+                disabled={disabled}
+              >
+                {t("newsArticleEditor.form.save")}
+              </Button>
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={resetForm}
+                disabled={disabled}
+              >
+                {t("newsArticleEditor.form.cancel")}
+              </Button>
+            </div>
+          </div>
+        )}
+
+        {articles.map((article) => (
+          <div key={article.id}>
+            <div className="rounded-lg border border-black/10 bg-white/70 p-3">
+              <div className="flex items-start justify-between">
+                <div className="flex-1">
+                  <div className="mb-1 flex items-center gap-2">
+                    <span className="text-xs text-black/50">
+                      {new Date(article.createdAt).toLocaleDateString("ja-JP", {
+                        year: "numeric",
+                        month: "2-digit",
+                        day: "2-digit",
+                      })}
+                    </span>
+                    <span className="text-xs font-medium text-black">
+                      {article.category}
+                    </span>
+                    {article.tag && (
+                      <span className="text-xs text-black/60">{article.tag}</span>
+                    )}
+                    {article.published && (
+                      <span className="rounded bg-green-500/20 px-2 py-0.5 text-[10px] text-green-700">
+                        {t("common.published")}
+                      </span>
+                    )}
+                  </div>
+                  <h3 className="text-sm font-medium text-black">{article.title}</h3>
+                </div>
+                <div className="ml-4 flex gap-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => handleEdit(article)}
+                    disabled={disabled}
                   >
+                    {t("common.edit")}
+                  </Button>
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => setDeleteConfirmId(article.id)}
+                    disabled={disabled}
+                  >
+                    {t("common.delete")}
+                  </Button>
+                </div>
+              </div>
+            </div>
+
+            {/* 编辑表单 - 显示在对应文章下方 */}
+            {editingArticle?.id === article.id && (
+              <div className="mt-2 space-y-3 rounded-lg border border-black/10 bg-white/70 p-4">
+                <div>
+                  <label className="block text-xs font-medium text-black mb-1.5">
+                    {t("newsArticleEditor.form.title")}
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.title}
+                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                    placeholder={t("newsArticleEditor.form.titlePlaceholder")}
+                    className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
+                    disabled={disabled}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-black mb-1.5">
+                    {t("newsArticleEditor.form.content")}
+                  </label>
+                  <textarea
+                    value={formData.content}
+                    onChange={(e) =>
+                      setFormData({ ...formData, content: e.target.value })
+                    }
+                    placeholder={t("newsArticleEditor.form.contentPlaceholder")}
+                    rows={8}
+                    className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
+                    disabled={disabled}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-black mb-1.5">
+                    {t("newsArticleEditor.form.tag")}
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.tag}
+                    onChange={(e) => setFormData({ ...formData, tag: e.target.value })}
+                    placeholder={t("newsArticleEditor.form.tagPlaceholder")}
+                    className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
+                    disabled={disabled}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-black mb-1.5">
+                    {t("newsArticleEditor.form.shareUrl")}
+                  </label>
+                  <input
+                    type="url"
+                    value={formData.shareUrl}
+                    onChange={(e) =>
+                      setFormData({ ...formData, shareUrl: e.target.value })
+                    }
+                    placeholder="https://example.com"
+                    className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
+                    disabled={disabled}
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-xs font-medium text-black mb-1.5">
+                    {t("newsArticleEditor.form.shareChannels")}
+                  </label>
+                  <div className="flex gap-3">
+                    {SHARE_PLATFORMS.map((platform) => {
+                      const channel = formData.shareChannels.find(
+                        (ch) => ch.platform === platform.id
+                      );
+                      return (
+                        <label
+                          key={platform.id}
+                          className="flex items-center gap-2 cursor-pointer"
+                        >
+                          <input
+                            type="checkbox"
+                            checked={channel?.enabled || false}
+                            onChange={() => toggleShareChannel(platform.id)}
+                            disabled={disabled}
+                            className="toggle toggle-sm"
+                          />
+                          <span className="text-xs text-black/70">{platform.label}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* 背景编辑（仅用于文章详情页） */}
+                <div>
+                  <BackgroundEditor
+                    label={t("newsArticleEditor.form.articleBackground.label")}
+                    background={{
+                      type: formData.backgroundType,
+                      value: formData.backgroundValue,
+                    }}
+                    onBackgroundChange={(background) => {
+                      setFormData({
+                        ...formData,
+                        backgroundType: background.type,
+                        backgroundValue: background.value,
+                      });
+                    }}
+                    disabled={disabled}
+                    onUploadImage={onUploadImage}
+                    onToast={onToast}
+                    onError={onError}
+                    previewHeight="h-16"
+                  />
+                </div>
+
+                <div>
+                  <label className="flex items-center gap-2 cursor-pointer">
                     <input
                       type="checkbox"
-                      checked={channel?.enabled || false}
-                      onChange={() => toggleShareChannel(platform.id)}
+                      checked={formData.published}
+                      onChange={(e) =>
+                        setFormData({ ...formData, published: e.target.checked })
+                      }
                       disabled={disabled}
                       className="toggle toggle-sm"
                     />
-                    <span className="text-xs text-black/70">{platform.label}</span>
+                    <span className="text-xs text-black/70">{t("newsArticleEditor.form.published")}</span>
                   </label>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* 背景编辑（仅用于文章详情页） */}
-          <div>
-            <BackgroundEditor
-              label={t("newsArticleEditor.form.articleBackground.label")}
-              background={{
-                type: formData.backgroundType,
-                value: formData.backgroundValue,
-              }}
-              onBackgroundChange={(background) => {
-                setFormData({
-                  ...formData,
-                  backgroundType: background.type,
-                  backgroundValue: background.value,
-                });
-              }}
-              disabled={disabled}
-              onUploadImage={onUploadImage}
-              onToast={onToast}
-              onError={onError}
-              previewHeight="h-16"
-            />
-          </div>
-
-          <div>
-            <label className="flex items-center gap-2 cursor-pointer">
-              <input
-                type="checkbox"
-                checked={formData.published}
-                onChange={(e) =>
-                  setFormData({ ...formData, published: e.target.checked })
-                }
-                disabled={disabled}
-                className="toggle toggle-sm"
-              />
-              <span className="text-xs text-black/70">{t("newsArticleEditor.form.published")}</span>
-            </label>
-          </div>
-
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={handleSave}
-              disabled={disabled}
-              className="rounded-lg bg-black px-4 py-1.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {t("newsArticleEditor.form.save")}
-            </button>
-            <button
-              type="button"
-              onClick={resetForm}
-              disabled={disabled}
-              className="rounded-lg border border-black/10 bg-white/70 px-4 py-1.5 text-xs font-medium text-black transition-colors duration-200 hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {t("newsArticleEditor.form.cancel")}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* 文章列表 */}
-      <div className="space-y-2">
-        {articles.map((article) => (
-          <div
-            key={article.id}
-            className="rounded-lg border border-black/10 bg-white/70 p-3"
-          >
-            <div className="flex items-start justify-between">
-              <div className="flex-1">
-                <div className="mb-1 flex items-center gap-2">
-                  <span className="text-xs text-black/50">
-                    {new Date(article.createdAt).toLocaleDateString("ja-JP", {
-                      year: "numeric",
-                      month: "2-digit",
-                      day: "2-digit",
-                    })}
-                  </span>
-                  <span className="text-xs font-medium text-black">
-                    {article.category}
-                  </span>
-                  {article.tag && (
-                    <span className="text-xs text-black/60">{article.tag}</span>
-                  )}
-                  {article.published && (
-                    <span className="rounded bg-green-500/20 px-2 py-0.5 text-[10px] text-green-700">
-                      {t("common.published")}
-                    </span>
-                  )}
                 </div>
-                <h3 className="text-sm font-medium text-black">{article.title}</h3>
+
+                <div className="flex gap-2">
+                  <Button
+                    variant="primary"
+                    size="md"
+                    onClick={handleSave}
+                    disabled={disabled}
+                  >
+                    {t("newsArticleEditor.form.save")}
+                  </Button>
+                  <Button
+                    variant="secondary"
+                    size="md"
+                    onClick={resetForm}
+                    disabled={disabled}
+                  >
+                    {t("newsArticleEditor.form.cancel")}
+                  </Button>
+                </div>
               </div>
-              <div className="ml-4 flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleEdit(article)}
-                  disabled={disabled}
-                  className="rounded border border-black/10 bg-white/70 px-2 py-1 text-[10px] font-medium text-black hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {t("common.edit")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => handleDelete(article.id)}
-                  disabled={disabled}
-                  className="rounded border border-red-300 bg-red-50 px-2 py-1 text-[10px] font-medium text-red-600 hover:bg-red-100 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  {t("common.delete")}
-                </button>
-              </div>
-            </div>
+            )}
           </div>
         ))}
       </div>
@@ -578,6 +728,22 @@ export default function NewsArticleEditor({
           </button>
         </div>
       )}
+
+      {/* 删除确认对话框 */}
+      <ConfirmDialog
+        open={deleteConfirmId !== null}
+        title={t("cms.deleteConfirm.title") || "确认删除"}
+        message={t("cms.deleteConfirm.message") || "确定要删除吗？此操作无法撤销。"}
+        variant="danger"
+        confirmLabel={t("cms.deleteConfirm.confirm") || "确定删除"}
+        cancelLabel={t("common.cancel")}
+        onConfirm={() => {
+          if (deleteConfirmId) {
+            handleDelete(deleteConfirmId);
+          }
+        }}
+        onCancel={() => setDeleteConfirmId(null)}
+      />
     </div>
   );
 }

@@ -56,11 +56,21 @@
     "publishing": "公開中...",
     "draftSaved": "下書きを保存しました",
     "published": "公開しました！",
-    "instruction": "説明：設定を編集後、「下書きを保存」をクリックして下書きに保存し、「公開」をクリックすると公開ページに表示されます。"
+    "instruction": "説明：設定を編集後、「下書きを保存」をクリックして下書きに保存し、「公開」をクリックすると公開ページに表示されます。",
+    "publishConfirm": {
+      "title": "公開の確認",
+      "message": "このページを公開してもよろしいですか？すべての訪問者に表示されます。",
+      "confirm": "公開する"
+    },
+    "deleteConfirm": {
+      "title": "削除の確認",
+      "message": "削除してもよろしいですか？この操作は元に戻せません。",
+      "confirm": "削除する"
+    }
   },
   "heroMenu": {
     "login": "LOGIN",
-    "news": "New",
+    "news": "NEW",
     "blog": "BLOG",
     "media": "MEDIA",
     "profile": "PROFILE",
@@ -114,7 +124,12 @@
       "backgroundOpacity": "背景透明度："
     },
     "slides": {
-      "title": "スライド画像（3枚）",
+      "title": "スライド画像",
+      "addImage": "画像を追加",
+      "carouselSettings": "カルーセル設定",
+      "imageDisplayDuration": "各画像の表示時間",
+      "transitionDuration": "切り替えトランジション時間",
+      "seconds": "秒",
       "showThumbStrip": "表示する",
       "image": "画像",
       "upload": "ローカル画像をアップロード",

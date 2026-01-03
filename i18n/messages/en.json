@@ -56,11 +56,21 @@
     "publishing": "Publishing...",
     "draftSaved": "Draft saved",
     "published": "Published!",
-    "instruction": "Note: After editing the configuration, click \"Save Draft\" to save to draft, and click \"Publish\" to display on the public page."
+    "instruction": "Note: After editing the configuration, click \"Save Draft\" to save to draft, and click \"Publish\" to display on the public page.",
+    "publishConfirm": {
+      "title": "Confirm Publish",
+      "message": "Are you sure you want to publish this page? It will be visible to all visitors.",
+      "confirm": "Confirm Publish"
+    },
+    "deleteConfirm": {
+      "title": "Confirm Delete",
+      "message": "Are you sure you want to delete this? This action cannot be undone.",
+      "confirm": "Confirm Delete"
+    }
   },
   "heroMenu": {
     "login": "LOGIN",
-    "news": "New",
+    "news": "NEW",
     "blog": "BLOG",
     "media": "MEDIA",
     "profile": "PROFILE",
@@ -114,7 +124,12 @@
       "backgroundOpacity": "Background Opacity:"
     },
     "slides": {
-      "title": "Carousel Images (3)",
+      "title": "Carousel Images",
+      "addImage": "Add Image",
+      "carouselSettings": "Carousel Settings",
+      "imageDisplayDuration": "Image Display Duration",
+      "transitionDuration": "Transition Duration",
+      "seconds": "seconds",
       "showThumbStrip": "Show",
       "image": "Image",
       "upload": "Upload Local Image",

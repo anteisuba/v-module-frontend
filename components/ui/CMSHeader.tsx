@@ -3,6 +3,7 @@
 "use client";
 
 import { useI18n } from "@/lib/i18n/context";
+import Button from "./Button";
 
 interface CMSHeaderProps {
   title?: string;
@@ -40,7 +41,7 @@ export default function CMSHeader({
             href={`/u/${userSlug}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="cursor-pointer rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black transition-colors duration-200 hover:bg-white/80"
+            className="rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black/20 focus:ring-offset-2 border border-black/20 bg-white/70 text-black hover:bg-white/80 active:bg-white/90 px-3 py-1.5 text-xs cursor-pointer"
           >
             {t("cms.openPage")}
           </a>
@@ -48,24 +49,28 @@ export default function CMSHeader({
 
         {/* 保存草稿按钮 */}
         {onSaveDraft && (
-          <button
+          <Button
+            variant="secondary"
+            size="md"
             onClick={onSaveDraft}
             disabled={disabled || saving || publishing}
-            className="cursor-pointer rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black transition-colors duration-200 hover:bg-white/80 disabled:opacity-50 disabled:cursor-not-allowed"
+            loading={saving}
           >
             {saving ? t("cms.saving") : t("cms.saveDraft")}
-          </button>
+          </Button>
         )}
 
         {/* 发布按钮 */}
         {onPublish && (
-          <button
+          <Button
+            variant="primary"
+            size="md"
             onClick={onPublish}
             disabled={disabled || saving || publishing}
-            className="cursor-pointer rounded-lg bg-black px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
+            loading={publishing}
           >
             {publishing ? t("cms.publishing") : t("cms.publish")}
-          </button>
+          </Button>
         )}
       </div>
     </div>

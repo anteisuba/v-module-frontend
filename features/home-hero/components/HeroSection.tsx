@@ -23,6 +23,7 @@ export default function HeroSection({
   showLogo = true,
   showSocialLinks = true,
   layout,
+  carousel,
 }: {
   initialSlides?: HeroSlide[];
   logo?: { src?: string; alt?: string; opacity?: number };
@@ -36,6 +37,10 @@ export default function HeroSection({
     heightVh?: number;
     backgroundColor?: string;
     backgroundOpacity?: number;
+  };
+  carousel?: {
+    autoplayInterval?: number;
+    transitionDuration?: number;
   };
 }) {
   const menu = useHeroMenu();
@@ -70,7 +75,10 @@ export default function HeroSection({
   }, [initialSlides]);
 
   // 轮播逻辑：无论 showThumbStrip 如何，轮播功能都会持续工作
-  // 这个 hook 会每 20 秒自动切换图片，与 HeroThumbStrip 的显示无关
+  // 使用配置的轮播参数，如果没有配置则使用默认值
+  const autoplayInterval = (carousel?.autoplayInterval ?? 5) * 1000; // 转换为毫秒
+  const transitionDuration = (carousel?.transitionDuration ?? 0.5) * 1000; // 转换为毫秒
+  
   const {
     slides: allSlides,
     current,
@@ -78,7 +86,10 @@ export default function HeroSection({
     fadeIn,
     fadeMs,
     goTo,
-  } = useHeroSlides(slides, { intervalMs: 20000, fadeMs: 1000 });
+  } = useHeroSlides(slides, { 
+    intervalMs: autoplayInterval, 
+    fadeMs: transitionDuration 
+  });
 
   const sectionRef = useRef<HTMLElement | null>(null);
   const { progress, vh } = useStickyProgress(sectionRef);

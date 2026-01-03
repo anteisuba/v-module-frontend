@@ -33,6 +33,12 @@ const HeroSectionPropsSchema = z.object({
       backgroundOpacity: z.number().min(0).max(1).optional(), // 背景透明度 0-1
     })
     .optional(),
+  carousel: z
+    .object({
+      autoplayInterval: z.number().min(1).max(30).optional(), // 每张图片显示时长（秒），1-30
+      transitionDuration: z.number().min(0.1).max(10).optional(), // 切换过渡时间（秒），0.1-10
+    })
+    .optional(),
 });
 
 const LinksSectionPropsSchema = z.object({

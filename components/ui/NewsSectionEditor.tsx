@@ -2,7 +2,8 @@
 
 "use client";
 
-import { ImagePositionEditor } from "@/components/ui";
+import { useState } from "react";
+import { ImagePositionEditor, ConfirmDialog, Button } from "@/components/ui";
 import { useI18n } from "@/lib/i18n/context";
 import type { PageConfig, NewsSectionProps } from "@/domain/page-config/types";
 
@@ -62,6 +63,7 @@ export default function NewsSectionEditor({
   onError,
 }: NewsSectionEditorProps) {
   const { t } = useI18n();
+  const [deleteConfirmItemId, setDeleteConfirmItemId] = useState<string | null>(null);
   // 获取 news section（不自动创建）
   function getNewsSection() {
     return config.sections.find((s) => s.type === "news");
@@ -182,6 +184,7 @@ export default function NewsSectionEditor({
     updateNewsItems(
       newsSection.props.items.filter((item) => item.id !== itemId)
     );
+    setDeleteConfirmItemId(null);
   }
 
   // 更新新闻图片
@@ -243,14 +246,14 @@ export default function NewsSectionEditor({
               disabled={disabled}
             />
           )}
-          <button
-            type="button"
+          <Button
+            variant="primary"
+            size="md"
             onClick={addNewsItem}
             disabled={disabled}
-            className="rounded-lg bg-black px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {t("newsSectionEditor.addImage")}
-          </button>
+          </Button>
         </div>
       </div>
 
@@ -423,14 +426,14 @@ export default function NewsSectionEditor({
               <div className="text-xs font-medium text-black">
                 {t("newsSectionEditor.image.title")} {index + 1}
               </div>
-              <button
-                type="button"
-                onClick={() => removeNewsItem(item.id)}
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={() => setDeleteConfirmItemId(item.id)}
                 disabled={disabled}
-                className="rounded bg-red-500/10 px-2 py-0.5 text-xs font-medium text-red-600 transition-colors duration-200 hover:bg-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {t("common.delete")}
-              </button>
+              </Button>
             </div>
 
             {/* 预览 - 可拖拽编辑位置 */}
@@ -543,6 +546,22 @@ export default function NewsSectionEditor({
           </div>
         )}
       </div>
+
+      {/* 删除确认对话框 */}
+      <ConfirmDialog
+        open={deleteConfirmItemId !== null}
+        title={t("cms.deleteConfirm.title") || "确认删除"}
+        message={t("cms.deleteConfirm.message") || "确定要删除这条内容吗？此操作无法撤销。"}
+        variant="danger"
+        confirmLabel={t("cms.deleteConfirm.confirm") || "确定删除"}
+        cancelLabel={t("common.cancel")}
+        onConfirm={() => {
+          if (deleteConfirmItemId) {
+            removeNewsItem(deleteConfirmItemId);
+          }
+        }}
+        onCancel={() => setDeleteConfirmItemId(null)}
+      />
     </div>
   );
 }

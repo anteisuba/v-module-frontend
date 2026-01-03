@@ -39,6 +39,7 @@ export default function HeroSectionRenderer({
         showLogo={showLogo}
         showSocialLinks={showSocialLinks}
         layout={props.layout}
+        carousel={props.carousel}
       />
     </div>
   );

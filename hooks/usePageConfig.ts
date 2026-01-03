@@ -9,6 +9,7 @@ import { isDefaultConfig } from "@/utils/pageConfig";
 
 export function usePageConfig() {
   const [config, setConfig] = useState<PageConfig>(EMPTY_PAGE_CONFIG);
+  const [savedConfig, setSavedConfig] = useState<PageConfig | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -29,22 +30,28 @@ export function usePageConfig() {
 
         // 优化：只在首次访问且未发布时清空默认配置
         // 如果已发布过，不再清空
+        let finalConfig: PageConfig;
         if (configWithNewsBackground.hasPublished) {
-          setConfig(configWithNewsBackground);
+          finalConfig = configWithNewsBackground;
         } else if (isDefaultConfig(configWithNewsBackground)) {
           // 只在首次访问且是默认配置时清空
-          setConfig(EMPTY_PAGE_CONFIG);
+          finalConfig = EMPTY_PAGE_CONFIG;
         } else {
-          setConfig(configWithNewsBackground);
+          finalConfig = configWithNewsBackground;
         }
+        
+        setConfig(finalConfig);
+        setSavedConfig(JSON.parse(JSON.stringify(finalConfig))); // 深拷贝作为保存的基准
       } else {
         // 如果没有配置，使用空配置（首次访问）
         setConfig(EMPTY_PAGE_CONFIG);
+        setSavedConfig(JSON.parse(JSON.stringify(EMPTY_PAGE_CONFIG)));
       }
     } catch (e) {
       if (e instanceof ApiError && e.status === 404) {
         // 如果还没有配置，使用空配置（首次访问）
         setConfig(EMPTY_PAGE_CONFIG);
+        setSavedConfig(JSON.parse(JSON.stringify(EMPTY_PAGE_CONFIG)));
       } else {
         setError(e instanceof Error ? e.message : "加载失败");
       }
@@ -57,12 +64,31 @@ export function usePageConfig() {
     loadConfig();
   }, [loadConfig]);
 
+  // 检查是否有未保存的更改
+  const hasUnsavedChanges = savedConfig !== null && 
+    JSON.stringify(config) !== JSON.stringify(savedConfig);
+
+  // 包装 setConfig 以更新保存状态
+  const updateConfig = useCallback((newConfig: PageConfig | ((prev: PageConfig) => PageConfig)) => {
+    setConfig((prevConfig) => {
+      const updatedConfig = typeof newConfig === 'function' ? newConfig(prevConfig) : newConfig;
+      return updatedConfig;
+    });
+  }, []);
+
+  // 标记为已保存
+  const markAsSaved = useCallback(() => {
+    setSavedConfig(JSON.parse(JSON.stringify(config)));
+  }, [config]);
+
   return {
     config,
-    setConfig,
+    setConfig: updateConfig,
     loading,
     error,
     reloadConfig: loadConfig,
+    hasUnsavedChanges,
+    markAsSaved,
   };
 }
 

@@ -2,7 +2,8 @@
 
 "use client";
 
-import { ImagePositionEditor, IconPicker } from "@/components/ui";
+import { useState } from "react";
+import { ImagePositionEditor, IconPicker, Button, Input, ConfirmDialog } from "@/components/ui";
 import { useI18n } from "@/lib/i18n/context";
 import type {
   PageConfig,
@@ -66,6 +67,8 @@ export default function HeroSectionEditor({
   onError,
 }: HeroSectionEditorProps) {
   const { t } = useI18n();
+  const [deleteConfirmIndex, setDeleteConfirmIndex] = useState<number | null>(null);
+  const [deleteSocialLinkIndex, setDeleteSocialLinkIndex] = useState<number | null>(null);
   // 获取 hero section
   function getHeroSection() {
     return config.sections.find((s) => s.type === "hero");
@@ -135,6 +138,26 @@ export default function HeroSectionEditor({
     });
   }
 
+  // 添加新图片
+  function addSlide() {
+    const heroSection = ensureHeroSection();
+    const currentSlides = heroSection.props.slides || [];
+    onConfigChange({
+      ...config,
+      sections: config.sections.map((s) =>
+        s.id === heroSection.id && s.type === "hero"
+          ? {
+              ...s,
+              props: {
+                ...s.props,
+                slides: [...currentSlides, { src: "", alt: "" }],
+              },
+            }
+          : s
+      ),
+    });
+  }
+
   // 更新 hero section 的图片
   function updateHeroSlide(
     index: number,
@@ -201,16 +224,35 @@ export default function HeroSectionEditor({
     onToast?.(t("heroEditor.slides.updated").replace("{index}", String(index + 1)));
   }
 
-  const heroSection = getHeroSection();
-  let heroSlides = heroSection?.props.slides || [];
-
-  // 确保至少有 3 个位置（用于 UI 显示），但允许空的 src
-  while (heroSlides.length < 3) {
-    heroSlides.push({ src: "", alt: "" });
+  // 删除图片
+  function deleteSlide(index: number) {
+    const heroSection = ensureHeroSection();
+    const currentSlides = heroSection.props.slides || [];
+    const updatedSlides = currentSlides.filter((_, i) => i !== index);
+    
+    onConfigChange({
+      ...config,
+      sections: config.sections.map((s) =>
+        s.id === heroSection.id && s.type === "hero"
+          ? {
+              ...s,
+              props: {
+                ...s.props,
+                slides: updatedSlides,
+              },
+            }
+          : s
+      ),
+    });
+    
+    setDeleteConfirmIndex(null);
+    onToast?.(t("heroEditor.slides.deleted").replace("{index}", String(index + 1)));
   }
 
-  // 限制为最多 3 张
-  heroSlides = heroSlides.slice(0, 3);
+  const heroSection = getHeroSection();
+  const heroSlides = heroSection?.props.slides || [];
+  const carouselInterval = heroSection?.props.carousel?.autoplayInterval ?? 5;
+  const carouselTransition = heroSection?.props.carousel?.transitionDuration ?? 0.5;
 
   return (
     <div className="mb-6 rounded-xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl">
@@ -356,7 +398,9 @@ export default function HeroSectionEditor({
               onChange={toggleSocialLinksEnabled}
               disabled={disabled}
             />
-            <button
+            <Button
+              variant="primary"
+              size="md"
               onClick={() => {
                 const newLink: SocialLinkItem = {
                   id: `social-${Date.now()}`,
@@ -370,11 +414,10 @@ export default function HeroSectionEditor({
                   socialLinks: [...(config.socialLinks || []), newLink],
                 });
               }}
-              className="rounded-lg bg-black px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
               disabled={disabled}
             >
               + {t("heroEditor.socialLinks.add")}
-            </button>
+            </Button>
           </div>
         </div>
         <div className="space-y-3">
@@ -406,20 +449,14 @@ export default function HeroSectionEditor({
                     <span className="text-[10px] text-black/70">{t("heroEditor.socialLinks.show")}</span>
                   </label>
                 </div>
-                <button
-                  onClick={() => {
-                    const updated = (config.socialLinks || []).filter(
-                      (_, i) => i !== index
-                    );
-                    onConfigChange({
-                      ...config,
-                      socialLinks: updated,
-                    });
-                  }}
-                  className="rounded border border-red-300 bg-red-50 px-2 py-0.5 text-[10px] font-medium text-red-600 hover:bg-red-100"
+                <Button
+                  variant="danger"
+                  size="sm"
+                  onClick={() => setDeleteSocialLinkIndex(index)}
+                  disabled={disabled}
                 >
                   {t("common.delete")}
-                </button>
+                </Button>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
@@ -553,77 +590,74 @@ export default function HeroSectionEditor({
 
       {/* Title 和 Subtitle 编辑 */}
       <div className="mb-4 space-y-3 rounded-lg border border-black/10 bg-white/70 p-3">
-        <div>
-            <label className="block text-xs font-medium text-black mb-1.5">
-              {t("heroEditor.titleSubtitle.title")}
-            </label>
-          <input
-            type="text"
-            value={heroSection?.props.title || ""}
-            onChange={(e) => {
-              const heroSection = ensureHeroSection();
-              const newTitle = e.target.value || undefined;
+        <Input
+          label={t("heroEditor.titleSubtitle.title")}
+          type="text"
+          value={heroSection?.props.title || ""}
+          onChange={(e) => {
+            const heroSection = ensureHeroSection();
+            const newTitle = e.target.value || undefined;
 
-              onConfigChange({
-                ...config,
-                sections: config.sections.map((s) =>
-                  s.id === heroSection.id && s.type === "hero"
-                    ? {
-                        ...s,
-                        props: {
-                          ...s.props,
-                          title: newTitle,
-                        },
-                      }
-                    : s
-                ),
-              });
-            }}
-            placeholder={t("heroEditor.titleSubtitle.titlePlaceholder")}
-            className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
-          />
-        </div>
-        <div>
-            <label className="block text-xs font-medium text-black mb-1.5">
-              {t("heroEditor.titleSubtitle.subtitle")}
-            </label>
-          <input
-            type="text"
-            value={heroSection?.props.subtitle || ""}
-            onChange={(e) => {
-              const heroSection = ensureHeroSection();
-              const newSubtitle = e.target.value || undefined;
+            onConfigChange({
+              ...config,
+              sections: config.sections.map((s) =>
+                s.id === heroSection.id && s.type === "hero"
+                  ? {
+                      ...s,
+                      props: {
+                        ...s.props,
+                        title: newTitle,
+                      },
+                    }
+                  : s
+              ),
+            });
+          }}
+          placeholder={t("heroEditor.titleSubtitle.titlePlaceholder")}
+          helpText={t("heroEditor.titleSubtitle.titleHelp") || "显示在 Hero 区域顶部的标题"}
+        />
+        <Input
+          label={t("heroEditor.titleSubtitle.subtitle")}
+          type="text"
+          value={heroSection?.props.subtitle || ""}
+          onChange={(e) => {
+            const heroSection = ensureHeroSection();
+            const newSubtitle = e.target.value || undefined;
 
-              onConfigChange({
-                ...config,
-                sections: config.sections.map((s) =>
-                  s.id === heroSection.id && s.type === "hero"
-                    ? {
-                        ...s,
-                        props: {
-                          ...s.props,
-                          subtitle: newSubtitle,
-                        },
-                      }
-                    : s
-                ),
-              });
-            }}
-            placeholder={t("heroEditor.titleSubtitle.subtitlePlaceholder")}
-            className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
-          />
-        </div>
+            onConfigChange({
+              ...config,
+              sections: config.sections.map((s) =>
+                s.id === heroSection.id && s.type === "hero"
+                  ? {
+                      ...s,
+                      props: {
+                        ...s.props,
+                        subtitle: newSubtitle,
+                      },
+                    }
+                  : s
+              ),
+            });
+          }}
+          placeholder={t("heroEditor.titleSubtitle.subtitlePlaceholder")}
+          helpText={t("heroEditor.titleSubtitle.subtitleHelp") || "显示在标题下方的副标题"}
+        />
       </div>
 
       {/* 布局配置 */}
-      <div className="mb-4 space-y-3 rounded-lg border border-black/10 bg-white/70 p-3">
-        <h3 className="text-xs font-semibold text-black mb-2">{t("heroEditor.layout.title")}</h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="mb-4 rounded-lg border border-black/10 bg-white/70 p-4">
+        <h3 className="text-xs font-semibold text-black mb-4">{t("heroEditor.layout.title")}</h3>
+        <div className="space-y-4">
           {/* 高度设置 */}
-          <div>
-            <label className="block text-xs text-black/70 mb-2">
-              {t("heroEditor.layout.height")}：{heroSection?.props.layout?.heightVh ?? 150}
-            </label>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-medium text-black">
+                {t("heroEditor.layout.height")}
+              </label>
+              <span className="text-xs font-semibold text-black">
+                {heroSection?.props.layout?.heightVh ?? 150} vh
+              </span>
+            </div>
             <input
               type="range"
               min="50"
@@ -649,53 +683,22 @@ export default function HeroSectionEditor({
                   ),
                 });
               }}
-              className="w-full"
-              disabled={disabled}
-            />
-          </div>
-          {/* 背景颜色 */}
-          <div>
-            <label className="block text-xs text-black/70 mb-2">
-              {t("heroEditor.layout.backgroundColor")}
-            </label>
-            <input
-              type="color"
-              value={
-                heroSection?.props.layout?.backgroundColor || "#000000"
-              }
-              onChange={(e) => {
-                const heroSection = ensureHeroSection();
-                onConfigChange({
-                  ...config,
-                  sections: config.sections.map((s) =>
-                    s.id === heroSection.id && s.type === "hero"
-                      ? {
-                          ...s,
-                          props: {
-                            ...s.props,
-                            layout: {
-                              ...s.props.layout,
-                              backgroundColor: e.target.value,
-                            },
-                          },
-                        }
-                      : s
-                  ),
-                });
-              }}
-              className="w-full h-8 rounded border border-black/10"
+              className="w-full h-2 bg-black/10 rounded-lg appearance-none cursor-pointer accent-black"
               disabled={disabled}
             />
           </div>
           {/* 背景透明度 */}
-          <div>
-            <label className="block text-xs text-black/70 mb-2">
-              {t("heroEditor.layout.backgroundOpacity")}
-              {(
-                (heroSection?.props.layout?.backgroundOpacity ?? 1) * 100
-              ).toFixed(0)}
-              %
-            </label>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <label className="text-xs font-medium text-black">
+                {t("heroEditor.layout.backgroundOpacity")}
+              </label>
+              <span className="text-xs font-semibold text-black">
+                {(
+                  (heroSection?.props.layout?.backgroundOpacity ?? 1) * 100
+                ).toFixed(0)}%
+              </span>
+            </div>
             <input
               type="range"
               min="0"
@@ -723,7 +726,7 @@ export default function HeroSectionEditor({
                   ),
                 });
               }}
-              className="w-full"
+              className="w-full h-2 bg-black/10 rounded-lg appearance-none cursor-pointer accent-black"
               disabled={disabled}
             />
           </div>
@@ -734,45 +737,142 @@ export default function HeroSectionEditor({
       <div className="mb-3">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-xs font-semibold text-black">
-            {t("heroEditor.slides.title")}
+            {t("heroEditor.slides.title")}（{heroSlides.length}张）
           </h3>
-          {/* Hero 缩略图条显示开关 */}
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-black/70">{t("heroEditor.slides.showThumbStrip")}</label>
-            <button
-              type="button"
-              onClick={() => {
-                const currentValue = config.showHeroThumbStrip ?? true;
-                onConfigChange({
-                  ...config,
-                  showHeroThumbStrip: !currentValue,
-                });
-              }}
-              disabled={disabled}
-              className={[
-                "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-black/20 focus:ring-offset-2",
-                config.showHeroThumbStrip ?? true
-                  ? "bg-black"
-                  : "bg-black/30",
-                disabled && "opacity-50 cursor-not-allowed",
-              ].join(" ")}
-              aria-label="Toggle hero thumb strip"
-            >
-              <span
+          <div className="flex items-center gap-3">
+            {/* Hero 缩略图条显示开关 */}
+            <div className="flex items-center gap-2">
+              <label className="text-sm text-black/70">{t("heroEditor.slides.showThumbStrip")}</label>
+              <button
+                type="button"
+                onClick={() => {
+                  const currentValue = config.showHeroThumbStrip ?? true;
+                  onConfigChange({
+                    ...config,
+                    showHeroThumbStrip: !currentValue,
+                  });
+                }}
+                disabled={disabled}
                 className={[
-                  "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                  "relative inline-flex h-6 w-11 items-center rounded-full transition-colors focus:outline-none focus:ring-2 focus:ring-black/20 focus:ring-offset-2",
                   config.showHeroThumbStrip ?? true
-                    ? "translate-x-6"
-                    : "translate-x-1",
+                    ? "bg-black"
+                    : "bg-black/30",
+                  disabled && "opacity-50 cursor-not-allowed",
                 ].join(" ")}
+                aria-label="Toggle hero thumb strip"
+              >
+                <span
+                  className={[
+                    "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                    config.showHeroThumbStrip ?? true
+                      ? "translate-x-6"
+                      : "translate-x-1",
+                  ].join(" ")}
+                />
+              </button>
+            </div>
+            {/* 添加图片按钮 */}
+            <Button
+              variant="primary"
+              size="sm"
+              onClick={addSlide}
+              disabled={disabled}
+            >
+              + {t("heroEditor.slides.addImage") || "添加图片"}
+            </Button>
+          </div>
+        </div>
+
+        {/* 轮播速度设置 */}
+        <div className="mb-4 rounded-lg border border-black/10 bg-white/70 p-3">
+          <h4 className="text-xs font-semibold text-black mb-3">{t("heroEditor.slides.carouselSettings") || "轮播设置"}</h4>
+          <div className="space-y-4">
+            {/* 每张图片显示时长 */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-black">
+                  {t("heroEditor.slides.imageDisplayDuration") || "每张图片显示时长"}
+                </label>
+                <span className="text-xs font-semibold text-black">
+                  {carouselInterval} {t("heroEditor.slides.seconds") || "秒"}
+                </span>
+              </div>
+              <input
+                type="range"
+                min="1"
+                max="30"
+                step="0.5"
+                value={carouselInterval}
+                onChange={(e) => {
+                  const heroSection = ensureHeroSection();
+                  onConfigChange({
+                    ...config,
+                    sections: config.sections.map((s) =>
+                      s.id === heroSection.id && s.type === "hero"
+                        ? {
+                            ...s,
+                            props: {
+                              ...s.props,
+                              carousel: {
+                                ...s.props.carousel,
+                                autoplayInterval: parseFloat(e.target.value),
+                              },
+                            },
+                          }
+                        : s
+                    ),
+                  });
+                }}
+                className="w-full h-2 bg-black/10 rounded-lg appearance-none cursor-pointer accent-black"
+                disabled={disabled}
               />
-            </button>
+            </div>
+            {/* 切换过渡时间 */}
+            <div className="space-y-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-medium text-black">
+                  {t("heroEditor.slides.transitionDuration") || "切换过渡时间"}
+                </label>
+                <span className="text-xs font-semibold text-black">
+                  {carouselTransition} {t("heroEditor.slides.seconds") || "秒"}
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0.1"
+                max="10"
+                step="0.1"
+                value={carouselTransition}
+                onChange={(e) => {
+                  const heroSection = ensureHeroSection();
+                  onConfigChange({
+                    ...config,
+                    sections: config.sections.map((s) =>
+                      s.id === heroSection.id && s.type === "hero"
+                        ? {
+                            ...s,
+                            props: {
+                              ...s.props,
+                              carousel: {
+                                ...s.props.carousel,
+                                transitionDuration: parseFloat(e.target.value),
+                              },
+                            },
+                          }
+                        : s
+                    ),
+                  });
+                }}
+                className="w-full h-2 bg-black/10 rounded-lg appearance-none cursor-pointer accent-black"
+                disabled={disabled}
+              />
+            </div>
           </div>
         </div>
 
         <div className="grid gap-4 md:grid-cols-3">
-          {[0, 1, 2].map((index) => {
-            const slide = heroSlides[index];
+          {heroSlides.map((slide, index) => {
             const isUploading = uploadingIndex === index;
 
             return (
@@ -780,8 +880,20 @@ export default function HeroSectionEditor({
                 key={index}
                 className="rounded-lg border border-black/10 bg-white/70 p-3"
               >
-                <div className="mb-2 text-xs font-medium text-black">
-                  {t("heroEditor.slides.image")} {index + 1}
+                <div className="mb-2 flex items-center justify-between">
+                  <div className="text-xs font-medium text-black">
+                    {t("heroEditor.slides.image")} {index + 1}
+                  </div>
+                  {slide?.src && (
+                    <Button
+                      variant="danger"
+                      size="sm"
+                      onClick={() => setDeleteConfirmIndex(index)}
+                      disabled={disabled || isUploading}
+                    >
+                      {t("common.delete")}
+                    </Button>
+                  )}
                 </div>
 
                 {/* 预览 - 可拖拽编辑位置 */}
@@ -797,7 +909,7 @@ export default function HeroSectionEditor({
                       disabled={isUploading || disabled}
                     />
                   ) : (
-                    <div className="aspect-[4/3] flex items-center justify-center rounded-lg border border-black/10 bg-black/5 text-xs text-black/50">
+                    <div className="aspect-[4/3] flex items-center justify-center rounded-lg border border-black/10 bg-black text-xs text-white/50">
                       {t("heroEditor.slides.noImage")}
                     </div>
                   )}
@@ -849,6 +961,45 @@ export default function HeroSectionEditor({
           })}
         </div>
       </div>
+
+      {/* 删除图片确认对话框 */}
+      <ConfirmDialog
+        open={deleteConfirmIndex !== null}
+        title={t("cms.deleteConfirm.title") || "确认删除"}
+        message={t("cms.deleteConfirm.message") || "确定要删除这张图片吗？此操作无法撤销。"}
+        variant="danger"
+        confirmLabel={t("cms.deleteConfirm.confirm") || "确定删除"}
+        cancelLabel={t("common.cancel")}
+        onConfirm={() => {
+          if (deleteConfirmIndex !== null) {
+            deleteSlide(deleteConfirmIndex);
+          }
+        }}
+        onCancel={() => setDeleteConfirmIndex(null)}
+      />
+
+      {/* 删除社交链接确认对话框 */}
+      <ConfirmDialog
+        open={deleteSocialLinkIndex !== null}
+        title={t("cms.deleteConfirm.title") || "确认删除"}
+        message={t("cms.deleteConfirm.message") || "确定要删除这条社交链接吗？此操作无法撤销。"}
+        variant="danger"
+        confirmLabel={t("cms.deleteConfirm.confirm") || "确定删除"}
+        cancelLabel={t("common.cancel")}
+        onConfirm={() => {
+          if (deleteSocialLinkIndex !== null) {
+            const updated = (config.socialLinks || []).filter(
+              (_, i) => i !== deleteSocialLinkIndex
+            );
+            onConfigChange({
+              ...config,
+              socialLinks: updated,
+            });
+            setDeleteSocialLinkIndex(null);
+          }
+        }}
+        onCancel={() => setDeleteSocialLinkIndex(null)}
+      />
     </div>
   );
 }

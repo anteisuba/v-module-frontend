@@ -23,6 +23,11 @@ export type HeroSectionProps = {
     backgroundColor?: string; // 背景颜色，默认 "black"
     backgroundOpacity?: number; // 背景透明度（0-1），默认 1
   };
+  // 轮播配置
+  carousel?: {
+    autoplayInterval?: number; // 每张图片显示时长（秒），默认 5
+    transitionDuration?: number; // 切换过渡时间（秒），默认 0.5
+  };
 };
 
 export type LinksSectionProps = {
