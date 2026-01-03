@@ -249,22 +249,48 @@ function NewsDetailContent({
   const isAuthor = user?.id === article.userId;
   const shareChannels = (article.shareChannels as Array<{ platform: string; enabled: boolean }>) || [];
 
-  // 获取新闻页面背景样式（用于整个页面）
-  const newsPageBackgroundStyle: React.CSSProperties = pageConfig?.newsBackground
-    ? pageConfig.newsBackground.type === "color"
-      ? { backgroundColor: pageConfig.newsBackground.value }
-      : {
-          backgroundImage: `url(${pageConfig.newsBackground.value})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-        }
-    : { backgroundColor: "#000000" };
+  // 获取背景样式（优先使用文章的背景设置，否则使用新闻页面背景设置）
+  const getBackgroundStyle = (): React.CSSProperties => {
+    // 优先使用文章的背景设置
+    if (article.backgroundType && article.backgroundValue && article.backgroundValue.trim() !== "") {
+      return article.backgroundType === "color"
+        ? { backgroundColor: article.backgroundValue }
+        : {
+            backgroundImage: `url(${article.backgroundValue})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          };
+    }
+    
+    // 如果没有文章背景设置，使用新闻页面背景设置
+    const newsBg = pageConfig?.newsBackground;
+    if (newsBg && newsBg.type && newsBg.value && newsBg.value.trim() !== "") {
+      return newsBg.type === "color"
+        ? { backgroundColor: newsBg.value }
+        : {
+            backgroundImage: `url(${newsBg.value})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          };
+    }
+    
+    // 默认黑色背景
+    return { backgroundColor: "#000000" };
+  };
+
+  const pageBackgroundStyle = getBackgroundStyle();
+  
+  // 判断当前使用的背景类型（用于显示遮罩层）
+  const currentBackgroundType = article.backgroundType && article.backgroundValue
+    ? article.backgroundType
+    : pageConfig?.newsBackground?.type || "color";
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden" style={newsPageBackgroundStyle}>
+    <main className="relative min-h-screen w-full overflow-hidden" style={pageBackgroundStyle}>
       {/* 背景遮罩层（仅在图片背景时显示） */}
-      {pageConfig?.newsBackground && pageConfig.newsBackground.type === "image" && (
+      {currentBackgroundType === "image" && (
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-white/70" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/15" />

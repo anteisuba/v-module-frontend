@@ -86,16 +86,22 @@ function NewsListContent() {
   }, [currentPage]);
 
   // 获取背景样式
-  const backgroundStyle: React.CSSProperties = pageConfig?.newsBackground
-    ? pageConfig.newsBackground.type === "color"
-      ? { backgroundColor: pageConfig.newsBackground.value }
-      : {
-          backgroundImage: `url(${pageConfig.newsBackground.value})`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
-          backgroundRepeat: "no-repeat",
-        }
-    : { backgroundColor: "#000000" };
+  const getBackgroundStyle = (): React.CSSProperties => {
+    const newsBg = pageConfig?.newsBackground;
+    if (newsBg && newsBg.type && newsBg.value && newsBg.value.trim() !== "") {
+      return newsBg.type === "color"
+        ? { backgroundColor: newsBg.value }
+        : {
+            backgroundImage: `url(${newsBg.value})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          };
+    }
+    return { backgroundColor: "#000000" };
+  };
+
+  const backgroundStyle = getBackgroundStyle();
 
   return (
     <main className="min-h-screen text-black" style={backgroundStyle}>
