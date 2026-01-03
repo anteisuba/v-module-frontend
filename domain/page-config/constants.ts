@@ -11,6 +11,10 @@ export const EMPTY_PAGE_CONFIG: PageConfig = {
     type: "color",
     value: "#000000", // 默认黑色背景
   },
+  newsBackground: {
+    type: "color",
+    value: "#000000", // 默认黑色背景
+  },
   sections: [],
   showHeroThumbStrip: true,
   showLogo: true,

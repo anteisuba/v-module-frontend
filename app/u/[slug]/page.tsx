@@ -37,7 +37,11 @@ export default async function UserPage({
   return (
     <>
       <PageRenderer config={config} />
-      <NewsListSection slug={slug} limit={3} />
+      <NewsListSection 
+        slug={slug} 
+        limit={3} 
+        background={config.newsBackground || { type: "color", value: "#000000" }}
+      />
     </>
   );
 }

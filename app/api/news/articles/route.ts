@@ -55,22 +55,25 @@ export async function GET(request: Request) {
       skip,
       take: limit,
       orderBy: { createdAt: "desc" },
-      select: {
-        id: true,
-        title: true,
-        category: true,
-        tag: true,
-        published: true,
-        createdAt: true,
-        updatedAt: true,
-        publishedAt: true,
+      include: {
+        user: {
+          select: {
+            slug: true,
+          },
+        },
       },
     }),
     prisma.newsArticle.count({ where }),
   ]);
 
+  // 转换文章数据，添加 userSlug
+  const articlesWithSlug = articles.map(({ user, ...article }) => ({
+    ...article,
+    userSlug: user?.slug || null,
+  }));
+
   return NextResponse.json({
-    articles,
+    articles: articlesWithSlug,
     pagination: {
       page,
       limit,

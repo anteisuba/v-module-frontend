@@ -82,6 +82,9 @@ export type PageConfig = {
   // 页面背景（全局）
   background: BackgroundConfig;
   
+  // 新闻页面背景（用于 NewsListSection、/news 和 /news/[id] 页面）
+  newsBackground?: BackgroundConfig;
+  
   // 所有 sections（按 order 排序后渲染）
   sections: SectionConfig[];
   

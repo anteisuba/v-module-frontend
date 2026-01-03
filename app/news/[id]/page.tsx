@@ -5,10 +5,11 @@
 import { useState, useEffect, Suspense } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { newsArticleApi } from "@/lib/api";
+import { newsArticleApi, pageApi } from "@/lib/api";
 import { ApiError, NetworkError } from "@/lib/api/errors";
 import { useUser } from "@/lib/context/UserContext";
 import type { NewsArticle } from "@/lib/api/types";
+import type { PageConfig } from "@/domain/page-config/types";
 
 function NewsDetailContent({
   params,
@@ -24,6 +25,7 @@ function NewsDetailContent({
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [articleId, setArticleId] = useState<string | null>(null);
+  const [pageConfig, setPageConfig] = useState<PageConfig | null>(null);
 
   // 获取返回链接
   const getBackUrl = () => {
@@ -106,6 +108,31 @@ function NewsDetailContent({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [articleId]);
+
+  // 加载页面配置（用于获取新闻页面背景）
+  useEffect(() => {
+    async function loadPageConfig() {
+      try {
+        // 优先使用 from 参数
+        const fromParam = searchParams.get("from");
+        if (fromParam && fromParam.startsWith("/u/")) {
+          const slug = fromParam.replace("/u/", "");
+          const config = await pageApi.getPublishedConfig(slug);
+          setPageConfig(config);
+          return;
+        }
+        
+        // 如果没有 from 参数，尝试从文章信息中获取用户 slug
+        if (article?.userSlug) {
+          const config = await pageApi.getPublishedConfig(article.userSlug);
+          setPageConfig(config);
+        }
+      } catch (err) {
+        console.error("Failed to load page config:", err);
+      }
+    }
+    loadPageConfig();
+  }, [searchParams, article?.userSlug]); // 只依赖 userSlug，而不是整个 article 对象
 
   const handleSave = async () => {
     if (!articleId || !formData.title.trim() || !formData.content.trim()) {
@@ -222,12 +249,12 @@ function NewsDetailContent({
   const isAuthor = user?.id === article.userId;
   const shareChannels = (article.shareChannels as Array<{ platform: string; enabled: boolean }>) || [];
 
-  // 获取文章背景样式
-  const articleBackgroundStyle: React.CSSProperties = article
-    ? article.backgroundType === "color"
-      ? { backgroundColor: article.backgroundValue || "#000000" }
+  // 获取新闻页面背景样式（用于整个页面）
+  const newsPageBackgroundStyle: React.CSSProperties = pageConfig?.newsBackground
+    ? pageConfig.newsBackground.type === "color"
+      ? { backgroundColor: pageConfig.newsBackground.value }
       : {
-          backgroundImage: `url(${article.backgroundValue || ""})`,
+          backgroundImage: `url(${pageConfig.newsBackground.value})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
@@ -235,9 +262,9 @@ function NewsDetailContent({
     : { backgroundColor: "#000000" };
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden" style={articleBackgroundStyle}>
+    <main className="relative min-h-screen w-full overflow-hidden" style={newsPageBackgroundStyle}>
       {/* 背景遮罩层（仅在图片背景时显示） */}
-      {article && article.backgroundType === "image" && (
+      {pageConfig?.newsBackground && pageConfig.newsBackground.type === "image" && (
         <div className="absolute inset-0">
           <div className="absolute inset-0 bg-white/70" />
           <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/15" />
@@ -608,7 +635,7 @@ export default function NewsDetailPage({
     <Suspense fallback={
       <main className="relative min-h-screen w-full overflow-hidden bg-black">
         <div className="relative z-10 mx-auto max-w-5xl px-4 py-8">
-          <div className="text-center text-white/60">加载中...</div>
+          <div className="text-center text-black/60">加载中...</div>
         </div>
       </main>
     }>

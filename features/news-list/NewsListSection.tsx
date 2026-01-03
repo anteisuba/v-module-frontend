@@ -11,9 +11,10 @@ import type { NewsArticle } from "@/lib/api/types";
 interface NewsListSectionProps {
   slug?: string; // 用户 slug，用于返回链接
   limit?: number; // 显示的文章数量
+  background?: { type: "color" | "image"; value: string }; // 新闻页面背景配置
 }
 
-export default function NewsListSection({ slug, limit = 3 }: NewsListSectionProps) {
+export default function NewsListSection({ slug, limit = 3, background }: NewsListSectionProps) {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -49,8 +50,20 @@ export default function NewsListSection({ slug, limit = 3 }: NewsListSectionProp
   // 构建返回链接
   const newsHref = slug ? `/news?from=/u/${slug}` : "/news";
 
+  // 获取背景样式
+  const backgroundStyle: React.CSSProperties = background
+    ? background.type === "color"
+      ? { backgroundColor: background.value }
+      : {
+          backgroundImage: `url(${background.value})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }
+    : { backgroundColor: "#000000" };
+
   return (
-    <section className="bg-black text-white py-16 px-6">
+    <section className="text-black py-16 px-6" style={backgroundStyle}>
       <div className="max-w-4xl mx-auto">
         {/* 标题 */}
         <h2 className="text-4xl font-bold tracking-wider mb-8 text-center">NEWS</h2>
@@ -61,9 +74,9 @@ export default function NewsListSection({ slug, limit = 3 }: NewsListSectionProp
             <Link
               key={article.id}
               href={`/news/${article.id}${slug ? `?from=/u/${slug}` : ""}`}
-              className="block rounded-lg border border-white/10 bg-white/5 p-4 transition-colors hover:bg-white/10"
+              className="block rounded-lg border border-black/10 bg-black/5 p-4 transition-colors hover:bg-black/10"
             >
-              <div className="mb-2 flex items-center gap-3 text-sm text-white/60">
+              <div className="mb-2 flex items-center gap-3 text-sm text-black/60">
                 <span>
                   {new Date(article.createdAt).toLocaleDateString("ja-JP", {
                     year: "numeric",
@@ -74,7 +87,7 @@ export default function NewsListSection({ slug, limit = 3 }: NewsListSectionProp
                 <span className="font-medium">{article.category}</span>
                 {article.tag && <span>{article.tag}</span>}
               </div>
-              <h3 className="text-lg font-medium text-white">{article.title}</h3>
+              <h3 className="text-lg font-medium text-black">{article.title}</h3>
             </Link>
           ))}
         </div>
@@ -83,7 +96,7 @@ export default function NewsListSection({ slug, limit = 3 }: NewsListSectionProp
         <div className="text-center">
           <Link
             href={newsHref}
-            className="inline-block rounded border border-white px-6 py-2 text-sm font-medium text-white transition-colors hover:bg-white/10"
+            className="inline-block rounded border border-black px-6 py-2 text-sm font-medium text-black transition-colors hover:bg-black/10"
           >
             MORE
           </Link>

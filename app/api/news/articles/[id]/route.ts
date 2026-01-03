@@ -15,6 +15,13 @@ export async function GET(
 
   const article = await prisma.newsArticle.findUnique({
     where: { id },
+    include: {
+      user: {
+        select: {
+          slug: true,
+        },
+      },
+    },
   });
 
   if (!article) {
@@ -29,7 +36,16 @@ export async function GET(
     }
   }
 
-  return NextResponse.json({ article });
+  // 返回文章和用户 slug
+  const { user, ...articleData } = article;
+  // 移除 Prisma 的 user 关系对象，只保留需要的字段
+  const { user: _, ...cleanArticleData } = articleData as any;
+  return NextResponse.json({ 
+    article: {
+      ...cleanArticleData,
+      userSlug: user?.slug || null,
+    },
+  });
 }
 
 // PUT: 更新文章

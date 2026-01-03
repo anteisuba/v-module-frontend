@@ -99,6 +99,7 @@ export interface NewsArticle {
   createdAt: string;
   updatedAt: string;
   publishedAt?: string | null;
+  userSlug?: string | null; // 用户 slug，用于加载页面配置
 }
 
 export interface NewsArticleListResponse {

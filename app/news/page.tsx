@@ -5,9 +5,10 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { newsArticleApi } from "@/lib/api";
+import { newsArticleApi, pageApi } from "@/lib/api";
 import { ApiError, NetworkError } from "@/lib/api/errors";
 import type { NewsArticle } from "@/lib/api/types";
+import type { PageConfig } from "@/domain/page-config/types";
 
 function NewsListContent() {
   const router = useRouter();
@@ -17,6 +18,7 @@ function NewsListContent() {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [error, setError] = useState<string | null>(null);
+  const [pageConfig, setPageConfig] = useState<PageConfig | null>(null);
 
   // 获取返回链接：优先使用 referrer 或 URL 参数，否则使用默认值
   const getBackUrl = () => {
@@ -27,6 +29,34 @@ function NewsListContent() {
     // 默认返回到 /u/xiuruisu
     return "/u/xiuruisu";
   };
+
+  // 获取第一个文章的 userSlug（用于依赖数组）
+  const firstArticleUserSlug = articles.length > 0 ? articles[0]?.userSlug : null;
+
+  // 加载页面配置（用于获取新闻页面背景）
+  useEffect(() => {
+    async function loadPageConfig() {
+      try {
+        // 优先使用 from 参数
+        const fromParam = searchParams.get("from");
+        if (fromParam && fromParam.startsWith("/u/")) {
+          const slug = fromParam.replace("/u/", "");
+          const config = await pageApi.getPublishedConfig(slug);
+          setPageConfig(config);
+          return;
+        }
+        
+        // 如果没有 from 参数，尝试从文章列表中获取用户 slug
+        if (firstArticleUserSlug) {
+          const config = await pageApi.getPublishedConfig(firstArticleUserSlug);
+          setPageConfig(config);
+        }
+      } catch (err) {
+        console.error("Failed to load page config:", err);
+      }
+    }
+    loadPageConfig();
+  }, [searchParams, firstArticleUserSlug]);
 
   const loadArticles = async () => {
     setLoading(true);
@@ -55,8 +85,20 @@ function NewsListContent() {
     loadArticles();
   }, [currentPage]);
 
+  // 获取背景样式
+  const backgroundStyle: React.CSSProperties = pageConfig?.newsBackground
+    ? pageConfig.newsBackground.type === "color"
+      ? { backgroundColor: pageConfig.newsBackground.value }
+      : {
+          backgroundImage: `url(${pageConfig.newsBackground.value})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+          backgroundRepeat: "no-repeat",
+        }
+    : { backgroundColor: "#000000" };
+
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main className="min-h-screen text-black" style={backgroundStyle}>
       <div className="mx-auto max-w-4xl px-4 py-16">
         {/* 标题 */}
         <div className="mb-8 flex items-center justify-between">
@@ -79,12 +121,12 @@ function NewsListContent() {
 
         {/* 加载中 */}
         {loading && (
-          <div className="py-12 text-center text-white/60">加载中...</div>
+          <div className="py-12 text-center text-black/60">加载中...</div>
         )}
 
         {/* 文章列表 */}
         {!loading && articles.length === 0 && (
-          <div className="py-12 text-center text-white/60">暂无文章</div>
+          <div className="py-12 text-center text-black/60">暂无文章</div>
         )}
 
         {!loading && articles.length > 0 && (
@@ -93,9 +135,9 @@ function NewsListContent() {
               <Link
                 key={article.id}
                 href={`/news/${article.id}`}
-                className="block rounded-lg border border-white/10 bg-white/5 p-4 transition-colors hover:bg-white/10"
+                className="block rounded-lg border border-black/10 bg-black/5 p-4 transition-colors hover:bg-black/10"
               >
-                <div className="mb-2 flex items-center gap-3 text-sm text-white/60">
+                <div className="mb-2 flex items-center gap-3 text-sm text-black/60">
                   <span>
                     {new Date(article.createdAt).toLocaleDateString("ja-JP", {
                       year: "numeric",
@@ -106,7 +148,7 @@ function NewsListContent() {
                   <span className="font-medium">{article.category}</span>
                   {article.tag && <span>{article.tag}</span>}
                 </div>
-                <h2 className="text-lg font-medium text-white">{article.title}</h2>
+                <h2 className="text-lg font-medium text-black">{article.title}</h2>
               </Link>
             ))}
           </div>
@@ -119,18 +161,18 @@ function NewsListContent() {
               type="button"
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="rounded border border-white/20 bg-white/5 px-4 py-2 text-sm text-white transition-colors hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded border border-black/20 bg-black/5 px-4 py-2 text-sm text-black transition-colors hover:bg-black/10 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               前へ
             </button>
-            <span className="text-sm text-white/60">
+            <span className="text-sm text-black/60">
               {currentPage} / {totalPages}
             </span>
             <button
               type="button"
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="rounded border border-white/20 bg-white/5 px-4 py-2 text-sm text-white transition-colors hover:bg-white/10 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="rounded border border-black/20 bg-black/5 px-4 py-2 text-sm text-black transition-colors hover:bg-black/10 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               次へ
             </button>
@@ -144,9 +186,9 @@ function NewsListContent() {
 export default function NewsListPage() {
   return (
     <Suspense fallback={
-      <main className="min-h-screen bg-black text-white">
+      <main className="min-h-screen bg-black text-black">
         <div className="mx-auto max-w-4xl px-4 py-16">
-          <div className="py-12 text-center text-white/60">加载中...</div>
+          <div className="py-12 text-center text-black/60">加载中...</div>
         </div>
       </main>
     }>

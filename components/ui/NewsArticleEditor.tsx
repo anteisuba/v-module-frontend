@@ -6,12 +6,16 @@ import { useState, useEffect } from "react";
 import { newsArticleApi } from "@/lib/api";
 import { ApiError, NetworkError } from "@/lib/api/errors";
 import type { NewsArticle } from "@/lib/api/types";
+import BackgroundEditor from "./BackgroundEditor";
 
 interface NewsArticleEditorProps {
   disabled?: boolean;
   onToast?: (message: string) => void;
   onError?: (message: string) => void;
   onUploadImage?: (file: File) => Promise<{ src: string }>;
+  // 新闻页面背景配置（用于 NewsListSection、/news 和 /news/[id] 页面）
+  newsBackground?: { type: "color" | "image"; value: string };
+  onNewsBackgroundChange?: (background: { type: "color" | "image"; value: string }) => void;
 }
 
 const CATEGORIES = ["ALL", "MEDIA", "MAGAZINE", "あの", "ANO"];
@@ -26,6 +30,8 @@ export default function NewsArticleEditor({
   onToast,
   onError,
   onUploadImage,
+  newsBackground,
+  onNewsBackgroundChange,
 }: NewsArticleEditorProps) {
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
@@ -36,8 +42,6 @@ export default function NewsArticleEditor({
   const [isCreating, setIsCreating] = useState(false);
   const [tags, setTags] = useState<string[]>(["ALL"]); // 动态标签列表
   const [newTag, setNewTag] = useState(""); // 新标签输入
-  const [uploadingBackground, setUploadingBackground] = useState(false);
-  const [backgroundImageError, setBackgroundImageError] = useState(false);
 
   // 表单状态
   const [formData, setFormData] = useState({
@@ -130,7 +134,6 @@ export default function NewsArticleEditor({
     });
     setEditingArticle(null);
     setIsCreating(false);
-    setBackgroundImageError(false);
   };
 
   // 开始创建新文章
@@ -169,7 +172,6 @@ export default function NewsArticleEditor({
     });
     setEditingArticle(article);
     setIsCreating(false);
-    setBackgroundImageError(false);
   };
 
   // 保存文章
@@ -280,6 +282,21 @@ export default function NewsArticleEditor({
         </button>
       </div>
 
+      {/* 新闻页面背景设置（用于 NewsListSection、/news 和 /news/[id] 页面） */}
+      {newsBackground && onNewsBackgroundChange && (
+        <div className="mb-4 rounded-lg border border-black/10 bg-white/70 p-4">
+          <BackgroundEditor
+            label="新闻页面背景设置（控制 NewsListSection、/news 和 /news/[id] 页面）"
+            background={newsBackground}
+            onBackgroundChange={onNewsBackgroundChange}
+            disabled={disabled}
+            onUploadImage={onUploadImage}
+            onToast={(msg) => onToast?.(msg || "新闻页面背景图片上传成功")}
+            onError={onError}
+            previewHeight="h-32"
+          />
+        </div>
+      )}
 
       {/* 标签过滤（替代分类过滤） */}
       <div className="mb-4">
@@ -424,129 +441,25 @@ export default function NewsArticleEditor({
 
           {/* 背景编辑（仅用于文章详情页） */}
           <div>
-            <label className="block text-xs font-medium text-black mb-1.5">
-              文章详情页背景设置（仅控制 /news/[id] 页面）
-            </label>
-            <div className="space-y-2">
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() =>
-                    setFormData({ ...formData, backgroundType: "color" })
-                  }
-                  className={`rounded px-3 py-1.5 text-xs transition-colors ${
-                    formData.backgroundType === "color"
-                      ? "bg-black text-white"
-                      : "bg-white/70 text-black hover:bg-white/90"
-                  }`}
-                  disabled={disabled}
-                >
-                  颜色
-                </button>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setFormData({ ...formData, backgroundType: "image" })
-                  }
-                  className={`rounded px-3 py-1.5 text-xs transition-colors ${
-                    formData.backgroundType === "image"
-                      ? "bg-black text-white"
-                      : "bg-white/70 text-black hover:bg-white/90"
-                  }`}
-                  disabled={disabled}
-                >
-                  图片
-                </button>
-              </div>
-
-              {formData.backgroundType === "color" ? (
-                <div>
-                  <input
-                    type="color"
-                    value={formData.backgroundValue}
-                    onChange={(e) =>
-                      setFormData({ ...formData, backgroundValue: e.target.value })
-                    }
-                    className="h-8 w-full rounded border border-black/10"
-                    disabled={disabled}
-                  />
-                  <div
-                    className="mt-2 h-16 w-full rounded border border-black/10"
-                    style={{ backgroundColor: formData.backgroundValue }}
-                  />
-                </div>
-              ) : (
-                <div>
-                  <input
-                    type="text"
-                    value={formData.backgroundValue}
-                    onChange={(e) => {
-                      setBackgroundImageError(false);
-                      setFormData({ ...formData, backgroundValue: e.target.value });
-                    }}
-                    placeholder="/path/to/image.jpg 或 https://example.com/image.jpg"
-                    className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black mb-2"
-                    disabled={uploadingBackground || disabled}
-                  />
-                  {onUploadImage && (
-                    <div className="mb-2">
-                      <label className="block text-xs text-black/70 mb-1.5">
-                        上传本地图片
-                      </label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        className="block w-full text-[10px] text-black/80 file:mr-2 file:cursor-pointer file:rounded file:border-0 file:bg-black file:px-2 file:py-1 file:text-[10px] file:text-white file:transition-colors file:duration-200 hover:file:bg-black/90"
-                        disabled={uploadingBackground || disabled}
-                        onChange={async (e) => {
-                          const file = e.target.files?.[0];
-                          const inputElement = e.currentTarget;
-                          if (file && onUploadImage) {
-                            setUploadingBackground(true);
-                            setBackgroundImageError(false);
-                            try {
-                              const result = await onUploadImage(file);
-                              setFormData({ ...formData, backgroundValue: result.src });
-                              onToast?.("背景图片上传成功");
-                            } catch (e) {
-                              onError?.(e instanceof Error ? e.message : "上传失败");
-                            } finally {
-                              setUploadingBackground(false);
-                              if (inputElement) {
-                                inputElement.value = "";
-                              }
-                            }
-                          }
-                        }}
-                      />
-                      {uploadingBackground && (
-                        <div className="mt-1 text-[10px] text-black/60">上传中...</div>
-                      )}
-                    </div>
-                  )}
-                  <div className="mt-2 h-32 w-full rounded border border-black/10 overflow-hidden bg-black/5 relative">
-                    {formData.backgroundValue && !backgroundImageError ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={formData.backgroundValue}
-                        alt="背景预览"
-                        className="h-full w-full object-cover"
-                        onError={() => setBackgroundImageError(true)}
-                        onLoad={() => setBackgroundImageError(false)}
-                      />
-                    ) : formData.backgroundValue && backgroundImageError ? (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-xs text-black/50">图片加载失败</div>
-                      </div>
-                    ) : (
-                      <div className="absolute inset-0 flex items-center justify-center">
-                        <div className="text-xs text-black/50">暂无图片</div>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              )}
-            </div>
+            <BackgroundEditor
+              label="文章详情页背景设置（仅控制 /news/[id] 页面）"
+              background={{
+                type: formData.backgroundType,
+                value: formData.backgroundValue,
+              }}
+              onBackgroundChange={(background) => {
+                setFormData({
+                  ...formData,
+                  backgroundType: background.type,
+                  backgroundValue: background.value,
+                });
+              }}
+              disabled={disabled}
+              onUploadImage={onUploadImage}
+              onToast={onToast}
+              onError={onError}
+              previewHeight="h-16"
+            />
           </div>
 
           <div>
