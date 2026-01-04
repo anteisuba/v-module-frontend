@@ -61,8 +61,8 @@ export default function LanguageSelector({
 
   const menuClass =
     variant === "dark"
-      ? `${menuPositionClass} z-50 min-w-[120px] rounded-lg border border-white/20 bg-black/60 backdrop-blur-xl shadow-lg overflow-hidden`
-      : `${menuPositionClass} z-50 min-w-[120px] rounded-lg border border-black/20 bg-white/90 backdrop-blur-xl shadow-lg overflow-hidden`;
+      ? `${menuPositionClass} z-[100] min-w-[120px] rounded-lg border border-white/20 bg-black/60 backdrop-blur-xl shadow-lg overflow-hidden`
+      : `${menuPositionClass} z-[100] min-w-[120px] rounded-lg border border-black/20 bg-white/90 backdrop-blur-xl shadow-lg overflow-hidden`;
 
   const itemClass = (loc: Locale) =>
     variant === "dark"

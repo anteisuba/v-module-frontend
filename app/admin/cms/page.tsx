@@ -526,7 +526,7 @@ export default function CMSPage() {
             label={t("common.back")} 
             className="!relative !top-0 !left-0"
           />
-          <LanguageSelector position="inline" />
+          <LanguageSelector position="inline" menuPosition="top" />
         </div>
 
         {/* 头部：标题和操作按钮 */}
@@ -653,3 +653,4 @@ export default function CMSPage() {
     </main>
   );
 }
+
