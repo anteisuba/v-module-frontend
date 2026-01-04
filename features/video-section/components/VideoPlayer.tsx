@@ -9,13 +9,23 @@ import type { VideoItem } from "../types";
 
 // 动态导入 react-player，避免 SSR 问题
 // react-player 3.x 版本：所有播放器都打包在主模块中
+// 注意：YouTube 播放器模块是懒加载的，需要确保正确加载
 const ReactPlayer = dynamic(
-  () => import("react-player"),
+  () => {
+    // 预加载 YouTube 播放器模块（如果可用）
+    if (typeof window !== 'undefined') {
+      // 尝试预加载 youtube-video-element，确保 YouTube 播放器可用
+      import('youtube-video-element/react').catch(() => {
+        // 如果预加载失败，继续使用默认导入
+      });
+    }
+    return import("react-player");
+  },
   {
     ssr: false,
     loading: () => (
       <div className="flex items-center justify-center w-full h-full bg-black/10 rounded-lg">
-        <div className="text-sm text-black/50">加载中...</div>
+        <div className="text-sm text-black/50">Loading...</div>
       </div>
     ),
   }
@@ -157,7 +167,8 @@ export default function VideoPlayer({
             config={Object.keys(playerConfig).length > 0 ? playerConfig : undefined}
             onError={(error: any) => {
               // react-player 3.x 可能传递空错误对象，需要检查实际错误
-              const errorMessage = error?.message || error?.toString() || 'Unknown error';
+              // 空错误对象通常表示播放器回退到了 HTML5 播放器
+              const errorMessage = error?.message || error?.toString() || 'Player fallback to HTML5';
               const hasErrorDetails = error && typeof error === 'object' && Object.keys(error).length > 0;
               
               if (process.env.NODE_ENV === 'development') {
@@ -169,7 +180,13 @@ export default function VideoPlayer({
                   url: finalUrl,
                   platform,
                   config: playerConfig,
+                  note: hasErrorDetails ? 'Error has details' : 'Empty error object - likely HTML5 fallback',
                 });
+                
+                // 检查是否是 YouTube 播放器模块加载问题
+                if (platform === 'youtube' && !hasErrorDetails) {
+                  console.warn('⚠️ YouTube player may not be loaded correctly. Check if youtube-video-element is available.');
+                }
               }
               
               // 设置错误状态，但允许用户重试
