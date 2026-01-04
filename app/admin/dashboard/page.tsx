@@ -97,7 +97,7 @@ export default function DashboardPage() {
         <div className="mb-8 text-center">
           <h1 className="text-3xl font-bold text-black">{t("admin.dashboard.title")}</h1>
           <p className="mt-2 text-sm text-black/70">
-            {t("admin.dashboard.welcome", { name: user?.displayName || user?.email || t("admin.dashboard.user") })}
+            {t("admin.dashboard.welcome").replace("{name}", user?.displayName || user?.email || t("admin.dashboard.user"))}
           </p>
         </div>
 
