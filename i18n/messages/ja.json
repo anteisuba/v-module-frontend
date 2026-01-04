@@ -270,3 +270,42 @@
   }
 }
 
+
+      "label": "ニュースページ背景設定（NewsListSection、/news および /news/[id] ページを制御）",
+      "uploadSuccess": "ニュースページ背景画像のアップロードに成功しました"
+    },
+    "tags": {
+      "add": "新しいタグを追加",
+      "addButton": "追加"
+    },
+    "form": {
+      "title": "タイトル *",
+      "titlePlaceholder": "記事のタイトル",
+      "content": "内容 *",
+      "contentPlaceholder": "記事の内容（Markdown 対応）",
+      "tag": "タグ",
+      "tagPlaceholder": "例：あの",
+      "shareUrl": "共有リンク",
+      "shareChannels": "共有チャンネル",
+      "articleBackground": {
+        "label": "記事詳細ページ背景設定（/news/[id] ページのみを制御）"
+      },
+      "published": "公開済み（チェックすると記事が公開ページに表示されます）",
+      "save": "保存",
+      "cancel": "キャンセル"
+    },
+    "list": {
+      "edit": "編集",
+      "delete": "削除",
+      "loadFailed": "記事リストの読み込みに失敗しました",
+      "saveFailed": "保存に失敗しました",
+      "deleteFailed": "削除に失敗しました",
+      "titleRequired": "タイトルと内容は必須です",
+      "saved": "記事を更新しました",
+      "createdPublished": "記事を作成して公開しました",
+      "createdDraft": "記事を作成しました（下書き）",
+      "deleted": "記事を削除しました"
+    }
+  }
+}
+

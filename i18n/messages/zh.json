@@ -9,6 +9,30 @@
       "privacy": "隐私政策",
       "contact": "联系",
       "copyright": "© vtuber-site"
+    },
+    "dashboard": {
+      "title": "编辑目录",
+      "welcome": "欢迎，{name}",
+      "user": "用户",
+      "selectPage": "选择要编辑的页面",
+      "enterEdit": "进入编辑",
+      "viewPublicPage": "查看我的公开页面",
+      "logout": "退出登录",
+      "pages": {
+        "cms": {
+          "label": "首页",
+          "description": "编辑个人首页（Hero Section、Logo、社交链接等）"
+        },
+        "blog": {
+          "label": "BLOG 页面",
+          "description": "编辑博客文章（待开发）"
+        },
+        "media": {
+          "label": "MEDIA 页面",
+          "description": "编辑媒体内容（待开发）"
+        }
+      },
+      "comingSoon": "待开发"
     }
   },
   "auth": {
@@ -232,6 +256,45 @@
     "title": "新闻文章管理",
     "create": "新建文章",
     "newsBackground": {
+      "label": "新闻页面背景设置（控制 NewsListSection、/news 和 /news/[id] 页面）",
+      "uploadSuccess": "新闻页面背景图片上传成功"
+    },
+    "tags": {
+      "add": "添加新标签",
+      "addButton": "添加"
+    },
+    "form": {
+      "title": "标题 *",
+      "titlePlaceholder": "文章标题",
+      "content": "内容 *",
+      "contentPlaceholder": "文章内容（支持 Markdown）",
+      "tag": "标签",
+      "tagPlaceholder": "例如：あの",
+      "shareUrl": "分享链接",
+      "shareChannels": "分享渠道",
+      "articleBackground": {
+        "label": "文章详情页背景设置（仅控制 /news/[id] 页面）"
+      },
+      "published": "已发布（勾选后文章会在公开页面显示）",
+      "save": "保存",
+      "cancel": "取消"
+    },
+    "list": {
+      "edit": "编辑",
+      "delete": "删除",
+      "loadFailed": "加载文章列表失败",
+      "saveFailed": "保存失败",
+      "deleteFailed": "删除失败",
+      "titleRequired": "标题和内容不能为空",
+      "saved": "文章已更新",
+      "createdPublished": "文章已创建并发布",
+      "createdDraft": "文章已创建（草稿）",
+      "deleted": "文章已删除"
+    }
+  }
+}
+
+
       "label": "新闻页面背景设置（控制 NewsListSection、/news 和 /news/[id] 页面）",
       "uploadSuccess": "新闻页面背景图片上传成功"
     },

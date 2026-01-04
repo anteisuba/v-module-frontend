@@ -9,6 +9,30 @@
       "privacy": "Privacy Policy",
       "contact": "Contact",
       "copyright": "© vtuber-site"
+    },
+    "dashboard": {
+      "title": "Edit Directory",
+      "welcome": "Welcome, {name}",
+      "user": "User",
+      "selectPage": "Select page to edit",
+      "enterEdit": "Enter Edit",
+      "viewPublicPage": "View my public page",
+      "logout": "Logout",
+      "pages": {
+        "cms": {
+          "label": "Home Page",
+          "description": "Edit personal homepage (Hero Section, Logo, social links, etc.)"
+        },
+        "blog": {
+          "label": "BLOG Page",
+          "description": "Edit blog articles (Coming soon)"
+        },
+        "media": {
+          "label": "MEDIA Page",
+          "description": "Edit media content (Coming soon)"
+        }
+      },
+      "comingSoon": "Coming soon"
     }
   },
   "auth": {
@@ -232,6 +256,45 @@
     "title": "News Article Management",
     "create": "New Article",
     "newsBackground": {
+      "label": "News Page Background Settings (Controls NewsListSection, /news and /news/[id] pages)",
+      "uploadSuccess": "News page background image uploaded successfully"
+    },
+    "tags": {
+      "add": "Add New Tag",
+      "addButton": "Add"
+    },
+    "form": {
+      "title": "Title *",
+      "titlePlaceholder": "Article Title",
+      "content": "Content *",
+      "contentPlaceholder": "Article Content (Markdown supported)",
+      "tag": "Tag",
+      "tagPlaceholder": "e.g.: あの",
+      "shareUrl": "Share Link",
+      "shareChannels": "Share Channels",
+      "articleBackground": {
+        "label": "Article Detail Page Background Settings (Controls /news/[id] page only)"
+      },
+      "published": "Published (check to display article on public page)",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "list": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "loadFailed": "Failed to load article list",
+      "saveFailed": "Save failed",
+      "deleteFailed": "Delete failed",
+      "titleRequired": "Title and content are required",
+      "saved": "Article updated",
+      "createdPublished": "Article created and published",
+      "createdDraft": "Article created (draft)",
+      "deleted": "Article deleted"
+    }
+  }
+}
+
+
       "label": "News Page Background Settings (Controls NewsListSection, /news and /news/[id] pages)",
       "uploadSuccess": "News page background image uploaded successfully"
     },

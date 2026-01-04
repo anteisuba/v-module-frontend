@@ -2,10 +2,11 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/lib/context/UserContext";
 import { LanguageSelector } from "@/components/ui";
+import { useI18n } from "@/lib/i18n/context";
 
 type EditPageOption = {
   id: string;
@@ -15,34 +16,36 @@ type EditPageOption = {
   available: boolean;
 };
 
-const EDIT_PAGES: EditPageOption[] = [
-  {
-    id: "cms",
-    label: "首页",
-    href: "/admin/cms",
-    description: "编辑个人首页（Hero Section、Logo、社交链接等）",
-    available: true,
-  },
-  {
-    id: "blog",
-    label: "BLOG 页面",
-    href: "/admin/blog",
-    description: "编辑博客文章（待开发）",
-    available: false,
-  },
-  {
-    id: "media",
-    label: "MEDIA 页面",
-    href: "/admin/media",
-    description: "编辑媒体内容（待开发）",
-    available: false,
-  },
-];
-
 export default function DashboardPage() {
   const router = useRouter();
   const { user, loading, logout } = useUser();
+  const { t } = useI18n();
   const [selectedPage, setSelectedPage] = useState<string>("cms");
+
+  // 使用翻译的页面选项
+  const EDIT_PAGES: EditPageOption[] = useMemo(() => [
+    {
+      id: "cms",
+      label: t("admin.dashboard.pages.cms.label"),
+      href: "/admin/cms",
+      description: t("admin.dashboard.pages.cms.description"),
+      available: true,
+    },
+    {
+      id: "blog",
+      label: t("admin.dashboard.pages.blog.label"),
+      href: "/admin/blog",
+      description: t("admin.dashboard.pages.blog.description"),
+      available: false,
+    },
+    {
+      id: "media",
+      label: t("admin.dashboard.pages.media.label"),
+      href: "/admin/media",
+      description: t("admin.dashboard.pages.media.description"),
+      available: false,
+    },
+  ], [t]);
 
   function handleNavigate() {
     const page = EDIT_PAGES.find((p) => p.id === selectedPage);
@@ -59,7 +62,7 @@ export default function DashboardPage() {
     return (
       <main className="relative min-h-screen w-full overflow-hidden">
         <div className="flex h-screen items-center justify-center">
-          <div className="text-lg text-black">加载中...</div>
+          <div className="text-lg text-black">{t("common.loading")}</div>
         </div>
       </main>
     );
@@ -71,7 +74,7 @@ export default function DashboardPage() {
         onClick={handleLogout}
         className="absolute left-6 top-6 z-50 rounded-lg border border-black/20 bg-white/70 px-4 py-2 text-sm font-medium text-black hover:bg-white/80"
       >
-        退出登录
+        {t("admin.dashboard.logout")}
       </button>
       
       {/* 语言选择器 */}
@@ -92,15 +95,15 @@ export default function DashboardPage() {
       <div className="relative z-10 mx-auto max-w-4xl px-6 py-10">
         {/* 头部 */}
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-black">编辑目录</h1>
+          <h1 className="text-3xl font-bold text-black">{t("admin.dashboard.title")}</h1>
           <p className="mt-2 text-sm text-black/70">
-            欢迎，{user?.displayName || user?.email || "用户"}
+            {t("admin.dashboard.welcome", { name: user?.displayName || user?.email || t("admin.dashboard.user") })}
           </p>
         </div>
 
         {/* 页面选择 */}
         <div className="rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
-          <h2 className="mb-4 text-lg font-semibold text-black">选择要编辑的页面</h2>
+          <h2 className="mb-4 text-lg font-semibold text-black">{t("admin.dashboard.selectPage")}</h2>
 
           <div className="space-y-3">
             {EDIT_PAGES.map((page) => (
@@ -129,7 +132,7 @@ export default function DashboardPage() {
                     <span className="font-medium text-black">{page.label}</span>
                     {!page.available && (
                       <span className="rounded bg-gray-200 px-2 py-0.5 text-xs text-gray-600">
-                        待开发
+                        {t("admin.dashboard.comingSoon")}
                       </span>
                     )}
                   </div>
@@ -148,7 +151,7 @@ export default function DashboardPage() {
               disabled={!EDIT_PAGES.find((p) => p.id === selectedPage)?.available}
               className="rounded-xl bg-black px-6 py-3 text-sm font-medium text-white hover:bg-black/90 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              进入编辑
+              {t("admin.dashboard.enterEdit")}
             </button>
           </div>
         </div>
@@ -162,7 +165,7 @@ export default function DashboardPage() {
               rel="noopener noreferrer"
               className="text-sm text-black/70 hover:text-black underline"
             >
-              查看我的公开页面 →
+              {t("admin.dashboard.viewPublicPage")} →
             </a>
           </div>
         )}
