@@ -90,7 +90,7 @@ export function installErrorFilter() {
     }
 
     // 其他警告正常输出
-    originalWarn.apply(console, args);
+    originalWarn(...args);
   };
 
   // 过滤全局错误事件

@@ -5,6 +5,7 @@ import { InspectorWrapper } from "@/lib/context/InspectorWrapper";
 import { I18nProvider } from "@/lib/i18n/context";
 import ErrorFilter from "@/components/ErrorFilter";
 import "./globals.css";
+import "./globals"; // 导入 globals.ts 以立即安装错误过滤器
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
