@@ -73,20 +73,18 @@ export default function VideoSectionEditor({
   function ensureVideoSection() {
     let videoSection = getVideoSection();
     if (!videoSection) {
+      const newSection = {
+        id: `video-${Date.now()}`,
+        type: "video" as const,
+        enabled: false, // 默认关闭（因为没有视频）
+        order: Math.max(...config.sections.map((s) => s.order), -1) + 1,
+        props: {
+          items: [],
+        },
+      };
       onConfigChange({
         ...config,
-        sections: [
-          ...config.sections,
-          {
-            id: `video-${Date.now()}`,
-            type: "video" as const,
-            enabled: true,
-            order: Math.max(...config.sections.map((s) => s.order), -1) + 1,
-            props: {
-              items: [],
-            },
-          },
-        ],
+        sections: [...config.sections, newSection],
       });
       videoSection = getVideoSection();
     }
