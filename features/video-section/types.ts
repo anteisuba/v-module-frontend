@@ -8,10 +8,5 @@ export type VideoItem = {
   platform?: 'youtube' | 'bilibili' | 'auto';
   title?: string;
   thumbnail?: string;
-  autoplay?: boolean;
-  muted?: boolean;
-  loop?: boolean;
-  controls?: boolean;
-  startTime?: number;
 };
 

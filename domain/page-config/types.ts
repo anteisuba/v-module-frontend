@@ -76,11 +76,6 @@ export type VideoSectionProps = {
     platform?: 'youtube' | 'bilibili' | 'auto'; // 平台类型，auto 表示自动检测
     title?: string; // 视频标题（可选，用于显示）
     thumbnail?: string; // 自定义缩略图（可选）
-    autoplay?: boolean; // 自动播放（默认 false）
-    muted?: boolean; // 静音（默认 false）
-    loop?: boolean; // 循环播放（默认 false）
-    controls?: boolean; // 显示控制条（默认 true）
-    startTime?: number; // 开始时间（秒）
   }>;
   // 布局配置（参考 NewsSectionProps）
   layout?: {

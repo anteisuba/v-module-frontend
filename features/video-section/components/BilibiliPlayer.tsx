@@ -43,9 +43,6 @@ export default function BilibiliPlayer({
       if (bvMatch && bvMatch[1]) {
         const params = new URLSearchParams();
         params.set('bvid', bvMatch[1]);
-        if (item.autoplay) params.set('autoplay', '1');
-        if (item.muted) params.set('muted', '1');
-        if (item.startTime) params.set('t', Math.floor(item.startTime).toString());
         return `https://player.bilibili.com/player.html?${params.toString()}`;
       }
       return '';
@@ -61,19 +58,8 @@ export default function BilibiliPlayer({
       params.set('aid', aidNumber);
     }
     
-    // 添加播放参数
-    if (item.autoplay) {
-      params.set('autoplay', '1');
-    }
-    if (item.muted) {
-      params.set('muted', '1');
-    }
-    if (item.startTime) {
-      params.set('t', Math.floor(item.startTime).toString());
-    }
-    
     return `https://player.bilibili.com/player.html?${params.toString()}`;
-  }, [item.url, bilibiliInfo, item.autoplay, item.muted, item.startTime]);
+  }, [item.url, bilibiliInfo]);
 
   if (!playerUrl) {
     return (

@@ -584,66 +584,6 @@ export default function VideoSectionEditor({
                 </div>
               )}
 
-              {/* 视频选项 */}
-              <div className="space-y-2">
-                <div className="grid grid-cols-2 gap-2">
-                  <ToggleSwitch
-                    enabled={item.autoplay ?? false}
-                    onChange={() =>
-                      updateVideoItem(item.id, {
-                        autoplay: !item.autoplay,
-                      })
-                    }
-                    disabled={disabled}
-                    label="自动播放"
-                  />
-                  <ToggleSwitch
-                    enabled={item.muted ?? false}
-                    onChange={() =>
-                      updateVideoItem(item.id, { muted: !item.muted })
-                    }
-                    disabled={disabled}
-                    label="静音"
-                  />
-                  <ToggleSwitch
-                    enabled={item.loop ?? false}
-                    onChange={() =>
-                      updateVideoItem(item.id, { loop: !item.loop })
-                    }
-                    disabled={disabled}
-                    label="循环播放"
-                  />
-                  <ToggleSwitch
-                    enabled={item.controls !== false}
-                    onChange={() =>
-                      updateVideoItem(item.id, {
-                        controls: item.controls === false,
-                      })
-                    }
-                    disabled={disabled}
-                    label="显示控制条"
-                  />
-                </div>
-                
-                {/* 开始时间 */}
-                <div>
-                  <label className="block text-xs text-black/70 mb-1">
-                    开始时间（秒）
-                  </label>
-                  <input
-                    type="number"
-                    min="0"
-                    value={item.startTime || 0}
-                    onChange={(e) =>
-                      updateVideoItem(item.id, {
-                        startTime: parseInt(e.target.value) || 0,
-                      })
-                    }
-                    className="w-full rounded border border-black/10 bg-white/70 px-2 py-1 text-xs text-black"
-                    disabled={disabled}
-                  />
-                </div>
-              </div>
             </div>
           );
         })}

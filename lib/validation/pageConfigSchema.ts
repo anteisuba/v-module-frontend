@@ -102,11 +102,6 @@ const VideoSectionPropsSchema = z.object({
         platform: z.enum(["youtube", "bilibili", "auto"]).optional(), // 平台类型
         title: z.string().optional(), // 视频标题
         thumbnail: z.string().url().optional().or(z.literal("")), // 自定义缩略图，允许空字符串
-        autoplay: z.boolean().optional(), // 自动播放
-        muted: z.boolean().optional(), // 静音
-        loop: z.boolean().optional(), // 循环播放
-        controls: z.boolean().optional(), // 显示控制条
-        startTime: z.number().min(0).optional(), // 开始时间（秒）
       })
     )
     .max(10), // 最多 10 个视频，允许空数组

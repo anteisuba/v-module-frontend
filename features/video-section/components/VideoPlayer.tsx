@@ -93,11 +93,6 @@ export default function VideoPlayer({
     if (platform === 'youtube') {
       config.youtube = {
         playerVars: {
-          start: item.startTime || 0,
-          autoplay: item.autoplay ? 1 : 0,
-          mute: item.muted ? 1 : 0,
-          loop: item.loop ? 1 : 0,
-          controls: item.controls !== false ? 1 : 0,
           rel: 0, // 不显示相关视频
           modestbranding: 1, // 减少 YouTube 品牌
           enablejsapi: 1, // 启用 JavaScript API
@@ -110,7 +105,7 @@ export default function VideoPlayer({
     }
     
     return config;
-  }, [platform, item.startTime, item.autoplay, item.muted, item.loop, item.controls]);
+  }, [platform]);
   
   // 使用标准化后的 URL
   const finalUrl = normalizedUrl;
@@ -163,10 +158,10 @@ export default function VideoPlayer({
                 src={finalUrl}
                 width="100%"
                 height="100%"
-                controls={item.controls !== false}
-                playing={item.autoplay || false}
-                muted={item.muted || false}
-                loop={item.loop || false}
+                controls={true}
+                playing={false}
+                muted={false}
+                loop={false}
                 config={Object.keys(playerConfig).length > 0 ? playerConfig : undefined}
                 onError={(error: any) => {
                   // react-player 3.x 可能传递空错误对象，需要检查实际错误
