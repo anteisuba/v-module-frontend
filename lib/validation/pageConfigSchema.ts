@@ -92,10 +92,16 @@ const VideoSectionPropsSchema = z.object({
     .array(
       z.object({
         id: z.string(),
-        url: z.string().url().optional().or(z.literal("")), // URL 可选，允许空字符串
+        url: z
+          .string()
+          .refine(
+            (val) => !val || val.trim() === "" || z.string().url().safeParse(val).success,
+            { message: "Must be a valid URL or empty string" }
+          )
+          .optional(), // URL 可选，允许空字符串或有效 URL
         platform: z.enum(["youtube", "bilibili", "auto"]).optional(), // 平台类型
         title: z.string().optional(), // 视频标题
-        thumbnail: z.string().url().optional(), // 自定义缩略图
+        thumbnail: z.string().url().optional().or(z.literal("")), // 自定义缩略图，允许空字符串
         autoplay: z.boolean().optional(), // 自动播放
         muted: z.boolean().optional(), // 静音
         loop: z.boolean().optional(), // 循环播放
