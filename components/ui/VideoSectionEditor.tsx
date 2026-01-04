@@ -541,7 +541,7 @@ export default function VideoSectionEditor({
               </div>
 
               {/* 视频预览 */}
-              {item.url && (
+              {item.url && item.url.trim() && detectPlatform(item.url) && (
                 <div className="mb-3 aspect-[16/9] rounded-lg border border-black/10 overflow-hidden bg-black/5 relative">
                   <VideoPlayer item={item} className="absolute inset-0" />
                 </div>
