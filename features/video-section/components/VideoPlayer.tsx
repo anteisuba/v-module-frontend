@@ -5,6 +5,7 @@
 import dynamic from "next/dynamic";
 import { useState, useMemo } from "react";
 import { detectPlatform, normalizeVideoUrl } from "../utils/urlParser";
+import BilibiliPlayer from "./BilibiliPlayer";
 import type { VideoItem } from "../types";
 
 // 动态导入 react-player，避免 SSR 问题
@@ -150,68 +151,73 @@ export default function VideoPlayer({
       ) : (
         <div className="w-full h-full" style={{ position: 'relative' }} key={retryKey}>
           {finalUrl ? (
-            <ReactPlayer
-              src={finalUrl}
-            width="100%"
-            height="100%"
-            controls={item.controls !== false}
-            playing={item.autoplay || false}
-            muted={item.muted || false}
-            loop={item.loop || false}
-            config={Object.keys(playerConfig).length > 0 ? playerConfig : undefined}
-            onError={(error: any) => {
-              // react-player 3.x 可能传递空错误对象，需要检查实际错误
-              // 空错误对象通常表示播放器回退到了 HTML5 播放器
-              const errorMessage = error?.message || error?.toString() || 'Player fallback to HTML5';
-              const hasErrorDetails = error && typeof error === 'object' && Object.keys(error).length > 0;
-              
-              if (process.env.NODE_ENV === 'development') {
-                console.error('❌ Video player error:', {
-                  error,
-                  errorMessage,
-                  errorType: typeof error,
-                  errorKeys: hasErrorDetails ? Object.keys(error) : [],
-                  url: finalUrl,
-                  platform,
-                  config: playerConfig,
-                  note: hasErrorDetails ? 'Error has details' : 'Empty error object - likely HTML5 fallback',
-                });
-                
-                // 检查是否是 YouTube 播放器模块加载问题
-                if (platform === 'youtube' && !hasErrorDetails) {
-                  console.warn('⚠️ YouTube player may not be loaded correctly. Check if youtube-video-element is available.');
-                }
-              }
-              
-              // 设置错误状态，但允许用户重试
-              setHasError(true);
-            }}
-            onReady={() => {
-              if (process.env.NODE_ENV === 'development') {
-                console.log('✅ Video player READY!');
-              }
-              setHasError(false);
-            }}
-            onStart={() => {
-              if (process.env.NODE_ENV === 'development') {
-                console.log('▶️ Video started');
-              }
-            }}
-            onProgress={(state: any) => {
-              // 进度回调（生产环境不打印）
-            }}
-            onPlay={() => {
-              // 播放回调（生产环境不打印）
-            }}
-            onPause={() => {
-              // 暂停回调（生产环境不打印）
-            }}
-            className="rounded-lg"
-            style={{ position: 'absolute', top: 0, left: 0 }}
-            light={false}
-            pip={false}
-            playsinline={true}
-          />
+            // react-player 3.x 不支持 Bilibili，使用自定义播放器
+            platform === 'bilibili' ? (
+              <BilibiliPlayer item={item} width={width} height={height} className={className} />
+            ) : (
+              <ReactPlayer
+                src={finalUrl}
+                width="100%"
+                height="100%"
+                controls={item.controls !== false}
+                playing={item.autoplay || false}
+                muted={item.muted || false}
+                loop={item.loop || false}
+                config={Object.keys(playerConfig).length > 0 ? playerConfig : undefined}
+                onError={(error: any) => {
+                  // react-player 3.x 可能传递空错误对象，需要检查实际错误
+                  // 空错误对象通常表示播放器回退到了 HTML5 播放器
+                  const errorMessage = error?.message || error?.toString() || 'Player fallback to HTML5';
+                  const hasErrorDetails = error && typeof error === 'object' && Object.keys(error).length > 0;
+                  
+                  if (process.env.NODE_ENV === 'development') {
+                    console.error('❌ Video player error:', {
+                      error,
+                      errorMessage,
+                      errorType: typeof error,
+                      errorKeys: hasErrorDetails ? Object.keys(error) : [],
+                      url: finalUrl,
+                      platform,
+                      config: playerConfig,
+                      note: hasErrorDetails ? 'Error has details' : 'Empty error object - likely HTML5 fallback',
+                    });
+                    
+                    // 检查是否是 YouTube 播放器模块加载问题
+                    if (platform === 'youtube' && !hasErrorDetails) {
+                      console.warn('⚠️ YouTube player may not be loaded correctly. Check if youtube-video-element is available.');
+                    }
+                  }
+                  
+                  // 设置错误状态，但允许用户重试
+                  setHasError(true);
+                }}
+                onReady={() => {
+                  if (process.env.NODE_ENV === 'development') {
+                    console.log('✅ Video player READY!');
+                  }
+                  setHasError(false);
+                }}
+                onStart={() => {
+                  if (process.env.NODE_ENV === 'development') {
+                    console.log('▶️ Video started');
+                  }
+                }}
+                onProgress={(state: any) => {
+                  // 进度回调（生产环境不打印）
+                }}
+                onPlay={() => {
+                  // 播放回调（生产环境不打印）
+                }}
+                onPause={() => {
+                  // 暂停回调（生产环境不打印）
+                }}
+                className="rounded-lg"
+                style={{ position: 'absolute', top: 0, left: 0 }}
+                light={false}
+                pip={false}
+                playsinline={true}
+              />
+            )
           ) : (
             <div className="flex items-center justify-center w-full h-full bg-black/10 rounded-lg">
               <div className="text-sm text-black/50 text-center px-4">
