@@ -9,18 +9,9 @@ import type { VideoItem } from "../types";
 
 // 动态导入 react-player，避免 SSR 问题
 // react-player 3.x 版本：所有播放器都打包在主模块中
-// 注意：YouTube 播放器模块是懒加载的，需要确保正确加载
+// react-player 会自动处理 YouTube 播放器模块的懒加载
 const ReactPlayer = dynamic(
-  () => {
-    // 预加载 YouTube 播放器模块（如果可用）
-    if (typeof window !== 'undefined') {
-      // 尝试预加载 youtube-video-element，确保 YouTube 播放器可用
-      import('youtube-video-element/react').catch(() => {
-        // 如果预加载失败，继续使用默认导入
-      });
-    }
-    return import("react-player");
-  },
+  () => import("react-player"),
   {
     ssr: false,
     loading: () => (
