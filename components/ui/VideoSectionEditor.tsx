@@ -93,6 +93,22 @@ export default function VideoSectionEditor({
     return videoSection;
   }
 
+  // 检查是否有有效视频（URL 不为空）
+  function hasValidVideos(items: VideoSectionProps["items"]): boolean {
+    return items.some((item) => item.url && item.url.trim() !== "");
+  }
+
+  // 自动更新 section 的 enabled 状态（根据是否有有效视频）
+  function updateSectionEnabledBasedOnVideos(sectionId: string, items: VideoSectionProps["items"]) {
+    const hasValid = hasValidVideos(items);
+    onConfigChange({
+      ...config,
+      sections: config.sections.map((s) =>
+        s.id === sectionId ? { ...s, enabled: hasValid } : s
+      ),
+    });
+  }
+
   // 切换 section 的 enabled 状态
   function toggleSectionEnabled(sectionId: string) {
     onConfigChange({
@@ -113,36 +129,38 @@ export default function VideoSectionEditor({
     };
 
     if (!videoSection) {
+      const newSection = {
+        id: `video-${Date.now()}`,
+        type: "video" as const,
+        enabled: false, // 新添加的视频 URL 为空，所以默认关闭
+        order: Math.max(...config.sections.map((s) => s.order), -1) + 1,
+        props: {
+          items: [newItem],
+        },
+      };
       onConfigChange({
         ...config,
-        sections: [
-          ...config.sections,
-          {
-            id: `video-${Date.now()}`,
-            type: "video" as const,
-            enabled: true,
-            order: Math.max(...config.sections.map((s) => s.order), -1) + 1,
-            props: {
-              items: [newItem],
-            },
-          },
-        ],
+        sections: [...config.sections, newSection],
       });
       return;
     }
 
+    const updatedItems = [...videoSection.props.items, newItem];
     onConfigChange({
       ...config,
       sections: config.sections.map((s) => {
         if (s.id === videoSection.id && s.type === "video") {
-          return {
+          const updatedSection = {
             ...s,
             type: "video" as const,
             props: {
               ...s.props,
-              items: [...s.props.items, newItem],
+              items: updatedItems,
             },
           };
+          // 自动更新 enabled 状态
+          updateSectionEnabledBasedOnVideos(videoSection.id, updatedItems);
+          return updatedSection;
         }
         return s;
       }),
@@ -154,18 +172,22 @@ export default function VideoSectionEditor({
     const videoSection = getVideoSection();
     if (!videoSection || videoSection.type !== "video") return;
 
+    const updatedItems = videoSection.props.items.filter((item) => item.id !== itemId);
     onConfigChange({
       ...config,
       sections: config.sections.map((s) => {
         if (s.id === videoSection.id && s.type === "video") {
-          return {
+          const updatedSection = {
             ...s,
             type: "video" as const,
             props: {
               ...s.props,
-              items: s.props.items.filter((item) => item.id !== itemId),
+              items: updatedItems,
             },
           };
+          // 自动更新 enabled 状态
+          updateSectionEnabledBasedOnVideos(videoSection.id, updatedItems);
+          return updatedSection;
         }
         return s;
       }),
