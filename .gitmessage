@@ -1,0 +1,31 @@
+# Commit Message Guidelines
+
+## Language
+- **Always use English** for commit messages to avoid encoding issues
+- Use clear, concise descriptions
+
+## Format
+```
+<type>: <subject>
+
+<body>
+```
+
+## Types
+- `feat`: New feature
+- `fix`: Bug fix
+- `docs`: Documentation changes
+- `style`: Code style changes (formatting, etc.)
+- `refactor`: Code refactoring
+- `test`: Adding or updating tests
+- `chore`: Maintenance tasks
+
+## Examples
+```
+feat: add video player feature supporting YouTube and Bilibili
+
+- Add VideoSection type definitions and Zod validation
+- Implement VideoSectionEditor component for /admin/cms
+- Implement VideoSectionRenderer component for /u/[slug]
+```
+
