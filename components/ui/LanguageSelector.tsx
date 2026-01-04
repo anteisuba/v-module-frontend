@@ -51,8 +51,8 @@ export default function LanguageSelector({
 
   const buttonClass =
     variant === "dark"
-      ? "flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-white/20"
-      : "flex items-center gap-2 rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black transition-colors duration-200 hover:bg-white/80";
+      ? "flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-white/20 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2"
+      : "flex items-center gap-2 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black/20 focus:ring-offset-2 border border-black/20 bg-white/70 text-black hover:bg-white/80 active:bg-white/90 px-3 py-1.5 text-xs cursor-pointer";
 
   const menuPositionClass =
     menuPosition === "top"
