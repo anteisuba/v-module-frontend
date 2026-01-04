@@ -3,7 +3,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { detectPlatform, normalizeVideoUrl } from "../utils/urlParser";
 import BilibiliPlayer from "./BilibiliPlayer";
 import type { VideoItem } from "../types";
