@@ -98,17 +98,6 @@ export default function VideoSectionEditor({
     return items.some((item) => item.url && item.url.trim() !== "");
   }
 
-  // 自动更新 section 的 enabled 状态（根据是否有有效视频）
-  function updateSectionEnabledBasedOnVideos(sectionId: string, items: VideoSectionProps["items"]) {
-    const hasValid = hasValidVideos(items);
-    onConfigChange({
-      ...config,
-      sections: config.sections.map((s) =>
-        s.id === sectionId ? { ...s, enabled: hasValid } : s
-      ),
-    });
-  }
-
   // 切换 section 的 enabled 状态
   function toggleSectionEnabled(sectionId: string) {
     onConfigChange({
@@ -146,21 +135,20 @@ export default function VideoSectionEditor({
     }
 
     const updatedItems = [...videoSection.props.items, newItem];
+    const hasValid = hasValidVideos(updatedItems);
     onConfigChange({
       ...config,
       sections: config.sections.map((s) => {
         if (s.id === videoSection.id && s.type === "video") {
-          const updatedSection = {
+          return {
             ...s,
             type: "video" as const,
+            enabled: hasValid, // 自动更新 enabled 状态
             props: {
               ...s.props,
               items: updatedItems,
             },
           };
-          // 自动更新 enabled 状态
-          updateSectionEnabledBasedOnVideos(videoSection.id, updatedItems);
-          return updatedSection;
         }
         return s;
       }),
@@ -173,21 +161,20 @@ export default function VideoSectionEditor({
     if (!videoSection || videoSection.type !== "video") return;
 
     const updatedItems = videoSection.props.items.filter((item) => item.id !== itemId);
+    const hasValid = hasValidVideos(updatedItems);
     onConfigChange({
       ...config,
       sections: config.sections.map((s) => {
         if (s.id === videoSection.id && s.type === "video") {
-          const updatedSection = {
+          return {
             ...s,
             type: "video" as const,
+            enabled: hasValid, // 自动更新 enabled 状态
             props: {
               ...s.props,
               items: updatedItems,
             },
           };
-          // 自动更新 enabled 状态
-          updateSectionEnabledBasedOnVideos(videoSection.id, updatedItems);
-          return updatedSection;
         }
         return s;
       }),
@@ -209,21 +196,20 @@ export default function VideoSectionEditor({
     const updatedItems = videoSection.props.items.map((item) =>
       item.id === itemId ? { ...item, ...updates } : item
     );
+    const hasValid = hasValidVideos(updatedItems);
     onConfigChange({
       ...config,
       sections: config.sections.map((s) => {
         if (s.id === videoSection.id && s.type === "video") {
-          const updatedSection = {
+          return {
             ...s,
             type: "video" as const,
+            enabled: hasValid, // 自动更新 enabled 状态
             props: {
               ...s.props,
               items: updatedItems,
             },
           };
-          // 自动更新 enabled 状态
-          updateSectionEnabledBasedOnVideos(videoSection.id, updatedItems);
-          return updatedSection;
         }
         return s;
       }),
