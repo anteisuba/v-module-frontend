@@ -56,6 +56,13 @@
     "publishing": "发布中...",
     "draftSaved": "草稿已保存",
     "published": "已发布！",
+    "unsaved": "未保存",
+    "saved": "已保存",
+    "lastSaved": "上次保存",
+    "justNow": "刚刚",
+    "secondsAgo": "{count}秒前",
+    "minutesAgo": "{count}分钟前",
+    "hoursAgo": "{count}小时前",
     "instruction": "说明：编辑配置后点击\"保存草稿\"保存到草稿，点击\"发布\"后才会在公开页面显示。",
     "publishConfirm": {
       "title": "确认发布",

@@ -17,9 +17,9 @@ export function useHeroSlides(slidesInput: HeroSlide[], opts: Options = {}) {
     [slidesInput]
   );
 
+  // 如果没有图片，返回空数组（不显示 fallback）
   const safeSlides: HeroSlide[] = useMemo(() => {
-    if (slides.length > 0) return slides;
-    return [{ src: "/hero/nakajima.jpeg", alt: "hero" }];
+    return slides;
   }, [slides]);
 
   const [index, setIndex] = useState(0);
@@ -43,7 +43,7 @@ export function useHeroSlides(slidesInput: HeroSlide[], opts: Options = {}) {
     };
   }, [safeSlides.length, intervalMs, fadeMs]);
 
-  const current = safeSlides[index];
+  const current = safeSlides.length > 0 ? safeSlides[index] : undefined;
 
   const goTo = (nextIndex: number) => {
     if (safeSlides.length <= 1) return;

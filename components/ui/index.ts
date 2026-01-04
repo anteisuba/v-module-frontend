@@ -4,6 +4,7 @@ export { default as ImagePositionEditor } from "./ImagePositionEditor";
 export { IconPicker } from "./IconPicker";
 export { default as HeroSectionEditor } from "./HeroSectionEditor";
 export { default as NewsSectionEditor } from "./NewsSectionEditor";
+export { default as VideoSectionEditor } from "./VideoSectionEditor";
 export { default as PageBackgroundEditor } from "./PageBackgroundEditor";
 export { default as NewsArticleEditor } from "./NewsArticleEditor";
 export { default as BackgroundEditor } from "./BackgroundEditor";

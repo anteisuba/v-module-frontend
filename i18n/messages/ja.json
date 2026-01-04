@@ -56,6 +56,13 @@
     "publishing": "公開中...",
     "draftSaved": "下書きを保存しました",
     "published": "公開しました！",
+    "unsaved": "未保存",
+    "saved": "保存済み",
+    "lastSaved": "最終保存",
+    "justNow": "たった今",
+    "secondsAgo": "{count}秒前",
+    "minutesAgo": "{count}分前",
+    "hoursAgo": "{count}時間前",
     "instruction": "説明：設定を編集後、「下書きを保存」をクリックして下書きに保存し、「公開」をクリックすると公開ページに表示されます。",
     "publishConfirm": {
       "title": "公開の確認",

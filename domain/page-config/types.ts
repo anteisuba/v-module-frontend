@@ -2,7 +2,7 @@
 
 export type BackgroundType = 'color' | 'image';
 
-export type SectionType = 'hero' | 'links' | 'gallery' | 'news';
+export type SectionType = 'hero' | 'links' | 'gallery' | 'news' | 'video';
 
 export type BackgroundConfig = 
   | { type: 'color'; value: string }  // hex color, e.g. "#000000"
@@ -69,11 +69,40 @@ export type NewsSectionProps = {
   };
 };
 
+export type VideoSectionProps = {
+  items: Array<{
+    id: string; // 唯一标识
+    url: string; // 视频 URL（支持完整链接或短链接）
+    platform?: 'youtube' | 'bilibili' | 'auto'; // 平台类型，auto 表示自动检测
+    title?: string; // 视频标题（可选，用于显示）
+    thumbnail?: string; // 自定义缩略图（可选）
+    autoplay?: boolean; // 自动播放（默认 false）
+    muted?: boolean; // 静音（默认 false）
+    loop?: boolean; // 循环播放（默认 false）
+    controls?: boolean; // 显示控制条（默认 true）
+    startTime?: number; // 开始时间（秒）
+  }>;
+  // 布局配置（参考 NewsSectionProps）
+  layout?: {
+    paddingY?: number; // 上下内边距（px），默认 64
+    backgroundColor?: string; // 背景颜色，默认 "black"
+    backgroundOpacity?: number; // 背景透明度（0-1），默认 1
+    maxWidth?: string; // 最大宽度，默认 "7xl"
+    aspectRatio?: '16:9' | '4:3' | '1:1' | 'auto'; // 宽高比，默认 "16:9"
+  };
+  // 显示配置
+  display?: {
+    columns?: 1 | 2 | 3; // 网格列数（多视频时），默认 1
+    gap?: 'sm' | 'md' | 'lg'; // 间距，默认 "md"
+  };
+};
+
 export type SectionConfig = 
   | { id: string; type: 'hero'; props: HeroSectionProps; enabled: boolean; order: number }
   | { id: string; type: 'links'; props: LinksSectionProps; enabled: boolean; order: number }
   | { id: string; type: 'gallery'; props: GallerySectionProps; enabled: boolean; order: number }
-  | { id: string; type: 'news'; props: NewsSectionProps; enabled: boolean; order: number };
+  | { id: string; type: 'news'; props: NewsSectionProps; enabled: boolean; order: number }
+  | { id: string; type: 'video'; props: VideoSectionProps; enabled: boolean; order: number };
 
 export type SocialLinkItem = {
   id: string; // 唯一标识

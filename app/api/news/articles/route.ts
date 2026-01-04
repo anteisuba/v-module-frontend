@@ -14,13 +14,10 @@ export async function GET(request: Request) {
   const category = searchParams.get("category");
   const published = searchParams.get("published"); // "true" | "false" | null (all)
 
-  // 检查是否需要认证（如果查询未发布的文章）
+  // 检查是否需要认证（如果查询未发布的文章或所有文章）
   let userId: string | undefined;
-  if (published === "false" || published === null) {
-    const session = await getServerSession();
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+  const session = await getServerSession();
+  if (session?.user?.id) {
     userId = session.user.id;
   }
 
@@ -31,18 +28,25 @@ export async function GET(request: Request) {
   if (category) {
     where.category = category;
   }
+  
+  // 如果用户已登录，始终只显示该用户的文章
+  if (userId) {
+    where.userId = userId;
+  }
+  
   if (published === "true") {
     where.published = true;
   } else if (published === "false") {
     if (userId) {
       where.published = false;
-      where.userId = userId; // 只能查看自己的未发布文章
+      // where.userId 已经在上面设置了
     } else {
       // 未登录用户不能查看未发布的文章
       return NextResponse.json({ articles: [], pagination: { page, limit, total: 0, totalPages: 0 } });
     }
-  } else if (published === "null" && userId) {
-    where.userId = userId; // 查看自己的所有文章（包括已发布和未发布）
+  } else if (published === "null") {
+    // 查看所有文章（包括已发布和未发布），但只显示当前用户的
+    // where.userId 已经在上面设置了
   } else if (!userId) {
     // 未登录用户只能查看已发布的文章
     where.published = true;

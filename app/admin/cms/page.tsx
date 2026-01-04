@@ -7,6 +7,7 @@ import {
   BackButton,
   HeroSectionEditor,
   NewsSectionEditor,
+  VideoSectionEditor,
   PageBackgroundEditor,
   NewsArticleEditor,
   ToggleSwitch,
@@ -581,6 +582,15 @@ export default function CMSPage() {
             }
           }}
           uploadingIndex={uploadingIndex === -1 ? -1 : null}
+          onToast={showToast}
+          onError={handleError}
+        />
+
+        {/* 视频区块编辑 */}
+        <VideoSectionEditor
+          config={config}
+          onConfigChange={setConfig}
+          disabled={saving || publishing}
           onToast={showToast}
           onError={handleError}
         />

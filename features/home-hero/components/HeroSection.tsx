@@ -66,12 +66,12 @@ export default function HeroSection({
   const backgroundColorWithOpacity = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${backgroundOpacity})`;
 
   const slides = useMemo(() => {
-    // ✅ 服务端已保证返回 3 张（补齐逻辑），这里只做 fallback 保护
-    if (initialSlides && initialSlides.length > 0) {
-      return initialSlides;
+    // 如果没有传入图片，返回空数组（不显示图片）
+    if (!initialSlides || initialSlides.length === 0) {
+      return [];
     }
-    // 仅在服务端失败时使用 fallback
-    return FALLBACK_SLIDES;
+    // 过滤掉没有 src 的图片
+    return initialSlides.filter((s) => s?.src);
   }, [initialSlides]);
 
   // 轮播逻辑：无论 showThumbStrip 如何，轮播功能都会持续工作
@@ -105,17 +105,19 @@ export default function HeroSection({
       }}
     >
       <div className="sticky top-0 h-screen w-full overflow-hidden">
-        {/* 背景图片轮播：始终工作，不受 showThumbStrip 影响 */}
-        <HeroBackground
-          src={current.src}
-          alt={current.alt}
-          fadeIn={fadeIn}
-          fadeMs={fadeMs}
-          objectPosition={current.objectPosition}
-          progress={progress}
-          vh={vh}
-          imageHeightVh={HERO_IMAGE_HEIGHT_VH}
-        />
+        {/* 背景图片轮播：仅在有多张图片时显示 */}
+        {current && current.src && (
+          <HeroBackground
+            src={current.src}
+            alt={current.alt}
+            fadeIn={fadeIn}
+            fadeMs={fadeMs}
+            objectPosition={current.objectPosition}
+            progress={progress}
+            vh={vh}
+            imageHeightVh={HERO_IMAGE_HEIGHT_VH}
+          />
+        )}
 
         <HeroHeader 
           onMenuClick={menu.toggleMenu}
@@ -140,8 +142,8 @@ export default function HeroSection({
           </div>
         )}
 
-        {/* 底部缩略图条：仅控制显示/隐藏，不影响轮播功能 */}
-        {showThumbStrip === true ? (
+        {/* 底部缩略图条：仅在有多张图片时显示 */}
+        {showThumbStrip === true && allSlides.length > 0 ? (
           <HeroThumbStrip
             slides={allSlides}
             currentIndex={index}

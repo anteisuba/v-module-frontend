@@ -120,21 +120,16 @@ export async function POST(request: Request) {
         // 如果迁移未运行，这里会失败，但不影响上传
         await prisma.mediaAsset.create({
           data: {
-            userId: userId, // 关联到 User（迁移后支持）
+            userId: userId, // 关联到 User
             src: publicUrl, // S3/R2 URL
             mimeType: file.type,
             size: file.size,
             originalName: file.name,
-            // adminUserId 留空（null），因为这是普通用户上传
           },
         });
       } catch (error: any) {
-        // 如果 MediaAsset 创建失败（可能是迁移未运行），不影响上传流程
-        if (error?.code === 'P2003' || error?.message?.includes('adminUser')) {
-          console.warn("MediaAsset table may need migration. Run: npx prisma migrate dev --name add_user_media_asset");
-        } else {
-          console.warn("Failed to create MediaAsset record (upload still succeeded):", error);
-        }
+        // 如果 MediaAsset 创建失败，不影响上传流程
+        console.warn("Failed to create MediaAsset record (upload still succeeded):", error);
       }
 
       return NextResponse.json({ ok: true, src: publicUrl });
@@ -191,21 +186,16 @@ export async function POST(request: Request) {
         // 如果迁移未运行，这里会失败，但不影响上传
         await prisma.mediaAsset.create({
           data: {
-            userId: userId, // 关联到 User（迁移后支持）
+            userId: userId, // 关联到 User
             src: publicPath, // 本地路径
             mimeType: file.type,
             size: file.size,
             originalName: file.name,
-            // adminUserId 留空（null），因为这是普通用户上传
           },
         });
       } catch (error: any) {
-        // 如果 MediaAsset 创建失败（可能是迁移未运行），不影响上传流程
-        if (error?.code === 'P2003' || error?.message?.includes('adminUser')) {
-          console.warn("MediaAsset table may need migration. Run: npx prisma migrate dev --name add_user_media_asset");
-        } else {
-          console.warn("Failed to create MediaAsset record (upload still succeeded):", error);
-        }
+        // 如果 MediaAsset 创建失败，不影响上传流程
+        console.warn("Failed to create MediaAsset record (upload still succeeded):", error);
       }
 
       return NextResponse.json({ ok: true, src: publicPath });

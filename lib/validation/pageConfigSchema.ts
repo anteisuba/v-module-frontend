@@ -87,6 +87,41 @@ const NewsSectionPropsSchema = z.object({
     .optional(),
 });
 
+const VideoSectionPropsSchema = z.object({
+  items: z
+    .array(
+      z.object({
+        id: z.string(),
+        url: z.string().url(), // 必须是有效的 URL
+        platform: z.enum(["youtube", "bilibili", "auto"]).optional(), // 平台类型
+        title: z.string().optional(), // 视频标题
+        thumbnail: z.string().url().optional(), // 自定义缩略图
+        autoplay: z.boolean().optional(), // 自动播放
+        muted: z.boolean().optional(), // 静音
+        loop: z.boolean().optional(), // 循环播放
+        controls: z.boolean().optional(), // 显示控制条
+        startTime: z.number().min(0).optional(), // 开始时间（秒）
+      })
+    )
+    .min(1)
+    .max(10), // 至少 1 个，最多 10 个视频
+  layout: z
+    .object({
+      paddingY: z.number().min(0).max(200).optional(), // 上下内边距（px），0-200
+      backgroundColor: z.string().optional(), // 背景颜色
+      backgroundOpacity: z.number().min(0).max(1).optional(), // 背景透明度 0-1
+      maxWidth: z.string().optional(), // 最大宽度，如 "7xl", "6xl", "full" 等
+      aspectRatio: z.enum(["16:9", "4:3", "1:1", "auto"]).optional(), // 宽高比
+    })
+    .optional(),
+  display: z
+    .object({
+      columns: z.union([z.literal(1), z.literal(2), z.literal(3)]).optional(), // 网格列数
+      gap: z.enum(["sm", "md", "lg"]).optional(), // 间距
+    })
+    .optional(),
+});
+
 const SectionConfigSchema = z.discriminatedUnion("type", [
   z.object({
     id: z.string(),
@@ -113,6 +148,13 @@ const SectionConfigSchema = z.discriminatedUnion("type", [
     id: z.string(),
     type: z.literal("news"),
     props: NewsSectionPropsSchema,
+    enabled: z.boolean(),
+    order: z.number().int().min(0),
+  }),
+  z.object({
+    id: z.string(),
+    type: z.literal("video"),
+    props: VideoSectionPropsSchema,
     enabled: z.boolean(),
     order: z.number().int().min(0),
   }),

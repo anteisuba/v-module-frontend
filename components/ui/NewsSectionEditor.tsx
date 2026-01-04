@@ -73,23 +73,22 @@ export default function NewsSectionEditor({
   function ensureNewsSection() {
     let newsSection = getNewsSection();
     if (!newsSection) {
+      const newSection = {
+        id: `news-${Date.now()}`,
+        type: "news" as const,
+        enabled: true,
+        order:
+          Math.max(...config.sections.map((s) => s.order), -1) + 1,
+        props: {
+          items: [],
+        },
+      };
       onConfigChange({
         ...config,
-        sections: [
-          ...config.sections,
-          {
-            id: `news-${Date.now()}`,
-            type: "news" as const,
-            enabled: true,
-            order:
-              Math.max(...config.sections.map((s) => s.order), -1) + 1,
-            props: {
-              items: [],
-            },
-          },
-        ],
+        sections: [...config.sections, newSection],
       });
-      newsSection = getNewsSection();
+      // 直接返回新创建的 section，而不是等待状态更新
+      return newSection;
     }
     return newsSection;
   }
@@ -130,7 +129,8 @@ export default function NewsSectionEditor({
 
   // 添加新闻图片
   function addNewsItem() {
-    const newsSection = getNewsSection();
+    if (disabled) return; // 如果禁用，直接返回
+    
     const newItem = {
       id: `news-item-${Date.now()}`,
       src: "",
@@ -138,42 +138,47 @@ export default function NewsSectionEditor({
       href: "",
     };
 
+    const newsSection = getNewsSection();
+    
     if (!newsSection) {
+      // 如果 section 不存在，创建新的 section 并添加第一个 item
+      const newSection = {
+        id: `news-${Date.now()}`,
+        type: "news" as const,
+        enabled: true,
+        order:
+          Math.max(...config.sections.map((s) => s.order), -1) + 1,
+        props: {
+          items: [newItem],
+        },
+      };
+      
       onConfigChange({
         ...config,
-        sections: [
-          ...config.sections,
-          {
-            id: `news-${Date.now()}`,
-            type: "news" as const,
-            enabled: true,
-            order:
-              Math.max(...config.sections.map((s) => s.order), -1) + 1,
-            props: {
-              items: [newItem],
-            },
-          },
-        ],
+        sections: [...config.sections, newSection],
       });
-      return;
-    }
+    } else {
+      // 如果 section 已存在，添加新的 item
+      const currentItems = newsSection.props.items || [];
+      const updatedItems = [...currentItems, newItem];
 
-    onConfigChange({
-      ...config,
-      sections: config.sections.map((s) => {
-        if (s.id === newsSection.id && s.type === "news") {
-          return {
-            ...s,
-            type: "news" as const,
-            props: {
-              ...s.props,
-              items: [...s.props.items, newItem],
-            },
-          };
-        }
-        return s;
-      }),
-    });
+      onConfigChange({
+        ...config,
+        sections: config.sections.map((s) => {
+          if (s.id === newsSection.id && s.type === "news") {
+            return {
+              ...s,
+              type: "news" as const,
+              props: {
+                ...s.props,
+                items: updatedItems,
+              },
+            };
+          }
+          return s;
+        }),
+      });
+    }
   }
 
   // 删除新闻图片

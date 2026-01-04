@@ -140,7 +140,35 @@ export default function HeroSectionEditor({
 
   // 添加新图片
   function addSlide() {
-    const heroSection = ensureHeroSection();
+    const heroSection = getHeroSection();
+    
+    // 如果 hero section 不存在，直接创建包含新 slide 的 hero section
+    if (!heroSection) {
+      const newHeroSection: {
+        id: string;
+        type: "hero";
+        enabled: boolean;
+        order: number;
+        props: HeroSectionProps;
+      } = {
+        id: `hero-${Date.now()}`,
+        type: "hero",
+        enabled: true,
+        order: 0,
+        props: {
+          slides: [{ src: "", alt: "" }],
+          title: "",
+          subtitle: "",
+        },
+      };
+      onConfigChange({
+        ...config,
+        sections: [...config.sections, newHeroSection],
+      });
+      return;
+    }
+    
+    // 如果 hero section 存在，添加新的 slide
     const currentSlides = heroSection.props.slides || [];
     onConfigChange({
       ...config,
@@ -884,16 +912,14 @@ export default function HeroSectionEditor({
                   <div className="text-xs font-medium text-black">
                     {t("heroEditor.slides.image")} {index + 1}
                   </div>
-                  {slide?.src && (
-                    <Button
-                      variant="danger"
-                      size="sm"
-                      onClick={() => setDeleteConfirmIndex(index)}
-                      disabled={disabled || isUploading}
-                    >
-                      {t("common.delete")}
-                    </Button>
-                  )}
+                  <Button
+                    variant="danger"
+                    size="sm"
+                    onClick={() => setDeleteConfirmIndex(index)}
+                    disabled={disabled || isUploading}
+                  >
+                    {t("common.delete")}
+                  </Button>
                 </div>
 
                 {/* 预览 - 可拖拽编辑位置 */}
