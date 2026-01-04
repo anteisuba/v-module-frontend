@@ -16,6 +16,7 @@ import {
   LoadingState,
   SaveStatus,
   ConfirmDialog,
+  LanguageSelector,
 } from "@/components/ui";
 import { pageApi } from "@/lib/api";
 import { useUser } from "@/lib/context/UserContext";
@@ -518,14 +519,14 @@ export default function CMSPage() {
       </div>
 
       <div className="relative z-10 mx-auto max-w-5xl px-4 py-8">
-        {/* 返回按钮 - 放在标题上方 */}
-        <div className="mb-4">
-          <a
-            href="/admin"
-            className="inline-flex items-center rounded-xl border border-black/10 bg-white/70 backdrop-blur-sm px-4 py-2 text-sm font-medium text-black transition-all duration-200 hover:bg-white/80 hover:border-black/20 shadow-sm hover:shadow-md"
-          >
-            ← {t("common.back")}
-          </a>
+        {/* 返回按钮和语言切换器 */}
+        <div className="mb-4 flex items-center justify-between">
+          <BackButton 
+            href="/admin/dashboard" 
+            label={t("common.back")} 
+            className="!relative !top-0 !left-0"
+          />
+          <LanguageSelector position="inline" />
         </div>
 
         {/* 头部：标题和操作按钮 */}
