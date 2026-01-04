@@ -64,7 +64,7 @@ export function installErrorFilter() {
     }
 
     // 其他错误正常输出
-    originalError.apply(console, args);
+    originalError(...args);
   };
 
   // 重写 console.warn
@@ -96,9 +96,11 @@ export function installErrorFilter() {
   // 过滤全局错误事件
   window.addEventListener('error', (event) => {
     const message = event.message || '';
-    const source = event.filename || '';
+    const source = event.filename || event.target?.toString() || '';
+    const errorString = event.error?.toString() || event.error?.message || '';
+    const fullMessage = `${message} ${source} ${errorString}`;
     
-    if (isBilibiliError(message, source)) {
+    if (isBilibiliError(fullMessage, source)) {
       event.stopPropagation();
       event.preventDefault();
       return false;
