@@ -38,12 +38,13 @@ export default function VideoPlayer({
   const [hasError, setHasError] = useState(false);
   const [retryKey, setRetryKey] = useState(0);
   
-  // 如果 URL 为空，显示占位符
-  if (!item.url || !item.url.trim()) {
+  // 如果 URL 为空或无效，显示占位符（提前返回，避免渲染播放器）
+  const url = item.url?.trim() || '';
+  if (!url) {
     return (
       <div className={`flex items-center justify-center bg-black/5 rounded-lg ${className}`} style={{ width, height }}>
         <div className="text-xs text-black/40 text-center px-4">
-          请输入视频链接
+          Please enter a video URL
         </div>
       </div>
     );
@@ -52,32 +53,33 @@ export default function VideoPlayer({
   // 检测平台
   const platform = useMemo(() => {
     return item.platform === 'auto' || !item.platform
-      ? detectPlatform(item.url)
+      ? detectPlatform(url)
       : item.platform;
-  }, [item.url, item.platform]);
+  }, [url, item.platform]);
   
   // 标准化 URL
   const normalizedUrl = useMemo(() => {
-    return normalizeVideoUrl(item.url, platform || undefined);
-  }, [item.url, platform]);
+    if (!url) return '';
+    return normalizeVideoUrl(url, platform || undefined);
+  }, [url, platform]);
   
   // 如果无法检测平台，显示错误
   if (!platform) {
     return (
       <div className={`flex items-center justify-center bg-black/10 rounded-lg ${className}`} style={{ width, height }}>
         <div className="text-sm text-black/50 text-center px-4">
-          不支持的视频平台，请使用 YouTube 或 Bilibili 链接
+          Unsupported video platform. Please use YouTube or Bilibili links.
         </div>
       </div>
     );
   }
   
-  // 确保 URL 有效
+  // 确保标准化后的 URL 有效
   if (!normalizedUrl || !normalizedUrl.trim()) {
     return (
       <div className={`flex items-center justify-center bg-black/10 rounded-lg ${className}`} style={{ width, height }}>
         <div className="text-sm text-black/50 text-center px-4">
-          无效的视频 URL
+          Invalid video URL
         </div>
       </div>
     );
@@ -147,8 +149,9 @@ export default function VideoPlayer({
         </div>
       ) : (
         <div className="w-full h-full" style={{ position: 'relative' }} key={retryKey}>
-          <ReactPlayer
-            src={finalUrl}
+          {finalUrl ? (
+            <ReactPlayer
+              src={finalUrl}
             width="100%"
             height="100%"
             controls={item.controls !== false}
@@ -209,6 +212,13 @@ export default function VideoPlayer({
             pip={false}
             playsinline={true}
           />
+          ) : (
+            <div className="flex items-center justify-center w-full h-full bg-black/10 rounded-lg">
+              <div className="text-sm text-black/50 text-center px-4">
+                Invalid video URL
+              </div>
+            </div>
+          )}
         </div>
       )}
     </div>
