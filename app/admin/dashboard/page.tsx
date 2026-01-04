@@ -5,6 +5,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/lib/context/UserContext";
+import { LanguageSelector } from "@/components/ui";
 
 type EditPageOption = {
   id: string;
@@ -72,6 +73,11 @@ export default function DashboardPage() {
       >
         退出登录
       </button>
+      
+      {/* 语言选择器 */}
+      <div className="fixed bottom-6 right-6 z-[100]">
+        <LanguageSelector position="bottom-right" />
+      </div>
 
       {/* 背景图 */}
       <div className="absolute inset-0">
