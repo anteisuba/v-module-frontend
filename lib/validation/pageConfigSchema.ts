@@ -92,7 +92,7 @@ const VideoSectionPropsSchema = z.object({
     .array(
       z.object({
         id: z.string(),
-        url: z.string().url(), // 必须是有效的 URL
+        url: z.string().url().optional().or(z.literal("")), // URL 可选，允许空字符串
         platform: z.enum(["youtube", "bilibili", "auto"]).optional(), // 平台类型
         title: z.string().optional(), // 视频标题
         thumbnail: z.string().url().optional(), // 自定义缩略图
@@ -103,8 +103,7 @@ const VideoSectionPropsSchema = z.object({
         startTime: z.number().min(0).optional(), // 开始时间（秒）
       })
     )
-    .min(1)
-    .max(10), // 至少 1 个，最多 10 个视频
+    .max(10), // 最多 10 个视频，允许空数组
   layout: z
     .object({
       paddingY: z.number().min(0).max(200).optional(), // 上下内边距（px），0-200

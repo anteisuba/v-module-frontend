@@ -92,10 +92,7 @@ export default function BilibiliPlayer({
         width="100%"
         height="100%"
         scrolling="no"
-        border="0"
-        frameBorder="no"
-        frameSpacing="0"
-        allowFullScreen
+        frameBorder="0"
         allow="autoplay; fullscreen; picture-in-picture"
         sandbox="allow-top-navigation allow-same-origin allow-forms allow-scripts allow-popups allow-popups-to-escape-sandbox"
         style={{
@@ -104,6 +101,7 @@ export default function BilibiliPlayer({
           left: 0,
           width: '100%',
           height: '100%',
+          border: 'none',
         }}
         className="rounded-lg"
       />
