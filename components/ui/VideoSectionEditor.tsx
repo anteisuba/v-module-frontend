@@ -98,6 +98,26 @@ export default function VideoSectionEditor({
     return items.some((item) => item.url && item.url.trim() !== "");
   }
 
+  // 初始化时检查并更新 enabled 状态
+  useEffect(() => {
+    const videoSection = getVideoSection();
+    if (videoSection && videoSection.type === "video") {
+      const hasValid = hasValidVideos(videoSection.props.items);
+      // 如果状态不一致，更新它
+      if (videoSection.enabled !== hasValid) {
+        onConfigChange({
+          ...config,
+          sections: config.sections.map((s) =>
+            s.id === videoSection.id && s.type === "video"
+              ? { ...s, enabled: hasValid }
+              : s
+          ),
+        });
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [config.sections]); // 只在 sections 变化时检查
+
   // 切换 section 的 enabled 状态
   function toggleSectionEnabled(sectionId: string) {
     onConfigChange({
