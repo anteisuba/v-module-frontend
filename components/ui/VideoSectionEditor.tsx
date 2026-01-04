@@ -200,22 +200,30 @@ export default function VideoSectionEditor({
     itemId: string,
     updates: Partial<VideoSectionProps["items"][0]>
   ) {
-    ensureVideoSection();
+    const videoSection = getVideoSection();
+    if (!videoSection || videoSection.type !== "video") {
+      ensureVideoSection();
+      return;
+    }
 
+    const updatedItems = videoSection.props.items.map((item) =>
+      item.id === itemId ? { ...item, ...updates } : item
+    );
     onConfigChange({
       ...config,
       sections: config.sections.map((s) => {
-        if (s.type === "video") {
-          return {
+        if (s.id === videoSection.id && s.type === "video") {
+          const updatedSection = {
             ...s,
             type: "video" as const,
             props: {
               ...s.props,
-              items: s.props.items.map((item) =>
-                item.id === itemId ? { ...item, ...updates } : item
-              ),
+              items: updatedItems,
             },
           };
+          // 自动更新 enabled 状态
+          updateSectionEnabledBasedOnVideos(videoSection.id, updatedItems);
+          return updatedSection;
         }
         return s;
       }),
