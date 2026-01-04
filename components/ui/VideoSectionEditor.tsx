@@ -29,6 +29,7 @@ function ToggleSwitch({
   disabled?: boolean;
   label: string;
 }) {
+  const { t } = useI18n();
   return (
     <div className="flex items-center gap-2">
       <label className="text-xs text-black/70">{label}</label>
@@ -242,14 +243,14 @@ export default function VideoSectionEditor({
   return (
     <div className="mb-6 rounded-2xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl">
       <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-black">视频区块</h2>
+        <h2 className="text-lg font-semibold text-black">{t("videoSectionEditor.title")}</h2>
         <div className="flex items-center gap-3">
           {videoSection && (
             <ToggleSwitch
               enabled={videoSection.enabled}
               onChange={() => toggleSectionEnabled(videoSection.id)}
               disabled={disabled}
-              label="显示"
+              label={t("videoSectionEditor.show")}
             />
           )}
           <Button
@@ -258,7 +259,7 @@ export default function VideoSectionEditor({
             onClick={addVideoItem}
             disabled={disabled}
           >
-            添加视频
+            {t("videoSectionEditor.addVideo")}
           </Button>
         </div>
       </div>
@@ -266,12 +267,12 @@ export default function VideoSectionEditor({
       {/* 布局配置 */}
       {videoSection && (
         <div className="mb-4 space-y-3 rounded-lg border border-black/10 bg-white/70 p-3">
-          <h3 className="text-xs font-semibold text-black mb-2">布局设置</h3>
+          <h3 className="text-xs font-semibold text-black mb-2">{t("videoSectionEditor.layout.title")}</h3>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
             {/* 上下内边距 */}
             <div>
               <label className="block text-xs text-black/70 mb-2">
-                上下内边距: {videoSection.props.layout?.paddingY ?? 64}px
+                {t("videoSectionEditor.layout.paddingY")}: {videoSection.props.layout?.paddingY ?? 64}px
               </label>
               <input
                 type="range"
@@ -306,7 +307,7 @@ export default function VideoSectionEditor({
             {/* 背景颜色 */}
             <div>
               <label className="block text-xs text-black/70 mb-2">
-                背景颜色
+                {t("videoSectionEditor.layout.backgroundColor")}
               </label>
               <input
                 type="color"
@@ -341,7 +342,7 @@ export default function VideoSectionEditor({
             {/* 背景透明度 */}
             <div>
               <label className="block text-xs text-black/70 mb-2">
-                背景透明度:{" "}
+                {t("videoSectionEditor.layout.backgroundOpacity")}:{" "}
                 {((videoSection.props.layout?.backgroundOpacity ?? 1) * 100).toFixed(0)}%
               </label>
               <input
@@ -379,7 +380,7 @@ export default function VideoSectionEditor({
             {/* 最大宽度 */}
             <div>
               <label className="block text-xs text-black/70 mb-2">
-                最大宽度
+                {t("videoSectionEditor.layout.maxWidth")}
               </label>
               <select
                 value={videoSection.props.layout?.maxWidth || "7xl"}
@@ -407,7 +408,7 @@ export default function VideoSectionEditor({
                 className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-xs text-black"
                 disabled={disabled}
               >
-                <option value="full">全宽</option>
+                <option value="full">{t("videoSectionEditor.layout.full")}</option>
                 <option value="7xl">7xl</option>
                 <option value="6xl">6xl</option>
                 <option value="5xl">5xl</option>
@@ -417,7 +418,7 @@ export default function VideoSectionEditor({
             {/* 宽高比 */}
             <div>
               <label className="block text-xs text-black/70 mb-2">
-                宽高比
+                {t("videoSectionEditor.layout.aspectRatio")}
               </label>
               <select
                 value={videoSection.props.layout?.aspectRatio || "16:9"}
@@ -448,7 +449,7 @@ export default function VideoSectionEditor({
                 <option value="16:9">16:9</option>
                 <option value="4:3">4:3</option>
                 <option value="1:1">1:1</option>
-                <option value="auto">自动</option>
+                <option value="auto">{t("videoSectionEditor.layout.auto")}</option>
               </select>
             </div>
           </div>
@@ -458,11 +459,11 @@ export default function VideoSectionEditor({
       {/* 显示配置（多视频时） */}
       {videoSection && videoSection.props.items.length > 1 && (
         <div className="mb-4 space-y-3 rounded-lg border border-black/10 bg-white/70 p-3">
-          <h3 className="text-xs font-semibold text-black mb-2">显示设置</h3>
+          <h3 className="text-xs font-semibold text-black mb-2">{t("videoSectionEditor.display.title")}</h3>
           <div className="grid grid-cols-2 gap-3">
             {/* 列数 */}
             <div>
-              <label className="block text-xs text-black/70 mb-2">列数</label>
+              <label className="block text-xs text-black/70 mb-2">{t("videoSectionEditor.display.columns")}</label>
               <select
                 value={videoSection.props.display?.columns || 1}
                 onChange={(e) => {
@@ -489,14 +490,14 @@ export default function VideoSectionEditor({
                 className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-xs text-black"
                 disabled={disabled}
               >
-                <option value="1">1 列</option>
-                <option value="2">2 列</option>
-                <option value="3">3 列</option>
+                <option value="1">1 {t("videoSectionEditor.display.columns")}</option>
+                <option value="2">2 {t("videoSectionEditor.display.columns")}</option>
+                <option value="3">3 {t("videoSectionEditor.display.columns")}</option>
               </select>
             </div>
             {/* 间距 */}
             <div>
-              <label className="block text-xs text-black/70 mb-2">间距</label>
+              <label className="block text-xs text-black/70 mb-2">{t("videoSectionEditor.display.gap")}</label>
               <select
                 value={videoSection.props.display?.gap || "md"}
                 onChange={(e) => {
@@ -523,9 +524,9 @@ export default function VideoSectionEditor({
                 className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-xs text-black"
                 disabled={disabled}
               >
-                <option value="sm">小</option>
-                <option value="md">中</option>
-                <option value="lg">大</option>
+                <option value="sm">{t("videoSectionEditor.display.small")}</option>
+                <option value="md">{t("videoSectionEditor.display.medium")}</option>
+                <option value="lg">{t("videoSectionEditor.display.large")}</option>
               </select>
             </div>
           </div>
@@ -545,7 +546,7 @@ export default function VideoSectionEditor({
             >
               <div className="mb-3 flex items-center justify-between">
                 <div className="text-xs font-medium text-black">
-                  视频 {index + 1}
+                  {t("videoSectionEditor.video.title")} {index + 1}
                 </div>
                 <Button
                   variant="danger"
@@ -553,26 +554,26 @@ export default function VideoSectionEditor({
                   onClick={() => setDeleteConfirmItemId(item.id)}
                   disabled={disabled}
                 >
-                  删除
+                  {t("videoSectionEditor.video.delete")}
                 </Button>
               </div>
 
               {/* 视频 URL 输入 */}
               <div className="mb-3">
                 <Input
-                  label="视频链接"
+                  label={t("videoSectionEditor.video.url")}
                   value={item.url}
                   onChange={(e) =>
                     updateVideoItem(item.id, { url: e.target.value })
                   }
-                  placeholder="https://www.youtube.com/watch?v=... 或 https://www.bilibili.com/video/BV..."
-                  helpText="支持 YouTube 和 Bilibili 链接"
+                  placeholder={t("videoSectionEditor.video.urlPlaceholder")}
+                  helpText={t("videoSectionEditor.video.urlHelp")}
                   disabled={disabled}
                 />
                 {item.url && (
                   <div className="mt-2 flex items-center gap-2 text-xs text-black/70">
-                    <span>平台：</span>
-                    <span className="font-medium">{platformName}</span>
+                    <span>{t("videoSectionEditor.video.platform")}</span>
+                    <span className="font-medium">{platformName === '未知' ? t("videoSectionEditor.video.platformUnknown") : platformName}</span>
                   </div>
                 )}
               </div>
@@ -590,7 +591,7 @@ export default function VideoSectionEditor({
 
         {(!videoSection || videoSection.props.items.length === 0) && (
           <div className="py-6 text-center text-xs text-black/50">
-            暂无视频，点击"添加视频"按钮添加
+            {t("videoSectionEditor.video.noVideos")}
           </div>
         )}
       </div>
@@ -598,11 +599,11 @@ export default function VideoSectionEditor({
       {/* 删除确认对话框 */}
       <ConfirmDialog
         open={deleteConfirmItemId !== null}
-        title="确认删除"
-        message="确定要删除这个视频吗？此操作无法撤销。"
+        title={t("videoSectionEditor.deleteConfirm.title")}
+        message={t("videoSectionEditor.deleteConfirm.message")}
         variant="danger"
-        confirmLabel="确定删除"
-        cancelLabel="取消"
+        confirmLabel={t("videoSectionEditor.deleteConfirm.confirm")}
+        cancelLabel={t("videoSectionEditor.deleteConfirm.cancel")}
         onConfirm={() => {
           if (deleteConfirmItemId) {
             removeVideoItem(deleteConfirmItemId);

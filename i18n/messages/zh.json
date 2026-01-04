@@ -176,6 +176,45 @@
       "noImages": "暂无图片，点击\"添加图片\"开始添加"
     }
   },
+  "videoSectionEditor": {
+    "title": "视频区块",
+    "show": "显示",
+    "addVideo": "添加视频",
+    "layout": {
+      "title": "布局设置",
+      "paddingY": "上下内边距",
+      "backgroundColor": "背景颜色",
+      "backgroundOpacity": "背景透明度",
+      "maxWidth": "最大宽度",
+      "aspectRatio": "宽高比",
+      "full": "全宽",
+      "auto": "自动"
+    },
+    "display": {
+      "title": "显示设置",
+      "columns": "列数",
+      "gap": "间距",
+      "small": "小",
+      "medium": "中",
+      "large": "大"
+    },
+    "video": {
+      "title": "视频",
+      "url": "视频链接",
+      "urlPlaceholder": "https://www.youtube.com/watch?v=... 或 https://www.bilibili.com/video/BV...",
+      "urlHelp": "支持 YouTube 和 Bilibili 链接",
+      "platform": "平台：",
+      "platformUnknown": "未知",
+      "delete": "删除",
+      "noVideos": "暂无视频，点击\"添加视频\"按钮添加"
+    },
+    "deleteConfirm": {
+      "title": "确认删除",
+      "message": "确定要删除这个视频吗？此操作无法撤销。",
+      "confirm": "确定删除",
+      "cancel": "取消"
+    }
+  },
   "pageBackgroundEditor": {
     "title": "页面背景（控制 /u/[slug] 页面）"
   },

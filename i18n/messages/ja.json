@@ -176,6 +176,45 @@
       "noImages": "画像がありません。「画像を追加」をクリックして開始してください"
     }
   },
+  "videoSectionEditor": {
+    "title": "動画セクション",
+    "show": "表示",
+    "addVideo": "動画を追加",
+    "layout": {
+      "title": "レイアウト設定",
+      "paddingY": "上下パディング",
+      "backgroundColor": "背景色",
+      "backgroundOpacity": "背景透明度",
+      "maxWidth": "最大幅",
+      "aspectRatio": "アスペクト比",
+      "full": "全幅",
+      "auto": "自動"
+    },
+    "display": {
+      "title": "表示設定",
+      "columns": "列数",
+      "gap": "間隔",
+      "small": "小",
+      "medium": "中",
+      "large": "大"
+    },
+    "video": {
+      "title": "動画",
+      "url": "動画リンク",
+      "urlPlaceholder": "https://www.youtube.com/watch?v=... または https://www.bilibili.com/video/BV...",
+      "urlHelp": "YouTube と Bilibili リンクをサポート",
+      "platform": "プラットフォーム：",
+      "platformUnknown": "不明",
+      "delete": "削除",
+      "noVideos": "動画がありません。「動画を追加」をクリックして追加してください"
+    },
+    "deleteConfirm": {
+      "title": "削除の確認",
+      "message": "この動画を削除してもよろしいですか？この操作は元に戻せません。",
+      "confirm": "削除を確認",
+      "cancel": "キャンセル"
+    }
+  },
   "pageBackgroundEditor": {
     "title": "ページ背景（/u/[slug] ページを制御）"
   },

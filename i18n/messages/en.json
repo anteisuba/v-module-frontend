@@ -176,6 +176,45 @@
       "noImages": "No images yet. Click \"Add Image\" to start"
     }
   },
+  "videoSectionEditor": {
+    "title": "Video Section",
+    "show": "Show",
+    "addVideo": "Add Video",
+    "layout": {
+      "title": "Layout Settings",
+      "paddingY": "Vertical Padding",
+      "backgroundColor": "Background Color",
+      "backgroundOpacity": "Background Opacity",
+      "maxWidth": "Max Width",
+      "aspectRatio": "Aspect Ratio",
+      "full": "Full Width",
+      "auto": "Auto"
+    },
+    "display": {
+      "title": "Display Settings",
+      "columns": "Columns",
+      "gap": "Gap",
+      "small": "Small",
+      "medium": "Medium",
+      "large": "Large"
+    },
+    "video": {
+      "title": "Video",
+      "url": "Video Link",
+      "urlPlaceholder": "https://www.youtube.com/watch?v=... or https://www.bilibili.com/video/BV...",
+      "urlHelp": "Supports YouTube and Bilibili links",
+      "platform": "Platform:",
+      "platformUnknown": "Unknown",
+      "delete": "Delete",
+      "noVideos": "No videos yet. Click \"Add Video\" to add"
+    },
+    "deleteConfirm": {
+      "title": "Confirm Delete",
+      "message": "Are you sure you want to delete this video? This action cannot be undone.",
+      "confirm": "Confirm Delete",
+      "cancel": "Cancel"
+    }
+  },
   "pageBackgroundEditor": {
     "title": "Page Background (Controls /u/[slug] page)"
   },
