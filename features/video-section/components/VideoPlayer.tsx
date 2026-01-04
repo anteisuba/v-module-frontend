@@ -35,6 +35,7 @@ export default function VideoPlayer({
   className = "",
 }: VideoPlayerProps) {
   const [hasError, setHasError] = useState(false);
+  const [retryKey, setRetryKey] = useState(0);
   
   // 如果 URL 为空，显示占位符
   if (!item.url || !item.url.trim()) {
@@ -125,17 +126,26 @@ export default function VideoPlayer({
   return (
     <div className={`relative w-full h-full ${className}`} style={{ width, height }}>
       {hasError ? (
-        <div className="flex items-center justify-center w-full h-full bg-black/10 rounded-lg">
-          <div className="text-sm text-black/50 text-center px-4">
-            视频加载失败，请检查 URL 是否正确
+        <div className="flex flex-col items-center justify-center w-full h-full bg-black/10 rounded-lg p-4">
+          <div className="text-sm text-black/50 text-center mb-2">
+            Video failed to load
             <br />
             <span className="text-xs">URL: {normalizedUrl}</span>
             <br />
             <span className="text-xs">Platform: {platform}</span>
           </div>
+          <button
+            onClick={() => {
+              setHasError(false);
+              setRetryKey(prev => prev + 1);
+            }}
+            className="mt-2 px-3 py-1 text-xs bg-black/20 hover:bg-black/30 rounded transition-colors"
+          >
+            Retry
+          </button>
         </div>
       ) : (
-        <div className="w-full h-full" style={{ position: 'relative' }}>
+        <div className="w-full h-full" style={{ position: 'relative' }} key={retryKey}>
           <ReactPlayer
             src={finalUrl}
             width="100%"
@@ -146,17 +156,23 @@ export default function VideoPlayer({
             loop={item.loop || false}
             config={Object.keys(playerConfig).length > 0 ? playerConfig : undefined}
             onError={(error: any) => {
+              // react-player 3.x 可能传递空错误对象，需要检查实际错误
+              const errorMessage = error?.message || error?.toString() || 'Unknown error';
+              const hasErrorDetails = error && typeof error === 'object' && Object.keys(error).length > 0;
+              
               if (process.env.NODE_ENV === 'development') {
-                console.error('❌ Video player error:', error);
-                console.error('Error type:', typeof error);
-                console.error('Error string:', String(error));
-                if (error && typeof error === 'object') {
-                  console.error('Error keys:', Object.keys(error));
-                }
-                console.error('URL passed to player:', finalUrl);
-                console.error('Platform:', platform);
-                console.error('Config passed:', JSON.stringify(playerConfig, null, 2));
+                console.error('❌ Video player error:', {
+                  error,
+                  errorMessage,
+                  errorType: typeof error,
+                  errorKeys: hasErrorDetails ? Object.keys(error) : [],
+                  url: finalUrl,
+                  platform,
+                  config: playerConfig,
+                });
               }
+              
+              // 设置错误状态，但允许用户重试
               setHasError(true);
             }}
             onReady={() => {
