@@ -115,17 +115,21 @@ export default function VideoPlayer({
   // 使用标准化后的 URL
   const finalUrl = normalizedUrl;
 
-  // 调试信息（生产环境可移除）
-  if (process.env.NODE_ENV === 'development') {
-    console.log('VideoPlayer render:', {
-      originalUrl: item.url,
-      normalizedUrl,
-      finalUrl,
-      platform,
-      hasConfig: !!playerConfig.youtube || !!playerConfig.bilibili,
-      configKeys: Object.keys(playerConfig),
-    });
-  }
+  // 调试信息（生产环境可移除）- 使用 useMemo 避免重复日志
+  const debugInfo = useMemo(() => ({
+    originalUrl: item.url,
+    normalizedUrl,
+    finalUrl,
+    platform,
+    hasConfig: !!playerConfig.youtube || !!playerConfig.bilibili,
+    configKeys: Object.keys(playerConfig),
+  }), [item.url, normalizedUrl, finalUrl, platform, playerConfig]);
+
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'development') {
+      console.log('VideoPlayer render:', debugInfo);
+    }
+  }, [debugInfo]);
 
   return (
     <div className={`relative w-full h-full ${className}`} style={{ width, height }}>

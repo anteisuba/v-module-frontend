@@ -96,25 +96,28 @@ export default function VideoSectionEditor({
     return items.some((item) => item.url && item.url.trim() !== "");
   }
 
-  // 初始化时检查并更新 enabled 状态
+  // 初始化时检查并更新 enabled 状态（只在组件首次加载时检查一次）
   useEffect(() => {
     const videoSection = getVideoSection();
     if (videoSection && videoSection.type === "video") {
       const hasValid = hasValidVideos(videoSection.props.items);
-      // 如果状态不一致，更新它
+      // 如果状态不一致，更新它（但只在首次加载时）
       if (videoSection.enabled !== hasValid) {
-        onConfigChange({
-          ...config,
-          sections: config.sections.map((s) =>
-            s.id === videoSection.id && s.type === "video"
-              ? { ...s, enabled: hasValid }
-              : s
-          ),
-        });
+        // 使用 setTimeout 避免在渲染过程中更新状态
+        setTimeout(() => {
+          onConfigChange({
+            ...config,
+            sections: config.sections.map((s) =>
+              s.id === videoSection.id && s.type === "video"
+                ? { ...s, enabled: hasValid }
+                : s
+            ),
+          });
+        }, 0);
       }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [config.sections]); // 只在 sections 变化时检查
+  }, []); // 只在组件挂载时检查一次
 
   // 切换 section 的 enabled 状态
   function toggleSectionEnabled(sectionId: string) {
