@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ConfirmDialog, Button, Input } from "@/components/ui";
 import { useI18n } from "@/lib/i18n/context";
 import { detectPlatform } from "@/features/video-section";
