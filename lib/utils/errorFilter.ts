@@ -11,11 +11,15 @@ const BILIBILI_ERROR_PATTERNS = [
   /@bilibili\/bili-user-fingerprint/i,
   /player\.bilibili\.com/i,
   /Mixed Content.*player\.bilibili\.com/i,
+  /Mixed Content.*hdslb\.com/i,
   /bvc\.bilivideo\.com/i,
   /CORS.*player\.bilibili\.com/i,
   /SecurityError.*player\.bilibili\.com/i,
   /Failed to read.*\$dialog/i,
   /Blocked a frame with origin.*player\.bilibili\.com/i,
+  /content\.js/i, // Bilibili 浏览器扩展相关
+  /hdslb\.com/i, // Bilibili CDN 域名
+  /bili-fe-fp/i, // Bilibili 指纹识别
 ];
 
 /**
@@ -39,17 +43,23 @@ export function installErrorFilter() {
 
   // 重写 console.error
   console.error = (...args: any[]) => {
-    const message = args.map((arg) => {
+    // 检查所有参数，包括错误对象、堆栈等
+    const messages = args.map((arg) => {
       if (typeof arg === 'string') return arg;
       if (arg?.message) return arg.message;
+      if (arg?.stack) return arg.stack;
       if (arg?.toString) return arg.toString();
-      return String(arg);
-    }).join(' ');
+      try {
+        return JSON.stringify(arg);
+      } catch {
+        return String(arg);
+      }
+    });
+    const fullMessage = messages.join(' ');
 
     // 检查是否是 Bilibili 相关错误
-    if (isBilibiliError(message)) {
-      // 在开发环境中可以选择完全忽略，或者只记录一次
-      // 这里选择完全忽略，因为这些都是第三方代码的错误
+    if (isBilibiliError(fullMessage)) {
+      // 完全忽略 Bilibili 相关错误
       return;
     }
 
@@ -59,15 +69,22 @@ export function installErrorFilter() {
 
   // 重写 console.warn
   console.warn = (...args: any[]) => {
-    const message = args.map((arg) => {
+    // 检查所有参数
+    const messages = args.map((arg) => {
       if (typeof arg === 'string') return arg;
       if (arg?.message) return arg.message;
+      if (arg?.stack) return arg.stack;
       if (arg?.toString) return arg.toString();
-      return String(arg);
-    }).join(' ');
+      try {
+        return JSON.stringify(arg);
+      } catch {
+        return String(arg);
+      }
+    });
+    const fullMessage = messages.join(' ');
 
     // 检查是否是 Bilibili 相关警告
-    if (isBilibiliError(message)) {
+    if (isBilibiliError(fullMessage)) {
       // 忽略 Bilibili 相关警告
       return;
     }
