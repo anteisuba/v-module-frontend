@@ -20,6 +20,7 @@ function NewsListContent() {
   const [totalPages, setTotalPages] = useState(1);
   const [error, setError] = useState<string | null>(null);
   const [pageConfig, setPageConfig] = useState<PageConfig | null>(null);
+  const [isInitialLoad, setIsInitialLoad] = useState(true);
 
   // 获取返回链接：优先使用 referrer 或 URL 参数，否则使用默认值
   const getBackUrl = () => {
@@ -79,6 +80,7 @@ function NewsListContent() {
       }
     } finally {
       setLoading(false);
+      setIsInitialLoad(false);
     }
   };
 
@@ -101,6 +103,11 @@ function NewsListContent() {
     }
     return { backgroundColor: "#000000" };
   };
+
+  // 初始加载时显示完整的加载页面（避免黑屏）
+  if (loading && (isInitialLoad || articles.length === 0)) {
+    return <PageLoading message="加载新闻列表..." />;
+  }
 
   const backgroundStyle = getBackgroundStyle();
 
