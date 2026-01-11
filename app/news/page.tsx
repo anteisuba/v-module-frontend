@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { newsArticleApi, pageApi } from "@/lib/api";
 import { ApiError, NetworkError } from "@/lib/api/errors";
+import PageLoading from "@/components/ui/PageLoading";
 import type { NewsArticle } from "@/lib/api/types";
 import type { PageConfig } from "@/domain/page-config/types";
 
@@ -191,13 +192,7 @@ function NewsListContent() {
 
 export default function NewsListPage() {
   return (
-    <Suspense fallback={
-      <main className="min-h-screen bg-black text-black">
-        <div className="mx-auto max-w-4xl px-4 py-16">
-          <div className="py-12 text-center text-black/60">加载中...</div>
-        </div>
-      </main>
-    }>
+    <Suspense fallback={<PageLoading message="加载新闻列表..." />}>
       <NewsListContent />
     </Suspense>
   );

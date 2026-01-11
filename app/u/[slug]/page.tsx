@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { PageRenderer } from "@/features/page-renderer";
 import { NewsListSection } from "@/features/news-list";
+import PageLoading from "@/components/ui/PageLoading";
 import {
   getUserPageDataBySlug,
   EMPTY_PAGE_CONFIG,
@@ -37,7 +38,7 @@ export default async function UserPage({
 
   return (
     <>
-      <Suspense fallback={<div className="min-h-screen bg-black">Loading...</div>}>
+      <Suspense fallback={<PageLoading message="加载页面内容..." />}>
         <PageRenderer config={config} />
       </Suspense>
       <NewsListSection 
