@@ -19,6 +19,7 @@ export function NewsDetailContent({
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user } = useUser();
+  const { t } = useI18n();
   const [article, setArticle] = useState<NewsArticle | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -190,21 +191,11 @@ export function NewsDetailContent({
   };
 
   if (loading) {
+    // 简单的加载提示，不显示复杂背景
     return (
-      <main className="relative min-h-screen w-full overflow-hidden">
-        {/* 背景图 */}
-        <div className="absolute inset-0">
-          <div
-            className="absolute inset-0 bg-cover bg-center"
-            style={{ backgroundImage: "url(/login/login-c.jpeg)" }}
-          />
-          <div className="absolute inset-0 bg-white/70" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/15" />
-        </div>
-        <div className="relative z-10 mx-auto max-w-5xl px-4 py-16">
-          <div className="text-center text-black/60">加载中...</div>
-        </div>
-      </main>
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <p className="text-black/60">{t("common.loading")}</p>
+      </div>
     );
   }
 
