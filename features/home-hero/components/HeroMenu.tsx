@@ -126,7 +126,7 @@ export default function HeroMenu({ open, onClose }: Props) {
                 >
                   <Link
                     href={href}
-                    onClick={() => handleLinkClick(href)}
+                    onClick={handleLinkClick}
                     className="text-white text-2xl tracking-[0.2em] opacity-90 hover:opacity-100 transition"
                   >
                     {t(`heroMenu.${item.key}`)}
