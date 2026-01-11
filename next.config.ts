@@ -32,12 +32,9 @@ const nextConfig: NextConfig = {
     minimumCacheTTL: 60,
   },
 
-  // 实验性功能
-  experimental: {
-    // 启用服务器组件外部包优化
-    // Prisma Client 应该被标记为外部包，避免被打包
-    serverComponentsExternalPackages: ["@prisma/client"],
-  },
+  // 服务器组件外部包配置
+  // Prisma Client 应该被标记为外部包，避免被打包
+  serverExternalPackages: ["@prisma/client"],
 
   // 生产环境优化
   ...(process.env.NODE_ENV === "production" && {

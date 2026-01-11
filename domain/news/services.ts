@@ -35,11 +35,15 @@ export async function getPublishedNewsArticles(params: {
   });
 
   // 转换数据格式，添加 userSlug，并确保日期字段为字符串格式
-  return articles.map(({ user, createdAt, updatedAt, publishedAt, ...article }) => ({
+  return articles.map(({ user, createdAt, updatedAt, publishedAt, shareChannels, ...article }) => ({
     ...article,
     userSlug: user?.slug || null,
     createdAt: createdAt.toISOString(),
     updatedAt: updatedAt.toISOString(),
     publishedAt: publishedAt ? publishedAt.toISOString() : null,
+    // 正确转换 shareChannels（Prisma JsonValue 类型）
+    shareChannels: shareChannels && typeof shareChannels === 'object' && Array.isArray(shareChannels)
+      ? shareChannels as Array<{ platform: string; enabled: boolean }>
+      : null,
   }));
 }
