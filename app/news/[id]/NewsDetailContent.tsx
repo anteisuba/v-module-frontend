@@ -8,6 +8,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { newsArticleApi, pageApi } from "@/lib/api";
 import { ApiError, NetworkError } from "@/lib/api/errors";
 import { useUser } from "@/lib/context/UserContext";
+import { useI18n } from "@/lib/i18n/context";
 import type { NewsArticle } from "@/lib/api/types";
 import type { PageConfig } from "@/domain/page-config/types";
 
