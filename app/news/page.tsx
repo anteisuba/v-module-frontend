@@ -7,6 +7,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { newsArticleApi, pageApi } from "@/lib/api";
 import { ApiError, NetworkError } from "@/lib/api/errors";
+import { useI18n } from "@/lib/i18n/context";
 import PageLoading from "@/components/ui/PageLoading";
 import type { NewsArticle } from "@/lib/api/types";
 import type { PageConfig } from "@/domain/page-config/types";
@@ -14,6 +15,7 @@ import type { PageConfig } from "@/domain/page-config/types";
 function NewsListContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { t } = useI18n();
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -106,7 +108,7 @@ function NewsListContent() {
 
   // 初始加载时显示完整的加载页面（避免黑屏）
   if (loading && (isInitialLoad || articles.length === 0)) {
-    return <PageLoading message="加载新闻列表..." />;
+    return <PageLoading message={t("common.loadingNewsList")} />;
   }
 
   const backgroundStyle = getBackgroundStyle();
@@ -198,8 +200,9 @@ function NewsListContent() {
 }
 
 export default function NewsListPage() {
+  const { t } = useI18n();
   return (
-    <Suspense fallback={<PageLoading message="加载新闻列表..." />}>
+    <Suspense fallback={<PageLoading message={t("common.loadingNewsList")} />}>
       <NewsListContent />
     </Suspense>
   );

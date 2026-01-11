@@ -2,6 +2,7 @@
 
 export { default as ErrorBoundary } from "./ErrorBoundary";
 export { default as PageLoading } from "./PageLoading";
+export { default as PageLoadingWrapper } from "./PageLoadingWrapper";
 export { default as BackButton } from "./BackButton";
 export { default as ImagePositionEditor } from "./ImagePositionEditor";
 export { IconPicker } from "./IconPicker";

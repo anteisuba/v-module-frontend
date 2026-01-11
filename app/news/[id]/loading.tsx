@@ -1,7 +1,11 @@
 // app/news/[id]/loading.tsx
 
+"use client";
+
 import PageLoading from "@/components/ui/PageLoading";
+import { useI18n } from "@/lib/i18n/context";
 
 export default function NewsDetailLoading() {
-  return <PageLoading message="加载文章详情..." />;
+  const { t } = useI18n();
+  return <PageLoading message={t("common.loadingArticle")} />;
 }
