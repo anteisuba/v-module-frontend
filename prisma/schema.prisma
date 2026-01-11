@@ -8,9 +8,9 @@ datasource db {
 }
 
 model MediaAsset {
-  id          String    @id @default(cuid())
-  userId      String?   // 可选：普通用户 ID
-  user        User?     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String  @id @default(cuid())
+  userId String? // 可选：普通用户 ID
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // 图片 URL（本地路径或 S3/R2 URL）
   // 本地：/uploads/user-slug/filename.jpg
@@ -42,6 +42,11 @@ model User {
   passwordResetTokens UserPasswordResetToken[]
   mediaAssets         MediaAsset[] // 用户上传的媒体资源
   newsArticles        NewsArticle[] // 用户创建的新闻文章
+  blogPosts           BlogPost[] // 用户创建的博客文章
+  products            Product[] // 用户创建的商品
+  orders              Order[] // 用户创建的订单（作为卖家）
+  blogLikes           BlogLike[] // 用户点赞的博客
+  blogComments        BlogComment[] // 用户发表的评论
 
   // 索引
   @@index([slug])
@@ -91,31 +96,184 @@ model UserPasswordResetToken {
 // 新闻文章
 // ============================================
 model NewsArticle {
-  id        String   @id @default(cuid())
-  userId    String   // 所属用户
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  id     String @id @default(cuid())
+  userId String // 所属用户
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   // 基本信息
-  title     String   // 标题
-  content   String   @db.Text // 内容（支持 Markdown）
-  category  String   // 分类（如 "MEDIA", "MAGAZINE", "あの", "ANO"）
-  tag       String?  // 标签（如 "あの"）
+  title    String // 标题
+  content  String  @db.Text // 内容（支持 Markdown）
+  category String // 分类（如 "MEDIA", "MAGAZINE", "あの", "ANO"）
+  tag      String? // 标签（如 "あの"）
 
   // 分享相关
-  shareUrl  String?  // 分享链接（可打开）
+  shareUrl      String? // 分享链接（可打开）
   shareChannels Json? // 分享渠道配置 [{platform: "twitter", enabled: true}, ...]
 
   // 背景相关
-  backgroundType  String?  @default("color") // "color" | "image"
-  backgroundValue String?  @default("#000000") // 颜色值或图片 URL
+  backgroundType  String? @default("color") // "color" | "image"
+  backgroundValue String? @default("#000000") // 颜色值或图片 URL
 
   // 元数据
-  published Boolean  @default(false) // 是否发布
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  published   Boolean   @default(false) // 是否发布
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   publishedAt DateTime? // 发布时间
 
   @@index([userId, createdAt])
   @@index([published, createdAt])
   @@index([category])
+}
+
+// ============================================
+// 博客文章
+// ============================================
+model BlogPost {
+  id     String @id @default(cuid())
+  userId String // 所属用户
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 基本信息
+  title         String // 标题
+  content       String  @db.Text // 内容（支持 Markdown）
+  coverImage    String? // 封面图片 URL
+  videoUrl      String? // 视频 URL
+  externalLinks Json? // 外部链接 [{url: "...", label: "..."}, ...]
+
+  // 元数据
+  published   Boolean   @default(false) // 是否发布
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  publishedAt DateTime? // 发布时间
+
+  // 关系
+  likes    BlogLike[] // 点赞
+  comments BlogComment[] // 评论
+
+  @@index([userId, createdAt])
+  @@index([published, createdAt])
+}
+
+// ============================================
+// 商品
+// ============================================
+model Product {
+  id     String @id @default(cuid())
+  userId String // 所属用户（卖家）
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 基本信息
+  name        String // 商品名称
+  description String? @db.Text // 商品描述
+  price       Decimal @db.Decimal(10, 2) // 价格（使用 Decimal 类型，精度 10，小数位 2）
+  stock       Int     @default(0) // 库存数量
+  images      Json // 图片 URL 数组 ["url1", "url2", ...]
+  status      String  @default("DRAFT") // 状态：DRAFT, PUBLISHED, ARCHIVED
+
+  // 时间戳
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // 关系
+  orderItems OrderItem[] // 订单项
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@index([userId, status])
+}
+
+// ============================================
+// 博客点赞
+// ============================================
+model BlogLike {
+  id         String   @id @default(cuid())
+  blogPostId String // 博客文章 ID
+  blogPost   BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  userId     String? // 用户 ID（可选，允许匿名点赞）
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userEmail  String? // 用户邮箱（用于匿名用户）
+  createdAt  DateTime @default(now())
+
+  @@index([blogPostId, createdAt])
+  @@index([userId])
+  @@index([blogPostId, userId])
+  @@index([blogPostId, userEmail])
+}
+
+// ============================================
+// 博客评论
+// ============================================
+model BlogComment {
+  id         String   @id @default(cuid())
+  blogPostId String // 博客文章 ID
+  blogPost   BlogPost @relation(fields: [blogPostId], references: [id], onDelete: Cascade)
+  userId     String? // 用户 ID（可选，允许匿名评论）
+  user       User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userName   String // 评论者名称（必填）
+  userEmail  String? // 用户邮箱（可选）
+  content    String   @db.Text // 评论内容
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([blogPostId, createdAt])
+  @@index([userId])
+}
+
+// ============================================
+// 订单
+// ============================================
+model Order {
+  id     String @id @default(cuid())
+  userId String // 卖家用户 ID
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // 买家信息
+  buyerEmail String // 买家邮箱
+  buyerName  String? // 买家姓名（可选）
+
+  // 订单金额
+  totalAmount Decimal @db.Decimal(10, 2) // 订单总金额
+
+  // 订单状态
+  status String @default("PENDING") // 状态：PENDING, PAID, SHIPPED, DELIVERED, CANCELLED
+
+  // 配送信息
+  shippingAddress Json? // 配送地址 JSON
+  shippingMethod  String? // 配送方式
+
+  // 时间戳
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  paidAt      DateTime? // 支付时间
+  shippedAt   DateTime? // 发货时间
+  deliveredAt DateTime? // 送达时间
+
+  // 关系
+  items OrderItem[] // 订单项
+
+  @@index([userId, createdAt])
+  @@index([buyerEmail, createdAt])
+  @@index([status, createdAt])
+}
+
+// ============================================
+// 订单项（订单与商品的关联表）
+// ============================================
+model OrderItem {
+  id        String  @id @default(cuid())
+  orderId   String // 订单 ID
+  order     Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String // 商品 ID
+  product   Product @relation(fields: [productId], references: [id], onDelete: Restrict)
+
+  // 下单时的价格快照（商品价格可能变化，需要记录下单时的价格）
+  price    Decimal @db.Decimal(10, 2) // 下单时的单价
+  quantity Int // 购买数量
+  subtotal Decimal @db.Decimal(10, 2) // 小计（price * quantity）
+
+  createdAt DateTime @default(now())
+
+  @@unique([orderId, productId]) // 一个订单中同一商品只能出现一次
+  @@index([orderId])
+  @@index([productId])
 }

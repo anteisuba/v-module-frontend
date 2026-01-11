@@ -10,8 +10,9 @@ import type { NewsArticle } from "@/lib/api/types";
 export async function getPublishedNewsArticles(params: {
   limit?: number;
   category?: string;
+  userSlug?: string; // 用户 slug，用于过滤特定用户的文章
 }): Promise<NewsArticle[]> {
-  const { limit = 10, category } = params;
+  const { limit = 10, category, userSlug } = params;
 
   const where: any = {
     published: true, // 只获取已发布的文章
@@ -19,6 +20,13 @@ export async function getPublishedNewsArticles(params: {
 
   if (category) {
     where.category = category;
+  }
+
+  // 如果指定了 userSlug，则只获取该用户的文章
+  if (userSlug) {
+    where.user = {
+      slug: userSlug,
+    };
   }
 
   const articles = await prisma.newsArticle.findMany({

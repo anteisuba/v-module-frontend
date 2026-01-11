@@ -9,6 +9,8 @@ import { newsArticleApi, pageApi } from "@/lib/api";
 import { ApiError, NetworkError } from "@/lib/api/errors";
 import { useUser } from "@/lib/context/UserContext";
 import { useI18n } from "@/lib/i18n/context";
+import { useHeroMenu } from "@/features/home-hero/hooks/useHeroMenu";
+import HeroMenu from "@/features/home-hero/components/HeroMenu";
 import type { NewsArticle } from "@/lib/api/types";
 import type { PageConfig } from "@/domain/page-config/types";
 
@@ -21,6 +23,7 @@ export function NewsDetailContent({
   const searchParams = useSearchParams();
   const { user } = useUser();
   const { t } = useI18n();
+  const menu = useHeroMenu();
   const [article, setArticle] = useState<NewsArticle | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -274,6 +277,21 @@ export function NewsDetailContent({
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden" style={pageBackgroundStyle}>
+      {/* 右上角菜单按钮 */}
+      <div className="fixed top-6 right-6 z-50 flex items-center gap-4 text-white">
+        <button
+          className="text-2xl opacity-90 hover:opacity-100 transition drop-shadow-lg"
+          type="button"
+          aria-label="menu"
+          onClick={menu.toggleMenu}
+        >
+          ☰
+        </button>
+      </div>
+
+      {/* 菜单 */}
+      <HeroMenu open={menu.open} onClose={menu.closeMenu} />
+
       {/* 背景遮罩层（仅在图片背景时显示） */}
       {currentBackgroundType === "image" && (
         <div className="absolute inset-0">

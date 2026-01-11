@@ -7,15 +7,30 @@ import { useI18n } from "@/lib/i18n/context";
 import LanguageSelector from "@/components/ui/LanguageSelector";
 import PageLoading from "@/components/ui/PageLoading";
 
+// 安全的翻译函数，如果 useI18n 失败则返回 key
+function useSafeI18n() {
+  try {
+    return useI18n();
+  } catch (error) {
+    // 如果不在 I18nProvider 中，返回默认的翻译函数
+    return {
+      locale: "zh" as const,
+      setLocale: () => {},
+      t: (key: string) => key,
+    };
+  }
+}
+
 type Props = {
   open: boolean;
   onClose: () => void;
 };
 
-const ITEMS = [
+const BASE_ITEMS = [
   { key: "login", href: "/admin" },
   { key: "news", href: "/news" },
-  { key: "blog", href: "/blog" },
+  { key: "blog", href: "/blog", showOnUserPage: true },
+  { key: "shop", href: "/shop", showOnUserPage: true },
   { key: "media", href: "/media" },
   { key: "profile", href: "/profile" },
   { key: "contact", href: "/contact" },
@@ -23,7 +38,7 @@ const ITEMS = [
 
 export default function HeroMenu({ open, onClose }: Props) {
   const pathname = usePathname();
-  const { t } = useI18n();
+  const { t } = useSafeI18n();
   const [isNavigating, setIsNavigating] = useState(false);
   const [previousPathname, setPreviousPathname] = useState<string | null>(null);
   
@@ -40,12 +55,45 @@ export default function HeroMenu({ open, onClose }: Props) {
   }, [pathname, isNavigating, previousPathname]);
 
   // 从路径中提取 slug（如果是 /u/[slug] 格式）
-  const getNewsHref = () => {
+  const getUserSlug = () => {
     const match = pathname?.match(/^\/u\/([^/]+)/);
-    if (match && match[1]) {
-      return `/news?from=/u/${match[1]}`;
+    return match ? match[1] : null;
+  };
+
+  const userSlug = getUserSlug();
+  const isUserPage = !!userSlug;
+
+  // 过滤菜单项：在用户页面只显示 showOnUserPage 的项，或者非用户页面的默认项
+  const ITEMS = BASE_ITEMS.filter((item) => {
+    if (isUserPage) {
+      // 在用户页面，显示 showOnUserPage 的项，或者 login/news/media/profile/contact
+      return item.showOnUserPage || 
+             ["login", "news", "media", "profile", "contact"].includes(item.key);
+    }
+    // 非用户页面，显示所有项
+    return true;
+  });
+
+  // 从路径中提取 slug（如果是 /u/[slug] 格式）
+  const getNewsHref = () => {
+    if (userSlug) {
+      return `/news?from=/u/${userSlug}`;
     }
     return "/news";
+  };
+
+  const getBlogHref = () => {
+    if (userSlug) {
+      return `/u/${userSlug}/blog`;
+    }
+    return "/blog";
+  };
+
+  const getShopHref = () => {
+    if (userSlug) {
+      return `/u/${userSlug}/shop`;
+    }
+    return "/shop";
   };
 
   // 处理链接点击
@@ -108,8 +156,15 @@ export default function HeroMenu({ open, onClose }: Props) {
         <nav className="px-10 pt-6">
           <ul className="space-y-6">
             {ITEMS.map((item, i) => {
-              // 如果是 News 链接，使用动态 href
-              const href = item.key === "news" ? getNewsHref() : item.href;
+              // 根据不同的链接类型使用动态 href
+              let href = item.href;
+              if (item.key === "news") {
+                href = getNewsHref();
+              } else if (item.key === "blog") {
+                href = getBlogHref();
+              } else if (item.key === "shop") {
+                href = getShopHref();
+              }
               
               return (
                 <li

@@ -25,11 +25,11 @@
         },
         "blog": {
           "label": "BLOG ページ",
-          "description": "ブログ記事を編集（開発中）"
+          "description": "ブログ記事を編集"
         },
-        "media": {
-          "label": "MEDIA ページ",
-          "description": "メディアコンテンツを編集（開発中）"
+        "shop": {
+          "label": "SHOP ページ",
+          "description": "商品と注文を管理"
         }
       },
       "comingSoon": "開発中"
@@ -103,6 +103,7 @@
     "login": "ログイン",
     "news": "ニュース",
     "blog": "ブログ",
+    "shop": "SHOP",
     "media": "メディア",
     "profile": "プロフィール",
     "contact": "お問い合わせ"
@@ -294,6 +295,67 @@
       "createdPublished": "記事を作成して公開しました",
       "createdDraft": "記事を作成しました（下書き）",
       "deleted": "記事を削除しました"
+    }
+  },
+  "blog": {
+    "title": "ブログ管理",
+    "create": "新しいブログ",
+    "list": {
+      "empty": "ブログ記事がありません。「新しいブログ」をクリックして作成してください",
+      "loadFailed": "ブログリストの読み込みに失敗しました",
+      "deleteFailed": "削除に失敗しました",
+      "deleted": "ブログを削除しました",
+      "draft": "下書き",
+      "published": "公開済み"
+    },
+    "form": {
+      "title": "タイトル *",
+      "titlePlaceholder": "ブログタイトル",
+      "content": "内容 *",
+      "contentPlaceholder": "ブログ内容（Markdown 対応）",
+      "coverImage": "カバー画像",
+      "videoUrl": "動画リンク",
+      "externalLinks": "外部リンク",
+      "published": "公開済み",
+      "save": "保存",
+      "cancel": "キャンセル"
+    },
+    "deleteConfirm": {
+      "title": "削除の確認",
+      "message": "このブログ記事を削除してもよろしいですか？この操作は元に戻せません。"
+    }
+  },
+  "shop": {
+    "title": "商品管理",
+    "create": "新しい商品",
+    "list": {
+      "empty": "商品がありません。「新しい商品」をクリックして作成してください",
+      "loadFailed": "商品リストの読み込みに失敗しました",
+      "deleteFailed": "削除に失敗しました",
+      "deleted": "商品を削除しました",
+      "draft": "下書き",
+      "published": "公開済み",
+      "archived": "アーカイブ済み",
+      "outOfStock": "在庫切れ",
+      "inStock": "在庫あり"
+    },
+    "form": {
+      "name": "商品名 *",
+      "namePlaceholder": "商品名",
+      "description": "説明",
+      "descriptionPlaceholder": "商品説明",
+      "price": "価格 *",
+      "pricePlaceholder": "0.00",
+      "stock": "在庫",
+      "stockPlaceholder": "0",
+      "images": "商品画像",
+      "status": "ステータス",
+      "save": "保存",
+      "cancel": "キャンセル"
+    },
+    "deleteConfirm": {
+      "title": "削除の確認",
+      "message": "この商品を削除してもよろしいですか？この操作は元に戻せません。"
     }
   }
 }

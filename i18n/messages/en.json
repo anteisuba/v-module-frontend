@@ -25,11 +25,11 @@
         },
         "blog": {
           "label": "BLOG Page",
-          "description": "Edit blog articles (Coming soon)"
+          "description": "Edit blog articles"
         },
-        "media": {
-          "label": "MEDIA Page",
-          "description": "Edit media content (Coming soon)"
+        "shop": {
+          "label": "SHOP Page",
+          "description": "Manage products and orders"
         }
       },
       "comingSoon": "Coming soon"
@@ -103,6 +103,7 @@
     "login": "LOGIN",
     "news": "NEW",
     "blog": "BLOG",
+    "shop": "SHOP",
     "media": "MEDIA",
     "profile": "PROFILE",
     "contact": "CONTACT"
@@ -294,6 +295,67 @@
       "createdPublished": "Article created and published",
       "createdDraft": "Article created (draft)",
       "deleted": "Article deleted"
+    }
+  },
+  "blog": {
+    "title": "Blog Management",
+    "create": "New Blog",
+    "list": {
+      "empty": "No blog posts yet. Click \"New Blog\" to create",
+      "loadFailed": "Failed to load blog list",
+      "deleteFailed": "Delete failed",
+      "deleted": "Blog deleted",
+      "draft": "Draft",
+      "published": "Published"
+    },
+    "form": {
+      "title": "Title *",
+      "titlePlaceholder": "Blog Title",
+      "content": "Content *",
+      "contentPlaceholder": "Blog Content (Markdown supported)",
+      "coverImage": "Cover Image",
+      "videoUrl": "Video Link",
+      "externalLinks": "External Links",
+      "published": "Published",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "deleteConfirm": {
+      "title": "Confirm Delete",
+      "message": "Are you sure you want to delete this blog post? This action cannot be undone."
+    }
+  },
+  "shop": {
+    "title": "Product Management",
+    "create": "New Product",
+    "list": {
+      "empty": "No products yet. Click \"New Product\" to create",
+      "loadFailed": "Failed to load product list",
+      "deleteFailed": "Delete failed",
+      "deleted": "Product deleted",
+      "draft": "Draft",
+      "published": "Published",
+      "archived": "Archived",
+      "outOfStock": "Out of Stock",
+      "inStock": "In Stock"
+    },
+    "form": {
+      "name": "Product Name *",
+      "namePlaceholder": "Product Name",
+      "description": "Description",
+      "descriptionPlaceholder": "Product Description",
+      "price": "Price *",
+      "pricePlaceholder": "0.00",
+      "stock": "Stock",
+      "stockPlaceholder": "0",
+      "images": "Product Images",
+      "status": "Status",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "deleteConfirm": {
+      "title": "Confirm Delete",
+      "message": "Are you sure you want to delete this product? This action cannot be undone."
     }
   }
 }

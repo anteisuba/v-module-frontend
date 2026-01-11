@@ -170,7 +170,9 @@ const SocialLinkItemSchema = z.object({
 
 export const PageConfigSchema = z.object({
   background: BackgroundConfigSchema,
-  newsBackground: BackgroundConfigSchema.optional(), // 新闻页面背景（用于 NewsListSection、/news 和 /news/[id] 页面）
+  newsBackground: BackgroundConfigSchema.optional(), // 新闻页面背景
+  blogBackground: BackgroundConfigSchema.optional(), // 博客列表页面背景
+  blogDetailBackground: BackgroundConfigSchema.optional(), // 博客详情页面背景
   sections: z.array(SectionConfigSchema).max(20), // 最多 20 个 sections
   logo: z
     .object({

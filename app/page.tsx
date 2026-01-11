@@ -1,12 +1,5 @@
-// src/app/page.tsx
-import { HomeHero } from "@/features/home-hero";
-import { NewsCarouselSection } from "@/features/news-carousel";
+import { redirect } from "next/navigation";
 
 export default function Home() {
-  return (
-    <main className="bg-black text-white">
-      <HomeHero />
-      <NewsCarouselSection />
-    </main>
-  );
+  redirect("/admin");
 }

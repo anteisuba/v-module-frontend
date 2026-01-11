@@ -28,6 +28,11 @@ type BackButtonProps = {
    * 自定义 className
    */
   className?: string;
+  /**
+   * 是否使用固定定位
+   * @default true
+   */
+  fixed?: boolean;
 };
 
 export default function BackButton({
@@ -36,6 +41,7 @@ export default function BackButton({
   position = "top-left",
   asLink = false,
   className = "",
+  fixed = true,
 }: BackButtonProps) {
   const router = useRouter();
 
@@ -61,7 +67,7 @@ export default function BackButton({
     "bottom-right": "bottom-6 right-6",
   };
 
-  const baseClasses = `fixed z-50 ${positionClasses[position]}`;
+  const baseClasses = fixed ? `fixed z-50 ${positionClasses[position]}` : "";
 
   // 链接样式
   if (asLink) {

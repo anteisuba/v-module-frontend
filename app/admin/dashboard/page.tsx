@@ -36,14 +36,14 @@ export default function DashboardPage() {
       label: t("admin.dashboard.pages.blog.label"),
       href: "/admin/blog",
       description: t("admin.dashboard.pages.blog.description"),
-      available: false,
+      available: true,
     },
     {
-      id: "media",
-      label: t("admin.dashboard.pages.media.label"),
-      href: "/admin/media",
-      description: t("admin.dashboard.pages.media.description"),
-      available: false,
+      id: "shop",
+      label: t("admin.dashboard.pages.shop.label"),
+      href: "/admin/shop",
+      description: t("admin.dashboard.pages.shop.description"),
+      available: true,
     },
   ], [t]);
 

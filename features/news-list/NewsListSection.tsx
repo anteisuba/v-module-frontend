@@ -15,16 +15,21 @@ export default async function NewsListSection({ slug, limit = 3, background }: N
   let articles: NewsArticle[] = [];
   
   try {
-    articles = await getPublishedNewsArticles({ limit });
+    // 如果提供了 slug，则只获取该用户的文章；否则获取所有用户的文章
+    articles = await getPublishedNewsArticles({ 
+      limit,
+      userSlug: slug, // 传递用户 slug 来过滤特定用户的文章
+    });
   } catch (err) {
     console.error("Failed to load news articles:", err);
     // 数据获取失败时返回 null，不阻塞页面渲染
     return null;
   }
 
-  if (articles.length === 0) {
-    return null; // 没有文章时不显示
-  }
+  // 即使没有文章也显示标题和 MORE 按钮，保持页面结构一致
+  // if (articles.length === 0) {
+  //   return null; // 没有文章时不显示
+  // }
 
   // 构建返回链接
   const newsHref = slug ? `/news?from=/u/${slug}` : "/news";
@@ -48,28 +53,34 @@ export default async function NewsListSection({ slug, limit = 3, background }: N
         <h2 className="text-4xl font-bold tracking-wider mb-8 text-center">NEWS</h2>
 
         {/* 文章列表 */}
-        <div className="space-y-4 mb-8">
-          {articles.map((article) => (
-            <Link
-              key={article.id}
-              href={`/news/${article.id}${slug ? `?from=/u/${slug}` : ""}`}
-              className="block rounded-lg border border-black/10 bg-black/5 p-4 transition-colors hover:bg-black/10"
-            >
-              <div className="mb-2 flex items-center gap-3 text-sm text-black/60">
-                <span>
-                  {new Date(article.createdAt).toLocaleDateString("ja-JP", {
-                    year: "numeric",
-                    month: "2-digit",
-                    day: "2-digit",
-                  }).replace(/\//g, ".")}
-                </span>
-                <span className="font-medium">{article.category}</span>
-                {article.tag && <span>{article.tag}</span>}
-              </div>
-              <h3 className="text-lg font-medium text-black">{article.title}</h3>
-            </Link>
-          ))}
-        </div>
+        {articles.length > 0 ? (
+          <div className="space-y-4 mb-8">
+            {articles.map((article) => (
+              <Link
+                key={article.id}
+                href={`/news/${article.id}${slug ? `?from=/u/${slug}` : ""}`}
+                className="block rounded-lg border border-black/10 bg-black/5 p-4 transition-colors hover:bg-black/10"
+              >
+                <div className="mb-2 flex items-center gap-3 text-sm text-black/60">
+                  <span>
+                    {new Date(article.createdAt).toLocaleDateString("ja-JP", {
+                      year: "numeric",
+                      month: "2-digit",
+                      day: "2-digit",
+                    }).replace(/\//g, ".")}
+                  </span>
+                  <span className="font-medium">{article.category}</span>
+                  {article.tag && <span>{article.tag}</span>}
+                </div>
+                <h3 className="text-lg font-medium text-black">{article.title}</h3>
+              </Link>
+            ))}
+          </div>
+        ) : (
+          <div className="mb-8 text-center text-black/60">
+            <p>暂无新闻文章</p>
+          </div>
+        )}
 
         {/* MORE 按钮 */}
         <div className="text-center">

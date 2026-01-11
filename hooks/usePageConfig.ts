@@ -19,10 +19,18 @@ export function usePageConfig() {
     try {
       const draftConfig = await pageApi.getDraftConfig();
       if (draftConfig) {
-        // 确保 newsBackground 有默认值（兼容旧数据）
-        const configWithNewsBackground = {
+        // 确保 newsBackground、blogBackground、blogDetailBackground 有默认值（兼容旧数据）
+        const configWithBackgrounds = {
           ...draftConfig,
           newsBackground: draftConfig.newsBackground || {
+            type: "color" as const,
+            value: "#000000",
+          },
+          blogBackground: draftConfig.blogBackground || {
+            type: "color" as const,
+            value: "#000000",
+          },
+          blogDetailBackground: draftConfig.blogDetailBackground || {
             type: "color" as const,
             value: "#000000",
           },
@@ -31,13 +39,13 @@ export function usePageConfig() {
         // 优化：只在首次访问且未发布时清空默认配置
         // 如果已发布过，不再清空
         let finalConfig: PageConfig;
-        if (configWithNewsBackground.hasPublished) {
-          finalConfig = configWithNewsBackground;
-        } else if (isDefaultConfig(configWithNewsBackground)) {
+        if (configWithBackgrounds.hasPublished) {
+          finalConfig = configWithBackgrounds;
+        } else if (isDefaultConfig(configWithBackgrounds)) {
           // 只在首次访问且是默认配置时清空
           finalConfig = EMPTY_PAGE_CONFIG;
         } else {
-          finalConfig = configWithNewsBackground;
+          finalConfig = configWithBackgrounds;
         }
         
         setConfig(finalConfig);

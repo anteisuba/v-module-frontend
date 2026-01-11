@@ -9,6 +9,8 @@ import { newsArticleApi, pageApi } from "@/lib/api";
 import { ApiError, NetworkError } from "@/lib/api/errors";
 import { useI18n } from "@/lib/i18n/context";
 import PageLoading from "@/components/ui/PageLoading";
+import { useHeroMenu } from "@/features/home-hero/hooks/useHeroMenu";
+import HeroMenu from "@/features/home-hero/components/HeroMenu";
 import type { NewsArticle } from "@/lib/api/types";
 import type { PageConfig } from "@/domain/page-config/types";
 
@@ -16,6 +18,7 @@ function NewsListContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useI18n();
+  const menu = useHeroMenu();
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -114,7 +117,22 @@ function NewsListContent() {
   const backgroundStyle = getBackgroundStyle();
 
   return (
-    <main className="min-h-screen text-black" style={backgroundStyle}>
+    <main className="relative min-h-screen text-black" style={backgroundStyle}>
+      {/* 右上角菜单按钮 */}
+      <div className="fixed top-6 right-6 z-50 flex items-center gap-4 text-white">
+        <button
+          className="text-2xl opacity-90 hover:opacity-100 transition drop-shadow-lg"
+          type="button"
+          aria-label="menu"
+          onClick={menu.toggleMenu}
+        >
+          ☰
+        </button>
+      </div>
+
+      {/* 菜单 */}
+      <HeroMenu open={menu.open} onClose={menu.closeMenu} />
+
       <div className="mx-auto max-w-4xl px-4 py-16">
         {/* 标题 */}
         <div className="mb-8 flex items-center justify-between">

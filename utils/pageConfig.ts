@@ -126,6 +126,16 @@ export function cleanPageConfig(config: PageConfig): PageConfig {
       type: "color" as const,
       value: "#000000",
     },
+    // 确保 blogBackground 有默认值
+    blogBackground: config.blogBackground || {
+      type: "color" as const,
+      value: "#000000",
+    },
+    // 确保 blogDetailBackground 有默认值
+    blogDetailBackground: config.blogDetailBackground || {
+      type: "color" as const,
+      value: "#000000",
+    },
     sections: config.sections.map((section) => {
       if (section.type === "hero") {
         // 过滤掉 src 为空的 slides

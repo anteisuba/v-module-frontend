@@ -1,7 +1,7 @@
 "use client";
 
 import { AdminAuthPanel } from "@/features/admin-auth";
-import { BackButton, LanguageSelector } from "@/components/ui";
+import { LanguageSelector } from "@/components/ui";
 import { useI18n } from "@/lib/i18n/context";
 
 export default function AdminPage() {
@@ -9,7 +9,6 @@ export default function AdminPage() {
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden">
-      <BackButton href="/" label={t("admin.backToHome")} />
       <div className="fixed bottom-6 right-6 z-[100]">
         <LanguageSelector position="inline" />
       </div>

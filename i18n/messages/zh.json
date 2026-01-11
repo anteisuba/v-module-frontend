@@ -25,11 +25,11 @@
         },
         "blog": {
           "label": "BLOG 页面",
-          "description": "编辑博客文章（待开发）"
+          "description": "编辑博客文章"
         },
-        "media": {
-          "label": "MEDIA 页面",
-          "description": "编辑媒体内容（待开发）"
+        "shop": {
+          "label": "SHOP 页面",
+          "description": "管理商品和订单"
         }
       },
       "comingSoon": "待开发"
@@ -103,6 +103,7 @@
     "login": "登录",
     "news": "新闻",
     "blog": "博客",
+    "shop": "SHOP",
     "media": "媒体",
     "profile": "个人资料",
     "contact": "联系"
@@ -294,6 +295,67 @@
       "createdPublished": "文章已创建并发布",
       "createdDraft": "文章已创建（草稿）",
       "deleted": "文章已删除"
+    }
+  },
+  "blog": {
+    "title": "博客管理",
+    "create": "新建博客",
+    "list": {
+      "empty": "暂无博客文章，点击\"新建博客\"开始创建",
+      "loadFailed": "加载博客列表失败",
+      "deleteFailed": "删除失败",
+      "deleted": "博客已删除",
+      "draft": "草稿",
+      "published": "已发布"
+    },
+    "form": {
+      "title": "标题 *",
+      "titlePlaceholder": "博客标题",
+      "content": "内容 *",
+      "contentPlaceholder": "博客内容（支持 Markdown）",
+      "coverImage": "封面图片",
+      "videoUrl": "视频链接",
+      "externalLinks": "外部链接",
+      "published": "已发布",
+      "save": "保存",
+      "cancel": "取消"
+    },
+    "deleteConfirm": {
+      "title": "确认删除",
+      "message": "确定要删除这篇博客吗？此操作无法撤销。"
+    }
+  },
+  "shop": {
+    "title": "商品管理",
+    "create": "新建商品",
+    "list": {
+      "empty": "暂无商品，点击\"新建商品\"开始创建",
+      "loadFailed": "加载商品列表失败",
+      "deleteFailed": "删除失败",
+      "deleted": "商品已删除",
+      "draft": "草稿",
+      "published": "已发布",
+      "archived": "已归档",
+      "outOfStock": "缺货",
+      "inStock": "有库存"
+    },
+    "form": {
+      "name": "商品名称 *",
+      "namePlaceholder": "商品名称",
+      "description": "商品描述",
+      "descriptionPlaceholder": "商品描述",
+      "price": "价格 *",
+      "pricePlaceholder": "0.00",
+      "stock": "库存",
+      "stockPlaceholder": "0",
+      "images": "商品图片",
+      "status": "状态",
+      "save": "保存",
+      "cancel": "取消"
+    },
+    "deleteConfirm": {
+      "title": "确认删除",
+      "message": "确定要删除这个商品吗？此操作无法撤销。"
     }
   }
 }
