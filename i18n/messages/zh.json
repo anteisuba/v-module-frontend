@@ -100,12 +100,12 @@
     }
   },
   "heroMenu": {
-    "login": "LOGIN",
-    "news": "NEW",
-    "blog": "BLOG",
-    "media": "MEDIA",
-    "profile": "PROFILE",
-    "contact": "CONTACT"
+    "login": "登录",
+    "news": "新闻",
+    "blog": "博客",
+    "media": "媒体",
+    "profile": "个人资料",
+    "contact": "联系"
   },
   "common": {
     "language": "语言",

@@ -1,9 +1,11 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useI18n } from "@/lib/i18n/context";
 import LanguageSelector from "@/components/ui/LanguageSelector";
+import PageLoading from "@/components/ui/PageLoading";
 
 type Props = {
   open: boolean;
@@ -22,7 +24,21 @@ const ITEMS = [
 export default function HeroMenu({ open, onClose }: Props) {
   const pathname = usePathname();
   const { t } = useI18n();
+  const [isNavigating, setIsNavigating] = useState(false);
+  const [previousPathname, setPreviousPathname] = useState<string | null>(null);
   
+  // 监听路由变化，清除加载状态
+  useEffect(() => {
+    if (isNavigating && previousPathname && pathname !== previousPathname) {
+      // 路径已变化，延迟清除加载状态，确保页面已渲染
+      const timer = setTimeout(() => {
+        setIsNavigating(false);
+        setPreviousPathname(null);
+      }, 500);
+      return () => clearTimeout(timer);
+    }
+  }, [pathname, isNavigating, previousPathname]);
+
   // 从路径中提取 slug（如果是 /u/[slug] 格式）
   const getNewsHref = () => {
     const match = pathname?.match(/^\/u\/([^/]+)/);
@@ -31,6 +47,18 @@ export default function HeroMenu({ open, onClose }: Props) {
     }
     return "/news";
   };
+
+  // 处理链接点击
+  const handleLinkClick = () => {
+    setIsNavigating(true);
+    setPreviousPathname(pathname);
+    onClose(); // 关闭菜单
+  };
+  // 如果正在导航，显示加载页面
+  if (isNavigating) {
+    return <PageLoading message={t("common.loading")} />;
+  }
+
   return (
     <div
       className={[
@@ -98,7 +126,7 @@ export default function HeroMenu({ open, onClose }: Props) {
                 >
                   <Link
                     href={href}
-                    onClick={onClose}
+                    onClick={() => handleLinkClick(href)}
                     className="text-white text-2xl tracking-[0.2em] opacity-90 hover:opacity-100 transition"
                   >
                     {t(`heroMenu.${item.key}`)}

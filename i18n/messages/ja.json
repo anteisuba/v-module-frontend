@@ -100,12 +100,12 @@
     }
   },
   "heroMenu": {
-    "login": "LOGIN",
-    "news": "NEW",
-    "blog": "BLOG",
-    "media": "MEDIA",
-    "profile": "PROFILE",
-    "contact": "CONTACT"
+    "login": "ログイン",
+    "news": "ニュース",
+    "blog": "ブログ",
+    "media": "メディア",
+    "profile": "プロフィール",
+    "contact": "お問い合わせ"
   },
   "common": {
     "language": "言語",
