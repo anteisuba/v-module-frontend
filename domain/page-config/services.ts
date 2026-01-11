@@ -1,5 +1,6 @@
 // domain/page-config/services.ts
 
+import { cache } from "react";
 import { prisma } from "@/lib/prisma";
 import { DEFAULT_PAGE_CONFIG, EMPTY_PAGE_CONFIG } from "./constants";
 import type { PageConfig } from "./types";
@@ -81,6 +82,26 @@ export async function getPublishedConfigBySlug(
 
   return page.publishedConfig as PageConfig;
 }
+
+/**
+ * 获取用户和页面数据（带缓存，用于 generateMetadata 和页面组件共享）
+ * 使用 Next.js cache 确保同一请求中只查询一次数据库
+ */
+export const getUserPageDataBySlug = cache(async (slug: string) => {
+  const user = await prisma.user.findUnique({
+    where: { slug },
+    include: {
+      page: {
+        select: {
+          publishedConfig: true,
+          draftConfig: true, // 虽然页面组件不需要，但为了完整性保留
+        },
+      },
+    },
+  });
+
+  return user;
+});
 
 /**
  * 更新用户的草稿配置

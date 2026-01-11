@@ -1,7 +1,5 @@
 // features/page-renderer/components/renderers/GallerySectionRenderer.tsx
 
-"use client";
-
 import type { GallerySectionProps } from "@/domain/page-config/types";
 
 export default function GallerySectionRenderer({

@@ -4,7 +4,7 @@ import type { SectionConfig, PageConfig } from "@/domain/page-config/types";
 import HeroSectionRenderer from "./components/renderers/HeroSectionRenderer";
 import GallerySectionRenderer from "./components/renderers/GallerySectionRenderer";
 import NewsSectionRenderer from "./components/renderers/NewsSectionRenderer";
-import VideoSectionRenderer from "./components/renderers/VideoSectionRenderer";
+import VideoSectionRendererWrapper from "./components/renderers/VideoSectionRendererWrapper";
 
 // 类型安全的渲染函数
 export function renderSection(section: SectionConfig, pageConfig?: PageConfig): React.ReactNode {
@@ -51,10 +51,10 @@ export function renderSection(section: SectionConfig, pageConfig?: PageConfig): 
     );
   }
 
-  // Video section
+  // Video section - 使用包装器实现代码分割
   if (section.type === "video") {
     return (
-      <VideoSectionRenderer
+      <VideoSectionRendererWrapper
         key={section.id}
         id={section.id}
         props={section.props}

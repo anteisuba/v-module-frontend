@@ -22,9 +22,17 @@
 
 [中文](#中文) | [日本語](#日本語)
 
+🌐 **Live Site**: [https://www.avatar-hub.com](https://www.avatar-hub.com) | [Admin Panel](https://www.avatar-hub.com/admin)
+
 ## 中文
 
 面向 VTuber 的多用户页面管理系统，基于 Next.js App Router 构建。每个用户可以创建和自定义自己的公开页面。
+
+### 🚀 在线访问
+
+- **网站首页**: [https://www.avatar-hub.com](https://www.avatar-hub.com)
+- **管理后台**: [https://www.avatar-hub.com/admin](https://www.avatar-hub.com/admin)
+- **部署平台**: Vercel
 
 ### 功能概览
 
@@ -95,6 +103,8 @@
 - **国际化**：next-intl（支持中文、日文、英文）
 - **状态管理**：React Context API
 - **API 客户端**：统一的 API 调用封装，支持错误处理和类型安全
+- **部署**：Vercel（Serverless Functions）
+- **存储**：Cloudflare R2（图片存储）
 
 ### 数据库模型（Prisma）
 
@@ -198,6 +208,27 @@ vtuber-site/
    - 编辑目录（登录后）：http://localhost:3000/admin/dashboard
    - CMS 编辑器：http://localhost:3000/admin/cms
    - 测试用户页面：http://localhost:3000/u/testuser
+
+### 生产环境部署
+
+项目已部署到 Vercel，访问地址：
+- **生产环境**: [https://www.avatar-hub.com](https://www.avatar-hub.com)
+- **管理后台**: [https://www.avatar-hub.com/admin](https://www.avatar-hub.com/admin)
+
+#### 部署配置
+
+- **平台**: Vercel
+- **Node.js 版本**: 20.x
+- **构建命令**: `pnpm build`
+- **环境变量**: 需要在 Vercel Dashboard 中配置所有必需的环境变量（参考 `env.example`）
+
+#### 性能优化
+
+- ✅ 数据库查询合并（减少查询次数）
+- ✅ Server Components 优化（Gallery、NewsList）
+- ✅ 代码分割（Video 组件动态加载）
+- ✅ 环境变量验证（启动时检查）
+- ✅ 全局错误边界（防止页面崩溃）
 
 ### 开发命令
 

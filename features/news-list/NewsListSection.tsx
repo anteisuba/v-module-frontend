@@ -1,11 +1,7 @@
 // features/news-list/NewsListSection.tsx
 
-"use client";
-
-import { useState, useEffect } from "react";
 import Link from "next/link";
-import { newsArticleApi } from "@/lib/api";
-import { ApiError, NetworkError } from "@/lib/api/errors";
+import { getPublishedNewsArticles } from "@/domain/news";
 import type { NewsArticle } from "@/lib/api/types";
 
 interface NewsListSectionProps {
@@ -14,33 +10,16 @@ interface NewsListSectionProps {
   background?: { type: "color" | "image"; value: string }; // 新闻页面背景配置
 }
 
-export default function NewsListSection({ slug, limit = 3, background }: NewsListSectionProps) {
-  const [articles, setArticles] = useState<NewsArticle[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadArticles() {
-      try {
-        setLoading(true);
-        const response = await newsArticleApi.getArticles({
-          page: 1,
-          limit,
-          published: true, // 只显示已发布的文章
-        });
-        setArticles(response.articles);
-      } catch (err) {
-        console.error("Failed to load news articles:", err);
-        setArticles([]);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    loadArticles();
-  }, [limit]);
-
-  if (loading) {
-    return null; // 加载时不显示
+export default async function NewsListSection({ slug, limit = 3, background }: NewsListSectionProps) {
+  // 服务端直接获取数据
+  let articles: NewsArticle[] = [];
+  
+  try {
+    articles = await getPublishedNewsArticles({ limit });
+  } catch (err) {
+    console.error("Failed to load news articles:", err);
+    // 数据获取失败时返回 null，不阻塞页面渲染
+    return null;
   }
 
   if (articles.length === 0) {

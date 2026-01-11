@@ -1,11 +1,11 @@
 // app/u/[slug]/page.tsx
 
+import { Suspense } from "react";
 import { notFound } from "next/navigation";
-import { prisma } from "@/lib/prisma";
 import { PageRenderer } from "@/features/page-renderer";
 import { NewsListSection } from "@/features/news-list";
 import {
-  getPublishedConfigBySlug,
+  getUserPageDataBySlug,
   EMPTY_PAGE_CONFIG,
 } from "@/domain/page-config";
 import type { PageConfig } from "@/domain/page-config/types";
@@ -17,26 +17,29 @@ export default async function UserPage({
 }) {
   const { slug } = await params;
 
-  // 查找用户
-  const user = await prisma.user.findUnique({
-    where: { slug },
-  });
+  // 使用共享查询函数（带缓存）
+  const user = await getUserPageDataBySlug(slug);
 
   if (!user) {
     notFound();
   }
 
-  // 读取配置：优先使用 publishedConfig，否则使用空配置
+  // 直接从查询结果中获取配置
   let config: PageConfig = EMPTY_PAGE_CONFIG;
-
-  const publishedConfig = await getPublishedConfigBySlug(slug);
-  if (publishedConfig) {
-    config = publishedConfig;
+  if (user.page?.publishedConfig) {
+    try {
+      config = user.page.publishedConfig as PageConfig;
+    } catch (e) {
+      console.error("Failed to parse publishedConfig:", e);
+      // 解析失败时使用空配置
+    }
   }
 
   return (
     <>
-      <PageRenderer config={config} />
+      <Suspense fallback={<div className="min-h-screen bg-black">Loading...</div>}>
+        <PageRenderer config={config} />
+      </Suspense>
       <NewsListSection 
         slug={slug} 
         limit={3} 
@@ -54,10 +57,8 @@ export async function generateMetadata({
 }) {
   const { slug } = await params;
 
-  const user = await prisma.user.findUnique({
-    where: { slug },
-    include: { page: true },
-  });
+  // 使用共享查询函数（带缓存，与页面组件共享结果）
+  const user = await getUserPageDataBySlug(slug);
 
   if (!user) {
     return {

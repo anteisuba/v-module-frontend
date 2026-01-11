@@ -1,5 +1,6 @@
 // features/page-renderer/components/PageRenderer.tsx
 
+import { Suspense } from "react";
 import type { PageConfig } from "@/domain/page-config/types";
 import { renderSection } from "../registry";
 
@@ -35,6 +36,23 @@ export default function PageRenderer({ config }: { config: PageConfig }) {
         if (section.type === "hero") {
           return renderSection(section, config);
         }
+        
+        // 为 Video section 单独设置 Suspense 边界，确保非视频内容优先显示
+        if (section.type === "video") {
+          return (
+            <Suspense
+              key={section.id}
+              fallback={
+                <div className="flex items-center justify-center w-full aspect-[16/9] bg-black/5 rounded-lg">
+                  <div className="text-sm text-black/50">Loading video...</div>
+                </div>
+              }
+            >
+              {renderSection(section)}
+            </Suspense>
+          );
+        }
+        
         return renderSection(section);
       })}
     </main>
