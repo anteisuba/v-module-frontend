@@ -47,16 +47,22 @@ export interface LogoutResponse {
  */
 export interface PageDraftConfigResponse {
   draftConfig: PageConfig;
+  themeColor?: string;
+  fontFamily?: string;
 }
 
 export interface PagePublishResponse {
   ok: boolean;
   publishedConfig: PageConfig;
+  themeColor?: string;
+  fontFamily?: string;
 }
 
 export interface PageUpdateResponse {
   ok: boolean;
   pageConfig: PageConfig;
+  themeColor?: string;
+  fontFamily?: string;
 }
 
 /**

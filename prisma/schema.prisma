@@ -69,6 +69,10 @@ model Page {
   // 发布配置（发布时从 draftConfig 复制过来）
   publishedConfig Json? // 公开可见的配置（/u/[slug] 读取这个）
 
+  // 主题配置
+  themeColor String @default("#000000") // 品牌主题色
+  fontFamily String @default("Inter") // 字体家族
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

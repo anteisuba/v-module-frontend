@@ -10,6 +10,8 @@ import { isDefaultConfig } from "@/utils/pageConfig";
 export function usePageConfig() {
   const [config, setConfig] = useState<PageConfig>(EMPTY_PAGE_CONFIG);
   const [savedConfig, setSavedConfig] = useState<PageConfig | null>(null);
+  const [themeColor, setThemeColor] = useState<string>("#000000");
+  const [fontFamily, setFontFamily] = useState<string>("Inter");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -17,7 +19,17 @@ export function usePageConfig() {
     setError(null);
     setLoading(true);
     try {
-      const draftConfig = await pageApi.getDraftConfig();
+      const response = await pageApi.getFullPageData();
+      const draftConfig = response.draftConfig;
+      
+      // 加载主题设置
+      if (response.themeColor) {
+        setThemeColor(response.themeColor);
+      }
+      if (response.fontFamily) {
+        setFontFamily(response.fontFamily);
+      }
+      
       if (draftConfig) {
         // 确保 newsBackground、blogBackground、blogDetailBackground 有默认值（兼容旧数据）
         const configWithBackgrounds = {
@@ -92,6 +104,10 @@ export function usePageConfig() {
   return {
     config,
     setConfig: updateConfig,
+    themeColor,
+    setThemeColor,
+    fontFamily,
+    setFontFamily,
     loading,
     error,
     reloadConfig: loadConfig,

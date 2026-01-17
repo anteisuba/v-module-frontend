@@ -10,6 +10,8 @@ import type { useToast } from "./useToast";
 interface UsePageConfigActionsOptions {
   config: PageConfig;
   setConfig: (config: PageConfig) => void;
+  themeColor?: string;
+  fontFamily?: string;
   onError?: ReturnType<typeof useErrorHandler>["handleError"];
   onToast?: ReturnType<typeof useToast>["showToast"];
 }
@@ -17,6 +19,8 @@ interface UsePageConfigActionsOptions {
 export function usePageConfigActions({
   config,
   setConfig,
+  themeColor,
+  fontFamily,
   onError,
   onToast,
 }: UsePageConfigActionsOptions) {
@@ -29,7 +33,11 @@ export function usePageConfigActions({
       // 清理配置数据
       const cleanedConfig = cleanPageConfig(config);
 
-      await pageApi.updateDraftConfig(cleanedConfig);
+      // 保存时同时传递主题设置
+      await pageApi.updateDraftConfig(cleanedConfig, {
+        themeColor,
+        fontFamily,
+      });
 
       onToast?.("cms.draftSaved");
       // 更新本地配置为清理后的版本
@@ -39,7 +47,7 @@ export function usePageConfigActions({
     } finally {
       setSaving(false);
     }
-  }, [config, setConfig, onError, onToast]);
+  }, [config, setConfig, themeColor, fontFamily, onError, onToast]);
 
   const publish = useCallback(async () => {
     setPublishing(true);
@@ -50,7 +58,12 @@ export function usePageConfigActions({
         hasPublished: true, // 标记为已发布
       };
       const cleanedConfig = cleanPageConfig(configToSave);
-      await pageApi.updateDraftConfig(cleanedConfig);
+      
+      // 保存时同时传递主题设置
+      await pageApi.updateDraftConfig(cleanedConfig, {
+        themeColor,
+        fontFamily,
+      });
 
       // 然后发布
       await pageApi.publish();
@@ -64,7 +77,7 @@ export function usePageConfigActions({
     } finally {
       setPublishing(false);
     }
-  }, [config, setConfig, onError, onToast]);
+  }, [config, setConfig, themeColor, fontFamily, onError, onToast]);
 
   return {
     saving,

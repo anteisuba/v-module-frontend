@@ -95,6 +95,8 @@ export const getUserPageDataBySlug = cache(async (slug: string) => {
         select: {
           publishedConfig: true,
           draftConfig: true, // 虽然页面组件不需要，但为了完整性保留
+          themeColor: true, // 品牌主题色
+          fontFamily: true, // 字体家族
         },
       },
     },

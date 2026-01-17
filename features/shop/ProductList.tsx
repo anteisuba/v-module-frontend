@@ -2,10 +2,12 @@
 
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useHeroMenu } from "@/features/home-hero/hooks/useHeroMenu";
 import HeroMenu from "@/features/home-hero/components/HeroMenu";
+import { Skeleton } from "@/components/ui";
 
 interface Product {
   id: string;
@@ -20,6 +22,76 @@ interface ProductListProps {
   products: Product[];
   userSlug: string;
   backgroundStyle?: React.CSSProperties;
+}
+
+// 单个商品卡片组件 - 带图片骨架屏
+function ProductCard({ product, userSlug, formatPrice }: { 
+  product: Product; 
+  userSlug: string;
+  formatPrice: (price: number) => string;
+}) {
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageError, setImageError] = useState(false);
+  const hasImage = product.images && product.images.length > 0;
+
+  return (
+    <Link
+      href={`/u/${userSlug}/shop/${product.id}`}
+      className="group rounded-lg overflow-hidden border border-black/10 bg-white hover:shadow-lg transition-shadow"
+    >
+      {hasImage && !imageError ? (
+        <div className="relative w-full h-48 overflow-hidden">
+          {/* 骨架屏：图片加载前显示 */}
+          {!imageLoaded && (
+            <div className="absolute inset-0 z-10">
+              <Skeleton
+                width="100%"
+                height="100%"
+                rounded="none"
+                variant="shimmer"
+              />
+            </div>
+          )}
+          <Image
+            src={product.images[0]}
+            alt={product.name}
+            fill
+            className={`object-cover group-hover:scale-105 transition-transform duration-300 ${
+              imageLoaded ? "opacity-100" : "opacity-0"
+            }`}
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            onLoad={() => setImageLoaded(true)}
+            onError={() => {
+              setImageError(true);
+              setImageLoaded(true);
+            }}
+          />
+        </div>
+      ) : (
+        <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
+          <span className="text-gray-400">No Image</span>
+        </div>
+      )}
+      <div className="p-4">
+        <h3 className="text-lg font-semibold mb-2 line-clamp-2 group-hover:text-black/80">
+          {product.name}
+        </h3>
+        {product.description && (
+          <p className="text-sm text-black/60 line-clamp-2 mb-3">
+            {product.description}
+          </p>
+        )}
+        <div className="flex items-center justify-between">
+          <span className="text-lg font-bold text-black">
+            {formatPrice(product.price)}
+          </span>
+          {product.stock === 0 && (
+            <span className="text-xs text-red-600 font-semibold">缺货</span>
+          )}
+        </div>
+      </div>
+    </Link>
+  );
 }
 
 export default function ProductList({ products, userSlug, backgroundStyle }: ProductListProps) {
@@ -73,45 +145,12 @@ export default function ProductList({ products, userSlug, backgroundStyle }: Pro
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {products.map((product) => (
-              <Link
+              <ProductCard 
                 key={product.id}
-                href={`/u/${userSlug}/shop/${product.id}`}
-                className="group rounded-lg overflow-hidden border border-black/10 bg-white hover:shadow-lg transition-shadow"
-              >
-                {product.images && product.images.length > 0 ? (
-                  <div className="relative w-full h-48 overflow-hidden">
-                    <Image
-                      src={product.images[0]}
-                      alt={product.name}
-                      fill
-                      className="object-cover group-hover:scale-105 transition-transform duration-300"
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-                    />
-                  </div>
-                ) : (
-                  <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-                    <span className="text-gray-400">No Image</span>
-                  </div>
-                )}
-                <div className="p-4">
-                  <h3 className="text-lg font-semibold mb-2 line-clamp-2 group-hover:text-black/80">
-                    {product.name}
-                  </h3>
-                  {product.description && (
-                    <p className="text-sm text-black/60 line-clamp-2 mb-3">
-                      {product.description}
-                    </p>
-                  )}
-                  <div className="flex items-center justify-between">
-                    <span className="text-lg font-bold text-black">
-                      {formatPrice(product.price)}
-                    </span>
-                    {product.stock === 0 && (
-                      <span className="text-xs text-red-600 font-semibold">缺货</span>
-                    )}
-                  </div>
-                </div>
-              </Link>
+                product={product}
+                userSlug={userSlug}
+                formatPrice={formatPrice}
+              />
             ))}
           </div>
         )}

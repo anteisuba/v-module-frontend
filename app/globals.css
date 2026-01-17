@@ -3,6 +3,12 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  
+  /* 主题色 - 品牌增强 */
+  --theme-primary: #000000; /* 默认黑色 */
+  --theme-primary-foreground: #ffffff;
+  --theme-primary-hover: #1a1a1a;
+  --theme-primary-active: #333333;
 }
 
 @theme inline {
@@ -10,6 +16,10 @@
   --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+  
+  /* 主题色 - 用于 Tailwind 类如 bg-primary, text-primary 等 */
+  --color-primary: var(--theme-primary);
+  --color-primary-foreground: var(--theme-primary-foreground);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -29,4 +39,82 @@ body {
 nextjs-portal {
   left: unset !important;
   top: unset !important;
+}
+
+/* Skeleton 骨架屏闪烁动画 */
+@keyframes skeleton-shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.skeleton-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(0, 0, 0, 0.06) 0%,
+    rgba(0, 0, 0, 0.1) 20%,
+    rgba(0, 0, 0, 0.15) 40%,
+    rgba(0, 0, 0, 0.1) 60%,
+    rgba(0, 0, 0, 0.06) 80%,
+    rgba(0, 0, 0, 0.06) 100%
+  );
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+}
+
+/* Toast 弹入动画 */
+@keyframes toast-in {
+  0% {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-toast-in {
+  animation: toast-in 0.3s ease-out forwards;
+}
+
+/* 主题色按钮 - 使用 CSS 变量实现动态品牌色 */
+.btn-themed {
+  background-color: var(--theme-primary);
+  color: var(--theme-primary-foreground);
+  transition: background-color 0.2s ease;
+}
+
+.btn-themed:hover:not(:disabled) {
+  background-color: var(--theme-primary-hover);
+}
+
+.btn-themed:active:not(:disabled) {
+  background-color: var(--theme-primary-active);
+}
+
+/* 主题色链接 - 用于文本链接高亮 */
+.text-themed {
+  color: var(--theme-primary);
+}
+
+.text-themed:hover {
+  opacity: 0.8;
+}
+
+/* 主题色边框 */
+.border-themed {
+  border-color: var(--theme-primary);
+}
+
+/* 主题色背景 */
+.bg-themed {
+  background-color: var(--theme-primary);
+}
+
+.bg-themed-light {
+  background-color: color-mix(in srgb, var(--theme-primary) 10%, transparent);
 }

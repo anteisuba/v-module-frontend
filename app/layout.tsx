@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { UserProvider } from "@/lib/context/UserProviderWrapper";
 import { InspectorWrapper } from "@/lib/context/InspectorWrapper";
+import { ToastProvider } from "@/lib/context/ToastContext";
 import { I18nProvider } from "@/lib/i18n/context";
 import ErrorFilter from "@/components/ErrorFilter";
 import { ErrorBoundary } from "@/components/ui";
@@ -37,9 +38,11 @@ export default function RootLayout({
         <ErrorBoundary>
           <ErrorFilter />
           <InspectorWrapper>
-            <UserProvider>
-              <I18nProvider>{children}</I18nProvider>
-            </UserProvider>
+            <ToastProvider>
+              <UserProvider>
+                <I18nProvider>{children}</I18nProvider>
+              </UserProvider>
+            </ToastProvider>
           </InspectorWrapper>
         </ErrorBoundary>
       </body>

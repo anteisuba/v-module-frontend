@@ -108,7 +108,7 @@ export const userApi = {
  */
 export const pageApi = {
   /**
-   * 获取当前用户的草稿配置
+   * 获取当前用户的草稿配置（包含主题设置）
    */
   async getDraftConfig(): Promise<PageConfig> {
     const response = await apiClient.get<PageDraftConfigResponse>(
@@ -123,13 +123,22 @@ export const pageApi = {
   },
 
   /**
+   * 获取当前用户的完整页面数据（包含主题设置）
+   */
+  async getFullPageData(): Promise<PageDraftConfigResponse> {
+    return apiClient.get<PageDraftConfigResponse>("/api/page/me");
+  },
+
+  /**
    * 更新当前用户的草稿配置
    */
   async updateDraftConfig(
-    draftConfig: PageConfig
+    draftConfig: PageConfig,
+    options?: { themeColor?: string; fontFamily?: string }
   ): Promise<PageUpdateResponse> {
     return apiClient.put<PageUpdateResponse>("/api/page/me", {
       draftConfig,
+      ...options,
     });
   },
 

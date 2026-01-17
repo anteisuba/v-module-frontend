@@ -17,6 +17,7 @@ import {
   SaveStatus,
   ConfirmDialog,
   LanguageSelector,
+  ColorPicker,
 } from "@/components/ui";
 import { pageApi } from "@/lib/api";
 import { useUser } from "@/lib/context/UserContext";
@@ -38,10 +39,12 @@ export default function CMSPage() {
   const { t } = useI18n();
   const { message: toastMessage, showToast } = useToast();
   const { error, handleError, clearError } = useErrorHandler();
-  const { config, setConfig, loading, hasUnsavedChanges, markAsSaved } = usePageConfig();
+  const { config, setConfig, themeColor, setThemeColor, fontFamily, setFontFamily, loading, hasUnsavedChanges, markAsSaved } = usePageConfig();
   const { saving, publishing, saveDraft, publish } = usePageConfigActions({
     config,
     setConfig,
+    themeColor,
+    fontFamily,
     onError: handleError,
     onToast: (msg) => {
       // 如果消息是翻译 key，则翻译它
@@ -612,6 +615,52 @@ export default function CMSPage() {
           onToast={showToast}
           onError={handleError}
         />
+
+        {/* 主题设置 */}
+        <section className="mt-6 rounded-2xl bg-white/70 p-5 backdrop-blur-sm">
+          <h2 className="mb-4 text-sm font-semibold text-black">
+            {t("cms.themeSettings.title") || "主题设置"}
+          </h2>
+          <p className="mb-4 text-xs text-black/60">
+            {t("cms.themeSettings.description") || "设置你的品牌主题色，所有按钮和链接高亮将使用此颜色"}
+          </p>
+          
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <ColorPicker
+              label={t("cms.themeSettings.themeColor") || "主题色（应援色）"}
+              value={themeColor}
+              onChange={setThemeColor}
+              helpText={t("cms.themeSettings.themeColorHelp") || "建议使用品牌标志色或应援色"}
+              disabled={saving || publishing}
+            />
+            
+            {/* 主题色预览 */}
+            <div className="space-y-2">
+              <label className="block text-xs font-medium text-black">
+                {t("cms.themeSettings.preview") || "效果预览"}
+              </label>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  className="btn-themed rounded-lg px-4 py-2 text-sm font-medium"
+                  style={{
+                    "--theme-primary": themeColor,
+                    "--theme-primary-foreground": "#ffffff",
+                  } as React.CSSProperties}
+                  disabled
+                >
+                  {t("cms.themeSettings.previewButton") || "主题色按钮"}
+                </button>
+                <span
+                  className="text-sm underline"
+                  style={{ color: themeColor }}
+                >
+                  {t("cms.themeSettings.previewLink") || "主题色链接"}
+                </span>
+              </div>
+            </div>
+          </div>
+        </section>
 
         {/* 新闻文章编辑 */}
         <NewsArticleEditor

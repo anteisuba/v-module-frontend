@@ -17,10 +17,14 @@ export async function GET() {
 
   const userId = session.user.id;
 
-  // 2. 获取用户的草稿配置
+  // 2. 获取用户的草稿配置和主题设置
   const page = await prisma.page.findUnique({
     where: { userId },
-    select: { draftConfig: true },
+    select: { 
+      draftConfig: true,
+      themeColor: true,
+      fontFamily: true,
+    },
   });
 
   if (!page) {
@@ -29,6 +33,8 @@ export async function GET() {
 
   return NextResponse.json({
     draftConfig: page.draftConfig,
+    themeColor: page.themeColor,
+    fontFamily: page.fontFamily,
   });
 }
 
@@ -52,7 +58,7 @@ export async function PUT(request: Request) {
     );
   }
 
-  const { draftConfig } = body;
+  const { draftConfig, themeColor, fontFamily } = body;
 
   if (!draftConfig) {
     return NextResponse.json(
@@ -85,15 +91,37 @@ export async function PUT(request: Request) {
   // 5. 确保 Page 存在（如果不存在则创建）
   await ensureUserPage(userId, user.slug);
 
-  // 6. 更新 draftConfig
+  // 6. 更新 draftConfig 和主题设置
+  const updateData: {
+    draftConfig: typeof validation.data;
+    updatedAt: Date;
+    themeColor?: string;
+    fontFamily?: string;
+  } = {
+    draftConfig: validation.data,
+    updatedAt: new Date(),
+  };
+
+  // 如果传入了主题色，同时更新
+  if (themeColor && typeof themeColor === "string") {
+    updateData.themeColor = themeColor;
+  }
+
+  // 如果传入了字体，同时更新
+  if (fontFamily && typeof fontFamily === "string") {
+    updateData.fontFamily = fontFamily;
+  }
+
   const page = await prisma.page.update({
     where: { userId },
-    data: {
-      draftConfig: validation.data,
-      updatedAt: new Date(),
-    },
+    data: updateData,
   });
 
-  return NextResponse.json({ ok: true, pageConfig: page.draftConfig });
+  return NextResponse.json({ 
+    ok: true, 
+    pageConfig: page.draftConfig,
+    themeColor: page.themeColor,
+    fontFamily: page.fontFamily,
+  });
 }
 
