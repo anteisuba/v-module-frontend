@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import { ImagePositionEditor, ConfirmDialog, Button } from "@/components/ui";
+import { SectionLayoutControl } from "@/components/ui/SectionLayoutControl";
 import { useI18n } from "@/lib/i18n/context";
 import type { PageConfig, NewsSectionProps } from "@/domain/page-config/types";
 
@@ -241,25 +242,44 @@ export default function NewsSectionEditor({
 
   return (
     <div className="mb-6 rounded-2xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-black">{t("newsSectionEditor.title")}</h2>
-        <div className="flex items-center gap-3">
-          {newsSection && (
-            <ToggleSwitch
-              enabled={newsSection.enabled}
-              onChange={() => toggleSectionEnabled(newsSection.id)}
+      <div className="mb-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-black">{t("newsSectionEditor.title")}</h2>
+          <div className="flex items-center gap-3">
+            {newsSection && (
+              <ToggleSwitch
+                enabled={newsSection.enabled}
+                onChange={() => toggleSectionEnabled(newsSection.id)}
+                disabled={disabled}
+              />
+            )}
+            <Button
+              variant="primary"
+              size="md"
+              onClick={addNewsItem}
               disabled={disabled}
-            />
-          )}
-          <Button
-            variant="primary"
-            size="md"
-            onClick={addNewsItem}
-            disabled={disabled}
-          >
-            {t("newsSectionEditor.addImage")}
-          </Button>
+            >
+              {t("newsSectionEditor.addImage")}
+            </Button>
+          </div>
         </div>
+        
+        {/* 布局宽度控制器 */}
+        {newsSection && (
+          <SectionLayoutControl
+            value={(newsSection.layout?.colSpan as 1 | 2 | 3 | 4) || 4}
+            onChange={(colSpan) => {
+              onConfigChange({
+                ...config,
+                sections: config.sections.map((s) =>
+                  s.id === newsSection.id
+                    ? { ...s, layout: { ...s.layout, colSpan } }
+                    : s
+                ),
+              });
+            }}
+          />
+        )}
       </div>
 
       {/* 布局配置 */}

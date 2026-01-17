@@ -555,134 +555,161 @@ export default function CMSPage() {
         {error && <Alert type="error" message={error} onClose={clearError} />}
         {toastMessage && <Alert type="success" message={toastMessage} />}
 
-        {/* Hero Section 编辑 */}
-        <HeroSectionEditor
-          config={config}
-          onConfigChange={setConfig}
-          disabled={saving || publishing}
-          onUploadImage={async (file) => {
-            const result = await pageApi.uploadImage(file);
-            return result;
-          }}
-          uploadingIndex={uploadingIndex}
-          onToast={showToast}
-          onError={handleError}
-        />
+        {/* Bento Grid 布局：12 列网格 - 优化后的布局 */}
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-12">
+          {/* Row 1: 核心编辑区域 - 更平衡的布局 */}
+          {/* 左侧：Hero Section 编辑器 - 减少到 6 列 */}
+          <div className="col-span-12 lg:col-span-6">
+            <div className="bg-white/50 backdrop-blur-xl rounded-3xl border border-black/5 shadow-sm p-6 overflow-hidden transition-all hover:shadow-md hover:bg-white/60">
+              <HeroSectionEditor
+                config={config}
+                onConfigChange={setConfig}
+                disabled={saving || publishing}
+                onUploadImage={async (file) => {
+                  const result = await pageApi.uploadImage(file);
+                  return result;
+                }}
+                uploadingIndex={uploadingIndex}
+                onToast={showToast}
+                onError={handleError}
+              />
+            </div>
+          </div>
 
-        {/* 图片导航编辑 */}
-        <NewsSectionEditor
-          config={config}
-          onConfigChange={setConfig}
-          disabled={saving || publishing}
-          onUploadImage={async (file) => {
-            setUploadingIndex(-1);
-            try {
-              const result = await pageApi.uploadImage(file);
-              setUploadingIndex(null);
-              return result;
-            } catch (e) {
-              setUploadingIndex(null);
-              throw e;
-            }
-          }}
-          uploadingIndex={uploadingIndex === -1 ? -1 : null}
-          onToast={showToast}
-          onError={handleError}
-        />
+          {/* 右侧：设置和背景 - 扩展到 6 列 */}
+          <div className="col-span-12 lg:col-span-6 flex flex-col gap-6">
+            {/* 页面背景设置 */}
+            <div className="bg-white/50 backdrop-blur-xl rounded-3xl border border-black/5 shadow-sm p-6 overflow-hidden transition-all hover:shadow-md hover:bg-white/60">
+              <PageBackgroundEditor
+                config={config}
+                onConfigChange={setConfig}
+                disabled={saving || publishing}
+                onUploadImage={async (file) => {
+                  try {
+                    const result = await pageApi.uploadImage(file);
+                    return result;
+                  } catch (e) {
+                    throw e;
+                  }
+                }}
+                onToast={showToast}
+                onError={handleError}
+              />
+            </div>
 
-        {/* 视频区块编辑 */}
-        <VideoSectionEditor
-          config={config}
-          onConfigChange={setConfig}
-          disabled={saving || publishing}
-          onToast={showToast}
-          onError={handleError}
-        />
-
-        {/* 页面背景编辑 */}
-        <PageBackgroundEditor
-          config={config}
-          onConfigChange={setConfig}
-          disabled={saving || publishing}
-          onUploadImage={async (file) => {
-            try {
-              const result = await pageApi.uploadImage(file);
-              return result;
-            } catch (e) {
-              throw e;
-            }
-          }}
-          onToast={showToast}
-          onError={handleError}
-        />
-
-        {/* 主题设置 */}
-        <section className="mt-6 rounded-2xl bg-white/70 p-5 backdrop-blur-sm">
-          <h2 className="mb-4 text-sm font-semibold text-black">
-            {t("cms.themeSettings.title") || "主题设置"}
-          </h2>
-          <p className="mb-4 text-xs text-black/60">
-            {t("cms.themeSettings.description") || "设置你的品牌主题色，所有按钮和链接高亮将使用此颜色"}
-          </p>
-          
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-            <ColorPicker
-              label={t("cms.themeSettings.themeColor") || "主题色（应援色）"}
-              value={themeColor}
-              onChange={setThemeColor}
-              helpText={t("cms.themeSettings.themeColorHelp") || "建议使用品牌标志色或应援色"}
-              disabled={saving || publishing}
-            />
-            
-            {/* 主题色预览 */}
-            <div className="space-y-2">
-              <label className="block text-xs font-medium text-black">
-                {t("cms.themeSettings.preview") || "效果预览"}
-              </label>
-              <div className="flex items-center gap-3">
-                <button
-                  type="button"
-                  className="btn-themed rounded-lg px-4 py-2 text-sm font-medium"
-                  style={{
-                    "--theme-primary": themeColor,
-                    "--theme-primary-foreground": "#ffffff",
-                  } as React.CSSProperties}
-                  disabled
-                >
-                  {t("cms.themeSettings.previewButton") || "主题色按钮"}
-                </button>
-                <span
-                  className="text-sm underline"
-                  style={{ color: themeColor }}
-                >
-                  {t("cms.themeSettings.previewLink") || "主题色链接"}
-                </span>
+            {/* 主题设置 */}
+            <div className="bg-white/50 backdrop-blur-xl rounded-3xl border border-black/5 shadow-sm p-6 overflow-hidden transition-all hover:shadow-md hover:bg-white/60">
+              <h2 className="mb-4 text-sm font-semibold text-black">
+                {t("cms.themeSettings.title") || "主题设置"}
+              </h2>
+              <p className="mb-4 text-xs text-black/60">
+                {t("cms.themeSettings.description") || "设置你的品牌主题色，所有按钮和链接高亮将使用此颜色"}
+              </p>
+              
+              <div className="space-y-4">
+                <ColorPicker
+                  label={t("cms.themeSettings.themeColor") || "主题色（应援色）"}
+                  value={themeColor}
+                  onChange={setThemeColor}
+                  helpText={t("cms.themeSettings.themeColorHelp") || "建议使用品牌标志色或应援色"}
+                  disabled={saving || publishing}
+                />
+                
+                {/* 主题色预览 */}
+                <div className="space-y-2">
+                  <label className="block text-xs font-medium text-black">
+                    {t("cms.themeSettings.preview") || "效果预览"}
+                  </label>
+                  <div className="flex items-center gap-3">
+                    <button
+                      type="button"
+                      className="btn-themed rounded-lg px-4 py-2 text-sm font-medium"
+                      style={{
+                        "--theme-primary": themeColor,
+                        "--theme-primary-foreground": "#ffffff",
+                      } as React.CSSProperties}
+                      disabled
+                    >
+                      {t("cms.themeSettings.previewButton") || "主题色按钮"}
+                    </button>
+                    <span
+                      className="text-sm underline"
+                      style={{ color: themeColor }}
+                    >
+                      {t("cms.themeSettings.previewLink") || "主题色链接"}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </section>
 
-        {/* 新闻文章编辑 */}
-        <NewsArticleEditor
-          disabled={saving || publishing}
-          onToast={showToast}
-          onError={handleError}
-          onUploadImage={async (file) => {
-            try {
-              const result = await pageApi.uploadImage(file);
-              return result;
-            } catch (e) {
-              throw e;
-            }
-          }}
-          newsBackground={config.newsBackground || { type: "color", value: "#000000" }}
-          onNewsBackgroundChange={(background) => {
-            setConfig({
-              ...config,
-              newsBackground: background,
-            });
-          }}
-        />
+          {/* Row 2: 内容编辑区域 */}
+          {/* 视频编辑 - 占据一半宽度 */}
+          <div className="col-span-12 lg:col-span-6">
+            <div className="bg-white/50 backdrop-blur-xl rounded-3xl border border-black/5 shadow-sm p-6 overflow-hidden transition-all hover:shadow-md hover:bg-white/60">
+              <VideoSectionEditor
+                config={config}
+                onConfigChange={setConfig}
+                disabled={saving || publishing}
+                onToast={showToast}
+                onError={handleError}
+              />
+            </div>
+          </div>
+
+          {/* 图片导航编辑 - 占据一半宽度 */}
+          <div className="col-span-12 lg:col-span-6">
+            <div className="bg-white/50 backdrop-blur-xl rounded-3xl border border-black/5 shadow-sm p-6 overflow-hidden transition-all hover:shadow-md hover:bg-white/60">
+              <NewsSectionEditor
+                config={config}
+                onConfigChange={setConfig}
+                disabled={saving || publishing}
+                onUploadImage={async (file) => {
+                  setUploadingIndex(-1);
+                  try {
+                    const result = await pageApi.uploadImage(file);
+                    setUploadingIndex(null);
+                    return result;
+                  } catch (e) {
+                    setUploadingIndex(null);
+                    throw e;
+                  }
+                }}
+                uploadingIndex={uploadingIndex === -1 ? -1 : null}
+                onToast={showToast}
+                onError={handleError}
+              />
+            </div>
+          </div>
+
+          {/* Row 3: 文章管理 - 全宽 */}
+          <div className="col-span-12">
+            <div className="bg-white/50 backdrop-blur-xl rounded-3xl border border-black/5 shadow-sm p-6 overflow-hidden transition-all hover:shadow-md hover:bg-white/60">
+              <NewsArticleEditor
+                disabled={saving || publishing}
+                onToast={showToast}
+                onError={handleError}
+                onUploadImage={async (file) => {
+                  try {
+                    const result = await pageApi.uploadImage(file);
+                    return result;
+                  } catch (e) {
+                    throw e;
+                  }
+                }}
+                newsBackground={config.newsBackground || { type: "color", value: "#000000" }}
+                onNewsBackgroundChange={(background) => {
+                  setConfig({
+                    ...config,
+                    newsBackground: background,
+                  });
+                }}
+              />
+            </div>
+          </div>
+        </div>
+
 
         <div className="mt-6 text-[10px] text-black/50 text-center">
           {t("cms.instruction")}

@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { ConfirmDialog, Button, Input } from "@/components/ui";
+import { SectionLayoutControl } from "@/components/ui/SectionLayoutControl";
 import { useI18n } from "@/lib/i18n/context";
 import { detectPlatform } from "@/features/video-section";
 import VideoPlayer from "@/features/video-section/components/VideoPlayer";
@@ -242,26 +243,45 @@ export default function VideoSectionEditor({
 
   return (
     <div className="mb-6 rounded-2xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl">
-      <div className="mb-4 flex items-center justify-between">
-        <h2 className="text-lg font-semibold text-black">{t("videoSectionEditor.title")}</h2>
-        <div className="flex items-center gap-3">
-          {videoSection && (
-            <ToggleSwitch
-              enabled={videoSection.enabled}
-              onChange={() => toggleSectionEnabled(videoSection.id)}
+      <div className="mb-4 space-y-3">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold text-black">{t("videoSectionEditor.title")}</h2>
+          <div className="flex items-center gap-3">
+            {videoSection && (
+              <ToggleSwitch
+                enabled={videoSection.enabled}
+                onChange={() => toggleSectionEnabled(videoSection.id)}
+                disabled={disabled}
+                label={t("videoSectionEditor.show")}
+              />
+            )}
+            <Button
+              variant="primary"
+              size="md"
+              onClick={addVideoItem}
               disabled={disabled}
-              label={t("videoSectionEditor.show")}
-            />
-          )}
-          <Button
-            variant="primary"
-            size="md"
-            onClick={addVideoItem}
-            disabled={disabled}
-          >
-            {t("videoSectionEditor.addVideo")}
-          </Button>
+            >
+              {t("videoSectionEditor.addVideo")}
+            </Button>
+          </div>
         </div>
+        
+        {/* 布局宽度控制器 */}
+        {videoSection && (
+          <SectionLayoutControl
+            value={(videoSection.layout?.colSpan as 1 | 2 | 3 | 4) || 4}
+            onChange={(colSpan) => {
+              onConfigChange({
+                ...config,
+                sections: config.sections.map((s) =>
+                  s.id === videoSection.id
+                    ? { ...s, layout: { ...s.layout, colSpan } }
+                    : s
+                ),
+              });
+            }}
+          />
+        )}
       </div>
 
       {/* 布局配置 */}

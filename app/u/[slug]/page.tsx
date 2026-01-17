@@ -5,11 +5,13 @@ import { notFound } from "next/navigation";
 import { PageRenderer } from "@/features/page-renderer";
 import { NewsListSection } from "@/features/news-list";
 import PageLoadingWrapper from "@/components/ui/PageLoadingWrapper";
+import { ThemeProvider } from "@/components/theme";
 import {
   getUserPageDataBySlug,
   EMPTY_PAGE_CONFIG,
 } from "@/domain/page-config";
 import type { PageConfig } from "@/domain/page-config/types";
+
 
 export default async function UserPage({
   params,
@@ -36,8 +38,12 @@ export default async function UserPage({
     }
   }
 
+  // 从 Page 表中读取主题配置（如果存在）
+  const themeColor = user.page?.themeColor || "#000000";
+  const fontFamily = user.page?.fontFamily || "Inter";
+
   return (
-    <>
+    <ThemeProvider themeColor={themeColor} fontFamily={fontFamily}>
       <Suspense fallback={<PageLoadingWrapper messageKey="common.loadingPageContent" />}>
         <PageRenderer config={config} />
       </Suspense>
@@ -46,7 +52,7 @@ export default async function UserPage({
         limit={3} 
         background={config.newsBackground || { type: "color", value: "#000000" }}
       />
-    </>
+    </ThemeProvider>
   );
 }
 

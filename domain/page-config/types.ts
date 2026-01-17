@@ -93,11 +93,12 @@ export type VideoSectionProps = {
 };
 
 export type SectionConfig = 
-  | { id: string; type: 'hero'; props: HeroSectionProps; enabled: boolean; order: number }
-  | { id: string; type: 'links'; props: LinksSectionProps; enabled: boolean; order: number }
-  | { id: string; type: 'gallery'; props: GallerySectionProps; enabled: boolean; order: number }
-  | { id: string; type: 'news'; props: NewsSectionProps; enabled: boolean; order: number }
-  | { id: string; type: 'video'; props: VideoSectionProps; enabled: boolean; order: number };
+  | { id: string; type: 'hero'; props: HeroSectionProps; enabled: boolean; order: number; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } }
+  | { id: string; type: 'links'; props: LinksSectionProps; enabled: boolean; order: number; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } }
+  | { id: string; type: 'gallery'; props: GallerySectionProps; enabled: boolean; order: number; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } }
+  | { id: string; type: 'news'; props: NewsSectionProps; enabled: boolean; order: number; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } }
+  | { id: string; type: 'video'; props: VideoSectionProps; enabled: boolean; order: number; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } };
+
 
 export type SocialLinkItem = {
   id: string; // 唯一标识
@@ -150,5 +151,10 @@ export type PageConfig = {
 
   // 是否已发布过（用于防止清空已发布的配置）
   hasPublished?: boolean;
+
+  // 主题配置（从数据库 Page 表读取）
+  themeColor?: string; // 品牌主题色，默认 "#000000"
+  fontFamily?: string; // 字体家族，默认 "Inter"
 };
+
 
