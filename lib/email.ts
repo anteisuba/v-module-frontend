@@ -83,7 +83,7 @@ ${resetUrl}
         
         // 如果是域名验证相关的错误，提供更详细的提示
         if (errorMessage.includes("only send testing emails to your own email address")) {
-          errorMessage = "使用 onboarding@resend.dev 只能发送到注册邮箱。要发送到其他邮箱，请验证域名后使用你自己的邮箱地址。详情请查看 document/RESEND_VERIFIED_RECIPIENT.md";
+          errorMessage = "使用 onboarding@resend.dev 只能发送到注册邮箱。要发送到其他邮箱，请验证域名后使用你自己的邮箱地址。详情请查看 docs/zh-CN/operations/deployment-and-delivery-history.md";
         }
         
         throw new Error(`邮件发送失败: ${errorMessage}`);

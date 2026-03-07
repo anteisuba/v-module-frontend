@@ -5,17 +5,25 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  BackButton,
   Alert,
   LoadingState,
   ConfirmDialog,
-  LanguageSelector,
+  AdminEditorAccordion,
+  AdminEditorPage,
+  AdminEditorTabs,
+  BackgroundEditor,
+  SaveStatus,
+  Button,
 } from "@/components/ui";
-import { shopApi } from "@/lib/api";
+import { pageApi, shopApi } from "@/lib/api";
 import { useUser } from "@/lib/context/UserContext";
 import { useToast } from "@/hooks/useToast";
 import { useErrorHandler } from "@/hooks/useErrorHandler";
 import { useI18n } from "@/lib/i18n/context";
+import { usePageConfig } from "@/hooks/usePageConfig";
+import { usePageConfigActions } from "@/hooks/usePageConfigActions";
+import type { BackgroundConfig } from "@/domain/page-config/types";
+import type { AdminEditorPanelItem, AdminEditorTabOption } from "@/components/ui";
 
 interface Product {
   id: string;
@@ -29,18 +37,45 @@ interface Product {
   updatedAt: string;
 }
 
+type EditorTabId = "layout" | "content";
+
 export default function ShopPage() {
   const router = useRouter();
   const { user, loading: userLoading } = useUser();
   const { t } = useI18n();
   const { message: toastMessage, showToast } = useToast();
   const { error, handleError, clearError } = useErrorHandler();
+  const {
+    config,
+    setConfig,
+    loading: configLoading,
+    hasUnsavedChanges,
+    markAsSaved,
+  } = usePageConfig();
+  const { saving, publishing, saveDraft, publish } = usePageConfigActions({
+    config,
+    setConfig,
+    onError: handleError,
+    onToast: (msg) => {
+      const translatedMsg = msg.startsWith("cms.") ? t(msg) : msg;
+      showToast(translatedMsg);
+    },
+  });
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [productToDelete, setProductToDelete] = useState<string | null>(null);
+  const [lastSaved, setLastSaved] = useState<Date | null>(null);
+  const [showPublishConfirm, setShowPublishConfirm] = useState(false);
+  const [activeTab, setActiveTab] = useState<EditorTabId>("layout");
+  const [openPanelByTab, setOpenPanelByTab] = useState<
+    Record<EditorTabId, string | null>
+  >({
+    layout: "background",
+    content: "products",
+  });
 
   // 加载商品列表
   useEffect(() => {
@@ -81,6 +116,27 @@ export default function ShopPage() {
       setDeletingId(null);
     }
   }
+
+  const handleSaveDraft = async () => {
+    try {
+      await saveDraft();
+      markAsSaved();
+      setLastSaved(new Date());
+    } catch (e) {
+      // 错误已由 handleError 处理
+    }
+  };
+
+  const handlePublish = async () => {
+    try {
+      await publish();
+      markAsSaved();
+      setLastSaved(new Date());
+      setShowPublishConfirm(false);
+    } catch (e) {
+      // 错误已由 handleError 处理
+    }
+  };
 
   function formatDate(dateString: string) {
     const date = new Date(dateString);
@@ -123,68 +179,87 @@ export default function ShopPage() {
     }
   }
 
-  if (userLoading || loading) {
-    return (
-      <main className="relative min-h-screen w-full overflow-hidden">
-        <div className="flex h-screen items-center justify-center">
-          <LoadingState message={t("common.loading")} />
-        </div>
-      </main>
-    );
-  }
+  const togglePanel = (tabId: EditorTabId, panelId: string) => {
+    setOpenPanelByTab((prev) => ({
+      ...prev,
+      [tabId]: prev[tabId] === panelId ? null : panelId,
+    }));
+  };
 
-  if (!user) {
-    return null;
-  }
+  const tabOptions: AdminEditorTabOption[] = [
+    {
+      id: "layout",
+      title: t("admin.editorScaffold.tabs.layout.title"),
+      description: t("admin.editorScaffold.tabs.layout.description"),
+    },
+    {
+      id: "content",
+      title: t("admin.editorScaffold.tabs.content.title"),
+      description: t("admin.editorScaffold.tabs.content.description"),
+    },
+  ];
 
-  return (
-    <main className="relative min-h-screen w-full overflow-hidden">
-      {/* 背景 */}
-      <div className="absolute inset-0">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url(/login/login-c.jpeg)" }}
+  const publishActions = (
+    <>
+      <Button
+        variant="secondary"
+        size="sm"
+        onClick={handleSaveDraft}
+        loading={saving}
+        disabled={saving || publishing || !hasUnsavedChanges}
+      >
+        {t("cms.saveDraft")}
+      </Button>
+      <Button
+        variant="primary"
+        size="sm"
+        onClick={() => setShowPublishConfirm(true)}
+        loading={publishing}
+        disabled={saving || publishing}
+      >
+        {t("cms.publish")}
+      </Button>
+    </>
+  );
+
+  const layoutPanels: AdminEditorPanelItem[] = [
+    {
+      id: "background",
+      title: t("shop.layout.listBackground"),
+      description: t("admin.editorScaffold.panels.background.description"),
+      actions: publishActions,
+      content: (
+        <BackgroundEditor
+          label={t("shop.layout.listBackground")}
+          background={
+            config.shopBackground || { type: "color", value: "#000000" }
+          }
+          onBackgroundChange={(background: BackgroundConfig) => {
+            setConfig({
+              ...config,
+              shopBackground: background,
+            });
+          }}
+          disabled={saving || publishing}
+          onUploadImage={async (file) => {
+            const result = await pageApi.uploadImage(file);
+            return result;
+          }}
+          onToast={showToast}
+          onError={handleError}
+          previewHeight="h-48"
         />
-        <div className="absolute inset-0 bg-white/70" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/15" />
-      </div>
+      ),
+    },
+  ];
 
-      <div className="relative z-10 mx-auto max-w-6xl px-6 py-10">
-        <BackButton href="/admin/dashboard" label={t("common.back")} />
-        <div className="fixed bottom-6 right-6 z-[100]">
-          <LanguageSelector position="bottom-right" />
-        </div>
-
-        {/* 头部 */}
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-black">{t("shop.title")}</h1>
-            <p className="mt-1 text-sm text-black/70">
-              {t("admin.dashboard.pages.shop.description")}
-            </p>
-          </div>
-          <button
-            onClick={() => router.push("/admin/shop/new")}
-            className="rounded-xl bg-black px-6 py-3 text-sm font-medium text-white hover:bg-black/90 transition-colors"
-          >
-            {t("shop.create")}
-          </button>
-        </div>
-
-        {/* 错误提示 */}
-        {error && (
-          <Alert type="error" message={error} onClose={clearError} />
-        )}
-
-        {/* Toast 提示 */}
-        {toastMessage && (
-          <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[200] bg-black text-white px-4 py-2 rounded-lg text-sm">
-            {toastMessage}
-          </div>
-        )}
-
-        {/* 商品列表 */}
-        {products.length === 0 ? (
+  const contentPanels: AdminEditorPanelItem[] = [
+    {
+      id: "products",
+      title: t("shop.title"),
+      description: t("admin.editorScaffold.panels.list.description"),
+      content:
+        products.length === 0 ? (
           <div className="rounded-2xl border border-black/10 bg-white/55 p-12 text-center backdrop-blur-xl">
             <p className="text-black/60">{t("shop.list.empty")}</p>
             <button
@@ -199,49 +274,47 @@ export default function ShopPage() {
             {products.map((product) => (
               <div
                 key={product.id}
-                className="rounded-xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl hover:bg-white/70 transition-colors cursor-pointer"
+                className="cursor-pointer rounded-xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl transition-colors hover:bg-white/70"
                 onClick={() => router.push(`/admin/shop/${product.id}`)}
               >
                 <div className="flex items-start gap-4">
-                  {/* 商品图片 */}
                   {product.images && product.images.length > 0 ? (
                     <div className="flex-shrink-0">
                       <img
                         src={product.images[0]}
                         alt={product.name}
-                        className="w-24 h-24 object-cover rounded-lg"
+                        className="h-24 w-24 rounded-lg object-cover"
                         onError={(e) => {
                           (e.target as HTMLImageElement).style.display = "none";
                         }}
                       />
                     </div>
                   ) : (
-                    <div className="flex-shrink-0 w-24 h-24 bg-gray-200 rounded-lg flex items-center justify-center">
-                      <span className="text-gray-400 text-xs">No Image</span>
+                    <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-lg bg-gray-200">
+                      <span className="text-xs text-gray-400">No Image</span>
                     </div>
                   )}
 
-                  {/* 内容 */}
-                  <div className="flex-1 min-w-0">
+                  <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-1">
+                        <div className="mb-1 flex items-center gap-2">
                           <h3 className="text-lg font-semibold text-black">
                             {product.name}
                           </h3>
                           <span
-                            className={`px-2 py-0.5 rounded text-xs ${getStatusColor(
+                            className={`rounded px-2 py-0.5 text-xs ${getStatusColor(
                               product.status
                             )}`}
                           >
                             {getStatusLabel(product.status)}
                           </span>
                         </div>
-                        {product.description && (
-                          <p className="text-sm text-black/60 line-clamp-2 mb-2">
+                        {product.description ? (
+                          <p className="mb-2 line-clamp-2 text-sm text-black/60">
                             {product.description}
                           </p>
-                        )}
+                        ) : null}
                         <div className="flex items-center gap-4 text-sm">
                           <span className="font-semibold text-black">
                             {formatPrice(product.price)}
@@ -249,7 +322,7 @@ export default function ShopPage() {
                           <span
                             className={`text-xs ${
                               product.stock === 0
-                                ? "text-red-600 font-semibold"
+                                ? "font-semibold text-red-600"
                                 : "text-black/50"
                             }`}
                           >
@@ -263,14 +336,13 @@ export default function ShopPage() {
                         </div>
                       </div>
 
-                      {/* 操作按钮 */}
                       <div className="flex items-center gap-2">
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
                             router.push(`/admin/shop/${product.id}`);
                           }}
-                          className="rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black hover:bg-white/80 transition-colors"
+                          className="rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black transition-colors hover:bg-white/80"
                         >
                           {t("common.edit")}
                         </button>
@@ -281,9 +353,11 @@ export default function ShopPage() {
                             setShowDeleteConfirm(true);
                           }}
                           disabled={deletingId === product.id}
-                          className="rounded-lg border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50"
+                          className="rounded-lg border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-100 disabled:opacity-50"
                         >
-                          {deletingId === product.id ? t("common.loading") : t("common.delete")}
+                          {deletingId === product.id
+                            ? t("common.loading")
+                            : t("common.delete")}
                         </button>
                       </div>
                     </div>
@@ -292,8 +366,67 @@ export default function ShopPage() {
               </div>
             ))}
           </div>
-        )}
-      </div>
+        ),
+    },
+  ];
+
+  const visiblePanels =
+    activeTab === "layout" ? layoutPanels : contentPanels;
+
+  if (userLoading || loading || configLoading) {
+    return (
+      <main className="relative min-h-screen w-full overflow-hidden">
+        <div className="flex h-screen items-center justify-center">
+          <LoadingState message={t("common.loading")} />
+        </div>
+      </main>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
+
+  return (
+    <AdminEditorPage
+      backHref="/admin/dashboard"
+      backLabel={t("common.back")}
+      title={t("shop.title")}
+      description={t("admin.dashboard.pages.shop.description")}
+      action={
+        <button
+          onClick={() => router.push("/admin/shop/new")}
+          className="rounded-xl bg-black px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-black/90"
+        >
+          {t("shop.create")}
+        </button>
+      }
+    >
+      {error && <Alert type="error" message={error} onClose={clearError} />}
+      {toastMessage && (
+        <div className="fixed left-1/2 top-20 z-[200] -translate-x-1/2 transform rounded-lg bg-black px-4 py-2 text-sm text-white">
+          {toastMessage}
+        </div>
+      )}
+
+      <SaveStatus
+        hasUnsavedChanges={hasUnsavedChanges}
+        saving={saving}
+        publishing={publishing}
+        lastSaved={lastSaved}
+      />
+
+      <AdminEditorTabs
+        tabs={tabOptions}
+        activeTab={activeTab}
+        onChange={(tabId) => setActiveTab(tabId as EditorTabId)}
+      />
+
+      <AdminEditorAccordion
+        panels={visiblePanels}
+        openPanelId={openPanelByTab[activeTab]}
+        onToggle={(panelId) => togglePanel(activeTab, panelId)}
+      />
 
       {/* 删除确认对话框 */}
       <ConfirmDialog
@@ -311,6 +444,19 @@ export default function ShopPage() {
           setProductToDelete(null);
         }}
       />
-    </main>
+
+      <ConfirmDialog
+        open={showPublishConfirm}
+        title={t("cms.publishConfirm.title") || "确认发布"}
+        message={
+          t("cms.publishConfirm.message") ||
+          "确定要发布页面吗？发布后将对所有访客可见。"
+        }
+        confirmLabel={t("cms.publishConfirm.confirm") || "确定发布"}
+        cancelLabel={t("common.cancel")}
+        onConfirm={handlePublish}
+        onCancel={() => setShowPublishConfirm(false)}
+      />
+    </AdminEditorPage>
   );
 }

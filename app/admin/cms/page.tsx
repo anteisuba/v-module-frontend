@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, type CSSProperties } from "react";
 import {
   BackButton,
   HeroSectionEditor,
@@ -10,7 +10,6 @@ import {
   VideoSectionEditor,
   PageBackgroundEditor,
   NewsArticleEditor,
-  ToggleSwitch,
   Alert,
   CMSHeader,
   LoadingState,
@@ -18,6 +17,9 @@ import {
   ConfirmDialog,
   LanguageSelector,
   ColorPicker,
+  AdminEditorAccordion,
+  AdminEditorCard,
+  AdminEditorTabs,
 } from "@/components/ui";
 import { pageApi } from "@/lib/api";
 import { useUser } from "@/lib/context/UserContext";
@@ -28,11 +30,12 @@ import { usePageConfigActions } from "@/hooks/usePageConfigActions";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useI18n } from "@/lib/i18n/context";
 import type {
-  PageConfig,
   HeroSectionProps,
   NewsSectionProps,
-  SocialLinkItem,
 } from "@/domain/page-config/types";
+import type { AdminEditorPanelItem, AdminEditorTabOption } from "@/components/ui";
+
+type CMSTabId = "page" | "content";
 
 export default function CMSPage() {
   const { user } = useUser();
@@ -55,6 +58,13 @@ export default function CMSPage() {
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [showPublishConfirm, setShowPublishConfirm] = useState(false);
+  const [activeTab, setActiveTab] = useState<CMSTabId>("page");
+  const [openPanelByTab, setOpenPanelByTab] = useState<
+    Record<CMSTabId, string | null>
+  >({
+    page: "hero",
+    content: "video",
+  });
 
   // 键盘快捷键支持
   useKeyboardShortcuts({
@@ -498,7 +508,6 @@ export default function CMSPage() {
     showToast(`图片 ${index + 1} 已更新`);
   }
 
-
   if (loading) {
     return (
       <main className="relative min-h-screen w-full overflow-hidden">
@@ -508,6 +517,189 @@ export default function CMSPage() {
       </main>
     );
   }
+
+  const togglePanel = (tabId: CMSTabId, panelId: string) => {
+    setOpenPanelByTab((prev) => ({
+      ...prev,
+      [tabId]: prev[tabId] === panelId ? null : panelId,
+    }));
+  };
+
+  const tabOptions: AdminEditorTabOption[] = [
+    {
+      id: "page",
+      title: t("cms.tabs.page.title"),
+      description: t("cms.tabs.page.description"),
+    },
+    {
+      id: "content",
+      title: t("cms.tabs.content.title"),
+      description: t("cms.tabs.content.description"),
+    },
+  ];
+
+  const pagePanels: AdminEditorPanelItem[] = [
+    {
+      id: "hero",
+      title: t("heroEditor.title"),
+      description: t("cms.panels.hero.description"),
+      content: (
+        <HeroSectionEditor
+          config={config}
+          onConfigChange={setConfig}
+          disabled={saving || publishing}
+          onUploadImage={async (file) => {
+            const result = await pageApi.uploadImage(file);
+            return result;
+          }}
+          uploadingIndex={uploadingIndex}
+          onToast={showToast}
+          onError={handleError}
+        />
+      ),
+    },
+    {
+      id: "background",
+      title: t("pageBackgroundEditor.title"),
+      description: t("cms.panels.background.description"),
+      content: (
+        <PageBackgroundEditor
+          config={config}
+          onConfigChange={setConfig}
+          disabled={saving || publishing}
+          onUploadImage={async (file) => {
+            try {
+              const result = await pageApi.uploadImage(file);
+              return result;
+            } catch (e) {
+              throw e;
+            }
+          }}
+          onToast={showToast}
+          onError={handleError}
+        />
+      ),
+    },
+    {
+      id: "theme",
+      title: t("cms.themeSettings.title"),
+      description: t("cms.panels.theme.description"),
+      content: (
+        <AdminEditorCard className="rounded-3xl border-black/5 bg-white/70 p-5 shadow-sm">
+          <div className="space-y-4">
+            <ColorPicker
+              label={t("cms.themeSettings.themeColor")}
+              value={themeColor}
+              onChange={setThemeColor}
+              helpText={t("cms.themeSettings.themeColorHelp")}
+              disabled={saving || publishing}
+            />
+
+            <div className="space-y-2">
+              <label className="block text-xs font-medium text-black">
+                {t("cms.themeSettings.preview")}
+              </label>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  className="btn-themed rounded-lg px-4 py-2 text-sm font-medium"
+                  style={
+                    {
+                      "--theme-primary": themeColor,
+                      "--theme-primary-foreground": "#ffffff",
+                    } as CSSProperties
+                  }
+                  disabled
+                >
+                  {t("cms.themeSettings.previewButton")}
+                </button>
+                <span
+                  className="text-sm underline"
+                  style={{ color: themeColor }}
+                >
+                  {t("cms.themeSettings.previewLink")}
+                </span>
+              </div>
+            </div>
+          </div>
+        </AdminEditorCard>
+      ),
+    },
+  ];
+
+  const contentPanels: AdminEditorPanelItem[] = [
+    {
+      id: "video",
+      title: t("videoSectionEditor.title"),
+      description: t("cms.panels.video.description"),
+      content: (
+        <VideoSectionEditor
+          config={config}
+          onConfigChange={setConfig}
+          disabled={saving || publishing}
+          onToast={showToast}
+          onError={handleError}
+        />
+      ),
+    },
+    {
+      id: "news",
+      title: t("newsSectionEditor.title"),
+      description: t("cms.panels.news.description"),
+      content: (
+        <NewsSectionEditor
+          config={config}
+          onConfigChange={setConfig}
+          disabled={saving || publishing}
+          onUploadImage={async (file) => {
+            setUploadingIndex(-1);
+            try {
+              const result = await pageApi.uploadImage(file);
+              setUploadingIndex(null);
+              return result;
+            } catch (e) {
+              setUploadingIndex(null);
+              throw e;
+            }
+          }}
+          uploadingIndex={uploadingIndex === -1 ? -1 : null}
+          onToast={showToast}
+          onError={handleError}
+        />
+      ),
+    },
+    {
+      id: "articles",
+      title: t("newsArticleEditor.title"),
+      description: t("cms.panels.articles.description"),
+      content: (
+        <NewsArticleEditor
+          disabled={saving || publishing}
+          onToast={showToast}
+          onError={handleError}
+          onUploadImage={async (file) => {
+            try {
+              const result = await pageApi.uploadImage(file);
+              return result;
+            } catch (e) {
+              throw e;
+            }
+          }}
+          newsBackground={
+            config.newsBackground || { type: "color", value: "#000000" }
+          }
+          onNewsBackgroundChange={(background) => {
+            setConfig({
+              ...config,
+              newsBackground: background,
+            });
+          }}
+        />
+      ),
+    },
+  ];
+
+  const visiblePanels = activeTab === "page" ? pagePanels : contentPanels;
 
   return (
     <main className="relative min-h-screen w-full overflow-hidden">
@@ -521,7 +713,7 @@ export default function CMSPage() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/15" />
       </div>
 
-      <div className="relative z-10 mx-auto max-w-5xl px-4 py-8">
+      <div className="relative z-10 mx-auto max-w-6xl px-4 py-8">
         {/* 返回按钮和语言切换器 */}
         <div className="mb-4 flex items-center justify-between">
           <BackButton 
@@ -555,161 +747,17 @@ export default function CMSPage() {
         {error && <Alert type="error" message={error} onClose={clearError} />}
         {toastMessage && <Alert type="success" message={toastMessage} />}
 
-        {/* Bento Grid 布局：12 列网格 - 优化后的布局 */}
-        <div className="grid grid-cols-1 gap-6 md:grid-cols-12">
-          {/* Row 1: 核心编辑区域 - 更平衡的布局 */}
-          {/* 左侧：Hero Section 编辑器 - 减少到 6 列 */}
-          <div className="col-span-12 lg:col-span-6">
-            <div className="bg-white/50 backdrop-blur-xl rounded-3xl border border-black/5 shadow-sm p-6 overflow-hidden transition-all hover:shadow-md hover:bg-white/60">
-              <HeroSectionEditor
-                config={config}
-                onConfigChange={setConfig}
-                disabled={saving || publishing}
-                onUploadImage={async (file) => {
-                  const result = await pageApi.uploadImage(file);
-                  return result;
-                }}
-                uploadingIndex={uploadingIndex}
-                onToast={showToast}
-                onError={handleError}
-              />
-            </div>
-          </div>
+        <AdminEditorTabs
+          tabs={tabOptions}
+          activeTab={activeTab}
+          onChange={(tabId) => setActiveTab(tabId as CMSTabId)}
+        />
 
-          {/* 右侧：设置和背景 - 扩展到 6 列 */}
-          <div className="col-span-12 lg:col-span-6 flex flex-col gap-6">
-            {/* 页面背景设置 */}
-            <div className="bg-white/50 backdrop-blur-xl rounded-3xl border border-black/5 shadow-sm p-6 overflow-hidden transition-all hover:shadow-md hover:bg-white/60">
-              <PageBackgroundEditor
-                config={config}
-                onConfigChange={setConfig}
-                disabled={saving || publishing}
-                onUploadImage={async (file) => {
-                  try {
-                    const result = await pageApi.uploadImage(file);
-                    return result;
-                  } catch (e) {
-                    throw e;
-                  }
-                }}
-                onToast={showToast}
-                onError={handleError}
-              />
-            </div>
-
-            {/* 主题设置 */}
-            <div className="bg-white/50 backdrop-blur-xl rounded-3xl border border-black/5 shadow-sm p-6 overflow-hidden transition-all hover:shadow-md hover:bg-white/60">
-              <h2 className="mb-4 text-sm font-semibold text-black">
-                {t("cms.themeSettings.title") || "主题设置"}
-              </h2>
-              <p className="mb-4 text-xs text-black/60">
-                {t("cms.themeSettings.description") || "设置你的品牌主题色，所有按钮和链接高亮将使用此颜色"}
-              </p>
-              
-              <div className="space-y-4">
-                <ColorPicker
-                  label={t("cms.themeSettings.themeColor") || "主题色（应援色）"}
-                  value={themeColor}
-                  onChange={setThemeColor}
-                  helpText={t("cms.themeSettings.themeColorHelp") || "建议使用品牌标志色或应援色"}
-                  disabled={saving || publishing}
-                />
-                
-                {/* 主题色预览 */}
-                <div className="space-y-2">
-                  <label className="block text-xs font-medium text-black">
-                    {t("cms.themeSettings.preview") || "效果预览"}
-                  </label>
-                  <div className="flex items-center gap-3">
-                    <button
-                      type="button"
-                      className="btn-themed rounded-lg px-4 py-2 text-sm font-medium"
-                      style={{
-                        "--theme-primary": themeColor,
-                        "--theme-primary-foreground": "#ffffff",
-                      } as React.CSSProperties}
-                      disabled
-                    >
-                      {t("cms.themeSettings.previewButton") || "主题色按钮"}
-                    </button>
-                    <span
-                      className="text-sm underline"
-                      style={{ color: themeColor }}
-                    >
-                      {t("cms.themeSettings.previewLink") || "主题色链接"}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Row 2: 内容编辑区域 */}
-          {/* 视频编辑 - 占据一半宽度 */}
-          <div className="col-span-12 lg:col-span-6">
-            <div className="bg-white/50 backdrop-blur-xl rounded-3xl border border-black/5 shadow-sm p-6 overflow-hidden transition-all hover:shadow-md hover:bg-white/60">
-              <VideoSectionEditor
-                config={config}
-                onConfigChange={setConfig}
-                disabled={saving || publishing}
-                onToast={showToast}
-                onError={handleError}
-              />
-            </div>
-          </div>
-
-          {/* 图片导航编辑 - 占据一半宽度 */}
-          <div className="col-span-12 lg:col-span-6">
-            <div className="bg-white/50 backdrop-blur-xl rounded-3xl border border-black/5 shadow-sm p-6 overflow-hidden transition-all hover:shadow-md hover:bg-white/60">
-              <NewsSectionEditor
-                config={config}
-                onConfigChange={setConfig}
-                disabled={saving || publishing}
-                onUploadImage={async (file) => {
-                  setUploadingIndex(-1);
-                  try {
-                    const result = await pageApi.uploadImage(file);
-                    setUploadingIndex(null);
-                    return result;
-                  } catch (e) {
-                    setUploadingIndex(null);
-                    throw e;
-                  }
-                }}
-                uploadingIndex={uploadingIndex === -1 ? -1 : null}
-                onToast={showToast}
-                onError={handleError}
-              />
-            </div>
-          </div>
-
-          {/* Row 3: 文章管理 - 全宽 */}
-          <div className="col-span-12">
-            <div className="bg-white/50 backdrop-blur-xl rounded-3xl border border-black/5 shadow-sm p-6 overflow-hidden transition-all hover:shadow-md hover:bg-white/60">
-              <NewsArticleEditor
-                disabled={saving || publishing}
-                onToast={showToast}
-                onError={handleError}
-                onUploadImage={async (file) => {
-                  try {
-                    const result = await pageApi.uploadImage(file);
-                    return result;
-                  } catch (e) {
-                    throw e;
-                  }
-                }}
-                newsBackground={config.newsBackground || { type: "color", value: "#000000" }}
-                onNewsBackgroundChange={(background) => {
-                  setConfig({
-                    ...config,
-                    newsBackground: background,
-                  });
-                }}
-              />
-            </div>
-          </div>
-        </div>
-
+        <AdminEditorAccordion
+          panels={visiblePanels}
+          openPanelId={openPanelByTab[activeTab]}
+          onToggle={(panelId) => togglePanel(activeTab, panelId)}
+        />
 
         <div className="mt-6 text-[10px] text-black/50 text-center">
           {t("cms.instruction")}

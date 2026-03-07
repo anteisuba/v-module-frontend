@@ -2,6 +2,7 @@
 
 import { NextResponse } from "next/server";
 import { getServerSession } from "@/lib/session/userSession";
+import { serializeOrderWithItems } from "@/domain/shop/services";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -75,6 +76,7 @@ export async function PUT(
             select: {
               id: true,
               name: true,
+              images: true,
             },
           },
         },
@@ -82,5 +84,5 @@ export async function PUT(
     },
   });
 
-  return NextResponse.json({ order });
+  return NextResponse.json({ order: serializeOrderWithItems(order) });
 }

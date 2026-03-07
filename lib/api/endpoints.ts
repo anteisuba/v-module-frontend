@@ -596,12 +596,21 @@ export const shopApi = {
       buyerName: string | null;
       totalAmount: number;
       status: string;
+      shippingAddress: Record<string, unknown> | null;
+      shippingMethod: string | null;
       createdAt: string;
+      updatedAt: string;
+      paidAt: string | null;
+      shippedAt: string | null;
+      deliveredAt: string | null;
       items: Array<{
         id: string;
+        orderId: string;
+        productId: string;
         product: {
           id: string;
           name: string;
+          images: string[];
         };
         quantity: number;
         price: number;
@@ -624,13 +633,12 @@ export const shopApi = {
   },
 
   /**
-   * 创建订单
+   * 公开结账创建订单
    */
-  async createOrder(data: {
-    userId: string;
+  async createCheckoutOrder(data: {
     buyerEmail: string;
     buyerName?: string | null;
-    shippingAddress?: Record<string, any> | null;
+    shippingAddress?: Record<string, unknown> | null;
     shippingMethod?: string | null;
     items: Array<{ productId: string; quantity: number }>;
   }): Promise<{
@@ -640,16 +648,33 @@ export const shopApi = {
     buyerName: string | null;
     totalAmount: number;
     status: string;
+    shippingAddress: Record<string, unknown> | null;
+    shippingMethod: string | null;
     createdAt: string;
+    updatedAt: string;
+    paidAt: string | null;
+    shippedAt: string | null;
+    deliveredAt: string | null;
     items: Array<{
       id: string;
+      orderId: string;
       productId: string;
       quantity: number;
       price: number;
       subtotal: number;
+      createdAt: string;
+      product: {
+        id: string;
+        name: string;
+        images: string[];
+      } | null;
     }>;
   }> {
-    const response = await apiClient.post<{ order: any }>("/api/shop/orders", data);
+    const response = await apiClient.post<{ order: any }>(
+      "/api/shop/checkout",
+      data,
+      { skipAuth: true }
+    );
     return response.order;
   },
 

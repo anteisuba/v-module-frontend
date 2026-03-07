@@ -5,9 +5,9 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import {
-  BackButton,
+  AdminEditorAccordion,
+  AdminEditorPage,
   LoadingState,
-  LanguageSelector,
 } from "@/components/ui";
 import BlogEditor from "@/components/blog/BlogEditor";
 import { blogApi } from "@/lib/api";
@@ -15,6 +15,7 @@ import { useUser } from "@/lib/context/UserContext";
 import { useToast } from "@/hooks/useToast";
 import { useErrorHandler } from "@/hooks/useErrorHandler";
 import { useI18n } from "@/lib/i18n/context";
+import type { AdminEditorPanelItem } from "@/components/ui";
 
 export default function NewBlogPage() {
   const router = useRouter();
@@ -69,41 +70,34 @@ export default function NewBlogPage() {
     return null;
   }
 
-  return (
-    <main className="relative min-h-screen w-full overflow-hidden">
-      {/* 背景 */}
-      <div className="absolute inset-0">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url(/login/login-c.jpeg)" }}
+  const panels: AdminEditorPanelItem[] = [
+    {
+      id: "editor",
+      title: t("blog.create"),
+      description: t("admin.editorScaffold.panels.create.description"),
+      content: (
+        <BlogEditor
+          onSave={handleSave}
+          onCancel={handleCancel}
+          saving={saving}
         />
-        <div className="absolute inset-0 bg-white/70" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/15" />
-      </div>
+      ),
+    },
+  ];
 
-      <div className="relative z-10 mx-auto max-w-4xl px-6 py-10">
-        <BackButton href="/admin/blog" label={t("common.back")} />
-        <div className="fixed bottom-6 right-6 z-[100]">
-          <LanguageSelector position="bottom-right" />
-        </div>
-
-        {/* 头部 */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-black">{t("blog.create")}</h1>
-          <p className="mt-1 text-sm text-black/70">
-            {t("admin.dashboard.pages.blog.description")}
-          </p>
-        </div>
-
-        {/* 编辑器 */}
-        <div className="rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
-          <BlogEditor
-            onSave={handleSave}
-            onCancel={handleCancel}
-            saving={saving}
-          />
-        </div>
-      </div>
-    </main>
+  return (
+    <AdminEditorPage
+      backHref="/admin/blog"
+      backLabel={t("common.back")}
+      title={t("blog.create")}
+      description={t("admin.dashboard.pages.blog.description")}
+      maxWidthClassName="max-w-4xl"
+    >
+      <AdminEditorAccordion
+        panels={panels}
+        openPanelId="editor"
+        onToggle={() => {}}
+      />
+    </AdminEditorPage>
   );
 }

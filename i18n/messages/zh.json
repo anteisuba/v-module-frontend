@@ -29,10 +29,40 @@
         },
         "shop": {
           "label": "SHOP 页面",
-          "description": "管理商品和订单"
+          "description": "管理商品目录、库存和上架状态"
+        },
+        "orders": {
+          "label": "订单管理",
+          "description": "查看买家订单并推进处理状态"
         }
       },
       "comingSoon": "待开发"
+    },
+    "editorScaffold": {
+      "tabs": {
+        "layout": {
+          "title": "页面布局",
+          "description": "管理当前页面的背景和展示层设置。"
+        },
+        "content": {
+          "title": "内容编辑",
+          "description": "管理列表、详情和表单内容。"
+        }
+      },
+      "panels": {
+        "background": {
+          "description": "调整当前页面的背景图和背景色。"
+        },
+        "list": {
+          "description": "查看现有内容并进入详细编辑。"
+        },
+        "editor": {
+          "description": "编辑当前内容的主要信息和展示素材。"
+        },
+        "create": {
+          "description": "创建新内容并设置初始展示信息。"
+        }
+      }
     }
   },
   "auth": {
@@ -97,6 +127,50 @@
       "title": "确认删除",
       "message": "确定要删除吗？此操作无法撤销。",
       "confirm": "确定删除"
+    },
+    "editorNav": {
+      "title": "编辑导航",
+      "description": "按页面结构跳转，减少来回滚动。",
+      "summary": "Hero → 布局 → 媒体 → 文章"
+    },
+    "tabs": {
+      "page": {
+        "title": "页面设置",
+        "description": "集中处理首页结构、背景和主题色。"
+      },
+      "content": {
+        "title": "内容模块",
+        "description": "集中编辑视频、图片导航和新闻文章。"
+      }
+    },
+    "panels": {
+      "hero": {
+        "description": "管理首屏轮播、标题、菜单和社交链接。"
+      },
+      "background": {
+        "description": "统一首页的背景图和背景色。"
+      },
+      "theme": {
+        "description": "调整按钮、链接和高亮状态的主色。"
+      },
+      "video": {
+        "description": "维护视频模块的展示方式和内容顺序。"
+      },
+      "news": {
+        "description": "维护首页图片导航入口和布局。"
+      },
+      "articles": {
+        "description": "编辑新闻文章列表和新闻页背景。"
+      }
+    },
+    "themeSettings": {
+      "title": "主题设置",
+      "description": "设置你的品牌主题色，所有按钮和链接高亮将使用此颜色。",
+      "themeColor": "主题色（应援色）",
+      "themeColorHelp": "建议使用品牌标志色或应援色。",
+      "preview": "效果预览",
+      "previewButton": "主题色按钮",
+      "previewLink": "主题色链接"
     }
   },
   "heroMenu": {
@@ -300,6 +374,10 @@
   "blog": {
     "title": "博客管理",
     "create": "新建博客",
+    "layout": {
+      "listBackground": "博客列表页面背景",
+      "detailBackground": "博客详情页面背景"
+    },
     "list": {
       "empty": "暂无博客文章，点击\"新建博客\"开始创建",
       "loadFailed": "加载博客列表失败",
@@ -328,6 +406,10 @@
   "shop": {
     "title": "商品管理",
     "create": "新建商品",
+    "layout": {
+      "listBackground": "商店列表页面背景",
+      "detailBackground": "商品详情页面背景"
+    },
     "list": {
       "empty": "暂无商品，点击\"新建商品\"开始创建",
       "loadFailed": "加载商品列表失败",

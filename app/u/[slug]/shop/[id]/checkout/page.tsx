@@ -85,8 +85,7 @@ export default function CheckoutPage({
 
     try {
       setSubmitting(true);
-      const orderResponse = await shopApi.createOrder({
-        userId: product.userId,
+      const orderResponse = await shopApi.createCheckoutOrder({
         buyerEmail: buyerEmail.trim(),
         buyerName: buyerName.trim() || null,
         shippingAddress: Object.values(shippingAddress).some((v) => v.trim())
