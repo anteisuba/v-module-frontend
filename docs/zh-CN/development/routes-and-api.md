@@ -57,7 +57,7 @@
 | `/admin/shop` | 商品列表 |
 | `/admin/shop/new` | 新建商品 |
 | `/admin/shop/[id]` | 编辑商品 |
-| `/admin/orders` | 订单列表，当前无 Dashboard 入口 |
+| `/admin/orders` | 订单列表 |
 
 ## API 路由分组
 

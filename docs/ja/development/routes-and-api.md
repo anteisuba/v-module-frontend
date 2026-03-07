@@ -57,7 +57,7 @@
 | `/admin/shop` | 商品一覧 |
 | `/admin/shop/new` | 商品新規作成 |
 | `/admin/shop/[id]` | 商品編集 |
-| `/admin/orders` | 注文一覧、現在 Dashboard からは到達不可 |
+| `/admin/orders` | 注文一覧 |
 
 ## API 分類
 
