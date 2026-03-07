@@ -52,6 +52,18 @@ export default async function UserShopPage({
 
   // 获取背景样式
   const getBackgroundStyle = (): React.CSSProperties => {
+    const shopBg = config?.shopBackground;
+    if (shopBg && shopBg.type && shopBg.value && shopBg.value.trim() !== "") {
+      return shopBg.type === "color"
+        ? { backgroundColor: shopBg.value }
+        : {
+            backgroundImage: `url(${shopBg.value})`,
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+          };
+    }
+
     const newsBg = config?.newsBackground;
     if (newsBg && newsBg.type && newsBg.value && newsBg.value.trim() !== "") {
       return newsBg.type === "color"
@@ -63,6 +75,7 @@ export default async function UserShopPage({
             backgroundRepeat: "no-repeat",
           };
     }
+
     return { backgroundColor: "#000000" };
   };
 

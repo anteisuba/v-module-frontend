@@ -120,6 +120,12 @@ export type PageConfig = {
   
   // 博客详情页面背景（用于 /u/[slug]/blog/[id] 页面）
   blogDetailBackground?: BackgroundConfig;
+
+  // 商店列表页面背景（用于 /u/[slug]/shop 页面）
+  shopBackground?: BackgroundConfig;
+
+  // 商品详情页面背景（用于 /u/[slug]/shop/[id] 页面）
+  shopDetailBackground?: BackgroundConfig;
   
   // 所有 sections（按 order 排序后渲染）
   sections: SectionConfig[];

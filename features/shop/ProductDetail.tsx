@@ -8,6 +8,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useHeroMenu } from "@/features/home-hero/hooks/useHeroMenu";
 import HeroMenu from "@/features/home-hero/components/HeroMenu";
+import { isExternalUrl } from "@/lib/utils/isExternalUrl";
 
 interface Product {
   id: string;
@@ -21,9 +22,14 @@ interface Product {
 interface ProductDetailProps {
   product: Product;
   userSlug: string;
+  backgroundStyle?: React.CSSProperties;
 }
 
-export default function ProductDetail({ product, userSlug }: ProductDetailProps) {
+export default function ProductDetail({
+  product,
+  userSlug,
+  backgroundStyle,
+}: ProductDetailProps) {
   const router = useRouter();
   const menu = useHeroMenu();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -36,8 +42,14 @@ export default function ProductDetail({ product, userSlug }: ProductDetailProps)
     router.push(`/u/${userSlug}/shop/${product.id}/checkout`);
   }
 
+  const currentImage = product.images[currentImageIndex];
+  const currentImageIsExternal = currentImage ? isExternalUrl(currentImage) : false;
+
   return (
-    <div className="relative min-h-screen text-black py-16 px-6">
+    <div
+      className="relative min-h-screen text-black py-16 px-6"
+      style={backgroundStyle}
+    >
       {/* 右上角菜单按钮 */}
       <div className="fixed top-6 right-6 z-50 flex items-center gap-4 text-white">
         <button
@@ -67,14 +79,23 @@ export default function ProductDetail({ product, userSlug }: ProductDetailProps)
             {product.images && product.images.length > 0 ? (
               <>
                 <div className="relative w-full aspect-square mb-4 rounded-lg overflow-hidden">
-                  <Image
-                    src={product.images[currentImageIndex]}
-                    alt={product.name}
-                    fill
-                    className="object-cover"
-                    priority
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                  />
+                  {currentImageIsExternal ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={currentImage}
+                      alt={product.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <Image
+                      src={currentImage}
+                      alt={product.name}
+                      fill
+                      className="object-cover"
+                      priority
+                      sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                  )}
                 </div>
                 {product.images.length > 1 && (
                   <div className="grid grid-cols-4 gap-2">
@@ -88,13 +109,22 @@ export default function ProductDetail({ product, userSlug }: ProductDetailProps)
                             : "border-transparent hover:border-black/30"
                         }`}
                       >
-                        <Image
-                          src={img}
-                          alt={`${product.name} ${index + 1}`}
-                          fill
-                          className="object-cover"
-                          sizes="(max-width: 768px) 25vw, 12.5vw"
-                        />
+                        {isExternalUrl(img) ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={img}
+                            alt={`${product.name} ${index + 1}`}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <Image
+                            src={img}
+                            alt={`${product.name} ${index + 1}`}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 25vw, 12.5vw"
+                          />
+                        )}
                       </button>
                     ))}
                   </div>

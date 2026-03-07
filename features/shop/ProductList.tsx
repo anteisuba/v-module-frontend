@@ -8,6 +8,7 @@ import Image from "next/image";
 import { useHeroMenu } from "@/features/home-hero/hooks/useHeroMenu";
 import HeroMenu from "@/features/home-hero/components/HeroMenu";
 import { Skeleton } from "@/components/ui";
+import { isExternalUrl } from "@/lib/utils/isExternalUrl";
 
 interface Product {
   id: string;
@@ -33,13 +34,15 @@ function ProductCard({ product, userSlug, formatPrice }: {
   const [imageLoaded, setImageLoaded] = useState(false);
   const [imageError, setImageError] = useState(false);
   const hasImage = product.images && product.images.length > 0;
+  const imageSrc = hasImage ? product.images[0] : null;
+  const isExternal = imageSrc ? isExternalUrl(imageSrc) : false;
 
   return (
     <Link
       href={`/u/${userSlug}/shop/${product.id}`}
       className="group rounded-lg overflow-hidden border border-black/10 bg-white hover:shadow-lg transition-shadow"
     >
-      {hasImage && !imageError ? (
+      {imageSrc && !imageError ? (
         <div className="relative w-full h-48 overflow-hidden">
           {/* 骨架屏：图片加载前显示 */}
           {!imageLoaded && (
@@ -52,20 +55,36 @@ function ProductCard({ product, userSlug, formatPrice }: {
               />
             </div>
           )}
-          <Image
-            src={product.images[0]}
-            alt={product.name}
-            fill
-            className={`object-cover group-hover:scale-105 transition-transform duration-300 ${
-              imageLoaded ? "opacity-100" : "opacity-0"
-            }`}
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            onLoad={() => setImageLoaded(true)}
-            onError={() => {
-              setImageError(true);
-              setImageLoaded(true);
-            }}
-          />
+          {isExternal ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={imageSrc}
+              alt={product.name}
+              className={`h-full w-full object-cover group-hover:scale-105 transition-transform duration-300 ${
+                imageLoaded ? "opacity-100" : "opacity-0"
+              }`}
+              onLoad={() => setImageLoaded(true)}
+              onError={() => {
+                setImageError(true);
+                setImageLoaded(true);
+              }}
+            />
+          ) : (
+            <Image
+              src={imageSrc}
+              alt={product.name}
+              fill
+              className={`object-cover group-hover:scale-105 transition-transform duration-300 ${
+                imageLoaded ? "opacity-100" : "opacity-0"
+              }`}
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              onLoad={() => setImageLoaded(true)}
+              onError={() => {
+                setImageError(true);
+                setImageLoaded(true);
+              }}
+            />
+          )}
         </div>
       ) : (
         <div className="w-full h-48 bg-gray-200 flex items-center justify-center">

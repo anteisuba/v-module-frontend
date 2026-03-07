@@ -9,6 +9,7 @@ import { useHeroMenu } from "@/features/home-hero/hooks/useHeroMenu";
 import HeroMenu from "@/features/home-hero/components/HeroMenu";
 import { blogApi } from "@/lib/api";
 import { useToast } from "@/hooks/useToast";
+import { isExternalUrl } from "@/lib/utils/isExternalUrl";
 
 interface BlogPost {
   id: string;
@@ -157,13 +158,22 @@ export default function BlogList({ posts, userSlug, backgroundStyle }: BlogListP
                 {post.coverImage && (
                   <Link href={`/u/${userSlug}/blog/${post.id}`}>
                     <div className="relative w-full h-64 overflow-hidden">
-                      <Image
-                        src={post.coverImage}
-                        alt={post.title}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, 672px"
-                      />
+                      {isExternalUrl(post.coverImage) ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={post.coverImage}
+                          alt={post.title}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <Image
+                          src={post.coverImage}
+                          alt={post.title}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, 672px"
+                        />
+                      )}
                     </div>
                   </Link>
                 )}

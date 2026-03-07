@@ -121,7 +121,7 @@ export function isDefaultConfig(config: PageConfig): boolean {
 export function cleanPageConfig(config: PageConfig): PageConfig {
   return {
     ...config,
-    // 确保 newsBackground 有默认值
+    // 确保各页面背景字段有默认值
     newsBackground: config.newsBackground || {
       type: "color" as const,
       value: "#000000",
@@ -133,6 +133,14 @@ export function cleanPageConfig(config: PageConfig): PageConfig {
     },
     // 确保 blogDetailBackground 有默认值
     blogDetailBackground: config.blogDetailBackground || {
+      type: "color" as const,
+      value: "#000000",
+    },
+    shopBackground: config.shopBackground || {
+      type: "color" as const,
+      value: "#000000",
+    },
+    shopDetailBackground: config.shopDetailBackground || {
       type: "color" as const,
       value: "#000000",
     },

@@ -12,6 +12,7 @@ import { detectPlatform } from "@/features/video-section";
 import { blogApi } from "@/lib/api";
 import { useToast } from "@/hooks/useToast";
 import { Input, Button } from "@/components/ui";
+import { isExternalUrl } from "@/lib/utils/isExternalUrl";
 import { FaRegHeart, FaHeart, FaRegComment } from "react-icons/fa6";
 import { FiShare, FiLink, FiCheck } from "react-icons/fi";
 
@@ -199,14 +200,23 @@ export default function BlogDetail({
           {/* 封面图 */}
           {post.coverImage && (
             <div className="relative w-full h-96 mb-6 rounded-lg overflow-hidden border border-black/10">
-              <Image
-                src={post.coverImage}
-                alt={post.title}
-                fill
-                className="object-cover"
-                priority
-                sizes="100vw"
-              />
+              {isExternalUrl(post.coverImage) ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={post.coverImage}
+                  alt={post.title}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <Image
+                  src={post.coverImage}
+                  alt={post.title}
+                  fill
+                  className="object-cover"
+                  priority
+                  sizes="100vw"
+                />
+              )}
             </div>
           )}
 

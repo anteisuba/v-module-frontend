@@ -31,7 +31,7 @@ export function usePageConfig() {
       }
       
       if (draftConfig) {
-        // 确保 newsBackground、blogBackground、blogDetailBackground 有默认值（兼容旧数据）
+        // 确保各页面背景字段有默认值（兼容旧数据）
         const configWithBackgrounds = {
           ...draftConfig,
           newsBackground: draftConfig.newsBackground || {
@@ -43,6 +43,14 @@ export function usePageConfig() {
             value: "#000000",
           },
           blogDetailBackground: draftConfig.blogDetailBackground || {
+            type: "color" as const,
+            value: "#000000",
+          },
+          shopBackground: draftConfig.shopBackground || {
+            type: "color" as const,
+            value: "#000000",
+          },
+          shopDetailBackground: draftConfig.shopDetailBackground || {
             type: "color" as const,
             value: "#000000",
           },
