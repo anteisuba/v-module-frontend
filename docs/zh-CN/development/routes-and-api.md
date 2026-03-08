@@ -54,6 +54,7 @@
 | `/admin/blog` | 博客列表 |
 | `/admin/blog/new` | 新建博客 |
 | `/admin/blog/[id]` | 编辑博客 |
+| `/admin/comments` | 评论审核后台 |
 | `/admin/shop` | 商品列表 |
 | `/admin/shop/new` | 新建商品 |
 | `/admin/shop/[id]` | 编辑商品 |
@@ -91,6 +92,8 @@
 - `GET/POST /api/blog/posts`
 - `GET/PUT/DELETE /api/blog/posts/[id]`
 - `GET/POST /api/blog/posts/[id]/comments`
+- `GET /api/blog/comments`
+- `PUT/DELETE /api/blog/comments/[id]`
 - `GET/POST /api/blog/posts/[id]/like`
 
 ### 商店与订单
@@ -105,7 +108,9 @@
 ## 权限注意事项
 
 - `middleware.ts` 保护所有 `/admin/*`，但登录、注册、忘记密码、重置密码例外
-- 公开博客评论与点赞支持匿名场景
+- 公开博客点赞支持匿名场景
+- 公开博客评论支持匿名提交，但新评论默认进入 `PENDING` 审核；`GET /api/blog/posts/[id]/comments` 只返回 `APPROVED` 评论
+- `GET /api/blog/comments` 与 `PUT/DELETE /api/blog/comments/[id]` 仅面向当前卖家自己的博客评论审核后台
 - `POST /api/shop/checkout` 面向访客公开结账，不要求登录态
 - `POST /api/shop/checkout` 在邮件服务可用时会发送买家确认邮件和卖家新订单提醒；发信失败不会阻塞下单
 - `GET /api/shop/orders` 支持卖家后台 `status` / `query` 过滤，并可通过 `export=csv` 导出当前筛选结果

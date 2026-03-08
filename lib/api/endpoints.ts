@@ -20,6 +20,32 @@ import type {
 import type { PageConfig } from "@/domain/page-config/types";
 import type { SerializedOrder } from "@/domain/shop";
 
+type BlogCommentStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+type ApiBlogComment = {
+  id: string;
+  blogPostId: string;
+  userName: string;
+  userEmail: string | null;
+  content: string;
+  status: BlogCommentStatus;
+  createdAt: string;
+  moderatedAt: string | null;
+  user: {
+    id: string;
+    slug: string;
+    displayName: string | null;
+  } | null;
+};
+
+type ApiModerationBlogComment = ApiBlogComment & {
+  blogPost: {
+    id: string;
+    title: string;
+    published: boolean;
+  };
+};
+
 /**
  * 用户相关 API
  */
@@ -436,7 +462,7 @@ export const blogApi = {
   async createComment(
     id: string,
     data: { userName: string; userEmail?: string; content: string }
-  ): Promise<any> {
+  ): Promise<ApiBlogComment> {
     return apiClient.post(`/api/blog/posts/${id}/comments`, data);
   },
 
@@ -447,18 +473,7 @@ export const blogApi = {
     id: string,
     params?: { page?: number; limit?: number }
   ): Promise<{
-    comments: Array<{
-      id: string;
-      userName: string;
-      userEmail: string | null;
-      content: string;
-      createdAt: string;
-      user: {
-        id: string;
-        slug: string;
-        displayName: string | null;
-      } | null;
-    }>;
+    comments: ApiBlogComment[];
     pagination: {
       page: number;
       limit: number;
@@ -471,6 +486,59 @@ export const blogApi = {
     if (params?.limit) searchParams.set("limit", params.limit.toString());
     const query = searchParams.toString();
     return apiClient.get(`/api/blog/posts/${id}/comments${query ? `?${query}` : ""}`);
+  },
+
+  /**
+   * 获取评论审核列表
+   */
+  async getModerationComments(params?: {
+    page?: number;
+    limit?: number;
+    status?: BlogCommentStatus;
+    query?: string;
+  }): Promise<{
+    comments: ApiModerationBlogComment[];
+    summary: {
+      total: number;
+      pending: number;
+      approved: number;
+      rejected: number;
+    };
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set("page", params.page.toString());
+    if (params?.limit) searchParams.set("limit", params.limit.toString());
+    if (params?.status) searchParams.set("status", params.status);
+    if (params?.query) searchParams.set("query", params.query);
+    const query = searchParams.toString();
+    return apiClient.get(`/api/blog/comments${query ? `?${query}` : ""}`);
+  },
+
+  /**
+   * 更新评论审核状态
+   */
+  async updateCommentStatus(
+    id: string,
+    status: BlogCommentStatus
+  ): Promise<ApiModerationBlogComment> {
+    const response = await apiClient.put<{ comment: ApiModerationBlogComment }>(
+      `/api/blog/comments/${id}`,
+      { status }
+    );
+    return response.comment;
+  },
+
+  /**
+   * 删除评论
+   */
+  async deleteComment(id: string): Promise<void> {
+    await apiClient.delete(`/api/blog/comments/${id}`);
   },
 };
 

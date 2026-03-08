@@ -33,10 +33,13 @@ interface BlogPost {
 
 interface BlogComment {
   id: string;
+  blogPostId: string;
   userName: string;
   userEmail: string | null;
   content: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
   createdAt: string;
+  moderatedAt: string | null;
   user: {
     id: string;
     slug: string;
@@ -111,10 +114,15 @@ export default function BlogDetail({
         userEmail: commentForm.userEmail.trim() || undefined,
         content: commentForm.content.trim(),
       });
-      setComments([...comments, newComment]);
-      setCommentCount((prev) => prev + 1);
       setCommentForm({ userName: "", userEmail: "", content: "" });
-      showToast("评论已发布");
+
+      if (newComment.status === "APPROVED") {
+        setComments((prev) => [...prev, newComment]);
+        setCommentCount((prev) => prev + 1);
+        showToast("评论已发布");
+      } else {
+        showToast("评论已提交，审核后显示");
+      }
     } catch {
       showToast("评论发布失败，请重试");
     } finally {
@@ -362,6 +370,9 @@ export default function BlogDetail({
               disabled={submittingComment}
               className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-xs text-black placeholder:text-black/30 transition-colors focus:outline-none focus:ring-2 focus:ring-black/20 focus:ring-offset-1 resize-y"
             />
+            <p className="text-xs text-black/50">
+              评论提交后需审核，通过后才会公开显示。
+            </p>
             <div className="flex justify-end">
               <Button
                 type="submit"

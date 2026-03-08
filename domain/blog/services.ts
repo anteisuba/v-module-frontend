@@ -2,6 +2,14 @@
 
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
+import {
+  BLOG_COMMENT_APPROVED_STATUS,
+  BLOG_COMMENT_PUBLIC_QUERY,
+  getApprovedCommentCount,
+  getApprovedCommentCountMap,
+  serializeBlogComment,
+  type BlogComment,
+} from "./comments";
 
 export interface BlogPost {
   id: string;
@@ -20,19 +28,6 @@ export interface BlogPost {
   likeCount: number;
   commentCount: number;
   isLiked: boolean;
-}
-
-export interface BlogComment {
-  id: string;
-  userName: string;
-  userEmail: string | null;
-  content: string;
-  createdAt: string;
-  user: {
-    id: string;
-    slug: string;
-    displayName: string | null;
-  } | null;
 }
 
 export interface BlogPostDetail extends BlogPost {
@@ -131,7 +126,6 @@ export async function getBlogPosts(
         _count: {
           select: {
             likes: true,
-            comments: true,
           },
         },
       },
@@ -141,6 +135,7 @@ export async function getBlogPosts(
 
   const postIds = posts.map((post) => post.id);
   let likedPostIds = new Set<string>();
+  const approvedCommentCountMap = await getApprovedCommentCountMap(postIds);
 
   if (postIds.length > 0 && (viewerUserId || viewerEmail)) {
     const likeWhere: Prisma.BlogLikeWhereInput = viewerUserId
@@ -184,7 +179,7 @@ export async function getBlogPosts(
       updatedAt: updatedAt.toISOString(),
       publishedAt: publishedAt ? publishedAt.toISOString() : null,
       likeCount: _count.likes,
-      commentCount: _count.comments,
+      commentCount: approvedCommentCountMap.get(post.id) || 0,
       isLiked: likedPostIds.has(post.id),
       // 转换 externalLinks（Prisma JsonValue 类型）
       externalLinks:
@@ -223,7 +218,6 @@ export async function getBlogPostById(id: string): Promise<BlogPost | null> {
       _count: {
         select: {
           likes: true,
-          comments: true,
         },
       },
     },
@@ -232,6 +226,8 @@ export async function getBlogPostById(id: string): Promise<BlogPost | null> {
   if (!post) {
     return null;
   }
+
+  const approvedCommentCount = await getApprovedCommentCount(id);
 
   const {
     user,
@@ -252,7 +248,7 @@ export async function getBlogPostById(id: string): Promise<BlogPost | null> {
     updatedAt: updatedAt.toISOString(),
     publishedAt: publishedAt ? publishedAt.toISOString() : null,
     likeCount: _count.likes,
-    commentCount: _count.comments,
+    commentCount: approvedCommentCount,
     isLiked: false,
     // 转换 externalLinks
     externalLinks:
@@ -285,7 +281,6 @@ export async function getBlogPostDetailById(
       _count: {
         select: {
           likes: true,
-          comments: true,
         },
       },
     },
@@ -295,7 +290,7 @@ export async function getBlogPostDetailById(
     return null;
   }
 
-  const [existingLike, comments] = await Promise.all([
+  const [existingLike, comments, approvedCommentCount] = await Promise.all([
     viewerUserId || viewerEmail
       ? prisma.blogLike.findFirst({
           where: viewerUserId
@@ -314,19 +309,15 @@ export async function getBlogPostDetailById(
         })
       : Promise.resolve(null),
     prisma.blogComment.findMany({
-      where: { blogPostId: id },
+      where: {
+        blogPostId: id,
+        status: BLOG_COMMENT_APPROVED_STATUS,
+      },
       orderBy: { createdAt: "asc" },
       take: commentsLimit,
-      include: {
-        user: {
-          select: {
-            id: true,
-            slug: true,
-            displayName: true,
-          },
-        },
-      },
+      ...BLOG_COMMENT_PUBLIC_QUERY,
     }),
+    getApprovedCommentCount(id),
   ]);
 
   const {
@@ -347,19 +338,15 @@ export async function getBlogPostDetailById(
     updatedAt: updatedAt.toISOString(),
     publishedAt: publishedAt ? publishedAt.toISOString() : null,
     likeCount: _count.likes,
-    commentCount: _count.comments,
+    commentCount: approvedCommentCount,
     isLiked: !!existingLike,
     externalLinks:
       externalLinks &&
       typeof externalLinks === "object" &&
       Array.isArray(externalLinks)
-        ? (externalLinks as Array<{ url: string; label: string }>)
-        : null,
-    comments: comments.map((comment) => ({
-      ...comment,
-      userEmail: comment.userEmail || null,
-      createdAt: comment.createdAt.toISOString(),
-    })),
+          ? (externalLinks as Array<{ url: string; label: string }>)
+          : null,
+    comments: comments.map(serializeBlogComment),
   };
 }
 

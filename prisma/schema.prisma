@@ -218,10 +218,14 @@ model BlogComment {
   userName   String // 评论者名称（必填）
   userEmail  String? // 用户邮箱（可选）
   content    String   @db.Text // 评论内容
+  status     String   @default("PENDING") // 审核状态：PENDING, APPROVED, REJECTED
+  moderatedAt DateTime? // 最后一次审核时间
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
   @@index([blogPostId, createdAt])
+  @@index([blogPostId, status, createdAt])
+  @@index([status, createdAt])
   @@index([userId])
 }
 

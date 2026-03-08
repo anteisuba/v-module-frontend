@@ -52,6 +52,13 @@ export default function DashboardPage() {
       description: t("admin.dashboard.pages.orders.description"),
       available: true,
     },
+    {
+      id: "comments",
+      label: t("admin.dashboard.pages.comments.label"),
+      href: "/admin/comments",
+      description: t("admin.dashboard.pages.comments.description"),
+      available: true,
+    },
   ], [t]);
 
   function handleNavigate() {
