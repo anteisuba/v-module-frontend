@@ -107,5 +107,6 @@
 - `middleware.ts` 保护所有 `/admin/*`，但登录、注册、忘记密码、重置密码例外
 - 公开博客评论与点赞支持匿名场景
 - `POST /api/shop/checkout` 面向访客公开结账，不要求登录态
+- `GET /api/shop/orders` 支持卖家后台 `status` / `query` 过滤，并可通过 `export=csv` 导出当前筛选结果
 - `GET /api/shop/orders/[id]` 支持卖家会话读取；访客公开读取时必须显式提供 `buyerEmail`
 - `GET /api/shop/orders` 与 `PUT /api/shop/orders/[id]` 仍只保留卖家后台订单列表和状态管理语义

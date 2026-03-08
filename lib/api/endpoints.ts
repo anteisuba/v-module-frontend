@@ -589,35 +589,9 @@ export const shopApi = {
     page?: number;
     limit?: number;
     status?: string;
+    query?: string;
   }): Promise<{
-    orders: Array<{
-      id: string;
-      userId: string;
-      buyerEmail: string;
-      buyerName: string | null;
-      totalAmount: number;
-      status: string;
-      shippingAddress: Record<string, unknown> | null;
-      shippingMethod: string | null;
-      createdAt: string;
-      updatedAt: string;
-      paidAt: string | null;
-      shippedAt: string | null;
-      deliveredAt: string | null;
-      items: Array<{
-        id: string;
-        orderId: string;
-        productId: string;
-        product: {
-          id: string;
-          name: string;
-          images: string[];
-        };
-        quantity: number;
-        price: number;
-        subtotal: number;
-      }>;
-    }>;
+    orders: SerializedOrder[];
     pagination: {
       page: number;
       limit: number;
@@ -629,8 +603,43 @@ export const shopApi = {
     if (params?.page) searchParams.set("page", params.page.toString());
     if (params?.limit) searchParams.set("limit", params.limit.toString());
     if (params?.status) searchParams.set("status", params.status);
+    if (params?.query) searchParams.set("query", params.query);
     const query = searchParams.toString();
     return apiClient.get(`/api/shop/orders${query ? `?${query}` : ""}`);
+  },
+
+  /**
+   * 导出订单 CSV（卖家）
+   */
+  async exportOrdersCsv(params?: {
+    status?: string;
+    query?: string;
+  }): Promise<Blob> {
+    const searchParams = new URLSearchParams();
+    if (params?.status) searchParams.set("status", params.status);
+    if (params?.query) searchParams.set("query", params.query);
+    searchParams.set("export", "csv");
+
+    const response = await fetch(`/api/shop/orders?${searchParams.toString()}`, {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      let errorMessage = "导出订单失败";
+
+      try {
+        const errorData = (await response.json()) as { error?: string; message?: string };
+        errorMessage = errorData.error || errorData.message || errorMessage;
+      } catch {
+        // noop
+      }
+
+      throw new Error(errorMessage);
+    }
+
+    return response.blob();
   },
 
   /**
