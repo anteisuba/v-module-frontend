@@ -7,6 +7,7 @@ export interface BlogPost {
   id: string;
   userId: string;
   userSlug: string | null;
+  userDisplayName: string | null;
   title: string;
   content: string;
   coverImage: string | null;
@@ -16,6 +17,26 @@ export interface BlogPost {
   createdAt: string;
   updatedAt: string;
   publishedAt: string | null;
+  likeCount: number;
+  commentCount: number;
+  isLiked: boolean;
+}
+
+export interface BlogComment {
+  id: string;
+  userName: string;
+  userEmail: string | null;
+  content: string;
+  createdAt: string;
+  user: {
+    id: string;
+    slug: string;
+    displayName: string | null;
+  } | null;
+}
+
+export interface BlogPostDetail extends BlogPost {
+  comments: BlogComment[];
 }
 
 export interface BlogPostCreateInput {
@@ -42,6 +63,8 @@ export interface BlogPostListParams {
   limit?: number;
   userSlug?: string;
   published?: boolean; // true: 只获取已发布, false: 只获取未发布, undefined: 获取所有
+  viewerUserId?: string | null;
+  viewerEmail?: string | null;
 }
 
 export interface BlogPostListResult {
@@ -54,15 +77,28 @@ export interface BlogPostListResult {
   };
 }
 
+export interface BlogPostDetailOptions {
+  viewerUserId?: string | null;
+  viewerEmail?: string | null;
+  commentsLimit?: number;
+}
+
 /**
  * 获取博客文章列表（支持分页和按 userSlug 过滤）
  */
 export async function getBlogPosts(
   params: BlogPostListParams = {}
 ): Promise<BlogPostListResult> {
-  const { page = 1, limit = 10, userSlug, published } = params;
+  const {
+    page = 1,
+    limit = 10,
+    userSlug,
+    published,
+    viewerUserId,
+    viewerEmail,
+  } = params;
 
-  const where: any = {};
+  const where: Prisma.BlogPostWhereInput = {};
 
   // 按用户 slug 过滤
   if (userSlug) {
@@ -89,6 +125,13 @@ export async function getBlogPosts(
         user: {
           select: {
             slug: true,
+            displayName: true,
+          },
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
           },
         },
       },
@@ -96,14 +139,53 @@ export async function getBlogPosts(
     prisma.blogPost.count({ where }),
   ]);
 
+  const postIds = posts.map((post) => post.id);
+  let likedPostIds = new Set<string>();
+
+  if (postIds.length > 0 && (viewerUserId || viewerEmail)) {
+    const likeWhere: Prisma.BlogLikeWhereInput = viewerUserId
+      ? {
+          blogPostId: { in: postIds },
+          userId: viewerUserId,
+        }
+      : {
+          blogPostId: { in: postIds },
+          userEmail: viewerEmail!,
+          userId: null,
+        };
+
+    likedPostIds = new Set(
+      (
+        await prisma.blogLike.findMany({
+          where: likeWhere,
+          select: {
+            blogPostId: true,
+          },
+        })
+      ).map((like) => like.blogPostId)
+    );
+  }
+
   // 转换数据格式
   const formattedPosts: BlogPost[] = posts.map(
-    ({ user, createdAt, updatedAt, publishedAt, externalLinks, ...post }) => ({
+    ({
+      user,
+      _count,
+      createdAt,
+      updatedAt,
+      publishedAt,
+      externalLinks,
+      ...post
+    }) => ({
       ...post,
       userSlug: user?.slug || null,
+      userDisplayName: user?.displayName || null,
       createdAt: createdAt.toISOString(),
       updatedAt: updatedAt.toISOString(),
       publishedAt: publishedAt ? publishedAt.toISOString() : null,
+      likeCount: _count.likes,
+      commentCount: _count.comments,
+      isLiked: likedPostIds.has(post.id),
       // 转换 externalLinks（Prisma JsonValue 类型）
       externalLinks:
         externalLinks &&
@@ -135,6 +217,13 @@ export async function getBlogPostById(id: string): Promise<BlogPost | null> {
       user: {
         select: {
           slug: true,
+          displayName: true,
+        },
+      },
+      _count: {
+        select: {
+          likes: true,
+          comments: true,
         },
       },
     },
@@ -144,15 +233,27 @@ export async function getBlogPostById(id: string): Promise<BlogPost | null> {
     return null;
   }
 
-  const { user, createdAt, updatedAt, publishedAt, externalLinks, ...postData } =
+  const {
+    user,
+    _count,
+    createdAt,
+    updatedAt,
+    publishedAt,
+    externalLinks,
+    ...postData
+  } =
     post;
 
   return {
     ...postData,
     userSlug: user?.slug || null,
+    userDisplayName: user?.displayName || null,
     createdAt: createdAt.toISOString(),
     updatedAt: updatedAt.toISOString(),
     publishedAt: publishedAt ? publishedAt.toISOString() : null,
+    likeCount: _count.likes,
+    commentCount: _count.comments,
+    isLiked: false,
     // 转换 externalLinks
     externalLinks:
       externalLinks &&
@@ -160,6 +261,105 @@ export async function getBlogPostById(id: string): Promise<BlogPost | null> {
       Array.isArray(externalLinks)
         ? (externalLinks as Array<{ url: string; label: string }>)
         : null,
+  };
+}
+
+/**
+ * 获取单篇博客详情页数据（包含点赞状态和首批评论）
+ */
+export async function getBlogPostDetailById(
+  id: string,
+  options: BlogPostDetailOptions = {}
+): Promise<BlogPostDetail | null> {
+  const { viewerUserId, viewerEmail, commentsLimit = 50 } = options;
+
+  const post = await prisma.blogPost.findUnique({
+    where: { id },
+    include: {
+      user: {
+        select: {
+          slug: true,
+          displayName: true,
+        },
+      },
+      _count: {
+        select: {
+          likes: true,
+          comments: true,
+        },
+      },
+    },
+  });
+
+  if (!post) {
+    return null;
+  }
+
+  const [existingLike, comments] = await Promise.all([
+    viewerUserId || viewerEmail
+      ? prisma.blogLike.findFirst({
+          where: viewerUserId
+            ? {
+                blogPostId: id,
+                userId: viewerUserId,
+              }
+            : {
+                blogPostId: id,
+                userEmail: viewerEmail!,
+                userId: null,
+              },
+          select: {
+            id: true,
+          },
+        })
+      : Promise.resolve(null),
+    prisma.blogComment.findMany({
+      where: { blogPostId: id },
+      orderBy: { createdAt: "asc" },
+      take: commentsLimit,
+      include: {
+        user: {
+          select: {
+            id: true,
+            slug: true,
+            displayName: true,
+          },
+        },
+      },
+    }),
+  ]);
+
+  const {
+    user,
+    _count,
+    createdAt,
+    updatedAt,
+    publishedAt,
+    externalLinks,
+    ...postData
+  } = post;
+
+  return {
+    ...postData,
+    userSlug: user?.slug || null,
+    userDisplayName: user?.displayName || null,
+    createdAt: createdAt.toISOString(),
+    updatedAt: updatedAt.toISOString(),
+    publishedAt: publishedAt ? publishedAt.toISOString() : null,
+    likeCount: _count.likes,
+    commentCount: _count.comments,
+    isLiked: !!existingLike,
+    externalLinks:
+      externalLinks &&
+      typeof externalLinks === "object" &&
+      Array.isArray(externalLinks)
+        ? (externalLinks as Array<{ url: string; label: string }>)
+        : null,
+    comments: comments.map((comment) => ({
+      ...comment,
+      userEmail: comment.userEmail || null,
+      createdAt: comment.createdAt.toISOString(),
+    })),
   };
 }
 
@@ -186,6 +386,7 @@ export async function createBlogPost(
       user: {
         select: {
           slug: true,
+          displayName: true,
         },
       },
     },
@@ -197,9 +398,13 @@ export async function createBlogPost(
   return {
     ...postData,
     userSlug: user?.slug || null,
+    userDisplayName: user?.displayName || null,
     createdAt: createdAt.toISOString(),
     updatedAt: updatedAt.toISOString(),
     publishedAt: publishedAt ? publishedAt.toISOString() : null,
+    likeCount: 0,
+    commentCount: 0,
+    isLiked: false,
     externalLinks:
       externalLinks &&
       typeof externalLinks === "object" &&
@@ -233,7 +438,7 @@ export async function updateBlogPost(
   }
 
   // 构建更新数据
-  const updateData: any = {};
+  const updateData: Prisma.BlogPostUpdateInput = {};
 
   if (input.title !== undefined) updateData.title = input.title;
   if (input.content !== undefined) updateData.content = input.content;
@@ -258,6 +463,7 @@ export async function updateBlogPost(
       user: {
         select: {
           slug: true,
+          displayName: true,
         },
       },
     },
@@ -269,9 +475,13 @@ export async function updateBlogPost(
   return {
     ...postData,
     userSlug: user?.slug || null,
+    userDisplayName: user?.displayName || null,
     createdAt: createdAt.toISOString(),
     updatedAt: updatedAt.toISOString(),
     publishedAt: publishedAt ? publishedAt.toISOString() : null,
+    likeCount: 0,
+    commentCount: 0,
+    isLiked: false,
     externalLinks:
       externalLinks &&
       typeof externalLinks === "object" &&

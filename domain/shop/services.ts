@@ -7,6 +7,7 @@ export interface Product {
   id: string;
   userId: string;
   userSlug: string | null;
+  userDisplayName: string | null;
   name: string;
   description: string | null;
   price: number; // Decimal 转换为 number
@@ -58,13 +59,135 @@ export interface OrderItemInput {
   quantity: number;
 }
 
-export interface OrderCreateInput {
-  userId: string; // 卖家用户 ID
+export interface PublicOrderCreateInput {
   buyerEmail: string;
   buyerName?: string | null;
-  shippingAddress?: Record<string, any> | null;
+  shippingAddress?: Record<string, unknown> | null;
   shippingMethod?: string | null;
   items: OrderItemInput[];
+}
+
+export interface SerializedOrderItem {
+  id: string;
+  orderId: string;
+  productId: string;
+  quantity: number;
+  price: number;
+  subtotal: number;
+  createdAt: string;
+  product?: {
+    id: string;
+    name: string;
+    images: string[];
+  } | null;
+}
+
+export interface SerializedOrder {
+  id: string;
+  userId: string;
+  buyerEmail: string;
+  buyerName: string | null;
+  totalAmount: number;
+  status: string;
+  shippingAddress: Prisma.JsonValue | null;
+  shippingMethod: string | null;
+  createdAt: string;
+  updatedAt: string;
+  paidAt: string | null;
+  shippedAt: string | null;
+  deliveredAt: string | null;
+  items: SerializedOrderItem[];
+}
+
+type OrderWithItemsRecord = {
+  id: string;
+  userId: string;
+  buyerEmail: string;
+  buyerName: string | null;
+  totalAmount: Prisma.Decimal;
+  status: string;
+  shippingAddress: Prisma.JsonValue | null;
+  shippingMethod: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+  paidAt: Date | null;
+  shippedAt: Date | null;
+  deliveredAt: Date | null;
+  items: Array<{
+    id: string;
+    orderId: string;
+    productId: string;
+    price: Prisma.Decimal;
+    quantity: number;
+    subtotal: Prisma.Decimal;
+    createdAt: Date;
+    product?:
+      | {
+          id: string;
+          name: string;
+          images: Prisma.JsonValue;
+        }
+      | null;
+  }>;
+};
+
+function normalizeImageList(images: Prisma.JsonValue): string[] {
+  if (images && typeof images === "object" && Array.isArray(images)) {
+    return images.filter((image): image is string => typeof image === "string");
+  }
+
+  return [];
+}
+
+function normalizeOrderItems(items: OrderItemInput[]): OrderItemInput[] {
+  const quantities = new Map<string, number>();
+
+  for (const item of items) {
+    if (!item?.productId || !Number.isInteger(item.quantity) || item.quantity <= 0) {
+      throw new Error("Each item must have productId and quantity > 0");
+    }
+
+    quantities.set(item.productId, (quantities.get(item.productId) ?? 0) + item.quantity);
+  }
+
+  return Array.from(quantities.entries()).map(([productId, quantity]) => ({
+    productId,
+    quantity,
+  }));
+}
+
+export function serializeOrderWithItems(order: OrderWithItemsRecord): SerializedOrder {
+  return {
+    id: order.id,
+    userId: order.userId,
+    buyerEmail: order.buyerEmail,
+    buyerName: order.buyerName,
+    totalAmount: Number(order.totalAmount),
+    status: order.status,
+    shippingAddress: order.shippingAddress ?? null,
+    shippingMethod: order.shippingMethod,
+    createdAt: order.createdAt.toISOString(),
+    updatedAt: order.updatedAt.toISOString(),
+    paidAt: order.paidAt ? order.paidAt.toISOString() : null,
+    shippedAt: order.shippedAt ? order.shippedAt.toISOString() : null,
+    deliveredAt: order.deliveredAt ? order.deliveredAt.toISOString() : null,
+    items: order.items.map((item) => ({
+      id: item.id,
+      orderId: item.orderId,
+      productId: item.productId,
+      quantity: item.quantity,
+      price: Number(item.price),
+      subtotal: Number(item.subtotal),
+      createdAt: item.createdAt.toISOString(),
+      product: item.product
+        ? {
+            id: item.product.id,
+            name: item.product.name,
+            images: normalizeImageList(item.product.images),
+          }
+        : null,
+    })),
+  };
 }
 
 /**
@@ -97,6 +220,7 @@ export async function getProducts(
         user: {
           select: {
             slug: true,
+            displayName: true,
           },
         },
       },
@@ -109,6 +233,7 @@ export async function getProducts(
     ({ user, price, images, createdAt, updatedAt, ...product }) => ({
       ...product,
       userSlug: user?.slug || null,
+      userDisplayName: user?.displayName || null,
       price: Number(price), // Decimal 转换为 number
       images:
         images && typeof images === "object" && Array.isArray(images)
@@ -140,6 +265,7 @@ export async function getProductById(id: string): Promise<Product | null> {
       user: {
         select: {
           slug: true,
+          displayName: true,
         },
       },
     },
@@ -154,6 +280,7 @@ export async function getProductById(id: string): Promise<Product | null> {
   return {
     ...productData,
     userSlug: user?.slug || null,
+    userDisplayName: user?.displayName || null,
     price: Number(price),
     images:
       images && typeof images === "object" && Array.isArray(images)
@@ -191,6 +318,7 @@ export async function createProduct(
       user: {
         select: {
           slug: true,
+          displayName: true,
         },
       },
     },
@@ -202,6 +330,7 @@ export async function createProduct(
   return {
     ...productData,
     userSlug: user?.slug || null,
+    userDisplayName: user?.displayName || null,
     price: Number(price),
     images:
       productImages && typeof productImages === "object" && Array.isArray(productImages)
@@ -255,6 +384,7 @@ export async function updateProduct(
       user: {
         select: {
           slug: true,
+          displayName: true,
         },
       },
     },
@@ -266,6 +396,7 @@ export async function updateProduct(
   return {
     ...productData,
     userSlug: user?.slug || null,
+    userDisplayName: user?.displayName || null,
     price: Number(price),
     images:
       productImages && typeof productImages === "object" && Array.isArray(productImages)
@@ -304,6 +435,7 @@ export async function updateProductStock(
       user: {
         select: {
           slug: true,
+          displayName: true,
         },
       },
     },
@@ -314,6 +446,7 @@ export async function updateProductStock(
   return {
     ...productData,
     userSlug: user?.slug || null,
+    userDisplayName: user?.displayName || null,
     price: Number(price),
     images:
       images && typeof images === "object" && Array.isArray(images)
@@ -346,37 +479,49 @@ export async function deleteProduct(id: string, userId: string): Promise<void> {
 }
 
 /**
- * 创建订单
- * 在一个 Prisma 事务中完成：创建 Order、创建 OrderItems、扣减对应 Product 的库存
+ * 公开结账创建订单
+ * 在一个 Prisma 事务中完成：校验公开商品、创建订单、创建订单项、扣减库存
  */
-export async function createOrder(input: OrderCreateInput) {
-  const { userId, buyerEmail, buyerName, shippingAddress, shippingMethod, items } =
-    input;
+export async function createPublicOrder(
+  input: PublicOrderCreateInput
+): Promise<SerializedOrder> {
+  const { buyerEmail, buyerName, shippingAddress, shippingMethod, items } = input;
+  const normalizedItems = normalizeOrderItems(items);
+  const normalizedBuyerEmail = buyerEmail.trim();
+  const normalizedBuyerName = buyerName?.trim() || null;
+  const normalizedShippingMethod = shippingMethod?.trim() || null;
 
-  if (!items || items.length === 0) {
+  if (!normalizedBuyerEmail) {
+    throw new Error("buyerEmail is required");
+  }
+
+  if (normalizedItems.length === 0) {
     throw new Error("Order must have at least one item");
   }
 
-  // 在事务中执行所有操作
   return await prisma.$transaction(async (tx) => {
-    // 1. 验证所有商品存在且属于当前卖家，并获取价格
-    const productIds = items.map((item) => item.productId);
+    const productIds = normalizedItems.map((item) => item.productId);
     const products = await tx.product.findMany({
       where: {
         id: { in: productIds },
-        userId, // 确保商品属于当前卖家
+        status: "PUBLISHED",
       },
     });
 
     if (products.length !== productIds.length) {
-      throw new Error("Some products not found or do not belong to you");
+      throw new Error("Some products are unavailable for checkout");
     }
 
-    // 2. 检查库存并计算总金额
+    const sellerIds = new Set(products.map((product) => product.userId));
+    if (sellerIds.size !== 1) {
+      throw new Error("Public checkout only supports products from one seller");
+    }
+
+    const sellerId = products[0].userId;
     let totalAmount = 0;
     const productMap = new Map(products.map((p) => [p.id, p]));
 
-    for (const item of items) {
+    for (const item of normalizedItems) {
       const product = productMap.get(item.productId);
       if (!product) {
         throw new Error(`Product ${item.productId} not found`);
@@ -390,28 +535,26 @@ export async function createOrder(input: OrderCreateInput) {
       totalAmount += price * item.quantity;
     }
 
-    // 3. 创建订单
     const order = await tx.order.create({
       data: {
-        userId,
-        buyerEmail,
-        buyerName: buyerName || null,
+        userId: sellerId,
+        buyerEmail: normalizedBuyerEmail,
+        buyerName: normalizedBuyerName,
         totalAmount,
         status: "PENDING",
-        shippingAddress: shippingAddress ? (shippingAddress as Prisma.InputJsonValue) : Prisma.JsonNull,
-        shippingMethod: shippingMethod || null,
+        shippingAddress: shippingAddress
+          ? (shippingAddress as Prisma.InputJsonValue)
+          : Prisma.JsonNull,
+        shippingMethod: normalizedShippingMethod,
       },
     });
 
-    // 4. 创建订单项并扣减库存
-    const orderItems = [];
-    for (const item of items) {
+    for (const item of normalizedItems) {
       const product = productMap.get(item.productId)!;
       const price = Number(product.price);
       const subtotal = price * item.quantity;
 
-      // 创建订单项
-      const orderItem = await tx.orderItem.create({
+      await tx.orderItem.create({
         data: {
           orderId: order.id,
           productId: item.productId,
@@ -421,9 +564,6 @@ export async function createOrder(input: OrderCreateInput) {
         },
       });
 
-      orderItems.push(orderItem);
-
-      // 扣减库存
       await tx.product.update({
         where: { id: item.productId },
         data: {
@@ -434,9 +574,28 @@ export async function createOrder(input: OrderCreateInput) {
       });
     }
 
-    return {
-      order,
-      items: orderItems,
-    };
+    const createdOrder = await tx.order.findUnique({
+      where: { id: order.id },
+      include: {
+        items: {
+          orderBy: { createdAt: "asc" },
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                images: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!createdOrder) {
+      throw new Error("Failed to load created order");
+    }
+
+    return serializeOrderWithItems(createdOrder);
   });
 }

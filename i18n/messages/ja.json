@@ -29,10 +29,40 @@
         },
         "shop": {
           "label": "SHOP ページ",
-          "description": "商品と注文を管理"
+          "description": "商品一覧、在庫、公開状態を管理"
+        },
+        "orders": {
+          "label": "注文管理",
+          "description": "購入注文を確認し、処理ステータスを更新"
         }
       },
       "comingSoon": "開発中"
+    },
+    "editorScaffold": {
+      "tabs": {
+        "layout": {
+          "title": "ページレイアウト",
+          "description": "現在のページ背景と表示レイヤー設定を管理します。"
+        },
+        "content": {
+          "title": "コンテンツ編集",
+          "description": "一覧、詳細、フォーム内容を管理します。"
+        }
+      },
+      "panels": {
+        "background": {
+          "description": "現在のページ背景画像と背景色を調整します。"
+        },
+        "list": {
+          "description": "既存コンテンツを確認し、詳細編集へ進みます。"
+        },
+        "editor": {
+          "description": "現在のコンテンツ情報と表示素材を編集します。"
+        },
+        "create": {
+          "description": "新しいコンテンツを作成し、初期表示情報を設定します。"
+        }
+      }
     }
   },
   "auth": {
@@ -97,6 +127,50 @@
       "title": "削除の確認",
       "message": "削除してもよろしいですか？この操作は元に戻せません。",
       "confirm": "削除する"
+    },
+    "editorNav": {
+      "title": "編集ナビゲーション",
+      "description": "ページ構造ごとに移動して、往復スクロールを減らします。",
+      "summary": "Hero → レイアウト → メディア → 記事"
+    },
+    "tabs": {
+      "page": {
+        "title": "ページ設定",
+        "description": "トップページの構成、背景、テーマカラーをまとめて調整します。"
+      },
+      "content": {
+        "title": "コンテンツ",
+        "description": "動画、画像ナビ、ニュース記事をまとめて編集します。"
+      }
+    },
+    "panels": {
+      "hero": {
+        "description": "ファーストビューのスライド、見出し、メニュー、SNSリンクを管理します。"
+      },
+      "background": {
+        "description": "トップページ全体の背景画像と背景色を調整します。"
+      },
+      "theme": {
+        "description": "ボタンやリンクなどの強調色を調整します。"
+      },
+      "video": {
+        "description": "動画セクションの表示内容と並び順を管理します。"
+      },
+      "news": {
+        "description": "トップページの画像ナビゲーションとレイアウトを管理します。"
+      },
+      "articles": {
+        "description": "ニュース記事一覧とニュースページ背景を編集します。"
+      }
+    },
+    "themeSettings": {
+      "title": "テーマ設定",
+      "description": "ブランドカラーを設定すると、ボタンやリンクの強調色に反映されます。",
+      "themeColor": "テーマカラー",
+      "themeColorHelp": "ブランドカラーや応援カラーの利用を推奨します。",
+      "preview": "プレビュー",
+      "previewButton": "テーマボタン",
+      "previewLink": "テーマリンク"
     }
   },
   "heroMenu": {
@@ -128,6 +202,35 @@
     "next": "次のページ",
     "published": "公開済み",
     "confirmDelete": "この記事を削除してもよろしいですか？"
+  },
+  "publicEntry": {
+    "common": {
+      "openAdmin": "管理画面へ",
+      "creatorLabel": "クリエイター",
+      "visitCreator": "クリエイターページへ",
+      "unknownCreator": "未設定クリエイター"
+    },
+    "blog": {
+      "eyebrow": "Public Blog Feed",
+      "title": "公開ブログ入口",
+      "description": "公開済みのブログ記事を全体で一覧できます。まず全体の公開記事を見てから、各クリエイターのブログページへ移動できます。",
+      "countSuffix": "件の公開記事",
+      "read": "記事を見る",
+      "emptyTitle": "公開ブログはまだありません",
+      "emptyDescription": "現在、公開済みのブログ記事はありません。クリエイターが記事を公開すると、ここに自動表示されます。"
+    },
+    "shop": {
+      "eyebrow": "Public Shop Catalog",
+      "title": "公開ショップ入口",
+      "description": "公開済みの商品を全体で一覧できます。まず全体の公開商品を見てから、各クリエイターのショップページや商品詳細へ移動できます。",
+      "countSuffix": "件の公開商品",
+      "viewProduct": "商品を見る",
+      "visitShop": "ショップへ",
+      "inStock": "在庫",
+      "outOfStock": "在庫切れ",
+      "emptyTitle": "公開商品はまだありません",
+      "emptyDescription": "現在、公開済みの商品はありません。クリエイターが商品を公開すると、ここに自動表示されます。"
+    }
   },
   "heroEditor": {
     "title": "トップコンテンツ (Hero Section)",
@@ -300,6 +403,10 @@
   "blog": {
     "title": "ブログ管理",
     "create": "新しいブログ",
+    "layout": {
+      "listBackground": "ブログ一覧ページ背景",
+      "detailBackground": "ブログ詳細ページ背景"
+    },
     "list": {
       "empty": "ブログ記事がありません。「新しいブログ」をクリックして作成してください",
       "loadFailed": "ブログリストの読み込みに失敗しました",
@@ -328,6 +435,10 @@
   "shop": {
     "title": "商品管理",
     "create": "新しい商品",
+    "layout": {
+      "listBackground": "ショップ一覧ページ背景",
+      "detailBackground": "商品詳細ページ背景"
+    },
     "list": {
       "empty": "商品がありません。「新しい商品」をクリックして作成してください",
       "loadFailed": "商品リストの読み込みに失敗しました",

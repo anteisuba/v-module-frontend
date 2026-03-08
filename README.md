@@ -1,391 +1,43 @@
-### login 界面
+# v-module-frontend
 
-![login page](./public/readme/loginpage.jpeg)
+`v-module-frontend` 是一个面向 VTuber / 创作者的多用户站点系统，基于 Next.js App Router 提供公开主页、后台 CMS、新闻、博客、商店和订单基础链路。
 
-### forget password 界面
+## 技术栈与前提
 
-![forget page](./public/readme/forgetpasswordpage.jpeg)
+- Next.js 16 + React 19 + TypeScript
+- Prisma + PostgreSQL
+- `iron-session`、Zod、`next-intl`
+- Node.js `>=20`
+- pnpm `>=8`
 
-### edit page 界面
+## 快速启动
 
-![edit page](./public/readme/editpage.png)
+1. `docker compose up -d`
+2. 参考 [`env.example`](./env.example) 配置环境变量
+3. `pnpm install`
+4. `pnpm db:migrate`
+5. `pnpm db:seed`
+6. `pnpm dev`
 
-### create page 界面
+## 当前状态快照
 
-![create page](./public/readme/createpage.jpeg)
+- 2026-03-07 基线：`pnpm build` 通过，`pnpm check` 通过，`pnpm lint` 失败（`62 errors / 93 warnings`）
+- 已覆盖链路：认证、公开页配置、新闻、博客、商品、订单基础流程、媒体上传
+- 主要缺口：订单详情缺失、媒体库 UI 缺失、自动化测试缺失
 
-### menu page 界面
+## 文档入口
 
-![menu page](./public/readme/menupage.jpeg)
+- 人类文档入口：[`docs/README.md`](./docs/README.md)
+- AI 北极星入口：[`CLAUDE.md`](./CLAUDE.md)
+- 中文项目概览：[`docs/zh-CN/overview/project-overview.md`](./docs/zh-CN/overview/project-overview.md)
+- 中文当前状态：[`docs/zh-CN/overview/current-status.md`](./docs/zh-CN/overview/current-status.md)
+- 中文开发命令：[`docs/zh-CN/development/setup-and-commands.md`](./docs/zh-CN/development/setup-and-commands.md)
+- 中文后续待办：[`docs/zh-CN/overview/backlog.md`](./docs/zh-CN/overview/backlog.md)
 
-# vtuber-site
+## 文档分层说明
 
-[中文](#中文) | [日本語](#日本語)
+- `docs/` 是人类维护者的正式长文档层
+- 根 [`CLAUDE.md`](./CLAUDE.md)、局部 `CLAUDE.md`、[`.claude/skills/`](./.claude/skills) 和 [`.claude/hooks/`](./.claude/hooks) 是 AI / 代理快速建立上下文的入口
+- 旧 `document/` 目录已退役，现行说明以 `docs/` 和当前代码为准
 
-🌐 **Live Site**: [https://www.avatar-hub.com](https://www.avatar-hub.com) | [Admin Panel](https://www.avatar-hub.com/admin)
-
-## 中文
-
-面向 VTuber 的多用户页面管理系统，基于 Next.js App Router 构建。每个用户可以创建和自定义自己的公开页面。
-
-### 🚀 在线访问
-
-- **网站首页**: [https://www.avatar-hub.com](https://www.avatar-hub.com)
-- **管理后台**: [https://www.avatar-hub.com/admin](https://www.avatar-hub.com/admin)
-- **部署平台**: Vercel
-
-### 功能概览
-
-- **多用户系统**：用户注册、登录、密码重置
-- **用户 Dashboard**：登录后的编辑目录页面，统一管理各类编辑入口
-- **页面配置系统**：支持草稿和发布版本，配置驱动渲染
-- **用户公开页面**：`/u/[slug]` 动态路由展示用户发布的页面
-- **CMS 编辑器**：可视化编辑页面配置（背景、Hero Section、Links、Gallery、News）
-- **新闻文章管理系统**：创建、编辑、发布新闻文章，支持标签分类、分享链接和渠道配置
-- **图片管理**：支持本地图片上传和外部图片 URL
-- **首页 Hero**：粘性滚动背景、自动轮播淡入淡出、缩略图切换
-- **多语言支持**：支持中文、日文、英文三种语言切换（i18n）
-- **Logo 透明度调整**：可调整 Logo 的透明度（0-100%）
-- **全局状态管理**：基于 React Context 的用户状态管理
-- **统一 API 客户端**：封装的 API 调用接口，统一的错误处理
-
-### 页面与路由
-
-#### 公开页面
-
-- `/`：首页 Hero（固定模板）
-- `/u/[slug]`：用户公开页面（例如：`/u/testuser`）
-- `/news`：新闻列表页面（支持分页，每页最多 10 条）
-- `/news/[id]`：新闻详情页面
-
-#### 用户管理
-
-- `/admin`：用户登录（登录成功后跳转到 `/admin/dashboard`）
-- `/admin/register`：用户注册
-- `/admin/forgot-password`：忘记密码（请求重置链接）
-- `/admin/reset-password?token=xxx`：重置密码（设置新密码）
-- `/admin/dashboard`：编辑目录页面（需要登录），选择要编辑的页面类型
-- `/admin/cms`：首页编辑器（需要登录），编辑个人首页配置
-
-### API
-
-#### 用户相关
-
-- `POST /api/user/register`：注册新用户
-- `POST /api/user/login`：用户登录
-- `GET /api/user/me`：获取当前用户信息（需要认证）
-- `POST /api/user/forgot-password`：请求密码重置链接
-- `POST /api/user/reset-password`：重置密码
-
-#### 页面配置相关
-
-- `GET /api/page/[slug]`：获取用户的公开页面配置（无需认证）
-- `GET /api/page/me`：获取当前用户的草稿配置（需要认证）
-- `PUT /api/page/me`：更新当前用户的草稿配置（需要认证）
-- `POST /api/page/me/publish`：发布草稿配置（需要认证）
-- `POST /api/page/me/upload`：上传图片（需要认证）
-
-#### 新闻文章相关
-
-- `GET /api/news/articles`：获取新闻文章列表（支持分页、标签过滤，公开页面仅返回已发布文章）
-- `GET /api/news/articles/[id]`：获取单篇新闻文章详情（公开页面仅返回已发布文章）
-- `POST /api/news/articles`：创建新闻文章（需要认证）
-- `PUT /api/news/articles/[id]`：更新新闻文章（需要认证，仅作者可编辑）
-- `DELETE /api/news/articles/[id]`：删除新闻文章（需要认证，仅作者可删除）
-
-### 技术栈
-
-- **框架**：Next.js 16 / React 19（App Router）
-- **样式**：Tailwind CSS v4 + daisyUI
-- **数据库**：Prisma + PostgreSQL
-- **认证**：iron-session、bcryptjs
-- **验证**：Zod
-- **国际化**：next-intl（支持中文、日文、英文）
-- **状态管理**：React Context API
-- **API 客户端**：统一的 API 调用封装，支持错误处理和类型安全
-- **部署**：Vercel（Serverless Functions）
-- **存储**：Cloudflare R2（图片存储）
-
-### 数据库模型（Prisma）
-
-- `User`：用户账号（slug、email、passwordHash）
-- `Page`：页面配置（draftConfig、publishedConfig）
-- `NewsArticle`：新闻文章（标题、内容、标签、分享链接、分享渠道、背景设置、发布状态）
-- `UserPasswordResetToken`：密码重置 token（24 小时过期，一次性使用）
-
-### 项目结构
-
-```
-vtuber-site/
-├── app/                    # Next.js 路由层
-│   ├── page.tsx           # 首页
-│   ├── admin/             # 用户管理页面
-│   ├── u/[slug]/          # 用户公开页面
-│   └── api/               # API 路由
-│       ├── user/          # 用户相关 API
-│       └── page/          # 页面配置 API
-├── features/              # 功能域（Feature-Sliced Design）
-│   ├── home-hero/         # 首页 Hero 功能
-│   ├── admin-auth/        # 用户认证功能
-│   ├── page-renderer/     # 页面渲染器
-│   ├── news-list/         # 新闻列表功能
-│   └── news-carousel/     # 新闻轮播功能
-├── domain/                # 业务领域层
-│   ├── page-config/       # 页面配置领域
-│   └── hero/              # Hero 领域
-├── lib/                   # 工具层
-│   ├── api/               # API 客户端封装
-│   │   ├── client.ts      # API 客户端基础类
-│   │   ├── endpoints.ts   # API 端点封装（userApi, pageApi）
-│   │   ├── errors.ts      # 错误处理
-│   │   └── types.ts        # API 类型定义
-│   ├── context/           # React Context
-│   │   ├── UserContext.tsx # 用户状态管理
-│   │   └── UserProviderWrapper.tsx # Provider 包装器
-│   ├── i18n/              # 国际化
-│   │   ├── context.tsx     # i18n Context Provider
-│   │   ├── config.ts       # 语言配置
-│   │   └── messages/       # 翻译文件（zh.json, ja.json, en.json）
-│   ├── validation/        # Zod 校验 schemas
-│   ├── session/           # Session 管理
-│   └── prisma.ts          # Prisma Client
-└── prisma/                # 数据库
-    └── schema.prisma      # 数据库模型
-```
-
-### 本地开发
-
-1. **准备 PostgreSQL**
-
-   ```bash
-   docker compose up -d
-   ```
-
-2. **配置环境变量 `.env`**
-
-   ```bash
-   DATABASE_URL=postgresql://postgres:postgres@localhost:5432/vtuber
-   SESSION_PASSWORD=replace-with-a-long-random-string
-
-   # 邮件服务配置（密码重置功能需要）
-   # 开发环境：可以不配置，邮件内容会输出到控制台
-   # 生产环境：需要配置 SMTP 服务
-   #
-   # 推荐使用 Resend（最简单）：
-   # SMTP_HOST=smtp.resend.com
-   # SMTP_PORT=587
-   # SMTP_USER=resend
-   # SMTP_PASSWORD=re_你的API_KEY
-   # SMTP_FROM=noreply@resend.dev
-   #
-   # 详细配置指南请查看 SMTP_SETUP_GUIDE.md
-
-   SMTP_HOST=smtp.resend.com
-   SMTP_PORT=587
-   SMTP_USER=resend
-   SMTP_PASSWORD=your-resend-api-key
-   SMTP_FROM=noreply@resend.dev
-   NEXT_PUBLIC_BASE_URL=http://localhost:3000
-   ```
-
-3. **安装依赖并迁移数据库**
-
-   ```bash
-   pnpm install
-   pnpm db:migrate
-   pnpm db:seed
-   ```
-
-4. **启动开发服务器**
-
-   ```bash
-   pnpm dev
-   ```
-
-5. **访问应用**
-   - 首页：http://localhost:3000
-   - 登录：http://localhost:3000/admin
-   - 编辑目录（登录后）：http://localhost:3000/admin/dashboard
-   - CMS 编辑器：http://localhost:3000/admin/cms
-   - 测试用户页面：http://localhost:3000/u/testuser
-
-### 生产环境部署
-
-项目已部署到 Vercel，访问地址：
-- **生产环境**: [https://www.avatar-hub.com](https://www.avatar-hub.com)
-- **管理后台**: [https://www.avatar-hub.com/admin](https://www.avatar-hub.com/admin)
-
-#### 部署配置
-
-- **平台**: Vercel
-- **Node.js 版本**: 20.x
-- **构建命令**: `pnpm build`
-- **环境变量**: 需要在 Vercel Dashboard 中配置所有必需的环境变量（参考 `env.example`）
-
-#### 性能优化
-
-- ✅ 数据库查询合并（减少查询次数）
-- ✅ Server Components 优化（Gallery、NewsList）
-- ✅ 代码分割（Video 组件动态加载）
-- ✅ 环境变量验证（启动时检查）
-- ✅ 全局错误边界（防止页面崩溃）
-
-### 开发命令
-
-```bash
-# 数据库迁移
-pnpm db:migrate
-
-# 数据库 seed（创建测试用户）
-pnpm db:seed
-
-# 打开 Prisma Studio
-pnpm db:studio
-
-# 开发服务器
-pnpm dev
-
-# 构建
-pnpm build
-```
-
-### 测试用户
-
-运行 `pnpm db:seed` 后会创建测试用户：
-
-- Email: `test@example.com`
-- Password: `123456`
-- Slug: `testuser`
-
-### 使用流程
-
-1. **注册/登录**：访问 `/admin` 进行注册或登录
-2. **选择编辑页面**：登录成功后自动跳转到 `/admin/dashboard`，选择要编辑的页面类型
-3. **编辑内容**：进入对应的编辑器（如 CMS 编辑器）进行内容编辑
-   - **Hero Section**：编辑轮播图片、标题、副标题、Logo、社交链接、布局设置
-   - **News Section**：编辑图片导航、布局设置
-   - **Page Background**：设置页面背景（颜色或图片）
-   - **News Articles**：创建和管理新闻文章，设置文章背景、分享链接和渠道
-4. **保存草稿**：编辑过程中可以随时保存草稿
-5. **发布页面**：编辑完成后点击发布，将草稿配置发布为公开页面
-6. **查看效果**：访问 `/u/[你的slug]` 查看公开页面效果
-7. **语言切换**：在 `/admin` 页面右下角或 HeroMenu 底部切换语言（中文/日文/英文）
-
-### 新增功能
-
-#### 新闻文章管理系统
-- 创建、编辑、删除新闻文章
-- 支持标签分类和动态标签管理
-- 支持分享链接和分享渠道配置（Twitter/X、Facebook、LINE）
-- 支持文章详情页背景设置
-- 支持草稿和发布状态管理
-- 新闻列表页面支持分页（每页最多 10 条）
-
-#### 多语言支持（i18n）
-- 支持中文、日文、英文三种语言
-- 语言选择器位置：
-  - `/admin` 页面：右下角固定位置
-  - HeroMenu：菜单底部，VTUBER-SITE 下方
-- 语言选择保存在 localStorage，刷新后保持
-- 已翻译所有 CMS 编辑器界面文本
-
-#### Logo 透明度调整
-- 在 CMS 编辑器的 Logo 编辑部分可以调整 Logo 透明度（0-100%）
-- 实时预览效果
-- 透明度设置会应用到公开页面的 Logo 显示
-
----
-
-## 日本語
-
-VTuber 向けのマルチユーザーページ管理システム。Next.js App Router で構築されています。各ユーザーが自分の公開ページを作成・カスタマイズできます。
-
-### 主な機能
-
-- **マルチユーザーシステム**：ユーザー登録、ログイン、パスワードリセット
-- **ページ設定システム**：下書きと公開版をサポート、設定駆動レンダリング
-- **ユーザー公開ページ**：`/u/[slug]` 動的ルートでユーザーの公開ページを表示
-- **CMS エディター**：ページ設定を視覚的に編集（背景、Hero Section、Links、Gallery、News）
-- **ニュース記事管理システム**：ニュース記事の作成、編集、公開、タグ分類、共有リンク設定
-- **画像管理**：ローカル画像アップロードと外部画像 URL をサポート
-- **トップ Hero**：スクロール追従、フェード切替、自動スライド、サムネイル選択
-- **多言語対応**：中国語、日本語、英語の3言語切り替え（i18n）
-- **Logo 透明度調整**：Logo の透明度を調整可能（0-100%）
-
-### ページ/ルート
-
-#### 公開ページ
-
-- `/`：トップページ Hero（固定テンプレート）
-- `/u/[slug]`：ユーザー公開ページ（例：`/u/testuser`）
-
-#### ユーザー管理
-
-- `/admin`：ユーザーログイン（ログイン成功後 `/admin/dashboard` にリダイレクト）
-- `/admin/register`：ユーザー登録
-- `/admin/forgot-password`：パスワード忘れ（リセットリンク要求）
-- `/admin/reset-password?token=xxx`：パスワードリセット（新パスワード設定）
-- `/admin/dashboard`：編集ディレクトリページ（ログイン必要）、編集するページタイプを選択
-- `/admin/cms`：ホームページエディター（ログイン必要）、個人ホームページ設定を編集
-
-### API
-
-#### ユーザー関連
-
-- `POST /api/user/register`：新規ユーザー登録
-- `POST /api/user/login`：ユーザーログイン
-- `GET /api/user/me`：現在のユーザー情報取得（認証必要）
-- `POST /api/user/forgot-password`：パスワードリセットリンク要求
-- `POST /api/user/reset-password`：パスワードリセット
-
-#### ページ設定関連
-
-- `GET /api/page/[slug]`：ユーザーの公開ページ設定取得（認証不要）
-- `GET /api/page/me`：現在のユーザーの下書き設定取得（認証必要）
-- `PUT /api/page/me`：現在のユーザーの下書き設定更新（認証必要）
-- `POST /api/page/me/publish`：下書き設定を公開（認証必要）
-- `POST /api/page/me/upload`：画像アップロード（認証必要）
-
-### 技術スタック
-
-- **フレームワーク**：Next.js 16 / React 19（App Router）
-- **スタイル**：Tailwind CSS v4 + daisyUI
-- **データベース**：Prisma + PostgreSQL
-- **認証**：iron-session、bcryptjs
-- **検証**：Zod
-- **状態管理**：React Context API
-- **API クライアント**：統一された API 呼び出しラッパー、エラーハンドリングと型安全性をサポート
-
-### データモデル（Prisma）
-
-- `User`：ユーザーアカウント（slug、email、passwordHash）
-- `Page`：ページ設定（draftConfig、publishedConfig）
-- `UserPasswordResetToken`：パスワードリセットトークン（24 時間有効期限、一回限り）
-
-### ローカル開発
-
-1. **PostgreSQL を用意**
-
-   ```bash
-   docker compose up -d
-   ```
-
-2. **環境変数 `.env`**
-
-   ```bash
-   DATABASE_URL=postgresql://postgres:postgres@localhost:5432/vtuber
-   SESSION_PASSWORD=replace-with-a-long-random-string
-   ```
-
-3. **依存関係とマイグレーション**
-
-   ```bash
-   pnpm install
-   pnpm db:migrate
-   pnpm db:seed
-   ```
-
-4. **開発サーバー起動**
-   ```bash
-   pnpm dev
-   ```
+Japanese readers should start from [`docs/README.md`](./docs/README.md).

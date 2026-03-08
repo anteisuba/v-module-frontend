@@ -15,24 +15,24 @@ type Body = {
 
 export async function POST(req: Request) {
   const { email, password } = (await req.json()) as Body;
+  const normalizedEmail = email?.trim();
 
-  if (!email || !password) {
+  if (!normalizedEmail || !password) {
     return NextResponse.json(
       { message: "email / password 必填" },
       { status: 400 }
     );
   }
 
-  const user = await prisma.user.findUnique({ where: { email } });
+  const user = await prisma.user.findUnique({ where: { email: normalizedEmail } });
 
-  // 统一错误，避免泄漏用户是否存在
   if (!user) {
-    return NextResponse.json({ message: "邮箱或密码不正确" }, { status: 401 });
+    return NextResponse.json({ message: "该邮箱未注册" }, { status: 401 });
   }
 
   const ok = await bcrypt.compare(password, user.passwordHash);
   if (!ok) {
-    return NextResponse.json({ message: "邮箱或密码不正确" }, { status: 401 });
+    return NextResponse.json({ message: "密码不正确" }, { status: 401 });
   }
 
   // 确保用户有 Page 记录

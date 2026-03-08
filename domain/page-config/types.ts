@@ -2,7 +2,7 @@
 
 export type BackgroundType = 'color' | 'image';
 
-export type SectionType = 'hero' | 'links' | 'gallery' | 'news' | 'video';
+export type SectionType = 'hero' | 'gallery' | 'news' | 'video';
 
 export type BackgroundConfig = 
   | { type: 'color'; value: string }  // hex color, e.g. "#000000"
@@ -28,16 +28,6 @@ export type HeroSectionProps = {
     autoplayInterval?: number; // 每张图片显示时长（秒），默认 5
     transitionDuration?: number; // 切换过渡时间（秒），默认 0.5
   };
-};
-
-export type LinksSectionProps = {
-  items: Array<{
-    id: string;
-    label: string;
-    href: string;
-    icon?: string; // emoji 或 icon name
-  }>;
-  layout?: 'grid' | 'list'; // 布局方式
 };
 
 export type GallerySectionProps = {
@@ -94,7 +84,6 @@ export type VideoSectionProps = {
 
 export type SectionConfig = 
   | { id: string; type: 'hero'; props: HeroSectionProps; enabled: boolean; order: number; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } }
-  | { id: string; type: 'links'; props: LinksSectionProps; enabled: boolean; order: number; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } }
   | { id: string; type: 'gallery'; props: GallerySectionProps; enabled: boolean; order: number; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } }
   | { id: string; type: 'news'; props: NewsSectionProps; enabled: boolean; order: number; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } }
   | { id: string; type: 'video'; props: VideoSectionProps; enabled: boolean; order: number; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } };
@@ -120,6 +109,12 @@ export type PageConfig = {
   
   // 博客详情页面背景（用于 /u/[slug]/blog/[id] 页面）
   blogDetailBackground?: BackgroundConfig;
+
+  // 商店列表页面背景（用于 /u/[slug]/shop 页面）
+  shopBackground?: BackgroundConfig;
+
+  // 商品详情页面背景（用于 /u/[slug]/shop/[id] 页面）
+  shopDetailBackground?: BackgroundConfig;
   
   // 所有 sections（按 order 排序后渲染）
   sections: SectionConfig[];

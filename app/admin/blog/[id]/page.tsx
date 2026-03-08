@@ -5,9 +5,10 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  BackButton,
   LoadingState,
-  LanguageSelector,
+  AdminEditorAccordion,
+  AdminEditorPage,
+  AdminEditorTabs,
   BackgroundEditor,
   SaveStatus,
   Button,
@@ -23,6 +24,9 @@ import { usePageConfig } from "@/hooks/usePageConfig";
 import { usePageConfigActions } from "@/hooks/usePageConfigActions";
 import { useI18n } from "@/lib/i18n/context";
 import type { BackgroundConfig } from "@/domain/page-config/types";
+import type { AdminEditorPanelItem, AdminEditorTabOption } from "@/components/ui";
+
+type EditorTabId = "layout" | "content";
 
 export default function EditBlogPage({
   params,
@@ -60,6 +64,13 @@ export default function EditBlogPage({
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [showPublishConfirm, setShowPublishConfirm] = useState(false);
   const [navigating, setNavigating] = useState(false);
+  const [activeTab, setActiveTab] = useState<EditorTabId>("content");
+  const [openPanelByTab, setOpenPanelByTab] = useState<
+    Record<EditorTabId, string | null>
+  >({
+    layout: "background",
+    content: "editor",
+  });
 
   useEffect(() => {
     async function loadParams() {
@@ -171,6 +182,13 @@ export default function EditBlogPage({
     router.push(path);
   };
 
+  const togglePanel = (tabId: EditorTabId, panelId: string) => {
+    setOpenPanelByTab((prev) => ({
+      ...prev,
+      [tabId]: prev[tabId] === panelId ? null : panelId,
+    }));
+  };
+
   if (userLoading || loading || configLoading || navigating) {
     return (
       <main className="relative min-h-screen w-full overflow-hidden">
@@ -185,87 +203,131 @@ export default function EditBlogPage({
     return null;
   }
 
+  const tabOptions: AdminEditorTabOption[] = [
+    {
+      id: "layout",
+      title: t("admin.editorScaffold.tabs.layout.title"),
+      description: t("admin.editorScaffold.tabs.layout.description"),
+    },
+    {
+      id: "content",
+      title: t("admin.editorScaffold.tabs.content.title"),
+      description: t("admin.editorScaffold.tabs.content.description"),
+    },
+  ];
+
+  const publishActions = (
+    <>
+      <Button
+        variant="secondary"
+        size="sm"
+        onClick={handleSaveDraft}
+        loading={savingConfig}
+        disabled={savingConfig || publishing || !hasUnsavedChanges}
+      >
+        {t("cms.saveDraft")}
+      </Button>
+      <Button
+        variant="primary"
+        size="sm"
+        onClick={() => setShowPublishConfirm(true)}
+        loading={publishing}
+        disabled={savingConfig || publishing}
+      >
+        {t("cms.publish")}
+      </Button>
+    </>
+  );
+
+  const layoutPanels: AdminEditorPanelItem[] = [
+    {
+      id: "background",
+      title: t("blog.layout.detailBackground"),
+      description: t("admin.editorScaffold.panels.background.description"),
+      actions: publishActions,
+      content: (
+        <BackgroundEditor
+          label={t("blog.layout.detailBackground")}
+          background={
+            config.blogDetailBackground || { type: "color", value: "#000000" }
+          }
+          onBackgroundChange={(background: BackgroundConfig) => {
+            setConfig({
+              ...config,
+              blogDetailBackground: background,
+            });
+          }}
+          disabled={savingConfig || publishing}
+          onUploadImage={async (file) => {
+            try {
+              const result = await pageApi.uploadImage(file);
+              return result;
+            } catch (e) {
+              throw e;
+            }
+          }}
+          onToast={showToast}
+          onError={handleError}
+          previewHeight="h-48"
+        />
+      ),
+    },
+  ];
+
+  const contentPanels: AdminEditorPanelItem[] = [
+    {
+      id: "editor",
+      title: t("common.edit"),
+      description: t("admin.editorScaffold.panels.editor.description"),
+      content: (
+        <BlogEditor
+          initialData={blogPost}
+          onSave={handleSave}
+          onCancel={handleCancel}
+          saving={saving}
+        />
+      ),
+    },
+  ];
+
+  const visiblePanels =
+    activeTab === "layout" ? layoutPanels : contentPanels;
+
   return (
-    <main className="relative min-h-screen w-full overflow-hidden">
-      {/* 背景 */}
-      <div className="absolute inset-0">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url(/login/login-c.jpeg)" }}
-        />
-        <div className="absolute inset-0 bg-white/70" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/15" />
-      </div>
-
-      <div className="relative z-10 mx-auto max-w-4xl px-6 py-10">
-        <div className="flex justify-between items-center mb-6">
-          <BackButton href="/admin/blog" label={t("common.back")} />
+    <AdminEditorPage
+      backHref="/admin/blog"
+      backLabel={t("common.back")}
+      title={t("common.edit")}
+      description={blogPost.title}
+      maxWidthClassName="max-w-4xl"
+    >
+      {error && (
+        <Alert type="error" message={error} onClose={clearError} className="mb-4" />
+      )}
+      {toastMessage && (
+        <div className="fixed left-1/2 top-20 z-[200] -translate-x-1/2 transform rounded-lg bg-black px-4 py-2 text-sm text-white">
+          {toastMessage}
         </div>
+      )}
 
-        {/* 头部 */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-black">{t("common.edit")}</h1>
-          <p className="mt-1 text-sm text-black/70">{blogPost.title}</p>
-        </div>
+      <SaveStatus
+        hasUnsavedChanges={hasUnsavedChanges}
+        saving={savingConfig}
+        publishing={publishing}
+        lastSaved={lastSaved}
+      />
 
-        {/* 错误提示 */}
-        {error && (
-          <Alert type="error" message={error} onClose={clearError} className="mb-4" />
-        )}
+      <AdminEditorTabs
+        tabs={tabOptions}
+        activeTab={activeTab}
+        onChange={(tabId) => setActiveTab(tabId as EditorTabId)}
+      />
 
-        {/* Toast 提示 */}
-        {toastMessage && (
-          <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[200] bg-black text-white px-4 py-2 rounded-lg text-sm mb-4">
-            {toastMessage}
-          </div>
-        )}
-
-        {/* 保存状态 */}
-        <SaveStatus
-          hasUnsavedChanges={hasUnsavedChanges}
-          saving={savingConfig}
-          publishing={publishing}
-          lastSaved={lastSaved}
-        />
-
-        {/* 博客详情页面背景编辑 */}
-        <div className="mb-6 rounded-xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-base font-semibold text-black">博客详情页面背景</h2>
-          </div>
-          <BackgroundEditor
-            label="博客详情页面背景"
-            background={config.blogDetailBackground || { type: "color", value: "#000000" }}
-            onBackgroundChange={(background: BackgroundConfig) => {
-              setConfig({
-                ...config,
-                blogDetailBackground: background,
-              });
-            }}
-            disabled={savingConfig || publishing}
-            onUploadImage={async (file) => {
-              try {
-                const result = await pageApi.uploadImage(file);
-                return result;
-              } catch (e) {
-                throw e;
-              }
-            }}
-            onToast={showToast}
-            onError={handleError}
-            previewHeight="h-48"
-          />
-        </div>
-
-        {/* 编辑器 */}
-        <div className="rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
-          <BlogEditor
-            initialData={blogPost}
-            onSave={handleSave}
-            onCancel={handleCancel}
-            saving={saving}
-          />
-        </div>
+      <AdminEditorAccordion
+        panels={visiblePanels}
+        openPanelId={openPanelByTab[activeTab]}
+        onToggle={(panelId) => togglePanel(activeTab, panelId)}
+      />
 
         {/* 发布确认对话框 */}
         <ConfirmDialog
@@ -277,12 +339,6 @@ export default function EditBlogPage({
           onConfirm={handlePublish}
           onCancel={() => setShowPublishConfirm(false)}
         />
-
-        {/* 语言选择器 */}
-        <div className="mt-8 flex justify-end">
-          <LanguageSelector position="inline" menuPosition="top" />
-        </div>
-      </div>
-    </main>
+    </AdminEditorPage>
   );
 }

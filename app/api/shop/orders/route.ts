@@ -2,7 +2,7 @@
 
 import { NextResponse } from "next/server";
 import { getServerSession } from "@/lib/session/userSession";
-import { createOrder, type OrderCreateInput } from "@/domain/shop/services";
+import { serializeOrderWithItems } from "@/domain/shop/services";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -54,27 +54,8 @@ export async function GET(request: Request) {
       prisma.order.count({ where }),
     ]);
 
-    // 格式化订单数据
-    const formattedOrders = orders.map((order) => ({
-      ...order,
-      totalAmount: Number(order.totalAmount),
-      createdAt: order.createdAt.toISOString(),
-      updatedAt: order.updatedAt.toISOString(),
-      paidAt: order.paidAt ? order.paidAt.toISOString() : null,
-      shippedAt: order.shippedAt ? order.shippedAt.toISOString() : null,
-      deliveredAt: order.deliveredAt
-        ? order.deliveredAt.toISOString()
-        : null,
-      items: order.items.map((item) => ({
-        ...item,
-        price: Number(item.price),
-        subtotal: Number(item.subtotal),
-        createdAt: item.createdAt.toISOString(),
-      })),
-    }));
-
     return NextResponse.json({
-      orders: formattedOrders,
+      orders: orders.map((order) => serializeOrderWithItems(order)),
       pagination: {
         page,
         limit,
@@ -91,91 +72,15 @@ export async function GET(request: Request) {
   }
 }
 
-// POST: 创建订单
-export async function POST(request: Request) {
-  const session = await getServerSession();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const userId = session.user.id; // 卖家用户 ID
-
-  let body;
-  try {
-    body = await request.json();
-  } catch (e) {
-    return NextResponse.json(
-      { error: "Invalid JSON in request body" },
-      { status: 400 }
-    );
-  }
-
-  const { buyerEmail, buyerName, shippingAddress, shippingMethod, items } = body;
-
-  if (!buyerEmail || !items || !Array.isArray(items) || items.length === 0) {
-    return NextResponse.json(
-      { error: "buyerEmail and items (array) are required" },
-      { status: 400 }
-    );
-  }
-
-  // 验证 items 格式
-  for (const item of items) {
-    if (!item.productId || item.quantity === undefined || item.quantity <= 0) {
-      return NextResponse.json(
-        { error: "Each item must have productId and quantity > 0" },
-        { status: 400 }
-      );
-    }
-  }
-
-  try {
-    const input: OrderCreateInput = {
-      userId,
-      buyerEmail,
-      buyerName: buyerName || null,
-      shippingAddress: shippingAddress || null,
-      shippingMethod: shippingMethod || null,
-      items,
-    };
-
-    const result = await createOrder(input);
-
-    // 格式化返回数据
-    const formattedOrder = {
-      ...result.order,
-      totalAmount: Number(result.order.totalAmount),
-      createdAt: result.order.createdAt.toISOString(),
-      updatedAt: result.order.updatedAt.toISOString(),
-      paidAt: result.order.paidAt ? result.order.paidAt.toISOString() : null,
-      shippedAt: result.order.shippedAt
-        ? result.order.shippedAt.toISOString()
-        : null,
-      deliveredAt: result.order.deliveredAt
-        ? result.order.deliveredAt.toISOString()
-        : null,
-      items: result.items.map((item) => ({
-        ...item,
-        price: Number(item.price),
-        subtotal: Number(item.subtotal),
-        createdAt: item.createdAt.toISOString(),
-      })),
-    };
-
-    return NextResponse.json({ order: formattedOrder });
-  } catch (error) {
-    console.error("Failed to create order:", error);
-    const status =
-      error instanceof Error && error.message.includes("not found")
-        ? 404
-        : error instanceof Error && error.message.includes("stock")
-        ? 400
-        : 500;
-    return NextResponse.json(
-      {
-        error: error instanceof Error ? error.message : "Failed to create order",
+// POST: 卖家订单管理不支持在该端点创建订单，公开结账请走 /api/shop/checkout
+export async function POST() {
+  return NextResponse.json(
+    { error: "Use POST /api/shop/checkout for public checkout orders" },
+    {
+      status: 405,
+      headers: {
+        Allow: "GET",
       },
-      { status }
-    );
-  }
+    }
+  );
 }

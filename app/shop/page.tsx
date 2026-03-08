@@ -1,8 +1,13 @@
-// app/shop/page.tsx
+import { getProducts } from "@/domain/shop";
+import PublicShopCatalog from "@/features/shop/PublicShopCatalog";
 
-import { redirect } from "next/navigation";
+export const dynamic = "force-dynamic";
 
-export default function ShopPage() {
-  // 重定向到默认用户页面（可以根据需要修改为其他默认用户）
-  redirect("/u/xiuruisu/shop");
+export default async function ShopPage() {
+  const productData = await getProducts({
+    status: "PUBLISHED",
+    limit: 60,
+  });
+
+  return <PublicShopCatalog products={productData.products} />;
 }

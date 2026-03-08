@@ -24,11 +24,6 @@ export function renderSection(section: SectionConfig, pageConfig?: PageConfig): 
     );
   }
 
-  // Links section - 已移除
-  if (section.type === "links") {
-    return null;
-  }
-
   // Gallery section
   if (section.type === "gallery") {
     return (

@@ -13,6 +13,7 @@ import { useErrorHandler } from "@/hooks/useErrorHandler";
 import { useI18n } from "@/lib/i18n/context";
 import { useHeroMenu } from "@/features/home-hero/hooks/useHeroMenu";
 import HeroMenu from "@/features/home-hero/components/HeroMenu";
+import { isExternalUrl } from "@/lib/utils/isExternalUrl";
 
 export default function CheckoutPage({
   params,
@@ -85,8 +86,7 @@ export default function CheckoutPage({
 
     try {
       setSubmitting(true);
-      const orderResponse = await shopApi.createOrder({
-        userId: product.userId,
+      const orderResponse = await shopApi.createCheckoutOrder({
         buyerEmail: buyerEmail.trim(),
         buyerName: buyerName.trim() || null,
         shippingAddress: Object.values(shippingAddress).some((v) => v.trim())
@@ -133,11 +133,11 @@ export default function CheckoutPage({
   const totalPrice = product.price * quantity;
 
   return (
-    <div className="relative min-h-screen py-16 px-6">
+    <div className="relative min-h-screen bg-white py-16 px-6 text-black">
       {/* 右上角菜单按钮 */}
-      <div className="fixed top-6 right-6 z-50 flex items-center gap-4 text-white">
+      <div className="fixed top-6 right-6 z-50 flex items-center gap-4 text-black">
         <button
-          className="text-2xl opacity-90 hover:opacity-100 transition drop-shadow-lg"
+          className="text-2xl opacity-80 transition hover:opacity-100"
           type="button"
           aria-label="menu"
           onClick={menu.toggleMenu}
@@ -169,13 +169,22 @@ export default function CheckoutPage({
             <div className="flex gap-4 mb-4">
               {product.images && product.images.length > 0 && (
                 <div className="relative w-24 h-24 rounded-lg overflow-hidden">
-                  <Image
-                    src={product.images[0]}
-                    alt={product.name}
-                    fill
-                    className="object-cover"
-                    sizes="96px"
-                  />
+                  {isExternalUrl(product.images[0]) ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={product.images[0]}
+                      alt={product.name}
+                      className="h-full w-full object-cover"
+                    />
+                  ) : (
+                    <Image
+                      src={product.images[0]}
+                      alt={product.name}
+                      fill
+                      className="object-cover"
+                      sizes="96px"
+                    />
+                  )}
                 </div>
               )}
               <div className="flex-1">

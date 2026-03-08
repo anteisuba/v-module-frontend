@@ -1,9 +1,13 @@
-// app/blog/page.tsx
+import { getBlogPosts } from "@/domain/blog";
+import PublicBlogFeed from "@/features/blog/PublicBlogFeed";
 
-import { redirect } from "next/navigation";
+export const dynamic = "force-dynamic";
 
-export default function BlogPage() {
-  // 重定向到默认用户页面（可以根据需要修改为其他默认用户）
-  // 或者可以显示一个提示页面，让用户选择要查看的用户
-  redirect("/u/xiuruisu/blog");
+export default async function BlogPage() {
+  const blogData = await getBlogPosts({
+    published: true,
+    limit: 50,
+  });
+
+  return <PublicBlogFeed posts={blogData.posts} />;
 }

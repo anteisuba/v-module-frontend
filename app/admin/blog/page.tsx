@@ -5,11 +5,12 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
-  BackButton,
   Alert,
   LoadingState,
   ConfirmDialog,
-  LanguageSelector,
+  AdminEditorAccordion,
+  AdminEditorPage,
+  AdminEditorTabs,
   BackgroundEditor,
   SaveStatus,
   Button,
@@ -22,6 +23,7 @@ import { usePageConfig } from "@/hooks/usePageConfig";
 import { usePageConfigActions } from "@/hooks/usePageConfigActions";
 import { useI18n } from "@/lib/i18n/context";
 import type { BackgroundConfig } from "@/domain/page-config/types";
+import type { AdminEditorPanelItem, AdminEditorTabOption } from "@/components/ui";
 
 interface BlogPost {
   id: string;
@@ -32,6 +34,8 @@ interface BlogPost {
   createdAt: string;
   publishedAt: string | null;
 }
+
+type EditorTabId = "layout" | "content";
 
 export default function BlogPage() {
   const router = useRouter();
@@ -58,6 +62,13 @@ export default function BlogPage() {
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [showPublishConfirm, setShowPublishConfirm] = useState(false);
   const [navigating, setNavigating] = useState(false);
+  const [activeTab, setActiveTab] = useState<EditorTabId>("layout");
+  const [openPanelByTab, setOpenPanelByTab] = useState<
+    Record<EditorTabId, string | null>
+  >({
+    layout: "background",
+    content: "posts",
+  });
 
   // 加载博客列表
   useEffect(() => {
@@ -139,6 +150,183 @@ export default function BlogPage() {
     });
   }
 
+  const togglePanel = (tabId: EditorTabId, panelId: string) => {
+    setOpenPanelByTab((prev) => ({
+      ...prev,
+      [tabId]: prev[tabId] === panelId ? null : panelId,
+    }));
+  };
+
+  const tabOptions: AdminEditorTabOption[] = [
+    {
+      id: "layout",
+      title: t("admin.editorScaffold.tabs.layout.title"),
+      description: t("admin.editorScaffold.tabs.layout.description"),
+    },
+    {
+      id: "content",
+      title: t("admin.editorScaffold.tabs.content.title"),
+      description: t("admin.editorScaffold.tabs.content.description"),
+    },
+  ];
+
+  const publishActions = (
+    <>
+      <Button
+        variant="secondary"
+        size="sm"
+        onClick={handleSaveDraft}
+        loading={saving}
+        disabled={saving || publishing || !hasUnsavedChanges}
+      >
+        {t("cms.saveDraft")}
+      </Button>
+      <Button
+        variant="primary"
+        size="sm"
+        onClick={() => setShowPublishConfirm(true)}
+        loading={publishing}
+        disabled={saving || publishing}
+      >
+        {t("cms.publish")}
+      </Button>
+    </>
+  );
+
+  const layoutPanels: AdminEditorPanelItem[] = [
+    {
+      id: "background",
+      title: t("blog.layout.listBackground"),
+      description: t("admin.editorScaffold.panels.background.description"),
+      actions: publishActions,
+      content: (
+        <BackgroundEditor
+          label={t("blog.layout.listBackground")}
+          background={
+            config.blogBackground || { type: "color", value: "#000000" }
+          }
+          onBackgroundChange={(background: BackgroundConfig) => {
+            setConfig({
+              ...config,
+              blogBackground: background,
+            });
+          }}
+          disabled={saving || publishing}
+          onUploadImage={async (file) => {
+            try {
+              const result = await pageApi.uploadImage(file);
+              return result;
+            } catch (e) {
+              throw e;
+            }
+          }}
+          onToast={showToast}
+          onError={handleError}
+          previewHeight="h-48"
+        />
+      ),
+    },
+  ];
+
+  const contentPanels: AdminEditorPanelItem[] = [
+    {
+      id: "posts",
+      title: t("blog.title"),
+      description: t("admin.editorScaffold.panels.list.description"),
+      content:
+        posts.length === 0 ? (
+          <div className="rounded-2xl border border-black/10 bg-white/55 p-12 text-center backdrop-blur-xl">
+            <p className="text-black/60">{t("blog.list.empty")}</p>
+            <button
+              onClick={() => handleNavigate("/admin/blog/new")}
+              className="mt-4 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/90"
+            >
+              {t("blog.create")}
+            </button>
+          </div>
+        ) : (
+          <div className="space-y-4">
+            {posts.map((post) => (
+              <div
+                key={post.id}
+                className="cursor-pointer rounded-xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl transition-colors hover:bg-white/70"
+                onClick={() => handleNavigate(`/admin/blog/${post.id}`)}
+              >
+                <div className="flex items-start gap-4">
+                  {post.coverImage ? (
+                    <div className="flex-shrink-0">
+                      <img
+                        src={post.coverImage}
+                        alt={post.title}
+                        className="h-24 w-24 rounded-lg object-cover"
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).style.display = "none";
+                        }}
+                      />
+                    </div>
+                  ) : null}
+
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <h3 className="mb-1 text-lg font-semibold text-black">
+                          {post.title}
+                        </h3>
+                        <p className="mb-2 line-clamp-2 text-sm text-black/60">
+                          {post.content.substring(0, 100)}
+                          {post.content.length > 100 ? "..." : ""}
+                        </p>
+                        <div className="flex items-center gap-3 text-xs text-black/50">
+                          <span>{formatDate(post.createdAt)}</span>
+                          {post.published ? (
+                            <span className="rounded bg-emerald-100 px-2 py-0.5 text-emerald-700">
+                              {t("blog.list.published")}
+                            </span>
+                          ) : (
+                            <span className="rounded bg-gray-100 px-2 py-0.5 text-gray-700">
+                              {t("blog.list.draft")}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleNavigate(`/admin/blog/${post.id}`);
+                          }}
+                          className="rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black transition-colors hover:bg-white/80"
+                        >
+                          {t("common.edit")}
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            setPostToDelete(post.id);
+                            setShowDeleteConfirm(true);
+                          }}
+                          disabled={deletingId === post.id}
+                          className="rounded-lg border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-100 disabled:opacity-50"
+                        >
+                          {deletingId === post.id
+                            ? t("common.loading")
+                            : t("common.delete")}
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        ),
+    },
+  ];
+
+  const visiblePanels =
+    activeTab === "layout" ? layoutPanels : contentPanels;
+
   if (userLoading || loading || configLoading || navigating) {
     return (
       <main className="relative min-h-screen w-full overflow-hidden">
@@ -154,200 +342,45 @@ export default function BlogPage() {
   }
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden">
-      {/* 背景 */}
-      <div className="absolute inset-0">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url(/login/login-c.jpeg)" }}
-        />
-        <div className="absolute inset-0 bg-white/70" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/15" />
-      </div>
-
-      <div className="relative z-10 mx-auto max-w-6xl px-6 py-10">
-        <div className="mb-6">
-          <BackButton href="/admin/dashboard" label={t("common.back")} fixed={false} className="!m-0" />
+    <AdminEditorPage
+      backHref="/admin/dashboard"
+      backLabel={t("common.back")}
+      title={t("blog.title")}
+      description={t("admin.dashboard.pages.blog.description")}
+      action={
+        <button
+          onClick={() => handleNavigate("/admin/blog/new")}
+          className="rounded-xl bg-black px-6 py-3 text-sm font-medium text-white transition-colors hover:bg-black/90"
+        >
+          {t("blog.create")}
+        </button>
+      }
+    >
+      {error && <Alert type="error" message={error} onClose={clearError} />}
+      {toastMessage && (
+        <div className="fixed left-1/2 top-20 z-[200] -translate-x-1/2 transform rounded-lg bg-black px-4 py-2 text-sm text-white">
+          {toastMessage}
         </div>
-        <div className="fixed bottom-6 right-6 z-[100]">
-          <LanguageSelector position="bottom-right" />
-        </div>
+      )}
 
-        {/* 头部 */}
-        <div className="mb-6 flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-black">{t("blog.title")}</h1>
-            <p className="mt-1 text-sm text-black/70">
-              {t("admin.dashboard.pages.blog.description")}
-            </p>
-          </div>
-          <button
-            onClick={() => handleNavigate("/admin/blog/new")}
-            className="rounded-xl bg-black px-6 py-3 text-sm font-medium text-white hover:bg-black/90 transition-colors"
-          >
-            {t("blog.create")}
-          </button>
-        </div>
+      <SaveStatus
+        hasUnsavedChanges={hasUnsavedChanges}
+        saving={saving}
+        publishing={publishing}
+        lastSaved={lastSaved}
+      />
 
-        {/* 错误提示 */}
-        {error && (
-          <Alert type="error" message={error} onClose={clearError} />
-        )}
+      <AdminEditorTabs
+        tabs={tabOptions}
+        activeTab={activeTab}
+        onChange={(tabId) => setActiveTab(tabId as EditorTabId)}
+      />
 
-        {/* Toast 提示 */}
-        {toastMessage && (
-          <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-[200] bg-black text-white px-4 py-2 rounded-lg text-sm">
-            {toastMessage}
-          </div>
-        )}
-
-        {/* 保存状态 */}
-        <SaveStatus
-          hasUnsavedChanges={hasUnsavedChanges}
-          saving={saving}
-          publishing={publishing}
-          lastSaved={lastSaved}
-        />
-
-        {/* 博客列表页面背景编辑 */}
-        <div className="mb-6 rounded-xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl">
-          <div className="mb-3 flex items-center justify-between">
-            <h2 className="text-base font-semibold text-black">博客列表页面背景</h2>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="secondary"
-                size="sm"
-                onClick={handleSaveDraft}
-                loading={saving}
-                disabled={saving || publishing || !hasUnsavedChanges}
-              >
-                {t("cms.saveDraft")}
-              </Button>
-              <Button
-                variant="primary"
-                size="sm"
-                onClick={() => setShowPublishConfirm(true)}
-                loading={publishing}
-                disabled={saving || publishing}
-              >
-                {t("cms.publish")}
-              </Button>
-            </div>
-          </div>
-          <BackgroundEditor
-            label="博客列表页面背景"
-            background={config.blogBackground || { type: "color", value: "#000000" }}
-            onBackgroundChange={(background: BackgroundConfig) => {
-              setConfig({
-                ...config,
-                blogBackground: background,
-              });
-            }}
-            disabled={saving || publishing}
-            onUploadImage={async (file) => {
-              try {
-                const result = await pageApi.uploadImage(file);
-                return result;
-              } catch (e) {
-                throw e;
-              }
-            }}
-            onToast={showToast}
-            onError={handleError}
-            previewHeight="h-48"
-          />
-        </div>
-
-        {/* 博客列表 */}
-        {posts.length === 0 ? (
-          <div className="rounded-2xl border border-black/10 bg-white/55 p-12 text-center backdrop-blur-xl">
-            <p className="text-black/60">{t("blog.list.empty")}</p>
-            <button
-              onClick={() => handleNavigate("/admin/blog/new")}
-              className="mt-4 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/90"
-            >
-              {t("blog.create")}
-            </button>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {posts.map((post) => (
-              <div
-                key={post.id}
-                className="rounded-xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl hover:bg-white/70 transition-colors cursor-pointer"
-                onClick={() => handleNavigate(`/admin/blog/${post.id}`)}
-              >
-                <div className="flex items-start gap-4">
-                  {/* 封面图 */}
-                  {post.coverImage && (
-                    <div className="flex-shrink-0">
-                      <img
-                        src={post.coverImage}
-                        alt={post.title}
-                        className="w-24 h-24 object-cover rounded-lg"
-                        onError={(e) => {
-                          (e.target as HTMLImageElement).style.display = "none";
-                        }}
-                      />
-                    </div>
-                  )}
-
-                  {/* 内容 */}
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <h3 className="text-lg font-semibold text-black mb-1">
-                          {post.title}
-                        </h3>
-                        <p className="text-sm text-black/60 line-clamp-2 mb-2">
-                          {post.content.substring(0, 100)}
-                          {post.content.length > 100 ? "..." : ""}
-                        </p>
-                        <div className="flex items-center gap-3 text-xs text-black/50">
-                          <span>{formatDate(post.createdAt)}</span>
-                          {post.published ? (
-                            <span className="px-2 py-0.5 rounded bg-emerald-100 text-emerald-700">
-                              {t("blog.list.published")}
-                            </span>
-                          ) : (
-                            <span className="px-2 py-0.5 rounded bg-gray-100 text-gray-700">
-                              {t("blog.list.draft")}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* 操作按钮 */}
-                      <div className="flex items-center gap-2">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleNavigate(`/admin/blog/${post.id}`);
-                          }}
-                          className="rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black hover:bg-white/80 transition-colors"
-                        >
-                          {t("common.edit")}
-                        </button>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setPostToDelete(post.id);
-                            setShowDeleteConfirm(true);
-                          }}
-                          disabled={deletingId === post.id}
-                          className="rounded-lg border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 hover:bg-red-100 transition-colors disabled:opacity-50"
-                        >
-                          {deletingId === post.id ? t("common.loading") : t("common.delete")}
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      <AdminEditorAccordion
+        panels={visiblePanels}
+        openPanelId={openPanelByTab[activeTab]}
+        onToggle={(panelId) => togglePanel(activeTab, panelId)}
+      />
 
       {/* 删除确认对话框 */}
       <ConfirmDialog
@@ -377,6 +410,6 @@ export default function BlogPage() {
         onConfirm={handlePublish}
         onCancel={() => setShowPublishConfirm(false)}
       />
-    </main>
+    </AdminEditorPage>
   );
 }

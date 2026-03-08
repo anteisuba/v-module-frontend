@@ -1,6 +1,7 @@
 // app/api/blog/posts/[id]/like/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "@/lib/session/userSession";
 
@@ -15,48 +16,33 @@ export async function POST(
     const body = await request.json();
     const { userEmail } = body;
 
-    // 检查博客是否存在
-    const blogPost = await prisma.blogPost.findUnique({
-      where: { id },
-    });
-
-    if (!blogPost) {
-      return NextResponse.json(
-        { error: "Blog post not found" },
-        { status: 404 }
-      );
-    }
-
     const userId = session?.user?.id || null;
     const email = userEmail || session?.user?.email || null;
 
-    // 检查是否已点赞（优先使用 userId，如果没有则使用 userEmail）
-    let existingLike = null;
-    if (userId) {
-      existingLike = await prisma.blogLike.findFirst({
-        where: {
+    const likeWhere = userId
+      ? {
           blogPostId: id,
           userId,
-        },
+        }
+      : email
+        ? {
+            blogPostId: id,
+            userEmail: email,
+            userId: null,
+          }
+        : null;
+
+    if (likeWhere) {
+      const deleted = await prisma.blogLike.deleteMany({
+        where: likeWhere,
       });
-    } else if (email) {
-      existingLike = await prisma.blogLike.findFirst({
-        where: {
-          blogPostId: id,
-          userEmail: email,
-          userId: null, // 确保是匿名用户
-        },
-      });
+
+      if (deleted.count > 0) {
+        return NextResponse.json({ liked: false });
+      }
     }
 
-    if (existingLike) {
-      // 取消点赞
-      await prisma.blogLike.delete({
-        where: { id: existingLike.id },
-      });
-      return NextResponse.json({ liked: false });
-    } else {
-      // 点赞
+    try {
       await prisma.blogLike.create({
         data: {
           blogPostId: id,
@@ -65,6 +51,18 @@ export async function POST(
         },
       });
       return NextResponse.json({ liked: true });
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === "P2003"
+      ) {
+        return NextResponse.json(
+          { error: "Blog post not found" },
+          { status: 404 }
+        );
+      }
+
+      throw error;
     }
   } catch (error) {
     console.error("Failed to toggle like:", error);
@@ -89,35 +87,31 @@ export async function GET(
     const userId = session?.user?.id || null;
     const email = userEmail || session?.user?.email || null;
 
-    // 获取点赞数量
-    const likeCount = await prisma.blogLike.count({
-      where: { blogPostId: id },
-    });
-
-    // 检查当前用户是否已点赞
-    let isLiked = false;
-    if (userId) {
-      const existingLike = await prisma.blogLike.findFirst({
-        where: {
-          blogPostId: id,
-          userId,
-        },
-      });
-      isLiked = !!existingLike;
-    } else if (email) {
-      const existingLike = await prisma.blogLike.findFirst({
-        where: {
-          blogPostId: id,
-          userEmail: email,
-          userId: null,
-        },
-      });
-      isLiked = !!existingLike;
-    }
+    const [likeCount, existingLike] = await Promise.all([
+      prisma.blogLike.count({
+        where: { blogPostId: id },
+      }),
+      userId
+        ? prisma.blogLike.findFirst({
+            where: {
+              blogPostId: id,
+              userId,
+            },
+          })
+        : email
+          ? prisma.blogLike.findFirst({
+              where: {
+                blogPostId: id,
+                userEmail: email,
+                userId: null,
+              },
+            })
+          : Promise.resolve(null),
+    ]);
 
     return NextResponse.json({
       likeCount,
-      isLiked,
+      isLiked: !!existingLike,
     });
   } catch (error) {
     console.error("Failed to get like status:", error);

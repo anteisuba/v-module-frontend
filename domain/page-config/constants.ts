@@ -23,6 +23,14 @@ export const EMPTY_PAGE_CONFIG: PageConfig = {
     type: "color",
     value: "#000000", // 默认黑色背景
   },
+  shopBackground: {
+    type: "color",
+    value: "#000000", // 默认黑色背景
+  },
+  shopDetailBackground: {
+    type: "color",
+    value: "#000000", // 默认黑色背景
+  },
   sections: [],
   showHeroThumbStrip: true,
   showLogo: true,
@@ -81,39 +89,10 @@ export const DEFAULT_PAGE_CONFIG: PageConfig = {
       },
     },
     {
-      id: "links-1",
-      type: "links",
-      enabled: true,
-      order: 1,
-      props: {
-        items: [
-          {
-            id: "link-1",
-            label: "Twitter",
-            href: "https://twitter.com/example",
-            icon: "🐦",
-          },
-          {
-            id: "link-2",
-            label: "YouTube",
-            href: "https://youtube.com/example",
-            icon: "📺",
-          },
-          {
-            id: "link-3",
-            label: "GitHub",
-            href: "https://github.com/example",
-            icon: "💻",
-          },
-        ],
-        layout: "grid",
-      },
-    },
-    {
       id: "gallery-1",
       type: "gallery",
       enabled: true,
-      order: 2,
+      order: 1,
       props: {
         items: [],
         columns: 3,

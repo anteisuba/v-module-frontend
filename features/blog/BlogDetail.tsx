@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useHeroMenu } from "@/features/home-hero/hooks/useHeroMenu";
@@ -12,6 +12,7 @@ import { detectPlatform } from "@/features/video-section";
 import { blogApi } from "@/lib/api";
 import { useToast } from "@/hooks/useToast";
 import { Input, Button } from "@/components/ui";
+import { isExternalUrl } from "@/lib/utils/isExternalUrl";
 import { FaRegHeart, FaHeart, FaRegComment } from "react-icons/fa6";
 import { FiShare, FiLink, FiCheck } from "react-icons/fi";
 
@@ -24,6 +25,10 @@ interface BlogPost {
   externalLinks: Array<{ url: string; label: string }> | null;
   publishedAt: string | null;
   createdAt: string;
+  likeCount: number;
+  commentCount: number;
+  isLiked: boolean;
+  comments: BlogComment[];
 }
 
 interface BlogComment {
@@ -54,11 +59,10 @@ export default function BlogDetail({
 }: BlogDetailProps) {
   const menu = useHeroMenu();
   const { showToast } = useToast();
-  const [likeCount, setLikeCount] = useState(0);
-  const [isLiked, setIsLiked] = useState(false);
-  const [comments, setComments] = useState<BlogComment[]>([]);
-  const [commentCount, setCommentCount] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const [likeCount, setLikeCount] = useState(post.likeCount);
+  const [isLiked, setIsLiked] = useState(post.isLiked);
+  const [comments, setComments] = useState<BlogComment[]>(post.comments);
+  const [commentCount, setCommentCount] = useState(post.commentCount);
   const [commentForm, setCommentForm] = useState({
     userName: "",
     userEmail: "",
@@ -75,38 +79,20 @@ export default function BlogDetail({
       setCopied(true);
       showToast("链接已复制");
       setTimeout(() => {
-        setCopied(false);
-        setShowShareMenu(false);
-      }, 2000);
-    } catch (err) {
+      setCopied(false);
+      setShowShareMenu(false);
+    }, 2000);
+    } catch {
       showToast("复制失败");
     }
   };
-
-  // 加载点赞和评论数据
-  useEffect(() => {
-    async function loadData() {
-      try {
-        const likeStatus = await blogApi.getLikeStatus(post.id);
-        setLikeCount(likeStatus.likeCount);
-        setIsLiked(likeStatus.isLiked);
-
-        const commentsData = await blogApi.getComments(post.id, { limit: 50 });
-        setComments(commentsData.comments);
-        setCommentCount(commentsData.pagination.total);
-      } catch (error) {
-        console.error("Failed to load data:", error);
-      }
-    }
-    loadData();
-  }, [post.id]);
 
   async function handleLike() {
     try {
       const result = await blogApi.toggleLike(post.id, commentForm.userEmail || undefined);
       setIsLiked(result.liked);
       setLikeCount((prev) => prev + (result.liked ? 1 : -1));
-    } catch (error) {
+    } catch {
       showToast("操作失败，请重试");
     }
   }
@@ -129,7 +115,7 @@ export default function BlogDetail({
       setCommentCount((prev) => prev + 1);
       setCommentForm({ userName: "", userEmail: "", content: "" });
       showToast("评论已发布");
-    } catch (error) {
+    } catch {
       showToast("评论发布失败，请重试");
     } finally {
       setSubmittingComment(false);
@@ -199,14 +185,23 @@ export default function BlogDetail({
           {/* 封面图 */}
           {post.coverImage && (
             <div className="relative w-full h-96 mb-6 rounded-lg overflow-hidden border border-black/10">
-              <Image
-                src={post.coverImage}
-                alt={post.title}
-                fill
-                className="object-cover"
-                priority
-                sizes="100vw"
-              />
+              {isExternalUrl(post.coverImage) ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img
+                  src={post.coverImage}
+                  alt={post.title}
+                  className="h-full w-full object-cover"
+                />
+              ) : (
+                <Image
+                  src={post.coverImage}
+                  alt={post.title}
+                  fill
+                  className="object-cover"
+                  priority
+                  sizes="100vw"
+                />
+              )}
             </div>
           )}
 

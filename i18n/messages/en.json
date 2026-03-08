@@ -29,10 +29,40 @@
         },
         "shop": {
           "label": "SHOP Page",
-          "description": "Manage products and orders"
+          "description": "Manage catalog items, stock, and publish status"
+        },
+        "orders": {
+          "label": "Orders",
+          "description": "Review buyer orders and advance fulfillment status"
         }
       },
       "comingSoon": "Coming soon"
+    },
+    "editorScaffold": {
+      "tabs": {
+        "layout": {
+          "title": "Page Layout",
+          "description": "Manage background and display-layer settings for the current page."
+        },
+        "content": {
+          "title": "Content Editing",
+          "description": "Manage list, detail, and form content in one place."
+        }
+      },
+      "panels": {
+        "background": {
+          "description": "Adjust the current page background image and background color."
+        },
+        "list": {
+          "description": "Review existing content and open detailed editing."
+        },
+        "editor": {
+          "description": "Edit the primary content fields and presentation assets."
+        },
+        "create": {
+          "description": "Create new content and set its initial presentation."
+        }
+      }
     }
   },
   "auth": {
@@ -97,6 +127,50 @@
       "title": "Confirm Delete",
       "message": "Are you sure you want to delete this? This action cannot be undone.",
       "confirm": "Confirm Delete"
+    },
+    "editorNav": {
+      "title": "Editor Navigation",
+      "description": "Jump by page structure to reduce back-and-forth scrolling.",
+      "summary": "Hero -> Layout -> Media -> Articles"
+    },
+    "tabs": {
+      "page": {
+        "title": "Page Setup",
+        "description": "Manage the homepage structure, background, and theme color in one place."
+      },
+      "content": {
+        "title": "Content Modules",
+        "description": "Edit video, image navigation, and news articles in one flow."
+      }
+    },
+    "panels": {
+      "hero": {
+        "description": "Manage the hero slides, headings, menu, and social links."
+      },
+      "background": {
+        "description": "Adjust the homepage background image and background color."
+      },
+      "theme": {
+        "description": "Tune the primary accent color used by buttons, links, and highlights."
+      },
+      "video": {
+        "description": "Manage the video section layout and item order."
+      },
+      "news": {
+        "description": "Manage the homepage image navigation layout and entries."
+      },
+      "articles": {
+        "description": "Edit the news article list and the news page background."
+      }
+    },
+    "themeSettings": {
+      "title": "Theme Settings",
+      "description": "Set your brand color for buttons, links, and highlighted UI states.",
+      "themeColor": "Theme Color",
+      "themeColorHelp": "Use your brand or support color when possible.",
+      "preview": "Preview",
+      "previewButton": "Theme Button",
+      "previewLink": "Theme Link"
     }
   },
   "heroMenu": {
@@ -128,6 +202,35 @@
     "next": "Next",
     "published": "Published",
     "confirmDelete": "Are you sure you want to delete this article?"
+  },
+  "publicEntry": {
+    "common": {
+      "openAdmin": "Open Admin",
+      "creatorLabel": "Creator",
+      "visitCreator": "Open Creator Page",
+      "unknownCreator": "Unnamed Creator"
+    },
+    "blog": {
+      "eyebrow": "Public Blog Feed",
+      "title": "Public Blog Entry",
+      "description": "This page aggregates all published blog posts. Browse public posts first, then jump into each creator's blog page.",
+      "countSuffix": "published posts",
+      "read": "Read Post",
+      "emptyTitle": "No public blog posts yet",
+      "emptyDescription": "There are no published blog posts right now. Published posts will appear here automatically."
+    },
+    "shop": {
+      "eyebrow": "Public Shop Catalog",
+      "title": "Public Shop Entry",
+      "description": "This page aggregates all published products. Browse the public catalog first, then jump into each creator's shop and product detail pages.",
+      "countSuffix": "published products",
+      "viewProduct": "View Product",
+      "visitShop": "Open Shop",
+      "inStock": "Stock",
+      "outOfStock": "Out of Stock",
+      "emptyTitle": "No public products yet",
+      "emptyDescription": "There are no published products right now. Published products will appear here automatically."
+    }
   },
   "heroEditor": {
     "title": "Top Content (Hero Section)",
@@ -300,6 +403,10 @@
   "blog": {
     "title": "Blog Management",
     "create": "New Blog",
+    "layout": {
+      "listBackground": "Blog List Background",
+      "detailBackground": "Blog Detail Background"
+    },
     "list": {
       "empty": "No blog posts yet. Click \"New Blog\" to create",
       "loadFailed": "Failed to load blog list",
@@ -328,6 +435,10 @@
   "shop": {
     "title": "Product Management",
     "create": "New Product",
+    "layout": {
+      "listBackground": "Shop List Background",
+      "detailBackground": "Product Detail Background"
+    },
     "list": {
       "empty": "No products yet. Click \"New Product\" to create",
       "loadFailed": "Failed to load product list",

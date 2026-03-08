@@ -45,7 +45,14 @@ export function parseApiError(
 
   // 根据状态码返回不同的错误消息
   if (status === 401) {
-    return new ApiError("未授权，请先登录", status, "UNAUTHORIZED", errorData.details);
+    const unauthorizedMessage =
+      message && message !== "Unauthorized" ? message : "未授权，请先登录";
+    return new ApiError(
+      unauthorizedMessage,
+      status,
+      "UNAUTHORIZED",
+      errorData.details
+    );
   } else if (status === 403) {
     return new ApiError("无权限访问", status, "FORBIDDEN", errorData.details);
   } else if (status === 404) {

@@ -41,18 +41,6 @@ const HeroSectionPropsSchema = z.object({
     .optional(),
 });
 
-const LinksSectionPropsSchema = z.object({
-  items: z.array(
-    z.object({
-      id: z.string(),
-      label: z.string().min(1),
-      href: z.string().url(),
-      icon: z.string().optional(),
-    })
-  ),
-  layout: z.enum(["grid", "list"]).optional(),
-});
-
 const GallerySectionPropsSchema = z.object({
   items: z.array(
     z.object({
@@ -132,13 +120,6 @@ const SectionConfigSchema = z.discriminatedUnion("type", [
   }),
   z.object({
     id: z.string(),
-    type: z.literal("links"),
-    props: LinksSectionPropsSchema,
-    enabled: z.boolean(),
-    order: z.number().int().min(0),
-  }),
-  z.object({
-    id: z.string(),
     type: z.literal("gallery"),
     props: GallerySectionPropsSchema,
     enabled: z.boolean(),
@@ -173,6 +154,8 @@ export const PageConfigSchema = z.object({
   newsBackground: BackgroundConfigSchema.optional(), // 新闻页面背景
   blogBackground: BackgroundConfigSchema.optional(), // 博客列表页面背景
   blogDetailBackground: BackgroundConfigSchema.optional(), // 博客详情页面背景
+  shopBackground: BackgroundConfigSchema.optional(), // 商店列表页面背景
+  shopDetailBackground: BackgroundConfigSchema.optional(), // 商品详情页面背景
   sections: z.array(SectionConfigSchema).max(20), // 最多 20 个 sections
   logo: z
     .object({

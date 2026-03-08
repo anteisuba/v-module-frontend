@@ -45,6 +45,13 @@ export default function DashboardPage() {
       description: t("admin.dashboard.pages.shop.description"),
       available: true,
     },
+    {
+      id: "orders",
+      label: t("admin.dashboard.pages.orders.label"),
+      href: "/admin/orders",
+      description: t("admin.dashboard.pages.orders.description"),
+      available: true,
+    },
   ], [t]);
 
   function handleNavigate() {

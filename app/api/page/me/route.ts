@@ -5,6 +5,7 @@ import { getServerSession } from "@/lib/session/userSession";
 import { prisma } from "@/lib/prisma";
 import { PageConfigSchema } from "@/lib/validation/pageConfigSchema";
 import { ensureUserPage } from "@/domain/page-config";
+import { normalizePageConfig } from "@/utils/pageConfig";
 
 export const runtime = "nodejs"; // Prisma requires Node.js runtime
 
@@ -32,7 +33,7 @@ export async function GET() {
   }
 
   return NextResponse.json({
-    draftConfig: page.draftConfig,
+    draftConfig: normalizePageConfig(page.draftConfig),
     themeColor: page.themeColor,
     fontFamily: page.fontFamily,
   });
@@ -68,7 +69,8 @@ export async function PUT(request: Request) {
   }
 
   // 3. 校验 JSON Schema
-  const validation = PageConfigSchema.safeParse(draftConfig);
+  const normalizedDraftConfig = normalizePageConfig(draftConfig);
+  const validation = PageConfigSchema.safeParse(normalizedDraftConfig);
   if (!validation.success) {
     return NextResponse.json(
       {
@@ -119,7 +121,7 @@ export async function PUT(request: Request) {
 
   return NextResponse.json({ 
     ok: true, 
-    pageConfig: page.draftConfig,
+    pageConfig: normalizePageConfig(page.draftConfig),
     themeColor: page.themeColor,
     fontFamily: page.fontFamily,
   });

@@ -1,20 +1,99 @@
 // utils/pageConfig.ts
 
-import type { PageConfig } from "@/domain/page-config/types";
+import type { BackgroundConfig, PageConfig, SectionConfig } from "@/domain/page-config/types";
 import { EMPTY_PAGE_CONFIG } from "@/domain/page-config/constants";
+
+type LegacyLinksSection = {
+  id: string;
+  type: "links";
+  enabled: boolean;
+  order: number;
+  props?: {
+    items?: Array<{
+      id: string;
+      label: string;
+      href: string;
+      icon?: string;
+    }>;
+    layout?: "grid" | "list";
+  };
+  layout?: {
+    colSpan: 1 | 2 | 3 | 4;
+    rowSpan?: number;
+  };
+};
+
+type NormalizablePageConfig = Partial<Omit<PageConfig, "sections">> & {
+  sections?: Array<SectionConfig | LegacyLinksSection | Record<string, unknown>>;
+};
+
+function createDefaultBackground(): BackgroundConfig {
+  return {
+    type: "color",
+    value: "#000000",
+  };
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null;
+}
+
+function isRenderableSection(section: unknown): section is SectionConfig {
+  if (!isRecord(section) || typeof section.type !== "string") {
+    return false;
+  }
+
+  return ["hero", "gallery", "news", "video"].includes(section.type);
+}
+
+export function normalizePageConfig(config: unknown): PageConfig {
+  if (!isRecord(config)) {
+    return EMPTY_PAGE_CONFIG;
+  }
+
+  const source = config as NormalizablePageConfig;
+
+  return {
+    ...EMPTY_PAGE_CONFIG,
+    ...source,
+    background: isRecord(source.background)
+      ? (source.background as BackgroundConfig)
+      : EMPTY_PAGE_CONFIG.background,
+    newsBackground: isRecord(source.newsBackground)
+      ? (source.newsBackground as BackgroundConfig)
+      : createDefaultBackground(),
+    blogBackground: isRecord(source.blogBackground)
+      ? (source.blogBackground as BackgroundConfig)
+      : createDefaultBackground(),
+    blogDetailBackground: isRecord(source.blogDetailBackground)
+      ? (source.blogDetailBackground as BackgroundConfig)
+      : createDefaultBackground(),
+    shopBackground: isRecord(source.shopBackground)
+      ? (source.shopBackground as BackgroundConfig)
+      : createDefaultBackground(),
+    shopDetailBackground: isRecord(source.shopDetailBackground)
+      ? (source.shopDetailBackground as BackgroundConfig)
+      : createDefaultBackground(),
+    sections: Array.isArray(source.sections)
+      ? source.sections.filter(isRenderableSection)
+      : [],
+  };
+}
 
 /**
  * 检查配置是否是默认配置（需要清空）
  */
 export function isDefaultConfig(config: PageConfig): boolean {
+  const normalizedConfig = normalizePageConfig(config);
+
   // 如果已发布过，不再清空
-  if (config.hasPublished) {
+  if (normalizedConfig.hasPublished) {
     return false;
   }
 
-  // 检查是否有默认的 sections（hero-1, links-1, gallery-1）
-  const defaultSectionIds = ["hero-1", "links-1", "gallery-1"];
-  const hasDefaultSectionIds = config.sections.some((section) =>
+  // 检查是否有默认的 sections（hero-1, gallery-1）
+  const defaultSectionIds = ["hero-1", "gallery-1"];
+  const hasDefaultSectionIds = normalizedConfig.sections.some((section) =>
     defaultSectionIds.includes(section.id)
   );
 
@@ -24,7 +103,7 @@ export function isDefaultConfig(config: PageConfig): boolean {
   }
 
   // 检查默认 sections 的内容是否被修改
-  const heroSection = config.sections.find(
+  const heroSection = normalizedConfig.sections.find(
     (s) => s.id === "hero-1" && s.type === "hero"
   );
   if (heroSection && heroSection.type === "hero") {
@@ -61,51 +140,8 @@ export function isDefaultConfig(config: PageConfig): boolean {
     }
   }
 
-  // 检查默认的 links section
-  const linksSection = config.sections.find(
-    (s) => s.id === "links-1" && s.type === "links"
-  );
-  if (linksSection && linksSection.type === "links") {
-    const defaultLinks = [
-      {
-        id: "link-1",
-        label: "Twitter",
-        href: "https://twitter.com/example",
-        icon: "🐦",
-      },
-      {
-        id: "link-2",
-        label: "YouTube",
-        href: "https://youtube.com/example",
-        icon: "📺",
-      },
-      {
-        id: "link-3",
-        label: "GitHub",
-        href: "https://github.com/example",
-        icon: "💻",
-      },
-    ];
-    if (linksSection.props.items.length !== defaultLinks.length) {
-      return false; // 数量已修改
-    }
-    // 检查是否有 link 的内容被修改
-    const hasModifiedLink = linksSection.props.items.some((item, index) => {
-      const defaultLink = defaultLinks[index];
-      return (
-        !defaultLink ||
-        item.label !== defaultLink.label ||
-        item.href !== defaultLink.href ||
-        item.icon !== defaultLink.icon
-      );
-    });
-    if (hasModifiedLink) {
-      return false; // 内容已修改
-    }
-  }
-
   // 检查是否有默认的社交链接
-  const hasDefaultSocialLinks = config.socialLinks?.some(
+  const hasDefaultSocialLinks = normalizedConfig.socialLinks?.some(
     (link) =>
       link.url.includes("example.com") ||
       link.url.includes("twitter.com/example")
@@ -119,24 +155,11 @@ export function isDefaultConfig(config: PageConfig): boolean {
  * 清理配置数据（过滤掉空的 slides 和 news items）
  */
 export function cleanPageConfig(config: PageConfig): PageConfig {
+  const normalizedConfig = normalizePageConfig(config);
+
   return {
-    ...config,
-    // 确保 newsBackground 有默认值
-    newsBackground: config.newsBackground || {
-      type: "color" as const,
-      value: "#000000",
-    },
-    // 确保 blogBackground 有默认值
-    blogBackground: config.blogBackground || {
-      type: "color" as const,
-      value: "#000000",
-    },
-    // 确保 blogDetailBackground 有默认值
-    blogDetailBackground: config.blogDetailBackground || {
-      type: "color" as const,
-      value: "#000000",
-    },
-    sections: config.sections.map((section) => {
+    ...normalizedConfig,
+    sections: normalizedConfig.sections.map((section) => {
       if (section.type === "hero") {
         // 过滤掉 src 为空的 slides
         const validSlides = section.props.slides.filter(

@@ -8,9 +8,9 @@ import PageLoadingWrapper from "@/components/ui/PageLoadingWrapper";
 import { ThemeProvider } from "@/components/theme";
 import {
   getUserPageDataBySlug,
-  EMPTY_PAGE_CONFIG,
 } from "@/domain/page-config";
 import type { PageConfig } from "@/domain/page-config/types";
+import { normalizePageConfig } from "@/utils/pageConfig";
 
 
 export default async function UserPage({
@@ -28,15 +28,7 @@ export default async function UserPage({
   }
 
   // 直接从查询结果中获取配置
-  let config: PageConfig = EMPTY_PAGE_CONFIG;
-  if (user.page?.publishedConfig) {
-    try {
-      config = user.page.publishedConfig as PageConfig;
-    } catch (e) {
-      console.error("Failed to parse publishedConfig:", e);
-      // 解析失败时使用空配置
-    }
-  }
+  const config: PageConfig = normalizePageConfig(user.page?.publishedConfig);
 
   // 从 Page 表中读取主题配置（如果存在）
   const themeColor = user.page?.themeColor || "#000000";
@@ -73,7 +65,7 @@ export async function generateMetadata({
     };
   }
 
-  const config = user.page?.publishedConfig as PageConfig | undefined;
+  const config = normalizePageConfig(user.page?.publishedConfig);
 
   return {
     title:

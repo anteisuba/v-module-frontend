@@ -2,13 +2,14 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useHeroMenu } from "@/features/home-hero/hooks/useHeroMenu";
 import HeroMenu from "@/features/home-hero/components/HeroMenu";
 import { blogApi } from "@/lib/api";
 import { useToast } from "@/hooks/useToast";
+import { isExternalUrl } from "@/lib/utils/isExternalUrl";
 
 interface BlogPost {
   id: string;
@@ -33,36 +34,6 @@ export default function BlogList({ posts, userSlug, backgroundStyle }: BlogListP
   const { showToast } = useToast();
   const [postsWithStats, setPostsWithStats] = useState<BlogPost[]>(posts);
 
-  // 加载点赞和评论数据
-  useEffect(() => {
-    async function loadStats() {
-      const updatedPosts = await Promise.all(
-        posts.map(async (post) => {
-          try {
-            const likeStatus = await blogApi.getLikeStatus(post.id);
-            const comments = await blogApi.getComments(post.id, { limit: 1 });
-            return {
-              ...post,
-              likeCount: likeStatus.likeCount,
-              commentCount: comments.pagination.total,
-              isLiked: likeStatus.isLiked,
-            };
-          } catch (error) {
-            console.error(`Failed to load stats for post ${post.id}:`, error);
-            return {
-              ...post,
-              likeCount: 0,
-              commentCount: 0,
-              isLiked: false,
-            };
-          }
-        })
-      );
-      setPostsWithStats(updatedPosts);
-    }
-    loadStats();
-  }, [posts]);
-
   async function handleLike(postId: string, e: React.MouseEvent) {
     e.preventDefault();
     e.stopPropagation();
@@ -80,7 +51,7 @@ export default function BlogList({ posts, userSlug, backgroundStyle }: BlogListP
           return post;
         })
       );
-    } catch (error) {
+    } catch {
       showToast("操作失败，请重试");
     }
   }
@@ -143,7 +114,7 @@ export default function BlogList({ posts, userSlug, backgroundStyle }: BlogListP
           <div className="py-12 text-center">
             <p className="text-white/60 mb-4">暂无已发布的博客文章</p>
             <p className="text-sm text-white/40">
-              提示：请确保在编辑博客时勾选"已发布"选项
+              提示：请确保在编辑博客时勾选&quot;已发布&quot;选项
             </p>
           </div>
         ) : (
@@ -157,13 +128,22 @@ export default function BlogList({ posts, userSlug, backgroundStyle }: BlogListP
                 {post.coverImage && (
                   <Link href={`/u/${userSlug}/blog/${post.id}`}>
                     <div className="relative w-full h-64 overflow-hidden">
-                      <Image
-                        src={post.coverImage}
-                        alt={post.title}
-                        fill
-                        className="object-cover"
-                        sizes="(max-width: 768px) 100vw, 672px"
-                      />
+                      {isExternalUrl(post.coverImage) ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img
+                          src={post.coverImage}
+                          alt={post.title}
+                          className="h-full w-full object-cover"
+                        />
+                      ) : (
+                        <Image
+                          src={post.coverImage}
+                          alt={post.title}
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 768px) 100vw, 672px"
+                        />
+                      )}
                     </div>
                   </Link>
                 )}
