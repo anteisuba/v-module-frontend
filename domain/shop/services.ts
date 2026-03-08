@@ -7,6 +7,7 @@ export interface Product {
   id: string;
   userId: string;
   userSlug: string | null;
+  userDisplayName: string | null;
   name: string;
   description: string | null;
   price: number; // Decimal 转换为 number
@@ -219,6 +220,7 @@ export async function getProducts(
         user: {
           select: {
             slug: true,
+            displayName: true,
           },
         },
       },
@@ -231,6 +233,7 @@ export async function getProducts(
     ({ user, price, images, createdAt, updatedAt, ...product }) => ({
       ...product,
       userSlug: user?.slug || null,
+      userDisplayName: user?.displayName || null,
       price: Number(price), // Decimal 转换为 number
       images:
         images && typeof images === "object" && Array.isArray(images)
@@ -262,6 +265,7 @@ export async function getProductById(id: string): Promise<Product | null> {
       user: {
         select: {
           slug: true,
+          displayName: true,
         },
       },
     },
@@ -276,6 +280,7 @@ export async function getProductById(id: string): Promise<Product | null> {
   return {
     ...productData,
     userSlug: user?.slug || null,
+    userDisplayName: user?.displayName || null,
     price: Number(price),
     images:
       images && typeof images === "object" && Array.isArray(images)
@@ -313,6 +318,7 @@ export async function createProduct(
       user: {
         select: {
           slug: true,
+          displayName: true,
         },
       },
     },
@@ -324,6 +330,7 @@ export async function createProduct(
   return {
     ...productData,
     userSlug: user?.slug || null,
+    userDisplayName: user?.displayName || null,
     price: Number(price),
     images:
       productImages && typeof productImages === "object" && Array.isArray(productImages)
@@ -377,6 +384,7 @@ export async function updateProduct(
       user: {
         select: {
           slug: true,
+          displayName: true,
         },
       },
     },
@@ -388,6 +396,7 @@ export async function updateProduct(
   return {
     ...productData,
     userSlug: user?.slug || null,
+    userDisplayName: user?.displayName || null,
     price: Number(price),
     images:
       productImages && typeof productImages === "object" && Array.isArray(productImages)
@@ -426,6 +435,7 @@ export async function updateProductStock(
       user: {
         select: {
           slug: true,
+          displayName: true,
         },
       },
     },
@@ -436,6 +446,7 @@ export async function updateProductStock(
   return {
     ...productData,
     userSlug: user?.slug || null,
+    userDisplayName: user?.displayName || null,
     price: Number(price),
     images:
       images && typeof images === "object" && Array.isArray(images)

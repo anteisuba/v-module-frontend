@@ -6,6 +6,7 @@ import { getBlogPosts } from "@/domain/blog/services";
 import BlogList from "@/features/blog/BlogList";
 import type { PageConfig } from "@/domain/page-config/types";
 import { EMPTY_PAGE_CONFIG } from "@/domain/page-config/constants";
+import { getServerSession } from "@/lib/session/userSession";
 
 export const dynamic = "force-dynamic";
 
@@ -33,10 +34,13 @@ export default async function UserBlogPage({
   }
 
   // 获取已发布的博客文章
+  const session = await getServerSession();
   const blogData = await getBlogPosts({
     userSlug: slug,
     published: true,
     limit: 50,
+    viewerUserId: session.user?.id,
+    viewerEmail: session.user?.email,
   });
 
   // 调试信息（开发环境）

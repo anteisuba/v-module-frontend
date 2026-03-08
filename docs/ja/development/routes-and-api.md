@@ -1,7 +1,7 @@
 # ルートと API
 
 - 简体中文: [路由与 API](../../zh-CN/development/routes-and-api.md)
-- 最終更新: 2026-03-07
+- 最終更新: 2026-03-08
 
 ## 目的
 
@@ -38,8 +38,8 @@
 | `/u/[slug]/shop/[id]` | 商品詳細 |
 | `/u/[slug]/shop/[id]/checkout` | 公開注文ページ |
 | `/u/[slug]/shop/order-success/[orderId]` | 注文成功の仮ページ |
-| `/blog` | 現在 `/u/xiuruisu/blog` へ固定リダイレクト |
-| `/shop` | 現在 `/u/xiuruisu/shop` へ固定リダイレクト |
+| `/blog` | 全体の公開ブログ入口。公開済みブログを集約表示 |
+| `/shop` | 全体の公開ショップ入口。公開済み商品を集約表示 |
 
 ## 管理画面
 

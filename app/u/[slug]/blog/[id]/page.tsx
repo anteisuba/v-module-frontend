@@ -2,10 +2,11 @@
 
 import { notFound } from "next/navigation";
 import { getUserPageDataBySlug } from "@/domain/page-config";
-import { getBlogPostById } from "@/domain/blog/services";
+import { getBlogPostById, getBlogPostDetailById } from "@/domain/blog/services";
 import BlogDetail from "@/features/blog/BlogDetail";
 import type { PageConfig } from "@/domain/page-config/types";
 import { EMPTY_PAGE_CONFIG } from "@/domain/page-config/constants";
+import { getServerSession } from "@/lib/session/userSession";
 
 export const dynamic = "force-dynamic";
 
@@ -33,7 +34,12 @@ export default async function BlogDetailPage({
   }
 
   // 获取博客文章
-  const post = await getBlogPostById(id);
+  const session = await getServerSession();
+  const post = await getBlogPostDetailById(id, {
+    viewerUserId: session.user?.id,
+    viewerEmail: session.user?.email,
+    commentsLimit: 50,
+  });
 
   if (!post || !post.published || post.userSlug !== slug) {
     notFound();
@@ -97,7 +103,7 @@ export async function generateMetadata({
 }: {
   params: Promise<{ slug: string; id: string }>;
 }) {
-  const { slug, id } = await params;
+  const { id } = await params;
   const post = await getBlogPostById(id);
 
   if (!post || !post.published) {

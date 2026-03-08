@@ -203,6 +203,35 @@
     "published": "Published",
     "confirmDelete": "Are you sure you want to delete this article?"
   },
+  "publicEntry": {
+    "common": {
+      "openAdmin": "Open Admin",
+      "creatorLabel": "Creator",
+      "visitCreator": "Open Creator Page",
+      "unknownCreator": "Unnamed Creator"
+    },
+    "blog": {
+      "eyebrow": "Public Blog Feed",
+      "title": "Public Blog Entry",
+      "description": "This page aggregates all published blog posts. Browse public posts first, then jump into each creator's blog page.",
+      "countSuffix": "published posts",
+      "read": "Read Post",
+      "emptyTitle": "No public blog posts yet",
+      "emptyDescription": "There are no published blog posts right now. Published posts will appear here automatically."
+    },
+    "shop": {
+      "eyebrow": "Public Shop Catalog",
+      "title": "Public Shop Entry",
+      "description": "This page aggregates all published products. Browse the public catalog first, then jump into each creator's shop and product detail pages.",
+      "countSuffix": "published products",
+      "viewProduct": "View Product",
+      "visitShop": "Open Shop",
+      "inStock": "Stock",
+      "outOfStock": "Out of Stock",
+      "emptyTitle": "No public products yet",
+      "emptyDescription": "There are no published products right now. Published products will appear here automatically."
+    }
+  },
   "heroEditor": {
     "title": "Top Content (Hero Section)",
     "logo": {

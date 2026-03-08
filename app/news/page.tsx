@@ -33,8 +33,7 @@ function NewsListContent() {
     if (fromParam) {
       return fromParam;
     }
-    // 默认返回到 /u/xiuruisu
-    return "/u/xiuruisu";
+    return null;
   };
 
   // 获取第一个文章的 userSlug（用于依赖数组）
@@ -116,6 +115,8 @@ function NewsListContent() {
 
   const backgroundStyle = getBackgroundStyle();
 
+  const backUrl = getBackUrl();
+
   return (
     <main className="relative min-h-screen text-black" style={backgroundStyle}>
       {/* 右上角菜单按钮 */}
@@ -137,12 +138,14 @@ function NewsListContent() {
         {/* 标题 */}
         <div className="mb-8 flex items-center justify-between">
           <h1 className="text-4xl font-bold tracking-wider">NEWS</h1>
-          <Link
-            href={getBackUrl()}
-            className="rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600"
-          >
-            BACK
-          </Link>
+          {backUrl ? (
+            <Link
+              href={backUrl}
+              className="rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600"
+            >
+              BACK
+            </Link>
+          ) : null}
         </div>
 
 

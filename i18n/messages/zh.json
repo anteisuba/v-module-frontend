@@ -203,6 +203,35 @@
     "published": "已发布",
     "confirmDelete": "确定要删除这篇文章吗？"
   },
+  "publicEntry": {
+    "common": {
+      "openAdmin": "进入后台",
+      "creatorLabel": "创作者",
+      "visitCreator": "进入创作者页",
+      "unknownCreator": "未命名创作者"
+    },
+    "blog": {
+      "eyebrow": "Public Blog Feed",
+      "title": "公开博客入口",
+      "description": "这里聚合了所有已发布的博客内容。你可以先浏览全站公开文章，再进入对应创作者的博客页。",
+      "countSuffix": "篇公开文章",
+      "read": "阅读文章",
+      "emptyTitle": "还没有公开博客",
+      "emptyDescription": "当前没有任何已发布的博客文章。创作者发布内容后，这里会自动显示。"
+    },
+    "shop": {
+      "eyebrow": "Public Shop Catalog",
+      "title": "公开商品入口",
+      "description": "这里聚合了所有已发布商品。你可以直接浏览全站公开商品，再进入对应创作者的商店页和商品详情。",
+      "countSuffix": "件公开商品",
+      "viewProduct": "查看商品",
+      "visitShop": "进入商店",
+      "inStock": "库存",
+      "outOfStock": "缺货",
+      "emptyTitle": "还没有公开商品",
+      "emptyDescription": "当前没有任何已发布商品。创作者发布商品后，这里会自动显示。"
+    }
+  },
   "heroEditor": {
     "title": "顶部内容 (Hero Section)",
     "logo": {

@@ -1,6 +1,7 @@
 // app/api/blog/posts/[id]/comments/route.ts
 
 import { NextRequest, NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "@/lib/session/userSession";
 
@@ -19,18 +20,6 @@ export async function POST(
       return NextResponse.json(
         { error: "Name and content are required" },
         { status: 400 }
-      );
-    }
-
-    // 检查博客是否存在
-    const blogPost = await prisma.blogPost.findUnique({
-      where: { id },
-    });
-
-    if (!blogPost) {
-      return NextResponse.json(
-        { error: "Blog post not found" },
-        { status: 404 }
       );
     }
 
@@ -56,6 +45,16 @@ export async function POST(
 
     return NextResponse.json(comment);
   } catch (error) {
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2003"
+    ) {
+      return NextResponse.json(
+        { error: "Blog post not found" },
+        { status: 404 }
+      );
+    }
+
     console.error("Failed to create comment:", error);
     return NextResponse.json(
       { error: "Failed to create comment" },
@@ -75,27 +74,26 @@ export async function GET(
     const page = parseInt(searchParams.get("page") || "1");
     const limit = parseInt(searchParams.get("limit") || "20");
 
-    // 获取评论列表
-    const comments = await prisma.blogComment.findMany({
-      where: { blogPostId: id },
-      orderBy: { createdAt: "asc" },
-      skip: (page - 1) * limit,
-      take: limit,
-      include: {
-        user: {
-          select: {
-            id: true,
-            slug: true,
-            displayName: true,
+    const [comments, total] = await Promise.all([
+      prisma.blogComment.findMany({
+        where: { blogPostId: id },
+        orderBy: { createdAt: "asc" },
+        skip: (page - 1) * limit,
+        take: limit,
+        include: {
+          user: {
+            select: {
+              id: true,
+              slug: true,
+              displayName: true,
+            },
           },
         },
-      },
-    });
-
-    // 获取总数
-    const total = await prisma.blogComment.count({
-      where: { blogPostId: id },
-    });
+      }),
+      prisma.blogComment.count({
+        where: { blogPostId: id },
+      }),
+    ]);
 
     return NextResponse.json({
       comments,

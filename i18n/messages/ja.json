@@ -203,6 +203,35 @@
     "published": "公開済み",
     "confirmDelete": "この記事を削除してもよろしいですか？"
   },
+  "publicEntry": {
+    "common": {
+      "openAdmin": "管理画面へ",
+      "creatorLabel": "クリエイター",
+      "visitCreator": "クリエイターページへ",
+      "unknownCreator": "未設定クリエイター"
+    },
+    "blog": {
+      "eyebrow": "Public Blog Feed",
+      "title": "公開ブログ入口",
+      "description": "公開済みのブログ記事を全体で一覧できます。まず全体の公開記事を見てから、各クリエイターのブログページへ移動できます。",
+      "countSuffix": "件の公開記事",
+      "read": "記事を見る",
+      "emptyTitle": "公開ブログはまだありません",
+      "emptyDescription": "現在、公開済みのブログ記事はありません。クリエイターが記事を公開すると、ここに自動表示されます。"
+    },
+    "shop": {
+      "eyebrow": "Public Shop Catalog",
+      "title": "公開ショップ入口",
+      "description": "公開済みの商品を全体で一覧できます。まず全体の公開商品を見てから、各クリエイターのショップページや商品詳細へ移動できます。",
+      "countSuffix": "件の公開商品",
+      "viewProduct": "商品を見る",
+      "visitShop": "ショップへ",
+      "inStock": "在庫",
+      "outOfStock": "在庫切れ",
+      "emptyTitle": "公開商品はまだありません",
+      "emptyDescription": "現在、公開済みの商品はありません。クリエイターが商品を公開すると、ここに自動表示されます。"
+    }
+  },
   "heroEditor": {
     "title": "トップコンテンツ (Hero Section)",
     "logo": {
