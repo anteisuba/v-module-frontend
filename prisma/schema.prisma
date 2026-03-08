@@ -218,10 +218,14 @@ model BlogComment {
   userName   String // 评论者名称（必填）
   userEmail  String? // 用户邮箱（可选）
   content    String   @db.Text // 评论内容
+  status     String   @default("PENDING") // 审核状态：PENDING, APPROVED, REJECTED
+  moderatedAt DateTime? // 最后一次审核时间
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
 
   @@index([blogPostId, createdAt])
+  @@index([blogPostId, status, createdAt])
+  @@index([status, createdAt])
   @@index([userId])
 }
 
@@ -239,9 +243,19 @@ model Order {
 
   // 订单金额
   totalAmount Decimal @db.Decimal(10, 2) // 订单总金额
+  currency    String  @default("JPY") // 货币，Stripe Checkout 第一阶段默认 JPY
 
   // 订单状态
-  status String @default("PENDING") // 状态：PENDING, PAID, SHIPPED, DELIVERED, CANCELLED
+  status String @default("PENDING") // 状态：PENDING, AWAITING_PAYMENT, PAID, SHIPPED, DELIVERED, CANCELLED
+
+  // 支付相关
+  paymentProvider      String? // 支付提供方，如 STRIPE
+  paymentStatus        String? // OPEN, PAID, FAILED, EXPIRED, REFUNDED
+  paymentSessionId     String? @unique // Stripe Checkout Session ID
+  paymentIntentId      String? @unique // Stripe PaymentIntent ID
+  paymentExpiresAt     DateTime? // 支付会话过期时间
+  paymentFailedAt      DateTime? // 支付失败 / 过期时间
+  paymentFailureReason String? // 失败原因，便于排查
 
   // 配送信息
   shippingAddress Json? // 配送地址 JSON
@@ -260,6 +274,8 @@ model Order {
   @@index([userId, createdAt])
   @@index([buyerEmail, createdAt])
   @@index([status, createdAt])
+  @@index([paymentStatus, createdAt])
+  @@index([paymentProvider, createdAt])
 }
 
 // ============================================

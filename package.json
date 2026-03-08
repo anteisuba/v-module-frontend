@@ -13,6 +13,8 @@
     "start": "next start",
     "lint": "eslint",
     "check": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "postinstall": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
     "db:migrate": "prisma migrate dev",
@@ -33,6 +35,7 @@
     "react-markdown": "^10.1.0",
     "react-player": "^3.4.0",
     "resend": "^6.6.0",
+    "stripe": "^20.4.1",
     "zod": "^4.2.1"
   },
   "devDependencies": {
@@ -48,7 +51,8 @@
     "react-dev-inspector": "^2.0.1",
     "tailwindcss": "^4",
     "tsx": "^4.7.0",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vitest": "^4.0.18"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"

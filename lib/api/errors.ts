@@ -59,6 +59,17 @@ export function parseApiError(
     return new ApiError("资源未找到", status, "NOT_FOUND", errorData.details);
   } else if (status === 400) {
     return new ApiError(message, status, "BAD_REQUEST", errorData.details);
+  } else if (status === 503) {
+    const unavailableMessage =
+      message && message !== "Service Unavailable"
+        ? message
+        : "服务暂时不可用，请稍后再试";
+    return new ApiError(
+      unavailableMessage,
+      status,
+      "SERVICE_UNAVAILABLE",
+      errorData.details
+    );
   } else if (status >= 500) {
     return new ApiError("服务器错误，请稍后再试", status, "SERVER_ERROR", errorData.details);
   }

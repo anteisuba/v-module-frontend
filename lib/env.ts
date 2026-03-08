@@ -31,6 +31,11 @@ const envSchema = z.object({
   SMTP_PASSWORD: z.string().optional(),
   SMTP_FROM: z.string().email().optional().or(z.literal("")),
 
+  // Stripe Checkout（公开支付）
+  STRIPE_SECRET_KEY: z.string().optional(),
+  STRIPE_WEBHOOK_SECRET: z.string().optional(),
+  STRIPE_CURRENCY: z.string().optional(),
+
   // Cloudflare R2（生产环境推荐）
   R2_ACCOUNT_ID: z.string().optional(),
   R2_ACCESS_KEY_ID: z.string().optional(),
@@ -70,6 +75,9 @@ function validateEnv() {
     SMTP_USER: process.env.SMTP_USER,
     SMTP_PASSWORD: process.env.SMTP_PASSWORD,
     SMTP_FROM: process.env.SMTP_FROM,
+    STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
+    STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
+    STRIPE_CURRENCY: process.env.STRIPE_CURRENCY,
     R2_ACCOUNT_ID: process.env.R2_ACCOUNT_ID,
     R2_ACCESS_KEY_ID: process.env.R2_ACCESS_KEY_ID,
     R2_SECRET_ACCESS_KEY: process.env.R2_SECRET_ACCESS_KEY,
@@ -116,6 +124,13 @@ function validateEnv() {
 
     if (!hasResend && !hasSMTP) {
       warnings.push("未配置邮件服务（RESEND_API_KEY 或 SMTP），密码重置功能将无法使用");
+    }
+
+    const hasStripe =
+      !!(result.data.STRIPE_SECRET_KEY && result.data.STRIPE_WEBHOOK_SECRET);
+
+    if (!hasStripe) {
+      warnings.push("未配置 Stripe Checkout（STRIPE_SECRET_KEY / STRIPE_WEBHOOK_SECRET），公开支付下单将不可用");
     }
 
     // 检查生产环境的 R2 配置

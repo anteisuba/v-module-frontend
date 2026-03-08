@@ -48,6 +48,14 @@ function getFriendlyErrorMessage(error: unknown): string {
       return "操作过于频繁，请稍后再试。";
     }
 
+    // 503 服务不可用
+    if (status === 503) {
+      if (message.includes("stripe") || message.includes("configured")) {
+        return "支付功能尚未配置完成，请联系站点管理员。";
+      }
+      return error.message || "服务暂时不可用，请稍后重试。";
+    }
+
     // 500 服务器错误
     if (status === 500 || status >= 500) {
       return "服务器暂时无法处理请求，请稍后重试。";

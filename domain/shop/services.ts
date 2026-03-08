@@ -3,6 +3,39 @@
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 
+export const ORDER_STATUS_PENDING = "PENDING" as const;
+export const ORDER_STATUS_AWAITING_PAYMENT = "AWAITING_PAYMENT" as const;
+export const ORDER_STATUS_PAID = "PAID" as const;
+export const ORDER_STATUS_SHIPPED = "SHIPPED" as const;
+export const ORDER_STATUS_DELIVERED = "DELIVERED" as const;
+export const ORDER_STATUS_CANCELLED = "CANCELLED" as const;
+
+export const ORDER_PAYMENT_PROVIDER_STRIPE = "STRIPE" as const;
+
+export const ORDER_PAYMENT_STATUS_OPEN = "OPEN" as const;
+export const ORDER_PAYMENT_STATUS_PAID = "PAID" as const;
+export const ORDER_PAYMENT_STATUS_FAILED = "FAILED" as const;
+export const ORDER_PAYMENT_STATUS_EXPIRED = "EXPIRED" as const;
+export const ORDER_PAYMENT_STATUS_REFUNDED = "REFUNDED" as const;
+
+export const ORDER_WITH_ITEMS_QUERY =
+  Prisma.validator<Prisma.OrderDefaultArgs>()({
+    include: {
+      items: {
+        orderBy: { createdAt: "asc" },
+        include: {
+          product: {
+            select: {
+              id: true,
+              name: true,
+              images: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
 export interface Product {
   id: string;
   userId: string;
@@ -88,7 +121,15 @@ export interface SerializedOrder {
   buyerEmail: string;
   buyerName: string | null;
   totalAmount: number;
+  currency: string;
   status: string;
+  paymentProvider: string | null;
+  paymentStatus: string | null;
+  paymentSessionId: string | null;
+  paymentIntentId: string | null;
+  paymentExpiresAt: string | null;
+  paymentFailedAt: string | null;
+  paymentFailureReason: string | null;
   shippingAddress: Prisma.JsonValue | null;
   shippingMethod: string | null;
   createdAt: string;
@@ -99,37 +140,16 @@ export interface SerializedOrder {
   items: SerializedOrderItem[];
 }
 
-type OrderWithItemsRecord = {
-  id: string;
-  userId: string;
-  buyerEmail: string;
-  buyerName: string | null;
-  totalAmount: Prisma.Decimal;
-  status: string;
-  shippingAddress: Prisma.JsonValue | null;
-  shippingMethod: string | null;
-  createdAt: Date;
-  updatedAt: Date;
-  paidAt: Date | null;
-  shippedAt: Date | null;
-  deliveredAt: Date | null;
-  items: Array<{
-    id: string;
-    orderId: string;
-    productId: string;
-    price: Prisma.Decimal;
-    quantity: number;
-    subtotal: Prisma.Decimal;
-    createdAt: Date;
-    product?:
-      | {
-          id: string;
-          name: string;
-          images: Prisma.JsonValue;
-        }
-      | null;
-  }>;
-};
+export interface CheckoutSessionResult {
+  orderId: string;
+  provider: string;
+  checkoutUrl: string;
+  expiresAt: string | null;
+}
+
+export type OrderWithItemsRecord = Prisma.OrderGetPayload<
+  typeof ORDER_WITH_ITEMS_QUERY
+>;
 
 function normalizeImageList(images: Prisma.JsonValue): string[] {
   if (images && typeof images === "object" && Array.isArray(images)) {
@@ -163,7 +183,19 @@ export function serializeOrderWithItems(order: OrderWithItemsRecord): Serialized
     buyerEmail: order.buyerEmail,
     buyerName: order.buyerName,
     totalAmount: Number(order.totalAmount),
+    currency: order.currency,
     status: order.status,
+    paymentProvider: order.paymentProvider || null,
+    paymentStatus: order.paymentStatus || null,
+    paymentSessionId: order.paymentSessionId || null,
+    paymentIntentId: order.paymentIntentId || null,
+    paymentExpiresAt: order.paymentExpiresAt
+      ? order.paymentExpiresAt.toISOString()
+      : null,
+    paymentFailedAt: order.paymentFailedAt
+      ? order.paymentFailedAt.toISOString()
+      : null,
+    paymentFailureReason: order.paymentFailureReason || null,
     shippingAddress: order.shippingAddress ?? null,
     shippingMethod: order.shippingMethod,
     createdAt: order.createdAt.toISOString(),
@@ -479,8 +511,52 @@ export async function deleteProduct(id: string, userId: string): Promise<void> {
 }
 
 /**
- * 公开结账创建订单
- * 在一个 Prisma 事务中完成：校验公开商品、创建订单、创建订单项、扣减库存
+ * 加载订单（含订单项）
+ */
+async function loadOrderWithItems(
+  client: Prisma.TransactionClient | typeof prisma,
+  orderId: string
+) {
+  return client.order.findUnique({
+    where: { id: orderId },
+    ...ORDER_WITH_ITEMS_QUERY,
+  });
+}
+
+async function restoreOrderInventory(
+  tx: Prisma.TransactionClient,
+  orderId: string
+) {
+  const items = await tx.orderItem.findMany({
+    where: { orderId },
+    select: {
+      productId: true,
+      quantity: true,
+    },
+  });
+
+  for (const item of items) {
+    await tx.product.update({
+      where: { id: item.productId },
+      data: {
+        stock: {
+          increment: item.quantity,
+        },
+      },
+    });
+  }
+}
+
+export async function getOrderWithItemsById(
+  orderId: string
+): Promise<SerializedOrder | null> {
+  const order = await loadOrderWithItems(prisma, orderId);
+  return order ? serializeOrderWithItems(order) : null;
+}
+
+/**
+ * 公开结账预留订单
+ * 在一个 Prisma 事务中完成：校验公开商品、创建待支付订单、创建订单项、扣减库存
  */
 export async function createPublicOrder(
   input: PublicOrderCreateInput
@@ -541,7 +617,10 @@ export async function createPublicOrder(
         buyerEmail: normalizedBuyerEmail,
         buyerName: normalizedBuyerName,
         totalAmount,
-        status: "PENDING",
+        currency: "JPY",
+        status: ORDER_STATUS_AWAITING_PAYMENT,
+        paymentProvider: ORDER_PAYMENT_PROVIDER_STRIPE,
+        paymentStatus: ORDER_PAYMENT_STATUS_OPEN,
         shippingAddress: shippingAddress
           ? (shippingAddress as Prisma.InputJsonValue)
           : Prisma.JsonNull,
@@ -574,23 +653,7 @@ export async function createPublicOrder(
       });
     }
 
-    const createdOrder = await tx.order.findUnique({
-      where: { id: order.id },
-      include: {
-        items: {
-          orderBy: { createdAt: "asc" },
-          include: {
-            product: {
-              select: {
-                id: true,
-                name: true,
-                images: true,
-              },
-            },
-          },
-        },
-      },
-    });
+    const createdOrder = await loadOrderWithItems(tx, order.id);
 
     if (!createdOrder) {
       throw new Error("Failed to load created order");
@@ -598,4 +661,137 @@ export async function createPublicOrder(
 
     return serializeOrderWithItems(createdOrder);
   });
+}
+
+export async function attachStripePaymentSessionToOrder(
+  orderId: string,
+  input: {
+    sessionId: string;
+    paymentIntentId?: string | null;
+    expiresAt?: Date | null;
+  }
+): Promise<SerializedOrder> {
+  const order = await prisma.order.update({
+    where: { id: orderId },
+    data: {
+      paymentSessionId: input.sessionId,
+      paymentIntentId: input.paymentIntentId || null,
+      paymentExpiresAt: input.expiresAt || null,
+      paymentFailureReason: null,
+      paymentFailedAt: null,
+    },
+    ...ORDER_WITH_ITEMS_QUERY,
+  });
+
+  return serializeOrderWithItems(order);
+}
+
+export async function markOrderPaidByPaymentSession(
+  paymentSessionId: string,
+  paymentIntentId?: string | null
+): Promise<{ order: SerializedOrder; changed: boolean } | null> {
+  return prisma.$transaction(async (tx) => {
+    const existing = await tx.order.findUnique({
+      where: { paymentSessionId },
+      select: { id: true },
+    });
+
+    if (!existing) {
+      return null;
+    }
+
+    const updated = await tx.order.updateMany({
+      where: {
+        id: existing.id,
+        paymentStatus: ORDER_PAYMENT_STATUS_OPEN,
+      },
+      data: {
+        status: ORDER_STATUS_PAID,
+        paymentStatus: ORDER_PAYMENT_STATUS_PAID,
+        paymentIntentId: paymentIntentId || null,
+        paidAt: new Date(),
+        paymentFailedAt: null,
+        paymentFailureReason: null,
+      },
+    });
+
+    const order = await loadOrderWithItems(tx, existing.id);
+
+    if (!order) {
+      throw new Error("Failed to load paid order");
+    }
+
+    return {
+      order: serializeOrderWithItems(order),
+      changed: updated.count > 0,
+    };
+  });
+}
+
+export async function cancelOpenOrderPayment(
+  orderId: string,
+  input: {
+    paymentStatus: typeof ORDER_PAYMENT_STATUS_FAILED | typeof ORDER_PAYMENT_STATUS_EXPIRED;
+    reason: string;
+  }
+): Promise<{ order: SerializedOrder; changed: boolean } | null> {
+  return prisma.$transaction(async (tx) => {
+    const updated = await tx.order.updateMany({
+      where: {
+        id: orderId,
+        paymentStatus: ORDER_PAYMENT_STATUS_OPEN,
+      },
+      data: {
+        status: ORDER_STATUS_CANCELLED,
+        paymentStatus: input.paymentStatus,
+        paymentFailedAt: new Date(),
+        paymentFailureReason: input.reason,
+      },
+    });
+
+    const order = await loadOrderWithItems(tx, orderId);
+
+    if (!order) {
+      return null;
+    }
+
+    if (updated.count === 0) {
+      return {
+        order: serializeOrderWithItems(order),
+        changed: false,
+      };
+    }
+
+    await restoreOrderInventory(tx, orderId);
+
+    const refreshedOrder = await loadOrderWithItems(tx, orderId);
+
+    if (!refreshedOrder) {
+      throw new Error("Failed to load cancelled order");
+    }
+
+    return {
+      order: serializeOrderWithItems(refreshedOrder),
+      changed: true,
+    };
+  });
+}
+
+export async function cancelOpenOrderPaymentBySession(
+  paymentSessionId: string,
+  input: {
+    paymentStatus: typeof ORDER_PAYMENT_STATUS_FAILED | typeof ORDER_PAYMENT_STATUS_EXPIRED;
+    reason: string;
+  }
+): Promise<{ order: SerializedOrder; changed: boolean } | null> {
+  const order = await prisma.order.findUnique({
+    where: { paymentSessionId },
+    select: { id: true },
+  });
+
+  if (!order) {
+    return null;
+  }
+
+  return cancelOpenOrderPayment(order.id, input);
 }

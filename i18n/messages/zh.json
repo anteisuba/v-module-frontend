@@ -34,6 +34,10 @@
         "orders": {
           "label": "订单管理",
           "description": "查看买家订单并推进处理状态"
+        },
+        "comments": {
+          "label": "评论审核",
+          "description": "审核博客评论并管理公开展示"
         }
       },
       "comingSoon": "待开发"
@@ -430,6 +434,53 @@
     "deleteConfirm": {
       "title": "确认删除",
       "message": "确定要删除这篇博客吗？此操作无法撤销。"
+    }
+  },
+  "comments": {
+    "title": "评论审核",
+    "description": "审核博客评论，决定哪些内容可以在公开页展示。",
+    "filters": {
+      "searchLabel": "搜索评论",
+      "searchPlaceholder": "评论内容 / 评论者 / 邮箱 / 文章标题",
+      "statusLabel": "状态筛选",
+      "statusAll": "全部状态",
+      "reset": "清空筛选"
+    },
+    "stats": {
+      "total": "评论总数",
+      "pending": "待审核",
+      "approved": "已通过",
+      "rejected": "已拒绝"
+    },
+    "status": {
+      "pending": "待审核",
+      "approved": "已通过",
+      "rejected": "已拒绝"
+    },
+    "list": {
+      "empty": "暂无评论",
+      "emptyFiltered": "当前筛选条件下没有评论",
+      "loadFailed": "加载评论失败",
+      "updateFailed": "更新评论状态失败",
+      "deleteFailed": "删除评论失败",
+      "approved": "评论已通过审核",
+      "rejected": "评论已标记为拒绝",
+      "deleted": "评论已删除",
+      "approve": "通过",
+      "reject": "拒绝",
+      "delete": "删除",
+      "postLabel": "所属文章：",
+      "emailLabel": "联系邮箱：",
+      "anonymousEmail": "未提供",
+      "submittedAt": "提交时间：",
+      "moderatedAt": "审核时间：",
+      "notModerated": "尚未审核",
+      "currentResults": "当前结果 {count} 条",
+      "refreshing": "正在更新结果..."
+    },
+    "deleteConfirm": {
+      "title": "确认删除评论",
+      "message": "确定要删除这条评论吗？此操作无法撤销。"
     }
   },
   "shop": {
