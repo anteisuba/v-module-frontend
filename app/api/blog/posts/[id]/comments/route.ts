@@ -1,17 +1,50 @@
-// app/api/blog/posts/[id]/comments/route.ts
-
-import { NextRequest, NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
+import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "@/lib/session/userSession";
+import {
+  BLOG_COMMENT_APPROVED_STATUS,
+  BLOG_COMMENT_PENDING_STATUS,
+  BLOG_COMMENT_PUBLIC_QUERY,
+  serializeBlogComment,
+} from "@/domain/blog/comments";
 
-// POST: 创建评论
+export const runtime = "nodejs";
+
+async function getPublishedBlogPost(id: string) {
+  return prisma.blogPost.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      published: true,
+    },
+  });
+}
+
+function parsePaginationParam(value: string | null, fallback: number, max: number) {
+  const parsed = Number.parseInt(value || "", 10);
+
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return fallback;
+  }
+
+  return Math.min(parsed, max);
+}
+
 export async function POST(
-  request: NextRequest,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
+    const post = await getPublishedBlogPost(id);
+
+    if (!post || !post.published) {
+      return NextResponse.json(
+        { error: "Blog post not found" },
+        { status: 404 }
+      );
+    }
+
     const session = await getServerSession();
     const body = await request.json();
     const { userName, userEmail, content } = body;
@@ -23,7 +56,6 @@ export async function POST(
       );
     }
 
-    // 创建评论
     const comment = await prisma.blogComment.create({
       data: {
         blogPostId: id,
@@ -31,27 +63,17 @@ export async function POST(
         userName: userName.trim(),
         userEmail: userEmail?.trim() || session?.user?.email || null,
         content: content.trim(),
+        status: BLOG_COMMENT_PENDING_STATUS,
       },
-      include: {
-        user: {
-          select: {
-            id: true,
-            slug: true,
-            displayName: true,
-          },
-        },
-      },
+      ...BLOG_COMMENT_PUBLIC_QUERY,
     });
 
-    return NextResponse.json(comment);
+    return NextResponse.json(serializeBlogComment(comment), { status: 201 });
   } catch (error) {
-    if (
-      error instanceof Prisma.PrismaClientKnownRequestError &&
-      error.code === "P2003"
-    ) {
+    if (error instanceof SyntaxError) {
       return NextResponse.json(
-        { error: "Blog post not found" },
-        { status: 404 }
+        { error: "Invalid JSON in request body" },
+        { status: 400 }
       );
     }
 
@@ -63,40 +85,46 @@ export async function POST(
   }
 }
 
-// GET: 获取评论列表
 export async function GET(
-  request: NextRequest,
+  request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const { id } = await params;
+    const post = await getPublishedBlogPost(id);
+
+    if (!post || !post.published) {
+      return NextResponse.json(
+        { error: "Blog post not found" },
+        { status: 404 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "1");
-    const limit = parseInt(searchParams.get("limit") || "20");
+    const page = parsePaginationParam(searchParams.get("page"), 1, 1000);
+    const limit = parsePaginationParam(searchParams.get("limit"), 20, 100);
 
     const [comments, total] = await Promise.all([
       prisma.blogComment.findMany({
-        where: { blogPostId: id },
+        where: {
+          blogPostId: id,
+          status: BLOG_COMMENT_APPROVED_STATUS,
+        },
         orderBy: { createdAt: "asc" },
         skip: (page - 1) * limit,
         take: limit,
-        include: {
-          user: {
-            select: {
-              id: true,
-              slug: true,
-              displayName: true,
-            },
-          },
-        },
+        ...BLOG_COMMENT_PUBLIC_QUERY,
       }),
       prisma.blogComment.count({
-        where: { blogPostId: id },
+        where: {
+          blogPostId: id,
+          status: BLOG_COMMENT_APPROVED_STATUS,
+        },
       }),
     ]);
 
     return NextResponse.json({
-      comments,
+      comments: comments.map(serializeBlogComment),
       pagination: {
         page,
         limit,

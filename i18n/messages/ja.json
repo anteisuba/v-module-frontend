@@ -34,6 +34,10 @@
         "orders": {
           "label": "注文管理",
           "description": "購入注文を確認し、処理ステータスを更新"
+        },
+        "comments": {
+          "label": "コメント審査",
+          "description": "ブログコメントを審査し、公開表示を管理"
         }
       },
       "comingSoon": "開発中"
@@ -430,6 +434,53 @@
     "deleteConfirm": {
       "title": "削除の確認",
       "message": "このブログ記事を削除してもよろしいですか？この操作は元に戻せません。"
+    }
+  },
+  "comments": {
+    "title": "コメント審査",
+    "description": "ブログコメントを確認し、公開ページに表示する内容を管理します。",
+    "filters": {
+      "searchLabel": "コメント検索",
+      "searchPlaceholder": "コメント内容 / 投稿者 / メール / 記事タイトル",
+      "statusLabel": "ステータス",
+      "statusAll": "すべての状態",
+      "reset": "フィルターをクリア"
+    },
+    "stats": {
+      "total": "コメント総数",
+      "pending": "審査待ち",
+      "approved": "承認済み",
+      "rejected": "却下済み"
+    },
+    "status": {
+      "pending": "審査待ち",
+      "approved": "承認済み",
+      "rejected": "却下済み"
+    },
+    "list": {
+      "empty": "コメントはまだありません",
+      "emptyFiltered": "現在の条件に一致するコメントはありません",
+      "loadFailed": "コメントの読み込みに失敗しました",
+      "updateFailed": "コメント状態の更新に失敗しました",
+      "deleteFailed": "コメントの削除に失敗しました",
+      "approved": "コメントを承認しました",
+      "rejected": "コメントを却下しました",
+      "deleted": "コメントを削除しました",
+      "approve": "承認",
+      "reject": "却下",
+      "delete": "削除",
+      "postLabel": "記事：",
+      "emailLabel": "メール：",
+      "anonymousEmail": "未入力",
+      "submittedAt": "投稿日時：",
+      "moderatedAt": "審査日時：",
+      "notModerated": "未審査",
+      "currentResults": "現在 {count} 件",
+      "refreshing": "結果を更新中..."
+    },
+    "deleteConfirm": {
+      "title": "コメント削除の確認",
+      "message": "このコメントを削除してもよろしいですか？この操作は元に戻せません。"
     }
   },
   "shop": {

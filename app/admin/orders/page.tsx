@@ -4,12 +4,14 @@
 
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import type { SerializedOrder } from "@/domain/shop";
 import {
   BackButton,
   Alert,
   LoadingState,
   LanguageSelector,
   Button,
+  Input,
 } from "@/components/ui";
 import { shopApi } from "@/lib/api";
 import { useUser } from "@/lib/context/UserContext";
@@ -17,24 +19,7 @@ import { useToast } from "@/hooks/useToast";
 import { useErrorHandler } from "@/hooks/useErrorHandler";
 import { useI18n } from "@/lib/i18n/context";
 
-interface Order {
-  id: string;
-  buyerEmail: string;
-  buyerName: string | null;
-  totalAmount: number;
-  status: string;
-  createdAt: string;
-  items: Array<{
-    id: string;
-    product: {
-      id: string;
-      name: string;
-    };
-    quantity: number;
-    price: number;
-    subtotal: number;
-  }>;
-}
+type Order = SerializedOrder;
 
 export default function OrdersPage() {
   const router = useRouter();
@@ -45,28 +30,54 @@ export default function OrdersPage() {
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [hasLoadedOnce, setHasLoadedOnce] = useState(false);
   const [updatingStatus, setUpdatingStatus] = useState<string | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("ALL");
   const [stats, setStats] = useState({
     pendingCount: 0,
     todaySales: 0,
   });
 
   useEffect(() => {
+    const timeoutId = window.setTimeout(() => {
+      setDebouncedQuery(searchQuery.trim());
+    }, 300);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [searchQuery]);
+
+  useEffect(() => {
     if (!userLoading && user) {
-      loadOrders();
+      void loadOrders();
     } else if (!userLoading && !user) {
       router.push("/admin");
     }
-  }, [user, userLoading]);
+  }, [user, userLoading, debouncedQuery, statusFilter]);
 
   async function loadOrders() {
     try {
-      setLoading(true);
-      const response = await shopApi.getOrders({ page: 1, limit: 100 });
+      if (!hasLoadedOnce) {
+        setLoading(true);
+      } else {
+        setRefreshing(true);
+      }
+
+      const response = await shopApi.getOrders({
+        page: 1,
+        limit: 100,
+        status: statusFilter === "ALL" ? undefined : statusFilter,
+        query: debouncedQuery || undefined,
+      });
       setOrders(response.orders);
 
       // 计算统计
-      const pending = response.orders.filter((o) => o.status === "PENDING").length;
+      const pending = response.orders.filter(
+        (o) => o.status === "AWAITING_PAYMENT" || o.status === "PENDING"
+      ).length;
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const todaySales = response.orders
@@ -80,11 +91,13 @@ export default function OrdersPage() {
         pendingCount: pending,
         todaySales,
       });
+      setHasLoadedOnce(true);
     } catch (err) {
       handleError(err);
       showToast("加载订单列表失败");
     } finally {
       setLoading(false);
+      setRefreshing(false);
     }
   }
 
@@ -99,6 +112,35 @@ export default function OrdersPage() {
     } finally {
       setUpdatingStatus(null);
     }
+  }
+
+  async function handleExport() {
+    try {
+      setExporting(true);
+      const csvBlob = await shopApi.exportOrdersCsv({
+        status: statusFilter === "ALL" ? undefined : statusFilter,
+        query: debouncedQuery || undefined,
+      });
+
+      const downloadUrl = window.URL.createObjectURL(csvBlob);
+      const link = document.createElement("a");
+      link.href = downloadUrl;
+      link.download = `orders-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+      window.URL.revokeObjectURL(downloadUrl);
+      showToast("订单 CSV 已导出");
+    } catch (err) {
+      handleError(err);
+    } finally {
+      setExporting(false);
+    }
+  }
+
+  function resetFilters() {
+    setSearchQuery("");
+    setStatusFilter("ALL");
   }
 
   function getNextStatus(currentStatus: string): string | null {
@@ -127,6 +169,7 @@ export default function OrdersPage() {
 
   function getStatusLabel(status: string) {
     const labels: Record<string, string> = {
+      AWAITING_PAYMENT: "等待支付",
       PENDING: "待处理",
       PAID: "已支付",
       SHIPPED: "已发货",
@@ -138,6 +181,7 @@ export default function OrdersPage() {
 
   function getStatusColor(status: string) {
     const colors: Record<string, string> = {
+      AWAITING_PAYMENT: "bg-amber-100 text-amber-700",
       PENDING: "bg-yellow-100 text-yellow-700",
       PAID: "bg-blue-100 text-blue-700",
       SHIPPED: "bg-purple-100 text-purple-700",
@@ -185,10 +229,72 @@ export default function OrdersPage() {
           <p className="mt-1 text-sm text-black/70">管理您的所有订单</p>
         </div>
 
+        <div className="mb-6 rounded-xl border border-black/10 bg-white/55 p-4 backdrop-blur-xl">
+          <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px_auto] md:items-end">
+            <div>
+              <label className="mb-2 block text-xs font-medium text-black/70">
+                搜索订单
+              </label>
+              <Input
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                placeholder="订单号 / 买家邮箱 / 姓名 / 商品名"
+              />
+            </div>
+
+            <div>
+              <label className="mb-2 block text-xs font-medium text-black/70">
+                状态筛选
+              </label>
+              <select
+                value={statusFilter}
+                onChange={(event) => setStatusFilter(event.target.value)}
+                className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black"
+              >
+                <option value="ALL">全部状态</option>
+                <option value="AWAITING_PAYMENT">等待支付</option>
+                <option value="PENDING">待处理</option>
+                <option value="PAID">已支付</option>
+                <option value="SHIPPED">已发货</option>
+                <option value="DELIVERED">已送达</option>
+                <option value="CANCELLED">已取消</option>
+              </select>
+            </div>
+
+            <div className="flex gap-2 md:justify-end">
+              <Button
+                variant="secondary"
+                onClick={resetFilters}
+                disabled={
+                  (searchQuery.length === 0 && statusFilter === "ALL") ||
+                  loading ||
+                  refreshing ||
+                  exporting
+                }
+              >
+                清空筛选
+              </Button>
+              <Button
+                variant="primary"
+                onClick={handleExport}
+                loading={exporting}
+                disabled={loading || refreshing || orders.length === 0}
+              >
+                导出 CSV
+              </Button>
+            </div>
+          </div>
+
+          <div className="mt-3 flex items-center justify-between text-xs text-black/55">
+            <span>当前结果 {orders.length} 条</span>
+            {refreshing ? <span>正在更新结果...</span> : null}
+          </div>
+        </div>
+
         {/* 统计 */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="rounded-xl border border-black/10 bg-white/55 p-4 backdrop-blur-xl">
-            <div className="text-sm text-black/60 mb-1">待处理订单</div>
+            <div className="text-sm text-black/60 mb-1">待支付 / 待处理</div>
             <div className="text-2xl font-bold text-black">{stats.pendingCount}</div>
           </div>
           <div className="rounded-xl border border-black/10 bg-white/55 p-4 backdrop-blur-xl">
@@ -212,7 +318,11 @@ export default function OrdersPage() {
         {/* 订单列表 */}
         {orders.length === 0 ? (
           <div className="rounded-2xl border border-black/10 bg-white/55 p-12 text-center backdrop-blur-xl">
-            <p className="text-black/60">暂无订单</p>
+            <p className="text-black/60">
+              {debouncedQuery || statusFilter !== "ALL"
+                ? "当前筛选条件下没有订单"
+                : "暂无订单"}
+            </p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -240,6 +350,11 @@ export default function OrdersPage() {
                       <p className="text-sm text-black/60">
                         {order.buyerName || order.buyerEmail}
                       </p>
+                      {order.paymentProvider ? (
+                        <p className="text-xs text-black/50">
+                          支付：{order.paymentProvider} / {order.paymentStatus || "UNKNOWN"}
+                        </p>
+                      ) : null}
                       <p className="text-xs text-black/50">{formatDate(order.createdAt)}</p>
                     </div>
                     <div className="text-right">
@@ -257,7 +372,7 @@ export default function OrdersPage() {
                         className="flex items-center justify-between text-sm"
                       >
                         <span className="text-black/70">
-                          {item.product.name} × {item.quantity}
+                          {(item.product?.name || item.productId)} × {item.quantity}
                         </span>
                         <span className="text-black/60">
                           {formatPrice(item.subtotal)}

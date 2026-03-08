@@ -34,6 +34,10 @@
         "orders": {
           "label": "Orders",
           "description": "Review buyer orders and advance fulfillment status"
+        },
+        "comments": {
+          "label": "Comment Moderation",
+          "description": "Review blog comments before they appear publicly"
         }
       },
       "comingSoon": "Coming soon"
@@ -430,6 +434,53 @@
     "deleteConfirm": {
       "title": "Confirm Delete",
       "message": "Are you sure you want to delete this blog post? This action cannot be undone."
+    }
+  },
+  "comments": {
+    "title": "Comment Moderation",
+    "description": "Review blog comments and control what appears on the public page.",
+    "filters": {
+      "searchLabel": "Search comments",
+      "searchPlaceholder": "Comment text / author / email / post title",
+      "statusLabel": "Status",
+      "statusAll": "All statuses",
+      "reset": "Clear filters"
+    },
+    "stats": {
+      "total": "Total comments",
+      "pending": "Pending review",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "status": {
+      "pending": "Pending",
+      "approved": "Approved",
+      "rejected": "Rejected"
+    },
+    "list": {
+      "empty": "No comments yet",
+      "emptyFiltered": "No comments match the current filters",
+      "loadFailed": "Failed to load comments",
+      "updateFailed": "Failed to update comment status",
+      "deleteFailed": "Failed to delete comment",
+      "approved": "Comment approved",
+      "rejected": "Comment rejected",
+      "deleted": "Comment deleted",
+      "approve": "Approve",
+      "reject": "Reject",
+      "delete": "Delete",
+      "postLabel": "Post:",
+      "emailLabel": "Email:",
+      "anonymousEmail": "Not provided",
+      "submittedAt": "Submitted:",
+      "moderatedAt": "Moderated:",
+      "notModerated": "Not moderated yet",
+      "currentResults": "{count} results",
+      "refreshing": "Refreshing results..."
+    },
+    "deleteConfirm": {
+      "title": "Delete Comment",
+      "message": "Are you sure you want to delete this comment? This action cannot be undone."
     }
   },
   "shop": {

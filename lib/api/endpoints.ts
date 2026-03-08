@@ -18,6 +18,33 @@ import type {
   NewsArticleResponse,
 } from "./types";
 import type { PageConfig } from "@/domain/page-config/types";
+import type { CheckoutSessionResult, SerializedOrder } from "@/domain/shop";
+
+type BlogCommentStatus = "PENDING" | "APPROVED" | "REJECTED";
+
+type ApiBlogComment = {
+  id: string;
+  blogPostId: string;
+  userName: string;
+  userEmail: string | null;
+  content: string;
+  status: BlogCommentStatus;
+  createdAt: string;
+  moderatedAt: string | null;
+  user: {
+    id: string;
+    slug: string;
+    displayName: string | null;
+  } | null;
+};
+
+type ApiModerationBlogComment = ApiBlogComment & {
+  blogPost: {
+    id: string;
+    title: string;
+    published: boolean;
+  };
+};
 
 /**
  * 用户相关 API
@@ -435,7 +462,7 @@ export const blogApi = {
   async createComment(
     id: string,
     data: { userName: string; userEmail?: string; content: string }
-  ): Promise<any> {
+  ): Promise<ApiBlogComment> {
     return apiClient.post(`/api/blog/posts/${id}/comments`, data);
   },
 
@@ -446,18 +473,7 @@ export const blogApi = {
     id: string,
     params?: { page?: number; limit?: number }
   ): Promise<{
-    comments: Array<{
-      id: string;
-      userName: string;
-      userEmail: string | null;
-      content: string;
-      createdAt: string;
-      user: {
-        id: string;
-        slug: string;
-        displayName: string | null;
-      } | null;
-    }>;
+    comments: ApiBlogComment[];
     pagination: {
       page: number;
       limit: number;
@@ -470,6 +486,59 @@ export const blogApi = {
     if (params?.limit) searchParams.set("limit", params.limit.toString());
     const query = searchParams.toString();
     return apiClient.get(`/api/blog/posts/${id}/comments${query ? `?${query}` : ""}`);
+  },
+
+  /**
+   * 获取评论审核列表
+   */
+  async getModerationComments(params?: {
+    page?: number;
+    limit?: number;
+    status?: BlogCommentStatus;
+    query?: string;
+  }): Promise<{
+    comments: ApiModerationBlogComment[];
+    summary: {
+      total: number;
+      pending: number;
+      approved: number;
+      rejected: number;
+    };
+    pagination: {
+      page: number;
+      limit: number;
+      total: number;
+      totalPages: number;
+    };
+  }> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set("page", params.page.toString());
+    if (params?.limit) searchParams.set("limit", params.limit.toString());
+    if (params?.status) searchParams.set("status", params.status);
+    if (params?.query) searchParams.set("query", params.query);
+    const query = searchParams.toString();
+    return apiClient.get(`/api/blog/comments${query ? `?${query}` : ""}`);
+  },
+
+  /**
+   * 更新评论审核状态
+   */
+  async updateCommentStatus(
+    id: string,
+    status: BlogCommentStatus
+  ): Promise<ApiModerationBlogComment> {
+    const response = await apiClient.put<{ comment: ApiModerationBlogComment }>(
+      `/api/blog/comments/${id}`,
+      { status }
+    );
+    return response.comment;
+  },
+
+  /**
+   * 删除评论
+   */
+  async deleteComment(id: string): Promise<void> {
+    await apiClient.delete(`/api/blog/comments/${id}`);
   },
 };
 
@@ -588,35 +657,9 @@ export const shopApi = {
     page?: number;
     limit?: number;
     status?: string;
+    query?: string;
   }): Promise<{
-    orders: Array<{
-      id: string;
-      userId: string;
-      buyerEmail: string;
-      buyerName: string | null;
-      totalAmount: number;
-      status: string;
-      shippingAddress: Record<string, unknown> | null;
-      shippingMethod: string | null;
-      createdAt: string;
-      updatedAt: string;
-      paidAt: string | null;
-      shippedAt: string | null;
-      deliveredAt: string | null;
-      items: Array<{
-        id: string;
-        orderId: string;
-        productId: string;
-        product: {
-          id: string;
-          name: string;
-          images: string[];
-        };
-        quantity: number;
-        price: number;
-        subtotal: number;
-      }>;
-    }>;
+    orders: SerializedOrder[];
     pagination: {
       page: number;
       limit: number;
@@ -628,8 +671,64 @@ export const shopApi = {
     if (params?.page) searchParams.set("page", params.page.toString());
     if (params?.limit) searchParams.set("limit", params.limit.toString());
     if (params?.status) searchParams.set("status", params.status);
+    if (params?.query) searchParams.set("query", params.query);
     const query = searchParams.toString();
     return apiClient.get(`/api/shop/orders${query ? `?${query}` : ""}`);
+  },
+
+  /**
+   * 导出订单 CSV（卖家）
+   */
+  async exportOrdersCsv(params?: {
+    status?: string;
+    query?: string;
+  }): Promise<Blob> {
+    const searchParams = new URLSearchParams();
+    if (params?.status) searchParams.set("status", params.status);
+    if (params?.query) searchParams.set("query", params.query);
+    searchParams.set("export", "csv");
+
+    const response = await fetch(`/api/shop/orders?${searchParams.toString()}`, {
+      method: "GET",
+      credentials: "include",
+      cache: "no-store",
+    });
+
+    if (!response.ok) {
+      let errorMessage = "导出订单失败";
+
+      try {
+        const errorData = (await response.json()) as { error?: string; message?: string };
+        errorMessage = errorData.error || errorData.message || errorMessage;
+      } catch {
+        // noop
+      }
+
+      throw new Error(errorMessage);
+    }
+
+    return response.blob();
+  },
+
+  /**
+   * 获取订单详情（卖家会话）
+   */
+  async getOrder(id: string): Promise<SerializedOrder> {
+    const response = await apiClient.get<{ order: SerializedOrder }>(
+      `/api/shop/orders/${id}`
+    );
+    return response.order;
+  },
+
+  /**
+   * 获取公开订单详情（访客需提供下单邮箱）
+   */
+  async getPublicOrder(id: string, buyerEmail: string): Promise<SerializedOrder> {
+    const response = await apiClient.get<{ order: SerializedOrder }>(
+      `/api/shop/orders/${id}?buyerEmail=${encodeURIComponent(buyerEmail.trim())}`,
+      { skipAuth: true }
+    );
+    return response.order;
   },
 
   /**
@@ -641,41 +740,13 @@ export const shopApi = {
     shippingAddress?: Record<string, unknown> | null;
     shippingMethod?: string | null;
     items: Array<{ productId: string; quantity: number }>;
-  }): Promise<{
-    id: string;
-    userId: string;
-    buyerEmail: string;
-    buyerName: string | null;
-    totalAmount: number;
-    status: string;
-    shippingAddress: Record<string, unknown> | null;
-    shippingMethod: string | null;
-    createdAt: string;
-    updatedAt: string;
-    paidAt: string | null;
-    shippedAt: string | null;
-    deliveredAt: string | null;
-    items: Array<{
-      id: string;
-      orderId: string;
-      productId: string;
-      quantity: number;
-      price: number;
-      subtotal: number;
-      createdAt: string;
-      product: {
-        id: string;
-        name: string;
-        images: string[];
-      } | null;
-    }>;
-  }> {
-    const response = await apiClient.post<{ order: any }>(
+  }): Promise<CheckoutSessionResult> {
+    const response = await apiClient.post<{ checkout: CheckoutSessionResult }>(
       "/api/shop/checkout",
       data,
       { skipAuth: true }
     );
-    return response.order;
+    return response.checkout;
   },
 
   /**
@@ -684,8 +755,8 @@ export const shopApi = {
   async updateOrderStatus(
     id: string,
     status: string
-  ): Promise<any> {
-    const response = await apiClient.put<{ order: any }>(
+  ): Promise<SerializedOrder> {
+    const response = await apiClient.put<{ order: SerializedOrder }>(
       `/api/shop/orders/${id}`,
       { status }
     );

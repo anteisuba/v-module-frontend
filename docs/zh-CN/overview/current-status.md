@@ -17,6 +17,7 @@
 
 - `pnpm build`
 - `pnpm check`
+- `pnpm test`
 - `pnpm lint`
 - `git ls-files`
 - 路由、API、Prisma 模型与主要页面代码
@@ -30,10 +31,11 @@
 
 ## 命令审计结果
 
-- `pnpm build`：通过
+- `pnpm build`：当前 Windows 环境可能在 `prisma generate` 阶段触发 `EPERM` 锁文件错误；拆开执行 `pnpm prisma generate --no-engine` + `pnpm exec next build` 已通过
 - `pnpm check`：通过
+- `pnpm test`：通过
 - `pnpm lint`：失败，`62 errors / 93 warnings`
-- 自动化测试文件：未发现
+- 自动化测试文件：已存在，覆盖认证、公开页读取、Stripe Checkout 创建、Stripe Webhook、订单详情读取、订单列表筛选/导出、邮件通知降级行为、博客评论公开/审核接口
 - 迁移前文档数量：`33` 个 Markdown，其中 `31` 个位于 `document/`
 
 ## 已完成
@@ -41,33 +43,35 @@
 - 用户系统：注册、登录、退出、密码重置、后台鉴权中间件
 - 页面配置系统：草稿与发布版本分离，公开页读取发布配置
 - 页面配置清理：`PageConfig.links` 已从 schema / types / 默认配置移除，历史 `links` section 会在读写和公开渲染时自动清洗
+- 最小自动化测试基线：已接入 `vitest`，覆盖登录认证、公开页配置读取、公开结账订单创建
+- 订单详情页：公开下单成功页已可基于 `orderId + buyerEmail` 读取并展示订单详情
+- 卖家订单管理：后台订单列表已支持搜索、状态过滤和 CSV 导出
+- Stripe Checkout：`POST /api/shop/checkout` 已改为创建 Stripe Checkout Session；公开结账页会跳转到 Stripe 托管支付页
+- Stripe Webhook：`POST /api/payments/stripe/webhook` 已处理支付成功、异步失败和会话过期，并回写订单支付状态与库存补偿
+- 订单通知：Stripe 支付确认后会向买家发送确认邮件、向卖家发送新订单提醒；状态更新时会向买家发送状态变更邮件
 - 后台编辑骨架：CMS、博客、商店列表/详情页已统一为 tab + 单开折叠面板结构
 - 公开页：`/u/[slug]` 支持主题色、字体、背景、Hero、News、Video 等配置渲染
 - 公开入口：`/blog`、`/shop` 已改为全站公开内容入口，不再依赖固定用户 slug
 - 新闻系统：新闻列表页、详情页、后台编辑与发布接口
 - 博客系统：后台列表/编辑、公开列表/详情、点赞接口、评论接口与前端 UI
+- 评论审核：`BlogComment` 已引入 `PENDING / APPROVED / REJECTED` 状态，历史评论迁移后保持公开可见；访客评论默认进入待审核，卖家后台已可搜索、审核和删除评论
 - 商店系统：后台商品管理、商店列表/商品详情背景编辑、公开商品列表/详情、公开结账接口 `POST /api/shop/checkout`、卖家订单列表、订单状态更新
 - 媒体上传：后台上传接口、本地文件系统与 R2 分支、`MediaAsset` 数据记录
 - 国际化基础：存在 `zh`、`ja`、`en` 文案文件与语言切换器
 
 ## 部分完成 / 存在缺口
 
-- 订单成功页目前只显示成功消息，未拉取订单详情
+- 自动化测试目前只覆盖认证、公开页读取、Stripe Checkout / Webhook、订单详情、订单列表筛选/导出、邮件通知降级行为和评论审核 API，尚未扩展到页面发布与更多后台 UI 链路
+- 当前只接入了 Stripe Checkout 单一支付通道，尚未扩展到 PayPal、本地支付方式、退款后台和更完整的支付对账能力
 - `MediaAsset` 已落库，但尚未形成真正的媒体库界面或资源选择器
 
 ## 未实现
 
 - 购物车
-- 支付网关集成
-- 订单详情页
-- 订单搜索、过滤、导出
-- 邮件通知
 - 库存预警
 - Turnstile / 验证码
-- 评论审核后台
 - 直播日程 `ScheduleBlock`
 - 媒体库 UI
-- 自动化测试
 
 ## 当前结论
 
