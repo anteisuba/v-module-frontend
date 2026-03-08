@@ -106,6 +106,10 @@ export default function CheckoutPage({
         throw new Error("订单创建失败：未返回订单 ID");
       }
 
+      window.sessionStorage.setItem(
+        `shop:order-access:${orderResponse.id}`,
+        buyerEmail.trim()
+      );
       router.push(`/u/${slug}/shop/order-success/${orderResponse.id}`);
     } catch (err) {
       handleError(err);

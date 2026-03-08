@@ -18,6 +18,7 @@ import type {
   NewsArticleResponse,
 } from "./types";
 import type { PageConfig } from "@/domain/page-config/types";
+import type { SerializedOrder } from "@/domain/shop";
 
 /**
  * 用户相关 API
@@ -633,6 +634,27 @@ export const shopApi = {
   },
 
   /**
+   * 获取订单详情（卖家会话）
+   */
+  async getOrder(id: string): Promise<SerializedOrder> {
+    const response = await apiClient.get<{ order: SerializedOrder }>(
+      `/api/shop/orders/${id}`
+    );
+    return response.order;
+  },
+
+  /**
+   * 获取公开订单详情（访客需提供下单邮箱）
+   */
+  async getPublicOrder(id: string, buyerEmail: string): Promise<SerializedOrder> {
+    const response = await apiClient.get<{ order: SerializedOrder }>(
+      `/api/shop/orders/${id}?buyerEmail=${encodeURIComponent(buyerEmail.trim())}`,
+      { skipAuth: true }
+    );
+    return response.order;
+  },
+
+  /**
    * 公开结账创建订单
    */
   async createCheckoutOrder(data: {
@@ -641,36 +663,8 @@ export const shopApi = {
     shippingAddress?: Record<string, unknown> | null;
     shippingMethod?: string | null;
     items: Array<{ productId: string; quantity: number }>;
-  }): Promise<{
-    id: string;
-    userId: string;
-    buyerEmail: string;
-    buyerName: string | null;
-    totalAmount: number;
-    status: string;
-    shippingAddress: Record<string, unknown> | null;
-    shippingMethod: string | null;
-    createdAt: string;
-    updatedAt: string;
-    paidAt: string | null;
-    shippedAt: string | null;
-    deliveredAt: string | null;
-    items: Array<{
-      id: string;
-      orderId: string;
-      productId: string;
-      quantity: number;
-      price: number;
-      subtotal: number;
-      createdAt: string;
-      product: {
-        id: string;
-        name: string;
-        images: string[];
-      } | null;
-    }>;
-  }> {
-    const response = await apiClient.post<{ order: any }>(
+  }): Promise<SerializedOrder> {
+    const response = await apiClient.post<{ order: SerializedOrder }>(
       "/api/shop/checkout",
       data,
       { skipAuth: true }
@@ -684,8 +678,8 @@ export const shopApi = {
   async updateOrderStatus(
     id: string,
     status: string
-  ): Promise<any> {
-    const response = await apiClient.put<{ order: any }>(
+  ): Promise<SerializedOrder> {
+    const response = await apiClient.put<{ order: SerializedOrder }>(
       `/api/shop/orders/${id}`,
       { status }
     );

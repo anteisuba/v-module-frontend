@@ -37,7 +37,7 @@
 | `/u/[slug]/shop` | 用户商店列表 |
 | `/u/[slug]/shop/[id]` | 商品详情 |
 | `/u/[slug]/shop/[id]/checkout` | 公开下单页 |
-| `/u/[slug]/shop/order-success/[orderId]` | 订单成功占位页 |
+| `/u/[slug]/shop/order-success/[orderId]` | 订单成功 / 详情页 |
 | `/blog` | 全站公开博客入口，聚合所有已发布博客 |
 | `/shop` | 全站公开商品入口，聚合所有已发布商品 |
 
@@ -99,6 +99,7 @@
 - `GET/PUT/DELETE /api/shop/products/[id]`
 - `POST /api/shop/checkout`
 - `GET /api/shop/orders`
+- `GET /api/shop/orders/[id]`
 - `PUT /api/shop/orders/[id]`
 
 ## 权限注意事项
@@ -106,4 +107,5 @@
 - `middleware.ts` 保护所有 `/admin/*`，但登录、注册、忘记密码、重置密码例外
 - 公开博客评论与点赞支持匿名场景
 - `POST /api/shop/checkout` 面向访客公开结账，不要求登录态
-- `/api/shop/orders*` 只保留卖家后台订单列表和状态管理语义
+- `GET /api/shop/orders/[id]` 支持卖家会话读取；访客公开读取时必须显式提供 `buyerEmail`
+- `GET /api/shop/orders` 与 `PUT /api/shop/orders/[id]` 仍只保留卖家后台订单列表和状态管理语义

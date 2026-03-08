@@ -7,6 +7,75 @@ import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
 
+// GET: 获取订单详情（卖家会话可读；公开访客需提供 buyerEmail）
+export async function GET(
+  request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id } = await params;
+  const { searchParams } = new URL(request.url);
+  const buyerEmail = searchParams.get("buyerEmail")?.trim().toLowerCase() || null;
+
+  if (buyerEmail) {
+    const order = await prisma.order.findUnique({
+      where: { id },
+      include: {
+        items: {
+          orderBy: { createdAt: "asc" },
+          include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                images: true,
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!order || order.buyerEmail.trim().toLowerCase() !== buyerEmail) {
+      return NextResponse.json({ error: "Order not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ order: serializeOrderWithItems(order) });
+  }
+
+  const session = await getServerSession();
+  if (!session?.user?.id) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  const order = await prisma.order.findUnique({
+    where: { id },
+    include: {
+      items: {
+        orderBy: { createdAt: "asc" },
+        include: {
+          product: {
+            select: {
+              id: true,
+              name: true,
+              images: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  if (!order) {
+    return NextResponse.json({ error: "Order not found" }, { status: 404 });
+  }
+
+  if (order.userId !== session.user.id) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
+
+  return NextResponse.json({ order: serializeOrderWithItems(order) });
+}
+
 // PUT: 更新订单状态
 export async function PUT(
   request: Request,
