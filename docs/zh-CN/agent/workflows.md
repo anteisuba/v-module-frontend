@@ -52,6 +52,7 @@
 ## 当前验证矩阵
 
 - TypeScript / React / API：至少 `pnpm check`
+- 核心服务与 route handler 行为变更：优先同时跑 `pnpm test`
 - Prisma / schema / migration：`pnpm check` + 迁移上下文自检
 - 文档：链接和路径自检
 - `pnpm lint`：仅参考，不作为当前硬门禁
