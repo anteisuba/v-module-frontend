@@ -1,13 +1,16 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { createPublicOrderMock, sendOrderCreatedNotificationsMock } = vi.hoisted(() => ({
-  createPublicOrderMock: vi.fn(),
-  sendOrderCreatedNotificationsMock: vi.fn(),
+const { createStripeCheckoutMock, isStripeConfiguredMock } = vi.hoisted(() => ({
+  createStripeCheckoutMock: vi.fn(),
+  isStripeConfiguredMock: vi.fn(),
 }));
 
 vi.mock("@/domain/shop", () => ({
-  createPublicOrder: createPublicOrderMock,
-  sendOrderCreatedNotifications: sendOrderCreatedNotificationsMock,
+  createStripeCheckout: createStripeCheckoutMock,
+}));
+
+vi.mock("@/lib/stripe", () => ({
+  isStripeConfigured: isStripeConfiguredMock,
 }));
 
 import { POST } from "@/app/api/shop/checkout/route";
@@ -16,26 +19,16 @@ describe("POST /api/shop/checkout", () => {
   beforeEach(() => {
     vi.clearAllMocks();
     vi.spyOn(console, "error").mockImplementation(() => {});
+    isStripeConfiguredMock.mockReturnValue(true);
   });
 
-  it("creates the order and sends notifications", async () => {
-    createPublicOrderMock.mockResolvedValue({
-      id: "order-1",
-      userId: "seller-1",
-      buyerEmail: "buyer@example.com",
-      buyerName: "Alice",
-      totalAmount: 88,
-      status: "PENDING",
-      shippingAddress: null,
-      shippingMethod: "standard",
-      createdAt: "2026-03-08T00:00:00.000Z",
-      updatedAt: "2026-03-08T00:00:00.000Z",
-      paidAt: null,
-      shippedAt: null,
-      deliveredAt: null,
-      items: [],
+  it("creates a Stripe checkout session for the public order", async () => {
+    createStripeCheckoutMock.mockResolvedValue({
+      orderId: "order-1",
+      provider: "STRIPE",
+      checkoutUrl: "https://checkout.stripe.com/pay/cs_test_123",
+      expiresAt: "2026-03-08T01:00:00.000Z",
     });
-    sendOrderCreatedNotificationsMock.mockResolvedValue(undefined);
 
     const response = await POST(
       new Request("http://localhost/api/shop/checkout", {
@@ -46,36 +39,28 @@ describe("POST /api/shop/checkout", () => {
         }),
       })
     );
+    const payload = await response.json();
 
     expect(response.status).toBe(200);
-    expect(createPublicOrderMock).toHaveBeenCalledWith({
+    expect(createStripeCheckoutMock).toHaveBeenCalledWith({
       buyerEmail: "buyer@example.com",
       buyerName: null,
       shippingAddress: null,
       shippingMethod: null,
       items: [{ productId: "product-1", quantity: 1 }],
     });
-    expect(sendOrderCreatedNotificationsMock).toHaveBeenCalledTimes(1);
+    expect(payload).toEqual({
+      checkout: {
+        orderId: "order-1",
+        provider: "STRIPE",
+        checkoutUrl: "https://checkout.stripe.com/pay/cs_test_123",
+        expiresAt: "2026-03-08T01:00:00.000Z",
+      },
+    });
   });
 
-  it("does not fail checkout when notifications cannot be sent", async () => {
-    createPublicOrderMock.mockResolvedValue({
-      id: "order-1",
-      userId: "seller-1",
-      buyerEmail: "buyer@example.com",
-      buyerName: null,
-      totalAmount: 88,
-      status: "PENDING",
-      shippingAddress: null,
-      shippingMethod: null,
-      createdAt: "2026-03-08T00:00:00.000Z",
-      updatedAt: "2026-03-08T00:00:00.000Z",
-      paidAt: null,
-      shippedAt: null,
-      deliveredAt: null,
-      items: [],
-    });
-    sendOrderCreatedNotificationsMock.mockRejectedValue(new Error("mail down"));
+  it("returns 503 when Stripe Checkout is not configured", async () => {
+    isStripeConfiguredMock.mockReturnValue(false);
 
     const response = await POST(
       new Request("http://localhost/api/shop/checkout", {
@@ -87,11 +72,10 @@ describe("POST /api/shop/checkout", () => {
       })
     );
 
-    expect(response.status).toBe(200);
-    await expect(response.json()).resolves.toMatchObject({
-      order: {
-        id: "order-1",
-      },
+    expect(response.status).toBe(503);
+    await expect(response.json()).resolves.toEqual({
+      error: "Stripe Checkout is not configured",
     });
+    expect(createStripeCheckoutMock).not.toHaveBeenCalled();
   });
 });

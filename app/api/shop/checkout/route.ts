@@ -1,13 +1,12 @@
 import { NextResponse } from "next/server";
 import {
-  createPublicOrder,
-  sendOrderCreatedNotifications,
+  createStripeCheckout,
   type PublicOrderCreateInput,
 } from "@/domain/shop";
+import { isStripeConfigured } from "@/lib/stripe";
 
 export const runtime = "nodejs";
 
-// POST: 公开结账创建订单（访客可用）
 export async function POST(request: Request) {
   let body;
   try {
@@ -28,8 +27,15 @@ export async function POST(request: Request) {
     );
   }
 
+  if (!isStripeConfigured()) {
+    return NextResponse.json(
+      { error: "Stripe Checkout is not configured" },
+      { status: 503 }
+    );
+  }
+
   try {
-    const order = await createPublicOrder({
+    const checkout = await createStripeCheckout({
       buyerEmail,
       buyerName: buyerName || null,
       shippingAddress: shippingAddress || null,
@@ -37,25 +43,22 @@ export async function POST(request: Request) {
       items,
     } satisfies PublicOrderCreateInput);
 
-    try {
-      await sendOrderCreatedNotifications(order);
-    } catch (notificationError) {
-      console.error("Failed to send order creation notifications:", notificationError);
-    }
-
-    return NextResponse.json({ order });
+    return NextResponse.json({ checkout });
   } catch (error) {
-    console.error("Failed to create checkout order:", error);
+    console.error("Failed to create Stripe checkout:", error);
 
     const message =
-      error instanceof Error ? error.message : "Failed to create checkout order";
+      error instanceof Error ? error.message : "Failed to create Stripe checkout";
     const status =
-      message.includes("unavailable") || message.includes("not found")
+      message.includes("not configured")
+        ? 503
+        : message.includes("unavailable") || message.includes("not found")
         ? 404
         : message.includes("stock") ||
             message.includes("quantity") ||
             message.includes("seller") ||
-            message.includes("buyerEmail")
+            message.includes("buyerEmail") ||
+            message.includes("whole-number")
           ? 400
           : 500;
 

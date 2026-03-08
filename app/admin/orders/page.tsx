@@ -75,7 +75,9 @@ export default function OrdersPage() {
       setOrders(response.orders);
 
       // 计算统计
-      const pending = response.orders.filter((o) => o.status === "PENDING").length;
+      const pending = response.orders.filter(
+        (o) => o.status === "AWAITING_PAYMENT" || o.status === "PENDING"
+      ).length;
       const today = new Date();
       today.setHours(0, 0, 0, 0);
       const todaySales = response.orders
@@ -167,6 +169,7 @@ export default function OrdersPage() {
 
   function getStatusLabel(status: string) {
     const labels: Record<string, string> = {
+      AWAITING_PAYMENT: "等待支付",
       PENDING: "待处理",
       PAID: "已支付",
       SHIPPED: "已发货",
@@ -178,6 +181,7 @@ export default function OrdersPage() {
 
   function getStatusColor(status: string) {
     const colors: Record<string, string> = {
+      AWAITING_PAYMENT: "bg-amber-100 text-amber-700",
       PENDING: "bg-yellow-100 text-yellow-700",
       PAID: "bg-blue-100 text-blue-700",
       SHIPPED: "bg-purple-100 text-purple-700",
@@ -248,6 +252,7 @@ export default function OrdersPage() {
                 className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black"
               >
                 <option value="ALL">全部状态</option>
+                <option value="AWAITING_PAYMENT">等待支付</option>
                 <option value="PENDING">待处理</option>
                 <option value="PAID">已支付</option>
                 <option value="SHIPPED">已发货</option>
@@ -289,7 +294,7 @@ export default function OrdersPage() {
         {/* 统计 */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="rounded-xl border border-black/10 bg-white/55 p-4 backdrop-blur-xl">
-            <div className="text-sm text-black/60 mb-1">待处理订单</div>
+            <div className="text-sm text-black/60 mb-1">待支付 / 待处理</div>
             <div className="text-2xl font-bold text-black">{stats.pendingCount}</div>
           </div>
           <div className="rounded-xl border border-black/10 bg-white/55 p-4 backdrop-blur-xl">
@@ -345,6 +350,11 @@ export default function OrdersPage() {
                       <p className="text-sm text-black/60">
                         {order.buyerName || order.buyerEmail}
                       </p>
+                      {order.paymentProvider ? (
+                        <p className="text-xs text-black/50">
+                          支付：{order.paymentProvider} / {order.paymentStatus || "UNKNOWN"}
+                        </p>
+                      ) : null}
                       <p className="text-xs text-black/50">{formatDate(order.createdAt)}</p>
                     </div>
                     <div className="text-right">

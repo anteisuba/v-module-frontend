@@ -23,6 +23,7 @@
 - [系统架构](../architecture/system-architecture.md)
 - [模块地图](../architecture/module-map.md)
 - [当前状态](../overview/current-status.md)
+- [支付网关接入方案](./payment-gateway-plan.md)
 
 ## 公开页面
 
@@ -101,6 +102,7 @@
 - `GET/POST /api/shop/products`
 - `GET/PUT/DELETE /api/shop/products/[id]`
 - `POST /api/shop/checkout`
+- `POST /api/payments/stripe/webhook`
 - `GET /api/shop/orders`
 - `GET /api/shop/orders/[id]`
 - `PUT /api/shop/orders/[id]`
@@ -111,9 +113,10 @@
 - 公开博客点赞支持匿名场景
 - 公开博客评论支持匿名提交，但新评论默认进入 `PENDING` 审核；`GET /api/blog/posts/[id]/comments` 只返回 `APPROVED` 评论
 - `GET /api/blog/comments` 与 `PUT/DELETE /api/blog/comments/[id]` 仅面向当前卖家自己的博客评论审核后台
-- `POST /api/shop/checkout` 面向访客公开结账，不要求登录态
-- `POST /api/shop/checkout` 在邮件服务可用时会发送买家确认邮件和卖家新订单提醒；发信失败不会阻塞下单
+- `POST /api/shop/checkout` 面向访客公开结账，不要求登录态；当前会预留订单、扣减库存并创建 Stripe Checkout Session，响应内返回 `checkoutUrl`
+- `POST /api/payments/stripe/webhook` 处理 Stripe `checkout.session.completed`、`checkout.session.async_payment_succeeded`、`checkout.session.async_payment_failed`、`checkout.session.expired`
+- Stripe 支付确认后才会发送买家确认邮件和卖家新订单提醒；Webhook 失败或会话过期会把订单标记为失败/过期并回补库存
 - `GET /api/shop/orders` 支持卖家后台 `status` / `query` 过滤，并可通过 `export=csv` 导出当前筛选结果
 - `GET /api/shop/orders/[id]` 支持卖家会话读取；访客公开读取时必须显式提供 `buyerEmail`
-- `PUT /api/shop/orders/[id]` 更新状态后会向买家发送状态变更邮件；发信失败不会阻塞状态更新
+- `PUT /api/shop/orders/[id]` 更新状态后会向买家发送状态变更邮件；发信失败不会阻塞状态更新；Stripe 待支付订单不能在后台手工标记为 `PAID`
 - `GET /api/shop/orders` 与 `PUT /api/shop/orders/[id]` 仍只保留卖家后台订单列表和状态管理语义

@@ -18,7 +18,7 @@ import type {
   NewsArticleResponse,
 } from "./types";
 import type { PageConfig } from "@/domain/page-config/types";
-import type { SerializedOrder } from "@/domain/shop";
+import type { CheckoutSessionResult, SerializedOrder } from "@/domain/shop";
 
 type BlogCommentStatus = "PENDING" | "APPROVED" | "REJECTED";
 
@@ -740,13 +740,13 @@ export const shopApi = {
     shippingAddress?: Record<string, unknown> | null;
     shippingMethod?: string | null;
     items: Array<{ productId: string; quantity: number }>;
-  }): Promise<SerializedOrder> {
-    const response = await apiClient.post<{ order: SerializedOrder }>(
+  }): Promise<CheckoutSessionResult> {
+    const response = await apiClient.post<{ checkout: CheckoutSessionResult }>(
       "/api/shop/checkout",
       data,
       { skipAuth: true }
     );
-    return response.order;
+    return response.checkout;
   },
 
   /**

@@ -28,7 +28,15 @@ const orderRecord = {
   buyerEmail: "buyer@example.com",
   buyerName: "Alice",
   totalAmount: new Prisma.Decimal("120.00"),
+  currency: "JPY",
   status: "PAID",
+  paymentProvider: "STRIPE",
+  paymentStatus: "PAID",
+  paymentSessionId: "cs_test_123",
+  paymentIntentId: "pi_test_123",
+  paymentExpiresAt: new Date("2026-03-08T02:00:00.000Z"),
+  paymentFailedAt: null,
+  paymentFailureReason: null,
   shippingAddress: { city: "Tokyo" },
   shippingMethod: "Express",
   createdAt: new Date("2026-03-08T00:00:00.000Z"),
@@ -124,7 +132,9 @@ describe("GET /api/shop/orders", () => {
     expect(response.status).toBe(200);
     expect(response.headers.get("content-type")).toContain("text/csv");
     expect(response.headers.get("content-disposition")).toContain("orders-");
-    expect(body).toContain("orderId,buyerEmail,buyerName,status,totalAmount");
+    expect(body).toContain(
+      "orderId,buyerEmail,buyerName,status,paymentProvider,paymentStatus,totalAmount"
+    );
     expect(body).toContain("order-1");
     expect(body).toContain("buyer@example.com");
     expect(body).toContain("Album x 1");

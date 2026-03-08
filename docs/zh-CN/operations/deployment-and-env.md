@@ -1,7 +1,7 @@
 # 部署与环境变量
 
 - 日本語: [デプロイと環境変数](../../ja/operations/deployment-and-env.md)
-- 最后更新: 2026-03-07
+- 最后更新: 2026-03-08
 
 ## 用途
 
@@ -59,11 +59,19 @@
 - `R2_BUCKET_NAME`
 - `R2_PUBLIC_URL`（可选）
 
+### 支付网关
+
+- `STRIPE_SECRET_KEY`
+- `STRIPE_WEBHOOK_SECRET`
+- `STRIPE_CURRENCY`（建议默认 `JPY`）
+
+说明：当前代码已接入 Stripe Checkout，公开结账依赖 `STRIPE_SECRET_KEY`，Webhook 依赖 `STRIPE_WEBHOOK_SECRET`。`STRIPE_CURRENCY` 默认为 `JPY`。详见 [支付网关接入方案](../development/payment-gateway-plan.md)。
+
 ## 当前环境校验行为
 
 - `lib/env.ts` 在服务端启动时验证环境变量
 - 生产环境和 Vercel 环境会对错误配置直接抛错
-- 缺少邮件或 R2 时会输出警告
+- 缺少邮件、R2 或 Stripe 配置时会输出警告
 
 ## 部署注意事项
 
@@ -71,3 +79,4 @@
 - 构建过程会执行 Prisma Client 生成
 - 生产应启用 HTTPS 的 `NEXT_PUBLIC_BASE_URL`
 - 上传、密码重置、订单通知邮件投递需要分别核对存储和邮件配置
+- 部署 Stripe Checkout 时，需要保证 `NEXT_PUBLIC_BASE_URL` 指向公网 HTTPS 地址，并在 Stripe 后台配置 `POST /api/payments/stripe/webhook` 对应的 Webhook

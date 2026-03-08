@@ -86,7 +86,7 @@ export default function CheckoutPage({
 
     try {
       setSubmitting(true);
-      const orderResponse = await shopApi.createCheckoutOrder({
+      const checkout = await shopApi.createCheckoutOrder({
         buyerEmail: buyerEmail.trim(),
         buyerName: buyerName.trim() || null,
         shippingAddress: Object.values(shippingAddress).some((v) => v.trim())
@@ -100,17 +100,16 @@ export default function CheckoutPage({
           },
         ],
       });
-      
-      // orderResponse 是订单对象，包含 id
-      if (!orderResponse?.id) {
-        throw new Error("订单创建失败：未返回订单 ID");
+
+      if (!checkout?.orderId || !checkout.checkoutUrl) {
+        throw new Error("Stripe Checkout 创建失败：未返回跳转地址");
       }
 
       window.sessionStorage.setItem(
-        `shop:order-access:${orderResponse.id}`,
+        `shop:order-access:${checkout.orderId}`,
         buyerEmail.trim()
       );
-      router.push(`/u/${slug}/shop/order-success/${orderResponse.id}`);
+      window.location.assign(checkout.checkoutUrl);
     } catch (err) {
       handleError(err);
     } finally {
@@ -320,11 +319,11 @@ export default function CheckoutPage({
               loading={submitting}
               disabled={product.stock === 0}
             >
-              提交订单
+              前往 Stripe 支付
             </Button>
 
             <p className="text-xs text-black/60 text-center">
-              提交订单后，卖家会通过邮箱联系您完成支付和配送
+              提交后将跳转到 Stripe 托管支付页，支付完成后自动返回订单详情页
             </p>
           </form>
         </div>

@@ -26,6 +26,7 @@ export default function OrderSuccessPage({
   const [order, setOrder] = useState<SerializedOrder | null>(null);
   const [loading, setLoading] = useState(true);
   const [loadingOrder, setLoadingOrder] = useState(false);
+  const [refreshingStatus, setRefreshingStatus] = useState(false);
 
   useEffect(() => {
     async function loadParams() {
@@ -53,6 +54,64 @@ export default function OrderSuccessPage({
     setBuyerEmail(savedBuyerEmail);
     void loadOrder(savedBuyerEmail, orderId);
   }, [orderId]);
+
+  useEffect(() => {
+    if (
+      !orderId ||
+      !buyerEmail ||
+      !order ||
+      order.paymentProvider !== "STRIPE" ||
+      order.status !== "AWAITING_PAYMENT" ||
+      order.paymentStatus !== "OPEN"
+    ) {
+      return;
+    }
+
+    let cancelled = false;
+    let attempts = 0;
+
+    const intervalId = window.setInterval(async () => {
+      attempts += 1;
+
+      try {
+        setRefreshingStatus(true);
+        const latestOrder = await shopApi.getPublicOrder(orderId, buyerEmail);
+
+        if (cancelled) {
+          return;
+        }
+
+        setOrder(latestOrder);
+
+        if (
+          latestOrder.status !== "AWAITING_PAYMENT" ||
+          latestOrder.paymentStatus !== "OPEN" ||
+          attempts >= 20
+        ) {
+          window.clearInterval(intervalId);
+        }
+      } catch {
+        if (attempts >= 20) {
+          window.clearInterval(intervalId);
+        }
+      } finally {
+        if (!cancelled) {
+          setRefreshingStatus(false);
+        }
+      }
+    }, 3000);
+
+    return () => {
+      cancelled = true;
+      window.clearInterval(intervalId);
+    };
+  }, [
+    buyerEmail,
+    orderId,
+    order?.paymentProvider,
+    order?.paymentStatus,
+    order?.status,
+  ]);
 
   async function loadOrder(emailToLoad?: string, currentOrderId?: string) {
     const resolvedOrderId = currentOrderId || orderId;
@@ -112,6 +171,7 @@ export default function OrderSuccessPage({
 
   function formatStatus(status: string) {
     const labels: Record<string, string> = {
+      AWAITING_PAYMENT: "等待支付确认",
       PENDING: "待处理",
       PAID: "已支付",
       SHIPPED: "已发货",
@@ -119,6 +179,95 @@ export default function OrderSuccessPage({
       CANCELLED: "已取消",
     };
     return labels[status] || status;
+  }
+
+  function getStatusPresentation(currentOrder: SerializedOrder | null) {
+    if (!currentOrder) {
+      return {
+        title: "订单详情",
+        subtitle: "请使用下单邮箱查询订单状态。",
+        iconClassName: "bg-slate-100",
+        iconColorClassName: "text-slate-600",
+        iconPath: (
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 6v6l4 2m5-2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        ),
+      };
+    }
+
+    if (
+      currentOrder.paymentProvider === "STRIPE" &&
+      currentOrder.status === "AWAITING_PAYMENT" &&
+      currentOrder.paymentStatus === "OPEN"
+    ) {
+      return {
+        title: "支付结果确认中",
+        subtitle: "Stripe 已返回成功页面，系统正在等待 webhook 确认付款。",
+        iconClassName: "bg-amber-100",
+        iconColorClassName: "text-amber-600",
+        iconPath: (
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        ),
+      };
+    }
+
+    if (currentOrder.status === "PAID") {
+      return {
+        title: "订单已支付",
+        subtitle: "付款已确认，订单已进入处理流程。",
+        iconClassName: "bg-emerald-100",
+        iconColorClassName: "text-emerald-600",
+        iconPath: (
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M5 13l4 4L19 7"
+          />
+        ),
+      };
+    }
+
+    if (currentOrder.status === "CANCELLED") {
+      return {
+        title: "支付未完成",
+        subtitle: "订单已取消；如已尝试付款，请稍后检查邮箱或联系卖家确认。",
+        iconClassName: "bg-rose-100",
+        iconColorClassName: "text-rose-600",
+        iconPath: (
+          <path
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            strokeWidth={2}
+            d="M6 18L18 6M6 6l12 12"
+          />
+        ),
+      };
+    }
+
+    return {
+      title: "订单详情",
+      subtitle: `当前状态：${formatStatus(currentOrder.status)}`,
+      iconClassName: "bg-sky-100",
+      iconColorClassName: "text-sky-600",
+      iconPath: (
+        <path
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          strokeWidth={2}
+          d="M9 12h6m-6 4h6M7 8h10M5 6h14v12H5V6z"
+        />
+      ),
+    };
   }
 
   function formatAddress(address: SerializedOrder["shippingAddress"]) {
@@ -141,6 +290,12 @@ export default function OrderSuccessPage({
     );
   }
 
+  const awaitingPayment =
+    order?.paymentProvider === "STRIPE" &&
+    order.status === "AWAITING_PAYMENT" &&
+    order.paymentStatus === "OPEN";
+  const statusPresentation = getStatusPresentation(order);
+
   return (
     <div className="relative min-h-screen py-16 px-6">
       {/* 右上角菜单按钮 */}
@@ -160,24 +315,32 @@ export default function OrderSuccessPage({
 
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
-          <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-4">
+          <div
+            className={[
+              "w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4",
+              statusPresentation.iconClassName,
+            ].join(" ")}
+          >
             <svg
-              className="w-10 h-10 text-emerald-600"
+              className={[
+                "w-10 h-10",
+                statusPresentation.iconColorClassName,
+              ].join(" ")}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M5 13l4 4L19 7"
-              />
+              {statusPresentation.iconPath}
             </svg>
           </div>
-          <h1 className="text-3xl font-bold mb-2 text-center">订单已提交</h1>
+          <h1 className="text-3xl font-bold mb-2 text-center">
+            {statusPresentation.title}
+          </h1>
           <p className="text-black/60 text-center">
             订单号: {orderId?.slice(0, 8).toUpperCase() || "--"}
+          </p>
+          <p className="mt-2 text-center text-sm text-black/60">
+            {statusPresentation.subtitle}
           </p>
         </div>
 
@@ -186,7 +349,7 @@ export default function OrderSuccessPage({
         {!order ? (
           <div className="bg-white/50 rounded-lg p-6 border border-black/10 mb-6">
             <p className="text-black/70 mb-4">
-              您的订单已成功提交。请输入下单时使用的邮箱，以查看本次订单详情。
+              支付完成后，请输入下单时使用的邮箱，以查看本次订单详情。
             </p>
             <form onSubmit={handleLookupSubmit} className="space-y-4">
               <FormField label="下单邮箱" required>
@@ -205,6 +368,13 @@ export default function OrderSuccessPage({
           </div>
         ) : (
           <div className="space-y-4 mb-6">
+            {awaitingPayment ? (
+              <div className="bg-amber-50 rounded-lg p-4 border border-amber-200 text-sm text-amber-800">
+                {statusPresentation.subtitle}
+                {refreshingStatus ? " 正在刷新订单状态..." : " 如果几秒后仍未更新，可稍后刷新页面。"}
+              </div>
+            ) : null}
+
             <div className="bg-white/55 rounded-lg p-6 border border-black/10">
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div>
@@ -215,6 +385,11 @@ export default function OrderSuccessPage({
                   <p className="text-sm text-black/60">
                     状态：{formatStatus(order.status)}
                   </p>
+                  {order.paymentProvider ? (
+                    <p className="text-sm text-black/60">
+                      支付：{order.paymentProvider} / {order.paymentStatus || "UNKNOWN"}
+                    </p>
+                  ) : null}
                 </div>
                 <div className="text-left md:text-right">
                   <div className="text-sm text-black/60">订单总额</div>

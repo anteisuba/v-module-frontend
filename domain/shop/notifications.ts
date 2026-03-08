@@ -22,6 +22,7 @@ function formatPrice(amount: number) {
 
 function formatStatusLabel(status: string) {
   const labels: Record<string, string> = {
+    AWAITING_PAYMENT: "等待支付确认",
     PENDING: "待处理",
     PAID: "已支付",
     SHIPPED: "已发货",
@@ -68,12 +69,12 @@ async function sendBuyerOrderCreatedEmail(order: SerializedOrder, seller: Seller
 
   await sendEmailMessage({
     to: order.buyerEmail,
-    subject: `订单已提交 #${getShortOrderId(order.id)} - VTuber Site`,
+    subject: `付款已确认 #${getShortOrderId(order.id)} - VTuber Site`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222; max-width: 640px; margin: 0 auto; padding: 24px;">
-        <h2 style="margin-bottom: 12px;">订单已提交</h2>
+        <h2 style="margin-bottom: 12px;">付款已确认</h2>
         <p>您好${order.buyerName ? `，${order.buyerName}` : ""}：</p>
-        <p>我们已经收到您的订单，卖家会继续处理后续的支付与配送流程。</p>
+        <p>我们已经确认收到您的付款，卖家会继续处理后续的配送流程。</p>
         <div style="background: #f5f5f5; border-radius: 12px; padding: 16px; margin: 20px 0;">
           <p><strong>订单号：</strong>#${getShortOrderId(order.id)}</p>
           <p><strong>订单状态：</strong>${formatStatusLabel(order.status)}</p>
@@ -92,7 +93,7 @@ async function sendBuyerOrderCreatedEmail(order: SerializedOrder, seller: Seller
       </div>
     `,
     text: [
-      `订单已提交 #${getShortOrderId(order.id)}`,
+      `付款已确认 #${getShortOrderId(order.id)}`,
       "",
       `订单状态：${formatStatusLabel(order.status)}`,
       `订单总额：${formatPrice(order.totalAmount)}`,
@@ -113,11 +114,11 @@ async function sendSellerNewOrderEmail(order: SerializedOrder, seller: SellerInf
 
   await sendEmailMessage({
     to: seller.email,
-    subject: `新订单 #${getShortOrderId(order.id)} - VTuber Site`,
+    subject: `新付款订单 #${getShortOrderId(order.id)} - VTuber Site`,
     html: `
       <div style="font-family: Arial, sans-serif; line-height: 1.6; color: #222; max-width: 640px; margin: 0 auto; padding: 24px;">
-        <h2 style="margin-bottom: 12px;">收到新订单</h2>
-        <p>${seller.displayName || seller.slug}，您有一笔新的待处理订单。</p>
+        <h2 style="margin-bottom: 12px;">收到新付款订单</h2>
+        <p>${seller.displayName || seller.slug}，您收到了一笔新的已付款订单。</p>
         <div style="background: #f5f5f5; border-radius: 12px; padding: 16px; margin: 20px 0;">
           <p><strong>订单号：</strong>#${getShortOrderId(order.id)}</p>
           <p><strong>买家邮箱：</strong>${order.buyerEmail}</p>
@@ -130,7 +131,7 @@ async function sendSellerNewOrderEmail(order: SerializedOrder, seller: SellerInf
       </div>
     `,
     text: [
-      `新订单 #${getShortOrderId(order.id)}`,
+      `新付款订单 #${getShortOrderId(order.id)}`,
       "",
       `买家邮箱：${order.buyerEmail}`,
       `买家姓名：${order.buyerName || "未提供"}`,
