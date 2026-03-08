@@ -5,7 +5,7 @@ import { pageApi } from "@/lib/api";
 import { ApiError } from "@/lib/api/errors";
 import type { PageConfig } from "@/domain/page-config/types";
 import { EMPTY_PAGE_CONFIG } from "@/domain/page-config/constants";
-import { isDefaultConfig } from "@/utils/pageConfig";
+import { isDefaultConfig, normalizePageConfig } from "@/utils/pageConfig";
 
 export function usePageConfig() {
   const [config, setConfig] = useState<PageConfig>(EMPTY_PAGE_CONFIG);
@@ -31,41 +31,18 @@ export function usePageConfig() {
       }
       
       if (draftConfig) {
-        // 确保各页面背景字段有默认值（兼容旧数据）
-        const configWithBackgrounds = {
-          ...draftConfig,
-          newsBackground: draftConfig.newsBackground || {
-            type: "color" as const,
-            value: "#000000",
-          },
-          blogBackground: draftConfig.blogBackground || {
-            type: "color" as const,
-            value: "#000000",
-          },
-          blogDetailBackground: draftConfig.blogDetailBackground || {
-            type: "color" as const,
-            value: "#000000",
-          },
-          shopBackground: draftConfig.shopBackground || {
-            type: "color" as const,
-            value: "#000000",
-          },
-          shopDetailBackground: draftConfig.shopDetailBackground || {
-            type: "color" as const,
-            value: "#000000",
-          },
-        };
+        const normalizedConfig = normalizePageConfig(draftConfig);
 
         // 优化：只在首次访问且未发布时清空默认配置
         // 如果已发布过，不再清空
         let finalConfig: PageConfig;
-        if (configWithBackgrounds.hasPublished) {
-          finalConfig = configWithBackgrounds;
-        } else if (isDefaultConfig(configWithBackgrounds)) {
+        if (normalizedConfig.hasPublished) {
+          finalConfig = normalizedConfig;
+        } else if (isDefaultConfig(normalizedConfig)) {
           // 只在首次访问且是默认配置时清空
           finalConfig = EMPTY_PAGE_CONFIG;
         } else {
-          finalConfig = configWithBackgrounds;
+          finalConfig = normalizedConfig;
         }
         
         setConfig(finalConfig);

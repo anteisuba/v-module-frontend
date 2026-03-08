@@ -42,6 +42,12 @@ export default function PageRenderer({ config }: { config: PageConfig }) {
       {/* Bento Grid 容器：移动端单列，桌面端 4 列 */}
       <div className="grid grid-cols-1 gap-4 p-4 md:grid-cols-4 auto-rows-min">
         {sortedSections.map((section) => {
+          const renderedSection = renderSection(section, config);
+
+          if (renderedSection == null) {
+            return null;
+          }
+
           // 获取列跨度，默认为 4 (全宽)
           const colSpan = section.layout?.colSpan || 4;
           const colSpanClass = colSpanClasses[colSpan];
@@ -53,7 +59,7 @@ export default function PageRenderer({ config }: { config: PageConfig }) {
                 key={section.id}
                 className="col-span-1 md:col-span-4"
               >
-                {renderSection(section, config)}
+                {renderedSection}
               </div>
             );
           }
@@ -72,7 +78,7 @@ export default function PageRenderer({ config }: { config: PageConfig }) {
                     </div>
                   }
                 >
-                  {renderSection(section)}
+                  {renderedSection}
                 </Suspense>
               </div>
             );
@@ -84,7 +90,7 @@ export default function PageRenderer({ config }: { config: PageConfig }) {
               key={section.id}
               className={`col-span-1 ${colSpanClass} rounded-3xl bg-white/60 backdrop-blur-md overflow-hidden border border-white/20 shadow-sm transition-all hover:shadow-md`}
             >
-              {renderSection(section)}
+              {renderedSection}
             </div>
           );
         })}

@@ -14,7 +14,8 @@
 - `Page` stores both `draftConfig` and `publishedConfig`
 - Admin editing writes draft data; public `/u/[slug]` rendering reads published data
 - `ensureUserPage()` seeds both configs with an empty baseline for first-time users
-- `SectionType` still includes `links`, but `features/page-renderer/registry.tsx` currently returns `null` for that type
+- `SectionType` currently only includes `hero` / `gallery` / `news` / `video`
+- Legacy `links` sections are sanitized out in load/save/public rendering paths; do not reintroduce the type unless schema, editor, renderer, and docs all land together
 
 ## Editing rules
 

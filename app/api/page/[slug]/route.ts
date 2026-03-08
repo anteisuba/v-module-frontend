@@ -2,8 +2,7 @@
 
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { EMPTY_PAGE_CONFIG } from "@/domain/page-config/constants";
-import type { PageConfig } from "@/domain/page-config/types";
+import { normalizePageConfig } from "@/utils/pageConfig";
 
 export const runtime = "nodejs"; // Prisma requires Node.js runtime
 
@@ -25,16 +24,7 @@ export async function GET(
 
   // 读取 publishedConfig（公开可见）
   // 如果没有发布配置，使用空配置（而不是默认配置）
-  let config: PageConfig = EMPTY_PAGE_CONFIG;
-
-  if (user.page?.publishedConfig) {
-    try {
-      config = user.page.publishedConfig as PageConfig;
-    } catch (e) {
-      console.error("Failed to parse publishedConfig:", e);
-      // 解析失败时使用空配置
-    }
-  }
+  const config = normalizePageConfig(user.page?.publishedConfig);
 
   return NextResponse.json({
     slug: user.slug,

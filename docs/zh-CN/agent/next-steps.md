@@ -1,13 +1,11 @@
 # 后续建议摘要
 
-- 最后更新：2026-03-07
+- 最后更新：2026-03-08
 - 角色：AI / 代理视角的优先级摘要，不是 canonical backlog
 - canonical backlog：[`../overview/backlog.md`](../overview/backlog.md)
 
 ## P0
 
-- 清理 `/blog`、`/shop` 的硬编码用户重定向，明确通用入口策略
-- 处理 `PageConfig.links` 与渲染器行为不一致的问题
 - 建立最小测试基线，至少覆盖认证、公开页读取和订单创建
 
 ## P1

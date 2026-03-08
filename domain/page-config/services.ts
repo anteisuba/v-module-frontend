@@ -2,8 +2,9 @@
 
 import { cache } from "react";
 import { prisma } from "@/lib/prisma";
-import { DEFAULT_PAGE_CONFIG, EMPTY_PAGE_CONFIG } from "./constants";
+import { EMPTY_PAGE_CONFIG } from "./constants";
 import type { PageConfig } from "./types";
+import { normalizePageConfig } from "@/utils/pageConfig";
 
 /**
  * 确保用户有 Page 记录，如果没有则创建并填充空配置
@@ -25,8 +26,10 @@ export async function ensureUserPage(
   if (existing) {
     return {
       id: existing.id,
-      draftConfig: (existing.draftConfig as PageConfig) || EMPTY_PAGE_CONFIG,
-      publishedConfig: (existing.publishedConfig as PageConfig) || null,
+      draftConfig: normalizePageConfig(existing.draftConfig),
+      publishedConfig: existing.publishedConfig
+        ? normalizePageConfig(existing.publishedConfig)
+        : null,
     };
   }
 
@@ -42,8 +45,8 @@ export async function ensureUserPage(
 
   return {
     id: page.id,
-    draftConfig: page.draftConfig as PageConfig,
-    publishedConfig: page.publishedConfig as PageConfig,
+    draftConfig: normalizePageConfig(page.draftConfig),
+    publishedConfig: normalizePageConfig(page.publishedConfig),
   };
 }
 
@@ -62,7 +65,7 @@ export async function getUserDraftConfig(
     return null;
   }
 
-  return page.draftConfig as PageConfig;
+  return normalizePageConfig(page.draftConfig);
 }
 
 /**
@@ -80,7 +83,7 @@ export async function getPublishedConfigBySlug(
     return null;
   }
 
-  return page.publishedConfig as PageConfig;
+  return normalizePageConfig(page.publishedConfig);
 }
 
 /**
@@ -102,7 +105,18 @@ export const getUserPageDataBySlug = cache(async (slug: string) => {
     },
   });
 
-  return user;
+  if (!user?.page) {
+    return user;
+  }
+
+  return {
+    ...user,
+    page: {
+      ...user.page,
+      draftConfig: normalizePageConfig(user.page.draftConfig),
+      publishedConfig: normalizePageConfig(user.page.publishedConfig),
+    },
+  };
 });
 
 /**
@@ -115,7 +129,7 @@ export async function updateUserDraftConfig(
   await prisma.page.update({
     where: { userId },
     data: {
-      draftConfig: config,
+      draftConfig: normalizePageConfig(config),
       updatedAt: new Date(),
     },
   });
@@ -137,7 +151,7 @@ export async function publishUserConfig(userId: string): Promise<void> {
   await prisma.page.update({
     where: { userId },
     data: {
-      publishedConfig: page.draftConfig, // 复制草稿到发布
+      publishedConfig: normalizePageConfig(page.draftConfig), // 复制草稿到发布
       updatedAt: new Date(),
     },
   });

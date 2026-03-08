@@ -41,18 +41,6 @@ const HeroSectionPropsSchema = z.object({
     .optional(),
 });
 
-const LinksSectionPropsSchema = z.object({
-  items: z.array(
-    z.object({
-      id: z.string(),
-      label: z.string().min(1),
-      href: z.string().url(),
-      icon: z.string().optional(),
-    })
-  ),
-  layout: z.enum(["grid", "list"]).optional(),
-});
-
 const GallerySectionPropsSchema = z.object({
   items: z.array(
     z.object({
@@ -127,13 +115,6 @@ const SectionConfigSchema = z.discriminatedUnion("type", [
     id: z.string(),
     type: z.literal("hero"),
     props: HeroSectionPropsSchema,
-    enabled: z.boolean(),
-    order: z.number().int().min(0),
-  }),
-  z.object({
-    id: z.string(),
-    type: z.literal("links"),
-    props: LinksSectionPropsSchema,
     enabled: z.boolean(),
     order: z.number().int().min(0),
   }),

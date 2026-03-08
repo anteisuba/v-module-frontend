@@ -1,7 +1,7 @@
 # 路由与 API
 
 - 日本語: [ルートと API](../../ja/development/routes-and-api.md)
-- 最后更新: 2026-03-07
+- 最后更新: 2026-03-08
 
 ## 用途
 
@@ -38,8 +38,8 @@
 | `/u/[slug]/shop/[id]` | 商品详情 |
 | `/u/[slug]/shop/[id]/checkout` | 公开下单页 |
 | `/u/[slug]/shop/order-success/[orderId]` | 订单成功占位页 |
-| `/blog` | 当前硬编码重定向到 `/u/xiuruisu/blog` |
-| `/shop` | 当前硬编码重定向到 `/u/xiuruisu/shop` |
+| `/blog` | 全站公开博客入口，聚合所有已发布博客 |
+| `/shop` | 全站公开商品入口，聚合所有已发布商品 |
 
 ## 管理后台页面
 
@@ -77,6 +77,8 @@
 - `PUT /api/page/me`
 - `POST /api/page/me/publish`
 - `POST /api/page/me/upload`
+
+说明：页面配置读写链路会自动清理历史 `links` section，当前公开配置仅保留 `hero`、`gallery`、`news`、`video`。
 
 ### 新闻
 

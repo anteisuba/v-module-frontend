@@ -5,6 +5,7 @@ import { getServerSession } from "@/lib/session/userSession";
 import { prisma } from "@/lib/prisma";
 import { PageConfigSchema } from "@/lib/validation/pageConfigSchema";
 import { ensureUserPage } from "@/domain/page-config";
+import { normalizePageConfig } from "@/utils/pageConfig";
 
 export const runtime = "nodejs"; // Prisma requires Node.js runtime
 
@@ -43,7 +44,8 @@ export async function POST(request: Request) {
   }
 
   // 5. 校验 draftConfig（确保数据有效）
-  const validation = PageConfigSchema.safeParse(page.draftConfig);
+  const normalizedDraftConfig = normalizePageConfig(page.draftConfig);
+  const validation = PageConfigSchema.safeParse(normalizedDraftConfig);
   if (!validation.success) {
     return NextResponse.json(
       {
@@ -65,7 +67,7 @@ export async function POST(request: Request) {
 
   return NextResponse.json({
     ok: true,
-    publishedConfig: updatedPage.publishedConfig,
+    publishedConfig: normalizePageConfig(updatedPage.publishedConfig),
   });
 }
 

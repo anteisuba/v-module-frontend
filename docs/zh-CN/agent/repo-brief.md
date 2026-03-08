@@ -1,6 +1,6 @@
 # 仓库摘要
 
-- 最后更新：2026-03-07
+- 最后更新：2026-03-08
 - 角色：AI / 代理的快速项目概览，不替代正式长文档
 - 正式来源：[`../overview/project-overview.md`](../overview/project-overview.md)、[`../overview/current-status.md`](../overview/current-status.md)
 
@@ -18,6 +18,7 @@
 
 - 用户注册、登录、退出、密码重置
 - `/u/[slug]` 配置驱动公开页
+- 页面配置读写会自动清理 legacy `links` section，不再留下空白公开卡片
 - 后台 CMS / 博客 / 商店编辑已统一为 tab + 折叠面板骨架，保留草稿保存和发布能力
 - 新闻列表 / 详情 / 后台编辑
 - 博客列表 / 详情 / 点赞 / 评论
@@ -26,8 +27,7 @@
 
 ## 当前已知缺口
 
-- `/blog`、`/shop` 仍硬编码重定向到固定用户，不是通用入口
-- `PageConfig` 仍保留 `links` section 类型，但渲染器直接返回 `null`
+- 订单成功页仍是成功提示占位，没有订单详情
 - `MediaAsset` 已落库，但没有真正的媒体库界面
 - `pnpm lint` 不通过，测试文件缺失
 
