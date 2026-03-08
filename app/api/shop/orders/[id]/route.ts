@@ -2,7 +2,10 @@
 
 import { NextResponse } from "next/server";
 import { getServerSession } from "@/lib/session/userSession";
-import { serializeOrderWithItems } from "@/domain/shop/services";
+import {
+  sendOrderStatusChangedNotifications,
+  serializeOrderWithItems,
+} from "@/domain/shop";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -121,6 +124,8 @@ export async function PUT(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  const previousStatus = existing.status;
+
   // 更新订单状态
   const updateData: any = { status };
 
@@ -153,5 +158,15 @@ export async function PUT(
     },
   });
 
-  return NextResponse.json({ order: serializeOrderWithItems(order) });
+  const serializedOrder = serializeOrderWithItems(order);
+
+  if (previousStatus !== status) {
+    try {
+      await sendOrderStatusChangedNotifications(serializedOrder, previousStatus);
+    } catch (notificationError) {
+      console.error("Failed to send order status notifications:", notificationError);
+    }
+  }
+
+  return NextResponse.json({ order: serializedOrder });
 }

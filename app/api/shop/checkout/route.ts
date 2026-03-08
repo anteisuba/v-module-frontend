@@ -1,8 +1,9 @@
 import { NextResponse } from "next/server";
 import {
   createPublicOrder,
+  sendOrderCreatedNotifications,
   type PublicOrderCreateInput,
-} from "@/domain/shop/services";
+} from "@/domain/shop";
 
 export const runtime = "nodejs";
 
@@ -35,6 +36,12 @@ export async function POST(request: Request) {
       shippingMethod: shippingMethod || null,
       items,
     } satisfies PublicOrderCreateInput);
+
+    try {
+      await sendOrderCreatedNotifications(order);
+    } catch (notificationError) {
+      console.error("Failed to send order creation notifications:", notificationError);
+    }
 
     return NextResponse.json({ order });
   } catch (error) {

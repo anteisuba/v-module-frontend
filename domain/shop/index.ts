@@ -19,3 +19,8 @@ export {
   type SerializedOrder,
   type SerializedOrderItem,
 } from "./services";
+
+export {
+  sendOrderCreatedNotifications,
+  sendOrderStatusChangedNotifications,
+} from "./notifications";

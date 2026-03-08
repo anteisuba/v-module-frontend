@@ -70,4 +70,4 @@
 - 当前仍使用 `middleware.ts`，后续需要迁移到 `proxy`
 - 构建过程会执行 Prisma Client 生成
 - 生产应启用 HTTPS 的 `NEXT_PUBLIC_BASE_URL`
-- 上传、密码重置、邮件投递需要分别核对存储和邮件配置
+- 上传、密码重置、订单通知邮件投递需要分别核对存储和邮件配置
