@@ -38,6 +38,10 @@
         "comments": {
           "label": "评论审核",
           "description": "审核博客评论并管理公开展示"
+        },
+        "media": {
+          "label": "媒体库",
+          "description": "查看已上传素材，并复用到背景、博客和商品编辑中"
         }
       },
       "comingSoon": "待开发"
@@ -202,6 +206,7 @@
     "success": "成功",
     "uploading": "上传中...",
     "add": "添加",
+    "replace": "替换",
     "previous": "上一页",
     "next": "下一页",
     "published": "已发布",
@@ -363,6 +368,55 @@
     "preview": "背景预览",
     "imageLoadError": "图片加载失败",
     "noImage": "暂无图片"
+  },
+  "mediaLibrary": {
+    "title": "媒体库",
+    "description": "复用你已经上传的图片，或直接在这里上传新素材。",
+    "pageTitle": "媒体库",
+    "pageDescription": "统一查看已上传图片，并把素材复用到背景、博客封面和商品图片。",
+    "open": "从媒体库选择",
+    "searchLabel": "搜索素材",
+    "searchPlaceholder": "按文件名或 URL 搜索",
+    "uploadButton": "上传新图片",
+    "refresh": "刷新列表",
+    "loadMore": "加载更多",
+    "select": "使用这张图",
+    "selectShort": "勾选",
+    "copyUrl": "复制链接",
+    "copiedUrl": "图片链接已复制",
+    "copyFailed": "复制图片链接失败",
+    "selected": "已选择图片",
+    "uploaded": "图片上传成功",
+    "filterLabel": "使用场景",
+    "filterAll": "全部场景",
+    "filterUnspecified": "未标记场景",
+    "selectedCount": "已选择 {count} 项",
+    "selectAllVisible": "全选当前列表",
+    "clearSelection": "清空选择",
+    "deleteSelected": "删除已选",
+    "deleteSuccess": "媒体素材已删除",
+    "deleteFailed": "删除媒体素材失败",
+    "deleteConfirmTitle": "确认删除素材",
+    "deleteConfirmSingle": "确定要删除这张素材吗？如果它仍被页面或内容引用，公开页面中的图片会失效。",
+    "deleteConfirmBulk": "确定要删除已选的 {count} 项素材吗？如果它们仍被页面或内容引用，公开页面中的图片会失效。",
+    "empty": "还没有素材，先上传第一张图片。",
+    "noResults": "没有找到匹配的素材。",
+    "loadFailed": "加载媒体库失败",
+    "fileFallback": "未命名图片",
+    "usage": {
+      "pageBackground": "页面背景",
+      "blogListBackground": "博客列表背景",
+      "blogDetailBackground": "博客详情背景",
+      "blogCover": "博客封面",
+      "shopListBackground": "商店列表背景",
+      "shopDetailBackground": "商品详情背景",
+      "productImage": "商品图片",
+      "newsPageBackground": "新闻页面背景",
+      "newsArticleBackground": "新闻文章背景",
+      "heroLogo": "Hero Logo",
+      "heroSlide": "Hero 轮播图",
+      "newsItem": "新闻模块图片"
+    }
   },
   "newsArticleEditor": {
     "title": "新闻文章管理",

@@ -3,7 +3,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Input, Button, FormField, Alert } from "@/components/ui";
+import { Input, Button, FormField, Alert, MediaPickerDialog } from "@/components/ui";
+import { BLOG_COVER } from "@/domain/media/usage";
 import { pageApi } from "@/lib/api";
 import { useToast } from "@/hooks/useToast";
 import { useErrorHandler } from "@/hooks/useErrorHandler";
@@ -54,6 +55,7 @@ export default function BlogEditor({
   >(initialData?.externalLinks || []);
   const [published, setPublished] = useState(initialData?.published || false);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
 
   // 添加外部链接
   function addExternalLink() {
@@ -80,9 +82,11 @@ export default function BlogEditor({
   async function handleCoverImageUpload(file: File) {
     try {
       setUploadingCover(true);
-      const result = await pageApi.uploadImage(file);
+      const result = await pageApi.uploadImage(file, {
+        usageContext: BLOG_COVER,
+      });
       setCoverImage(result.src);
-      showToast("封面图片上传成功");
+      showToast(t("mediaLibrary.uploaded"));
     } catch (err) {
       handleError(err);
     } finally {
@@ -193,6 +197,16 @@ export default function BlogEditor({
               />
             </div>
             <div>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setMediaPickerOpen(true)}
+                disabled={saving || uploadingCover}
+              >
+                {t("mediaLibrary.open")}
+              </Button>
+            </div>
+            <div>
               <label className="block text-xs text-black/70 mb-2">
                 或输入图片链接
               </label>
@@ -211,6 +225,17 @@ export default function BlogEditor({
           </div>
         </div>
       </FormField>
+
+      <MediaPickerDialog
+        open={mediaPickerOpen}
+        selectedSrc={coverImage}
+        usageContext={BLOG_COVER}
+        onClose={() => setMediaPickerOpen(false)}
+        onSelect={(asset) => {
+          setCoverImage(asset.src);
+          showToast(t("mediaLibrary.selected"));
+        }}
+      />
 
       {/* 视频链接 */}
       <FormField label={t("blog.form.videoUrl")}>

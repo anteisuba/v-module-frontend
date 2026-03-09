@@ -548,8 +548,8 @@ export default function CMSPage() {
           config={config}
           onConfigChange={setConfig}
           disabled={saving || publishing}
-          onUploadImage={async (file) => {
-            const result = await pageApi.uploadImage(file);
+          onUploadImage={async (file, options) => {
+            const result = await pageApi.uploadImage(file, options);
             return result;
           }}
           uploadingIndex={uploadingIndex}
@@ -567,9 +567,9 @@ export default function CMSPage() {
           config={config}
           onConfigChange={setConfig}
           disabled={saving || publishing}
-          onUploadImage={async (file) => {
+          onUploadImage={async (file, options) => {
             try {
-              const result = await pageApi.uploadImage(file);
+              const result = await pageApi.uploadImage(file, options);
               return result;
             } catch (e) {
               throw e;
@@ -651,10 +651,10 @@ export default function CMSPage() {
           config={config}
           onConfigChange={setConfig}
           disabled={saving || publishing}
-          onUploadImage={async (file) => {
+          onUploadImage={async (file, options) => {
             setUploadingIndex(-1);
             try {
-              const result = await pageApi.uploadImage(file);
+              const result = await pageApi.uploadImage(file, options);
               setUploadingIndex(null);
               return result;
             } catch (e) {
@@ -677,9 +677,9 @@ export default function CMSPage() {
           disabled={saving || publishing}
           onToast={showToast}
           onError={handleError}
-          onUploadImage={async (file) => {
+          onUploadImage={async (file, options) => {
             try {
-              const result = await pageApi.uploadImage(file);
+              const result = await pageApi.uploadImage(file, options);
               return result;
             } catch (e) {
               throw e;

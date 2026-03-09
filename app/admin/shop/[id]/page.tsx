@@ -16,6 +16,7 @@ import {
   ConfirmDialog,
 } from "@/components/ui";
 import ProductEditor from "@/components/shop/ProductEditor";
+import { SHOP_DETAIL_BACKGROUND } from "@/domain/media/usage";
 import { pageApi, shopApi } from "@/lib/api";
 import { useUser } from "@/lib/context/UserContext";
 import { useToast } from "@/hooks/useToast";
@@ -253,10 +254,11 @@ export default function EditProductPage({
             });
           }}
           disabled={savingConfig || publishing}
-          onUploadImage={async (file) => {
-            const result = await pageApi.uploadImage(file);
+          onUploadImage={async (file, options) => {
+            const result = await pageApi.uploadImage(file, options);
             return result;
           }}
+          usageContext={SHOP_DETAIL_BACKGROUND}
           onToast={showToast}
           onError={handleError}
           previewHeight="h-48"

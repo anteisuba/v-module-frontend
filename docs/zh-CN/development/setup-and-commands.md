@@ -54,7 +54,9 @@
 - `pnpm start`：启动生产构建产物
 - `pnpm lint`：执行 ESLint
 - `pnpm check`：执行 TypeScript 类型检查
-- `pnpm db:migrate`：执行 Prisma 迁移
+- `pnpm db:migrate`：顺序执行 `prisma/migrations/*/migration.sql`
+- `pnpm db:migrate:status`：查看 SQL 迁移执行记录
+- `pnpm db:migrate:prisma-dev`：保留 Prisma 原生命令，用于本地生成新迁移
 - `pnpm db:seed`：写入测试用户
 - `pnpm db:studio`：打开 Prisma Studio
 - `pnpm clear-rate-limit`：清理限流记录脚本
@@ -72,3 +74,4 @@
 - `pnpm check` 通过
 - `pnpm lint` 当前不通过，不适合当作提交前唯一门禁
 - `prisma/seed.ts` 会创建测试用户 `test@example.com / 123456 / testuser`
+- `pnpm db:migrate` 当前通过 `scripts/apply-migrations.ts` 执行 SQL 迁移，并将结果记录到 `app_migrations`，适配当前 Supabase / 连接池环境

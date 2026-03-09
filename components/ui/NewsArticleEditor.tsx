@@ -3,6 +3,11 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import {
+  NEWS_ARTICLE_BACKGROUND,
+  NEWS_PAGE_BACKGROUND,
+  type MediaAssetUsageContext,
+} from "@/domain/media/usage";
 import { newsArticleApi } from "@/lib/api";
 import { ApiError, NetworkError } from "@/lib/api/errors";
 import type { NewsArticle } from "@/lib/api/types";
@@ -14,7 +19,10 @@ interface NewsArticleEditorProps {
   disabled?: boolean;
   onToast?: (message: string) => void;
   onError?: (message: string) => void;
-  onUploadImage?: (file: File) => Promise<{ src: string }>;
+  onUploadImage?: (
+    file: File,
+    options?: { usageContext?: MediaAssetUsageContext }
+  ) => Promise<{ src: string }>;
   // 新闻页面背景配置（用于 NewsListSection、/news 和 /news/[id] 页面）
   newsBackground?: { type: "color" | "image"; value: string };
   onNewsBackgroundChange?: (background: { type: "color" | "image"; value: string }) => void;
@@ -294,6 +302,7 @@ export default function NewsArticleEditor({
             onBackgroundChange={onNewsBackgroundChange}
             disabled={disabled}
             onUploadImage={onUploadImage}
+            usageContext={NEWS_PAGE_BACKGROUND}
             onToast={(msg) => onToast?.(msg || t("newsArticleEditor.newsBackground.uploadSuccess"))}
             onError={onError}
             previewHeight="h-32"
@@ -461,6 +470,7 @@ export default function NewsArticleEditor({
                 }}
                 disabled={disabled}
                 onUploadImage={onUploadImage}
+                usageContext={NEWS_ARTICLE_BACKGROUND}
                 onToast={onToast}
                 onError={onError}
                 previewHeight="h-16"
@@ -659,6 +669,7 @@ export default function NewsArticleEditor({
                     }}
                     disabled={disabled}
                     onUploadImage={onUploadImage}
+                    usageContext={NEWS_ARTICLE_BACKGROUND}
                     onToast={onToast}
                     onError={onError}
                     previewHeight="h-16"

@@ -3,7 +3,13 @@
 "use client";
 
 import { useState } from "react";
-import { ImagePositionEditor, ConfirmDialog, Button } from "@/components/ui";
+import { NEWS_ITEM, type MediaAssetUsageContext } from "@/domain/media/usage";
+import {
+  ImagePositionEditor,
+  ConfirmDialog,
+  Button,
+  MediaPickerDialog,
+} from "@/components/ui";
 import { SectionLayoutControl } from "@/components/ui/SectionLayoutControl";
 import { useI18n } from "@/lib/i18n/context";
 import type { PageConfig, NewsSectionProps } from "@/domain/page-config/types";
@@ -12,7 +18,10 @@ interface NewsSectionEditorProps {
   config: PageConfig;
   onConfigChange: (config: PageConfig) => void;
   disabled?: boolean;
-  onUploadImage?: (file: File) => Promise<{ src: string }>;
+  onUploadImage?: (
+    file: File,
+    options?: { usageContext?: MediaAssetUsageContext }
+  ) => Promise<{ src: string }>;
   uploadingIndex?: number | null;
   onToast?: (message: string) => void;
   onError?: (message: string) => void;
@@ -65,6 +74,7 @@ export default function NewsSectionEditor({
 }: NewsSectionEditorProps) {
   const { t } = useI18n();
   const [deleteConfirmItemId, setDeleteConfirmItemId] = useState<string | null>(null);
+  const [pickerItemId, setPickerItemId] = useState<string | null>(null);
   // 获取 news section（不自动创建）
   function getNewsSection() {
     return config.sections.find((s) => s.type === "news");
@@ -229,7 +239,9 @@ export default function NewsSectionEditor({
   async function uploadNewsImage(itemId: string, file: File) {
     if (!onUploadImage) return;
     try {
-      const result = await onUploadImage(file);
+      const result = await onUploadImage(file, {
+        usageContext: NEWS_ITEM,
+      });
       updateNewsItem(itemId, { src: result.src });
       onToast?.(t("newsSectionEditor.image.uploadSuccess"));
     } catch (e) {
@@ -505,6 +517,16 @@ export default function NewsSectionEditor({
                     }
                   }}
                 />
+                <div className="mt-2">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setPickerItemId(item.id)}
+                    disabled={uploadingIndex === -1 || disabled}
+                  >
+                    {t("mediaLibrary.open")}
+                  </Button>
+                </div>
               </div>
 
               {/* 图片链接 */}
@@ -586,6 +608,23 @@ export default function NewsSectionEditor({
           }
         }}
         onCancel={() => setDeleteConfirmItemId(null)}
+      />
+
+      <MediaPickerDialog
+        open={pickerItemId !== null}
+        selectedSrc={
+          pickerItemId
+            ? newsSection?.props.items.find((item) => item.id === pickerItemId)?.src || null
+            : null
+        }
+        usageContext={NEWS_ITEM}
+        onClose={() => setPickerItemId(null)}
+        onSelect={(asset) => {
+          if (!pickerItemId) return;
+          updateNewsItem(pickerItemId, { src: asset.src });
+          onToast?.(t("mediaLibrary.selected"));
+          setPickerItemId(null);
+        }}
       />
     </div>
   );

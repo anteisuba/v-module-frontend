@@ -33,4 +33,6 @@ export { default as FormField } from "./FormField";
 export { default as Button } from "./Button";
 export { default as Input } from "./Input";
 export { default as ColorPicker } from "./ColorPicker";
+export { default as MediaLibraryBrowser } from "./MediaLibraryBrowser";
+export { default as MediaPickerDialog } from "./MediaPickerDialog";
 export { default as Skeleton, ImageSkeleton, TextSkeleton, CardSkeleton } from "./Skeleton";

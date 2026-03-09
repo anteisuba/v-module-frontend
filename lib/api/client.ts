@@ -168,6 +168,21 @@ class ApiClient {
   }
 
   /**
+   * PATCH 请求
+   */
+  async patch<T = unknown>(
+    endpoint: string,
+    data?: unknown,
+    options: RequestOptions = {}
+  ): Promise<T> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: "PATCH",
+      body: data ? JSON.stringify(data) : undefined,
+    });
+  }
+
+  /**
    * DELETE 请求
    */
   async delete<T = unknown>(
@@ -177,6 +192,21 @@ class ApiClient {
     return this.request<T>(endpoint, {
       ...options,
       method: "DELETE",
+    });
+  }
+
+  /**
+   * DELETE 请求（带 JSON body）
+   */
+  async deleteJson<T = unknown>(
+    endpoint: string,
+    data?: unknown,
+    options: RequestOptions = {}
+  ): Promise<T> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: "DELETE",
+      body: data ? JSON.stringify(data) : undefined,
     });
   }
 

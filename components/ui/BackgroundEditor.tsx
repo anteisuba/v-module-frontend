@@ -3,14 +3,22 @@
 "use client";
 
 import { useBackgroundEditor, type BackgroundConfig } from "@/hooks/useBackgroundEditor";
+import type { MediaAssetUsageContext } from "@/domain/media/usage";
 import { useI18n } from "@/lib/i18n/context";
+import { useState } from "react";
+import Button from "./Button";
+import MediaPickerDialog from "./MediaPickerDialog";
 
 interface BackgroundEditorProps {
   label?: string;
   background: BackgroundConfig;
   onBackgroundChange: (background: BackgroundConfig) => void;
   disabled?: boolean;
-  onUploadImage?: (file: File) => Promise<{ src: string }>;
+  onUploadImage?: (
+    file: File,
+    options?: { usageContext?: MediaAssetUsageContext }
+  ) => Promise<{ src: string }>;
+  usageContext?: MediaAssetUsageContext;
   onToast?: (message: string) => void;
   onError?: (message: string) => void;
   previewHeight?: string; // 预览区域高度，如 "h-24" 或 "h-48"
@@ -22,11 +30,13 @@ export default function BackgroundEditor({
   onBackgroundChange,
   disabled = false,
   onUploadImage,
+  usageContext,
   onToast,
   onError,
   previewHeight = "h-24",
 }: BackgroundEditorProps) {
   const { t } = useI18n();
+  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const {
     backgroundImageError,
     uploadingBackground,
@@ -120,7 +130,10 @@ export default function BackgroundEditor({
                   const inputElement = e.currentTarget;
                   if (file) {
                     try {
-                      await uploadBackgroundImage(file);
+                      await uploadBackgroundImage(
+                        file,
+                        usageContext ? { usageContext } : undefined
+                      );
                     } catch (e) {
                       // 错误已由 hooks 处理
                     } finally {
@@ -134,6 +147,16 @@ export default function BackgroundEditor({
               {uploadingBackground && (
                 <div className="mt-1 text-[10px] text-black/60">{t("common.uploading")}</div>
               )}
+              <div className="mt-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => setMediaPickerOpen(true)}
+                  disabled={uploadingBackground || disabled}
+                >
+                  {t("mediaLibrary.open")}
+                </Button>
+              </div>
             </div>
           )}
           
@@ -162,6 +185,18 @@ export default function BackgroundEditor({
           </div>
         </div>
       )}
+
+      <MediaPickerDialog
+        open={mediaPickerOpen}
+        selectedSrc={background.type === "image" ? background.value : null}
+        usageContext={usageContext}
+        onClose={() => setMediaPickerOpen(false)}
+        onSelect={(asset) => {
+          setBackgroundType("image");
+          handleImageInputChange(asset.src);
+          onToast?.(t("mediaLibrary.selected"));
+        }}
+      />
     </div>
   );
 }

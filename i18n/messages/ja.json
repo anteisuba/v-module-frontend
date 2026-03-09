@@ -38,6 +38,10 @@
         "comments": {
           "label": "コメント審査",
           "description": "ブログコメントを審査し、公開表示を管理"
+        },
+        "media": {
+          "label": "メディアライブラリ",
+          "description": "アップロード済み素材を確認し、背景・ブログ・商品編集へ再利用"
         }
       },
       "comingSoon": "開発中"
@@ -202,6 +206,7 @@
     "success": "成功",
     "uploading": "アップロード中...",
     "add": "追加",
+    "replace": "差し替え",
     "previous": "前のページ",
     "next": "次のページ",
     "published": "公開済み",
@@ -363,6 +368,55 @@
     "preview": "背景プレビュー",
     "imageLoadError": "画像の読み込みに失敗しました",
     "noImage": "画像がありません"
+  },
+  "mediaLibrary": {
+    "title": "メディアライブラリ",
+    "description": "アップロード済み画像を再利用したり、ここから新しい素材を追加できます。",
+    "pageTitle": "メディアライブラリ",
+    "pageDescription": "アップロード済み画像を一覧し、背景・ブログカバー・商品画像に再利用できます。",
+    "open": "ライブラリから選択",
+    "searchLabel": "素材を検索",
+    "searchPlaceholder": "ファイル名または URL で検索",
+    "uploadButton": "画像をアップロード",
+    "refresh": "更新",
+    "loadMore": "さらに読み込む",
+    "select": "この画像を使う",
+    "selectShort": "選択",
+    "copyUrl": "URL をコピー",
+    "copiedUrl": "画像 URL をコピーしました",
+    "copyFailed": "画像 URL のコピーに失敗しました",
+    "selected": "画像を選択しました",
+    "uploaded": "画像のアップロードに成功しました",
+    "filterLabel": "利用シーン",
+    "filterAll": "すべて",
+    "filterUnspecified": "未設定",
+    "selectedCount": "{count} 件を選択中",
+    "selectAllVisible": "表示中を全選択",
+    "clearSelection": "選択を解除",
+    "deleteSelected": "選択を削除",
+    "deleteSuccess": "メディア素材を削除しました",
+    "deleteFailed": "メディア素材の削除に失敗しました",
+    "deleteConfirmTitle": "素材を削除",
+    "deleteConfirmSingle": "この素材を削除しますか？まだ参照されている場合、公開ページの画像が壊れます。",
+    "deleteConfirmBulk": "選択中の {count} 件の素材を削除しますか？まだ参照されている場合、公開ページの画像が壊れます。",
+    "empty": "素材がまだありません。最初の画像をアップロードしてください。",
+    "noResults": "一致する素材が見つかりません。",
+    "loadFailed": "メディアライブラリの読み込みに失敗しました",
+    "fileFallback": "名前未設定の画像",
+    "usage": {
+      "pageBackground": "ページ背景",
+      "blogListBackground": "ブログ一覧背景",
+      "blogDetailBackground": "ブログ詳細背景",
+      "blogCover": "ブログカバー",
+      "shopListBackground": "ショップ一覧背景",
+      "shopDetailBackground": "商品詳細背景",
+      "productImage": "商品画像",
+      "newsPageBackground": "ニュースページ背景",
+      "newsArticleBackground": "ニュース記事背景",
+      "heroLogo": "Hero ロゴ",
+      "heroSlide": "Hero スライド",
+      "newsItem": "ニュース画像"
+    }
   },
   "newsArticleEditor": {
     "title": "ニュース記事管理",

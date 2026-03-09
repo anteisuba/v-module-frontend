@@ -59,6 +59,13 @@ export default function DashboardPage() {
       description: t("admin.dashboard.pages.comments.description"),
       available: true,
     },
+    {
+      id: "media",
+      label: t("admin.dashboard.pages.media.label"),
+      href: "/admin/media",
+      description: t("admin.dashboard.pages.media.description"),
+      available: true,
+    },
   ], [t]);
 
   function handleNavigate() {

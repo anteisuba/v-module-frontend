@@ -11,6 +11,11 @@ import type {
   PagePublishResponse,
   PageUpdateResponse,
   UploadResponse,
+  UploadImageOptions,
+  MediaAssetListResponse,
+  MediaAssetListParams,
+  MediaAssetUsageResponse,
+  DeleteMediaAssetsResponse,
   ForgotPasswordResponse,
   ResetPasswordResponse,
   NewsArticle,
@@ -19,6 +24,10 @@ import type {
 } from "./types";
 import type { PageConfig } from "@/domain/page-config/types";
 import type { CheckoutSessionResult, SerializedOrder } from "@/domain/shop";
+import type {
+  MediaAssetUsageContext,
+  MediaAssetUsageFilter,
+} from "@/domain/media/usage";
 
 type BlogCommentStatus = "PENDING" | "APPROVED" | "REJECTED";
 
@@ -179,10 +188,60 @@ export const pageApi = {
   /**
    * 上传图片
    */
-  async uploadImage(file: File): Promise<UploadResponse> {
+  async uploadImage(
+    file: File,
+    options?: UploadImageOptions
+  ): Promise<UploadResponse> {
     const formData = new FormData();
     formData.append("file", file);
+    if (options?.usageContext) {
+      formData.append("usageContext", options.usageContext);
+    }
     return apiClient.upload<UploadResponse>("/api/page/me/upload", formData);
+  },
+
+  /**
+   * 获取当前用户的媒体资产
+   */
+  async getMediaAssets(
+    params?: MediaAssetListParams
+  ): Promise<MediaAssetListResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set("page", params.page.toString());
+    if (params?.limit) searchParams.set("limit", params.limit.toString());
+    if (params?.query) searchParams.set("query", params.query);
+    if (params?.usageContext) {
+      searchParams.set("usageContext", params.usageContext);
+    }
+    const query = searchParams.toString();
+    return apiClient.get<MediaAssetListResponse>(
+      `/api/media-assets${query ? `?${query}` : ""}`
+    );
+  },
+
+  /**
+   * 为媒体资产补充使用场景
+   */
+  async addMediaAssetUsage(
+    ids: string[],
+    usageContext: MediaAssetUsageContext
+  ): Promise<MediaAssetUsageResponse> {
+    return apiClient.patch<MediaAssetUsageResponse>("/api/media-assets", {
+      ids,
+      usageContext,
+    });
+  },
+
+  /**
+   * 删除媒体资产
+   */
+  async deleteMediaAssets(
+    ids: string[]
+  ): Promise<DeleteMediaAssetsResponse> {
+    return apiClient.deleteJson<DeleteMediaAssetsResponse>(
+      "/api/media-assets",
+      { ids }
+    );
   },
 
   /**

@@ -15,6 +15,7 @@ import {
   SaveStatus,
   Button,
 } from "@/components/ui";
+import { SHOP_LIST_BACKGROUND } from "@/domain/media/usage";
 import { pageApi, shopApi } from "@/lib/api";
 import { useUser } from "@/lib/context/UserContext";
 import { useToast } from "@/hooks/useToast";
@@ -241,10 +242,11 @@ export default function ShopPage() {
             });
           }}
           disabled={saving || publishing}
-          onUploadImage={async (file) => {
-            const result = await pageApi.uploadImage(file);
+          onUploadImage={async (file, options) => {
+            const result = await pageApi.uploadImage(file, options);
             return result;
           }}
+          usageContext={SHOP_LIST_BACKGROUND}
           onToast={showToast}
           onError={handleError}
           previewHeight="h-48"

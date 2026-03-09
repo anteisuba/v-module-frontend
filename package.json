@@ -17,7 +17,9 @@
     "test:watch": "vitest",
     "postinstall": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
-    "db:migrate": "prisma migrate dev",
+    "db:migrate": "tsx scripts/apply-migrations.ts",
+    "db:migrate:status": "tsx scripts/apply-migrations.ts --status",
+    "db:migrate:prisma-dev": "prisma migrate dev",
     "db:studio": "prisma studio",
     "clear-rate-limit": "tsx scripts/clear-rate-limit.ts"
   },

@@ -21,6 +21,7 @@ model MediaAsset {
   mimeType     String
   size         Int
   originalName String?
+  usageContexts String[] @default([])
 
   createdAt DateTime @default(now())
 

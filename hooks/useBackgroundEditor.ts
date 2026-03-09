@@ -1,6 +1,7 @@
 // hooks/useBackgroundEditor.ts
 
 import { useState, useCallback } from "react";
+import type { MediaAssetUsageContext } from "@/domain/media/usage";
 
 export type BackgroundType = "color" | "image";
 export type BackgroundConfig = {
@@ -11,7 +12,10 @@ export type BackgroundConfig = {
 interface UseBackgroundEditorOptions {
   initialBackground: BackgroundConfig;
   onBackgroundChange?: (background: BackgroundConfig) => void;
-  onUploadImage?: (file: File) => Promise<{ src: string }>;
+  onUploadImage?: (
+    file: File,
+    options?: { usageContext?: MediaAssetUsageContext }
+  ) => Promise<{ src: string }>;
   onToast?: (message: string) => void;
   onError?: (message: string) => void;
 }
@@ -60,7 +64,10 @@ export function useBackgroundEditor({
 
   // 上传背景图片
   const uploadBackgroundImage = useCallback(
-    async (file: File) => {
+    async (
+      file: File,
+      options?: { usageContext?: MediaAssetUsageContext }
+    ) => {
       if (!onUploadImage) {
         throw new Error("onUploadImage is not provided");
       }
@@ -69,7 +76,7 @@ export function useBackgroundEditor({
       setBackgroundImageError(false);
 
       try {
-        const result = await onUploadImage(file);
+        const result = await onUploadImage(file, options);
         updateBackground({
           type: "image",
           value: result.src,

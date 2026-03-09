@@ -15,6 +15,7 @@ import {
   SaveStatus,
   Button,
 } from "@/components/ui";
+import { BLOG_LIST_BACKGROUND } from "@/domain/media/usage";
 import { blogApi, pageApi } from "@/lib/api";
 import { useUser } from "@/lib/context/UserContext";
 import { useToast } from "@/hooks/useToast";
@@ -212,14 +213,15 @@ export default function BlogPage() {
             });
           }}
           disabled={saving || publishing}
-          onUploadImage={async (file) => {
+          onUploadImage={async (file, options) => {
             try {
-              const result = await pageApi.uploadImage(file);
+              const result = await pageApi.uploadImage(file, options);
               return result;
             } catch (e) {
               throw e;
             }
           }}
+          usageContext={BLOG_LIST_BACKGROUND}
           onToast={showToast}
           onError={handleError}
           previewHeight="h-48"

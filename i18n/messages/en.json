@@ -38,6 +38,10 @@
         "comments": {
           "label": "Comment Moderation",
           "description": "Review blog comments before they appear publicly"
+        },
+        "media": {
+          "label": "Media Library",
+          "description": "Browse uploaded assets and reuse them across backgrounds, blog, and shop editors"
         }
       },
       "comingSoon": "Coming soon"
@@ -202,6 +206,7 @@
     "success": "Success",
     "uploading": "Uploading...",
     "add": "Add",
+    "replace": "Replace",
     "previous": "Previous",
     "next": "Next",
     "published": "Published",
@@ -363,6 +368,55 @@
     "preview": "Background Preview",
     "imageLoadError": "Image load failed",
     "noImage": "No image"
+  },
+  "mediaLibrary": {
+    "title": "Media Library",
+    "description": "Reuse images you've already uploaded, or upload new assets here.",
+    "pageTitle": "Media Library",
+    "pageDescription": "Browse uploaded images in one place and reuse them across backgrounds, blog covers, and product images.",
+    "open": "Choose from library",
+    "searchLabel": "Search assets",
+    "searchPlaceholder": "Search by filename or URL",
+    "uploadButton": "Upload image",
+    "refresh": "Refresh",
+    "loadMore": "Load more",
+    "select": "Use this image",
+    "selectShort": "Select",
+    "copyUrl": "Copy URL",
+    "copiedUrl": "Image URL copied",
+    "copyFailed": "Failed to copy image URL",
+    "selected": "Image selected",
+    "uploaded": "Image uploaded successfully",
+    "filterLabel": "Usage",
+    "filterAll": "All usage",
+    "filterUnspecified": "Unspecified",
+    "selectedCount": "{count} selected",
+    "selectAllVisible": "Select visible",
+    "clearSelection": "Clear selection",
+    "deleteSelected": "Delete selected",
+    "deleteSuccess": "Media assets deleted",
+    "deleteFailed": "Failed to delete media assets",
+    "deleteConfirmTitle": "Delete assets",
+    "deleteConfirmSingle": "Delete this asset? If it is still referenced, images on public pages will break.",
+    "deleteConfirmBulk": "Delete the selected {count} assets? If they are still referenced, images on public pages will break.",
+    "empty": "No assets yet. Upload your first image.",
+    "noResults": "No matching assets found.",
+    "loadFailed": "Failed to load media library",
+    "fileFallback": "Untitled image",
+    "usage": {
+      "pageBackground": "Page background",
+      "blogListBackground": "Blog list background",
+      "blogDetailBackground": "Blog detail background",
+      "blogCover": "Blog cover",
+      "shopListBackground": "Shop list background",
+      "shopDetailBackground": "Product detail background",
+      "productImage": "Product image",
+      "newsPageBackground": "News page background",
+      "newsArticleBackground": "News article background",
+      "heroLogo": "Hero logo",
+      "heroSlide": "Hero slide",
+      "newsItem": "News item image"
+    }
   },
   "newsArticleEditor": {
     "title": "News Article Management",

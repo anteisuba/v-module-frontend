@@ -3,7 +3,15 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Input, Button, FormField, Alert, LoadingState } from "@/components/ui";
+import { PRODUCT_IMAGE } from "@/domain/media/usage";
+import {
+  Input,
+  Button,
+  FormField,
+  Alert,
+  LoadingState,
+  MediaPickerDialog,
+} from "@/components/ui";
 import { pageApi, shopApi } from "@/lib/api";
 import { useToast } from "@/hooks/useToast";
 import { useErrorHandler } from "@/hooks/useErrorHandler";
@@ -55,6 +63,8 @@ export default function ProductEditor({
   const [status, setStatus] = useState(initialData?.status || "DRAFT");
   const [uploadingImages, setUploadingImages] = useState<number[]>([]);
   const [relatedOrders, setRelatedOrders] = useState<any[]>([]);
+  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
+  const [mediaPickerTargetIndex, setMediaPickerTargetIndex] = useState<number | null>(null);
 
   // 加载相关订单
   useEffect(() => {
@@ -70,37 +80,39 @@ export default function ProductEditor({
 
   // 上传图片
   async function handleImageUpload(file: File, index?: number) {
+    const uploadIndex = index ?? images.length;
     try {
-      if (index !== undefined) {
-        setUploadingImages([...uploadingImages, index]);
-      } else {
-        setUploadingImages([...uploadingImages, images.length]);
-      }
-      const result = await pageApi.uploadImage(file);
+      setUploadingImages((current) => [...current, uploadIndex]);
+      const result = await pageApi.uploadImage(file, {
+        usageContext: PRODUCT_IMAGE,
+      });
       if (index !== undefined) {
         // 替换指定位置的图片
-        const updated = [...images];
-        updated[index] = result.src;
-        setImages(updated);
+        setImages((current) =>
+          current.map((image, currentIndex) =>
+            currentIndex === index ? result.src : image
+          )
+        );
       } else {
         // 添加新图片
-        setImages([...images, result.src]);
+        setImages((current) => [...current, result.src]);
       }
-      showToast(t("common.success"));
+      showToast(t("mediaLibrary.uploaded"));
     } catch (err) {
       handleError(err);
     } finally {
-      if (index !== undefined) {
-        setUploadingImages(uploadingImages.filter((i) => i !== index));
-      } else {
-        setUploadingImages(uploadingImages.slice(0, -1));
-      }
+      setUploadingImages((current) => current.filter((i) => i !== uploadIndex));
     }
   }
 
   // 删除图片
   function removeImage(index: number) {
     setImages(images.filter((_, i) => i !== index));
+  }
+
+  function handleSelectFromLibrary(index?: number) {
+    setMediaPickerTargetIndex(index ?? null);
+    setMediaPickerOpen(true);
   }
 
   // 保存
@@ -276,13 +288,23 @@ export default function ProductEditor({
                       <LoadingState type="spinner" size="sm" />
                     </div>
                   )}
+                  <div className="mt-2 flex justify-end">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => handleSelectFromLibrary(index)}
+                      disabled={saving || uploadingImages.length > 0}
+                    >
+                      {t("common.replace")}
+                    </Button>
+                  </div>
                 </div>
               ))}
             </div>
           )}
 
           {/* 上传按钮 */}
-          <div>
+          <div className="flex flex-wrap gap-2">
             <input
               type="file"
               accept="image/*"
@@ -303,13 +325,44 @@ export default function ProductEditor({
             >
               {uploadingImages.length > 0
                 ? t("common.uploading")
-                : images.length === 0
-                ? t("common.add") + " " + t("shop.form.images")
                 : t("common.add") + " " + t("shop.form.images")}
             </label>
+            <Button
+              variant="secondary"
+              size="md"
+              onClick={() => handleSelectFromLibrary()}
+              disabled={saving || uploadingImages.length > 0}
+            >
+              {t("mediaLibrary.open")}
+            </Button>
           </div>
         </div>
       </FormField>
+
+      <MediaPickerDialog
+        open={mediaPickerOpen}
+        selectedSrc={
+          mediaPickerTargetIndex !== null ? images[mediaPickerTargetIndex] || null : null
+        }
+        usageContext={PRODUCT_IMAGE}
+        onClose={() => {
+          setMediaPickerOpen(false);
+          setMediaPickerTargetIndex(null);
+        }}
+        onSelect={(asset) => {
+          setImages((current) => {
+            if (mediaPickerTargetIndex === null) {
+              return [...current, asset.src];
+            }
+
+            return current.map((image, index) =>
+              index === mediaPickerTargetIndex ? asset.src : image
+            );
+          });
+          showToast(t("mediaLibrary.selected"));
+          setMediaPickerTargetIndex(null);
+        }}
+      />
 
       {/* 相关订单（如果有） */}
       {productId && relatedOrders.length > 0 && (

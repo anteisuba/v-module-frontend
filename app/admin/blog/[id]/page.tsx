@@ -16,6 +16,7 @@ import {
   ConfirmDialog,
 } from "@/components/ui";
 import BlogEditor from "@/components/blog/BlogEditor";
+import { BLOG_DETAIL_BACKGROUND } from "@/domain/media/usage";
 import { blogApi, pageApi } from "@/lib/api";
 import { useUser } from "@/lib/context/UserContext";
 import { useToast } from "@/hooks/useToast";
@@ -258,14 +259,15 @@ export default function EditBlogPage({
             });
           }}
           disabled={savingConfig || publishing}
-          onUploadImage={async (file) => {
+          onUploadImage={async (file, options) => {
             try {
-              const result = await pageApi.uploadImage(file);
+              const result = await pageApi.uploadImage(file, options);
               return result;
             } catch (e) {
               throw e;
             }
           }}
+          usageContext={BLOG_DETAIL_BACKGROUND}
           onToast={showToast}
           onError={handleError}
           previewHeight="h-48"

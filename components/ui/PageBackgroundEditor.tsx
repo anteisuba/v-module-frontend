@@ -3,6 +3,7 @@
 "use client";
 
 import type { PageConfig } from "@/domain/page-config/types";
+import { PAGE_BACKGROUND, type MediaAssetUsageContext } from "@/domain/media/usage";
 import BackgroundEditor from "./BackgroundEditor";
 import { useI18n } from "@/lib/i18n/context";
 
@@ -10,7 +11,10 @@ interface PageBackgroundEditorProps {
   config: PageConfig;
   onConfigChange: (config: PageConfig) => void;
   disabled?: boolean;
-  onUploadImage?: (file: File) => Promise<{ src: string }>;
+  onUploadImage?: (
+    file: File,
+    options?: { usageContext?: MediaAssetUsageContext }
+  ) => Promise<{ src: string }>;
   onToast?: (message: string) => void;
   onError?: (message: string) => void;
 }
@@ -40,6 +44,7 @@ export default function PageBackgroundEditor({
         }}
         disabled={disabled}
         onUploadImage={onUploadImage}
+        usageContext={PAGE_BACKGROUND}
         onToast={onToast}
         onError={onError}
         previewHeight="h-48"

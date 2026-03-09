@@ -1,6 +1,10 @@
 // lib/api/types.ts
 
 import type { PageConfig } from "@/domain/page-config/types";
+import type {
+  MediaAssetUsageContext,
+  MediaAssetUsageFilter,
+} from "@/domain/media/usage";
 
 /**
  * API 响应基础类型
@@ -72,6 +76,49 @@ export interface UploadResponse {
   src: string;
   mimeType: string;
   size: number;
+  asset?: MediaAssetSummary;
+}
+
+export interface MediaAssetSummary {
+  id: string;
+  src: string;
+  mimeType: string;
+  size: number;
+  originalName: string | null;
+  usageContexts: MediaAssetUsageContext[];
+  createdAt: string;
+}
+
+export interface MediaAssetListResponse {
+  assets: MediaAssetSummary[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface UploadImageOptions {
+  usageContext?: MediaAssetUsageContext;
+}
+
+export interface MediaAssetListParams {
+  page?: number;
+  limit?: number;
+  query?: string;
+  usageContext?: MediaAssetUsageFilter;
+}
+
+export interface MediaAssetUsageResponse {
+  ok: boolean;
+  assets: MediaAssetSummary[];
+}
+
+export interface DeleteMediaAssetsResponse {
+  ok: boolean;
+  deletedIds: string[];
+  deletedCount: number;
 }
 
 /**
