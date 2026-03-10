@@ -47,6 +47,7 @@ export default function ProductDetail({
 
   return (
     <div
+      data-testid="public-user-shop-detail"
       className="relative min-h-screen text-black py-16 px-6"
       style={backgroundStyle}
     >
@@ -139,7 +140,12 @@ export default function ProductDetail({
 
           {/* 商品信息 */}
           <div>
-            <h1 className="text-4xl font-bold mb-4">{product.name}</h1>
+            <h1
+              data-testid="public-user-shop-detail-title"
+              className="text-4xl font-bold mb-4"
+            >
+              {product.name}
+            </h1>
             <div className="text-3xl font-bold mb-6">{formatPrice(product.price)}</div>
 
             {product.description && (

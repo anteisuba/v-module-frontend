@@ -3,7 +3,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   LoadingState,
   AdminEditorAccordion,
@@ -35,6 +35,7 @@ export default function EditBlogPage({
   params: Promise<{ id: string }>;
 }) {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, loading: userLoading } = useUser();
   const { t } = useI18n();
   const { message: toastMessage, showToast } = useToast();
@@ -72,6 +73,7 @@ export default function EditBlogPage({
     layout: "background",
     content: "editor",
   });
+  const focusTarget = searchParams.get("focus");
 
   useEffect(() => {
     async function loadParams() {
@@ -88,6 +90,18 @@ export default function EditBlogPage({
       router.push("/admin");
     }
   }, [blogId, user, userLoading]);
+
+  useEffect(() => {
+    if (!focusTarget) {
+      return;
+    }
+
+    setActiveTab("content");
+    setOpenPanelByTab((prev) => ({
+      ...prev,
+      content: "editor",
+    }));
+  }, [focusTarget]);
 
   async function loadBlogPost() {
     if (!blogId) return;
@@ -287,6 +301,7 @@ export default function EditBlogPage({
           onSave={handleSave}
           onCancel={handleCancel}
           saving={saving}
+          focusTarget={focusTarget}
         />
       ),
     },

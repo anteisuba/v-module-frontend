@@ -2,7 +2,10 @@
 
 import { NextResponse } from "next/server";
 import { getServerSession } from "@/lib/session/userSession";
-import { serializeOrderWithItems } from "@/domain/shop/services";
+import {
+  ORDER_WITH_ITEMS_QUERY,
+  serializeOrderWithItems,
+} from "@/domain/shop/services";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 
@@ -119,19 +122,7 @@ export async function GET(request: Request) {
     const orderQuery = {
       where,
       orderBy: { createdAt: "desc" as const },
-      include: {
-        items: {
-          include: {
-            product: {
-              select: {
-                id: true,
-                name: true,
-                images: true,
-              },
-            },
-          },
-        },
-      },
+      ...ORDER_WITH_ITEMS_QUERY,
     };
 
     if (exportFormat === "csv") {

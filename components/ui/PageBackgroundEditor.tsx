@@ -4,6 +4,7 @@
 
 import type { PageConfig } from "@/domain/page-config/types";
 import { PAGE_BACKGROUND, type MediaAssetUsageContext } from "@/domain/media/usage";
+import { useScrollToElement } from "@/hooks/useScrollToElement";
 import BackgroundEditor from "./BackgroundEditor";
 import { useI18n } from "@/lib/i18n/context";
 
@@ -17,6 +18,7 @@ interface PageBackgroundEditorProps {
   ) => Promise<{ src: string }>;
   onToast?: (message: string) => void;
   onError?: (message: string) => void;
+  focusTarget?: string | null;
 }
 
 export default function PageBackgroundEditor({
@@ -26,11 +28,19 @@ export default function PageBackgroundEditor({
   onUploadImage,
   onToast,
   onError,
+  focusTarget = null,
 }: PageBackgroundEditorProps) {
   const { t } = useI18n();
-  
+  useScrollToElement(
+    focusTarget === "page-background",
+    "page-background-editor"
+  );
+
   return (
-    <div className="mb-6 rounded-xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl">
+    <div
+      id="page-background-editor"
+      className="mb-6 rounded-xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl"
+    >
       <div className="mb-3 flex items-center justify-between">
         <h2 className="text-base font-semibold text-black">{t("pageBackgroundEditor.title")}</h2>
       </div>

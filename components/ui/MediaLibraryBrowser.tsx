@@ -1,10 +1,12 @@
 "use client";
 
 import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import Link from "next/link";
 import Alert from "./Alert";
 import Button from "./Button";
 import ConfirmDialog from "./ConfirmDialog";
 import LoadingState from "./LoadingState";
+import { getMediaAssetReferenceTarget } from "@/domain/media/reference-targets";
 import {
   MEDIA_ASSET_USAGE_CONTEXTS,
   MEDIA_ASSET_USAGE_LABEL_KEYS,
@@ -13,6 +15,7 @@ import {
 } from "@/domain/media/usage";
 import {
   pageApi,
+  ApiError,
   type MediaAssetListResponse,
   type MediaAssetSummary,
 } from "@/lib/api";
@@ -57,6 +60,27 @@ function getUsageLabel(
   usageContext: MediaAssetUsageContext
 ) {
   return t(MEDIA_ASSET_USAGE_LABEL_KEYS[usageContext]);
+}
+
+function getReferenceLabel(
+  t: (key: string) => string,
+  asset: MediaAssetSummary,
+  reference: MediaAssetSummary["references"][number]
+) {
+  switch (reference.kind) {
+    case "PAGE_DRAFT_CONFIG":
+      return `${t("mediaLibrary.referenceKinds.pageDraft")} · ${reference.field}`;
+    case "PAGE_PUBLISHED_CONFIG":
+      return `${t("mediaLibrary.referenceKinds.pagePublished")} · ${reference.field}`;
+    case "BLOG_POST_COVER":
+      return `${t("mediaLibrary.referenceKinds.blogCover")} · ${reference.entityLabel}`;
+    case "PRODUCT_IMAGE":
+      return `${t("mediaLibrary.referenceKinds.productImage")} · ${reference.entityLabel} · ${reference.field}`;
+    case "NEWS_ARTICLE_BACKGROUND":
+      return `${t("mediaLibrary.referenceKinds.newsArticleBackground")} · ${reference.entityLabel}`;
+    default:
+      return `${asset.referenceCount} ${t("mediaLibrary.referencesLabel")}`;
+  }
 }
 
 export default function MediaLibraryBrowser({
@@ -205,6 +229,16 @@ export default function MediaLibraryBrowser({
       await loadAssets(1);
       showToast(t("mediaLibrary.deleteSuccess"));
     } catch (err) {
+      setDeleteTargetIds(null);
+      if (
+        err instanceof ApiError &&
+        err.code === "MEDIA_ASSETS_IN_USE" &&
+        err.details &&
+        typeof err.details === "object" &&
+        "blockedAssets" in err.details
+      ) {
+        await loadAssets(1);
+      }
       setError(
         err instanceof Error ? err.message : t("mediaLibrary.deleteFailed")
       );
@@ -223,7 +257,12 @@ export default function MediaLibraryBrowser({
 
   function selectAllVisibleAssets() {
     setSelectedAssetIds((current) =>
-      Array.from(new Set([...current, ...assets.map((asset) => asset.id)]))
+      Array.from(
+        new Set([
+          ...current,
+          ...assets.filter((asset) => !asset.isInUse).map((asset) => asset.id),
+        ])
+      )
     );
   }
 
@@ -244,7 +283,7 @@ export default function MediaLibraryBrowser({
       : t("mediaLibrary.deleteConfirmSingle");
 
   return (
-    <div className={joinClasses("space-y-4", className)}>
+    <div className={joinClasses("space-y-4", className)} data-testid="media-library-browser">
       {toastMessage ? <Alert type="success" message={toastMessage} /> : null}
       {error ? (
         <Alert type="error" message={error} onClose={() => setError(null)} />
@@ -299,6 +338,7 @@ export default function MediaLibraryBrowser({
               value={query}
               onChange={(event) => setQuery(event.target.value)}
               placeholder={t("mediaLibrary.searchPlaceholder")}
+              data-testid="media-library-search"
               className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-xs text-black placeholder:text-black/30"
             />
           </div>
@@ -312,6 +352,7 @@ export default function MediaLibraryBrowser({
               onChange={(event) =>
                 setUsageFilter(event.target.value as MediaAssetUsageFilter)
               }
+              data-testid="media-library-filter"
               className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-xs text-black"
             >
               <option value="ALL">{t("mediaLibrary.filterAll")}</option>
@@ -359,6 +400,7 @@ export default function MediaLibraryBrowser({
             size="md"
             onClick={() => void loadAssets(1)}
             disabled={loading || refreshing || loadingMore || deleting}
+            data-testid="media-library-refresh"
           >
             {refreshing ? t("common.loading") : t("mediaLibrary.refresh")}
           </Button>
@@ -380,10 +422,12 @@ export default function MediaLibraryBrowser({
               const isSelected = selectedSrc === asset.src;
               const isChecked = selectedAssetIds.includes(asset.id);
               const label = getAssetLabel(asset, t("mediaLibrary.fileFallback"));
+              const visibleReferences = asset.references.slice(0, 2);
 
               return (
                 <div
                   key={asset.id}
+                  data-testid={`media-asset-card-${asset.id}`}
                   className={joinClasses(
                     "overflow-hidden rounded-2xl border bg-white/70 shadow-sm transition-colors",
                     isSelected
@@ -398,6 +442,7 @@ export default function MediaLibraryBrowser({
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => toggleAssetSelection(asset.id)}
+                          disabled={asset.isInUse || deleting}
                           className="mr-1.5"
                         />
                         {t("mediaLibrary.selectShort")}
@@ -423,6 +468,21 @@ export default function MediaLibraryBrowser({
                     </div>
 
                     <div className="flex flex-wrap gap-1">
+                      <span
+                        className={joinClasses(
+                          "rounded-full px-2 py-1 text-[10px]",
+                          asset.isInUse
+                            ? "bg-amber-100 text-amber-700"
+                            : "bg-emerald-100 text-emerald-700"
+                        )}
+                      >
+                        {asset.isInUse
+                          ? t("mediaLibrary.inUse").replace(
+                              "{count}",
+                              String(asset.referenceCount)
+                            )
+                          : t("mediaLibrary.notInUse")}
+                      </span>
                       {asset.usageContexts.length > 0 ? (
                         asset.usageContexts.map((value) => (
                           <span
@@ -439,6 +499,42 @@ export default function MediaLibraryBrowser({
                       )}
                     </div>
 
+                    {asset.isInUse ? (
+                      <div className="space-y-1 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-800">
+                        {visibleReferences.map((reference, index) => {
+                          const target = getMediaAssetReferenceTarget(reference);
+
+                          return (
+                            <div
+                              key={`${asset.id}-${reference.kind}-${index}`}
+                              className="flex items-start justify-between gap-2"
+                            >
+                              <div className="min-w-0 flex-1">
+                                {getReferenceLabel(t, asset, reference)}
+                              </div>
+                              {target ? (
+                                <Link
+                                  href={target.href}
+                                  data-testid={`media-asset-go-to-replace-${asset.id}-${index}`}
+                                  className="shrink-0 rounded-md border border-amber-300 bg-white px-2 py-1 text-[10px] font-medium text-amber-800 transition-colors hover:bg-amber-100"
+                                >
+                                  {t("mediaLibrary.goToReplace")}
+                                </Link>
+                              ) : null}
+                            </div>
+                          );
+                        })}
+                        {asset.referenceCount > visibleReferences.length ? (
+                          <div className="text-amber-700/80">
+                            {t("mediaLibrary.moreReferences").replace(
+                              "{count}",
+                              String(asset.referenceCount - visibleReferences.length)
+                            )}
+                          </div>
+                        ) : null}
+                      </div>
+                    ) : null}
+
                     <div className="truncate rounded-lg bg-black/5 px-2 py-1 text-[11px] text-black/60">
                       {asset.src}
                     </div>
@@ -450,18 +546,26 @@ export default function MediaLibraryBrowser({
                           size="sm"
                           onClick={() => void handleSelectAsset(asset)}
                           loading={selectingAssetId === asset.id}
+                          data-testid={`media-asset-select-${asset.id}`}
                         >
                           {selectLabel || t("mediaLibrary.select")}
                         </Button>
                       ) : (
-                        <Button
-                          variant="danger"
-                          size="sm"
-                          onClick={() => setDeleteTargetIds([asset.id])}
-                          disabled={deleting}
-                        >
-                          {t("common.delete")}
-                        </Button>
+                        asset.isInUse ? (
+                          <Button variant="secondary" size="sm" disabled>
+                            {t("mediaLibrary.inUseAction")}
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => setDeleteTargetIds([asset.id])}
+                            disabled={deleting}
+                            data-testid={`media-asset-delete-${asset.id}`}
+                          >
+                            {t("common.delete")}
+                          </Button>
+                        )
                       )}
                       <Button
                         variant="text"

@@ -375,6 +375,7 @@
     "pageTitle": "媒体库",
     "pageDescription": "统一查看已上传图片，并把素材复用到背景、博客封面和商品图片。",
     "open": "从媒体库选择",
+    "goToReplace": "前往替换",
     "searchLabel": "搜索素材",
     "searchPlaceholder": "按文件名或 URL 搜索",
     "uploadButton": "上传新图片",
@@ -396,6 +397,11 @@
     "deleteSelected": "删除已选",
     "deleteSuccess": "媒体素材已删除",
     "deleteFailed": "删除媒体素材失败",
+    "inUse": "已被引用 {count} 处",
+    "notInUse": "可安全删除",
+    "inUseAction": "正在使用",
+    "referencesLabel": "引用",
+    "moreReferences": "还有 {count} 处引用未展开",
     "deleteConfirmTitle": "确认删除素材",
     "deleteConfirmSingle": "确定要删除这张素材吗？如果它仍被页面或内容引用，公开页面中的图片会失效。",
     "deleteConfirmBulk": "确定要删除已选的 {count} 项素材吗？如果它们仍被页面或内容引用，公开页面中的图片会失效。",
@@ -416,6 +422,13 @@
       "heroLogo": "Hero Logo",
       "heroSlide": "Hero 轮播图",
       "newsItem": "新闻模块图片"
+    },
+    "referenceKinds": {
+      "pageDraft": "页面草稿配置",
+      "pagePublished": "页面已发布配置",
+      "blogCover": "博客封面",
+      "productImage": "商品图片",
+      "newsArticleBackground": "新闻文章背景"
     }
   },
   "newsArticleEditor": {

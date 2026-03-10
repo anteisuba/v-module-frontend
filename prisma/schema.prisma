@@ -48,6 +48,8 @@ model User {
   blogPosts           BlogPost[] // 用户创建的博客文章
   products            Product[] // 用户创建的商品
   orders              Order[] // 用户创建的订单（作为卖家）
+  orderDisputes       OrderDispute[] // 支付争议 / chargeback
+  settlementEntries   PaymentSettlementEntry[] // 支付结算流水
   blogLikes           BlogLike[] // 用户点赞的博客
   blogComments        BlogComment[] // 用户发表的评论
 
@@ -251,7 +253,7 @@ model Order {
 
   // 支付相关
   paymentProvider      String? // 支付提供方，如 STRIPE
-  paymentStatus        String? // OPEN, PAID, FAILED, EXPIRED, REFUNDED
+  paymentStatus        String? // OPEN, PAID, FAILED, EXPIRED, PARTIALLY_REFUNDED, REFUNDED
   paymentSessionId     String? @unique // Stripe Checkout Session ID
   paymentIntentId      String? @unique // Stripe PaymentIntent ID
   paymentExpiresAt     DateTime? // 支付会话过期时间
@@ -270,13 +272,177 @@ model Order {
   deliveredAt DateTime? // 送达时间
 
   // 关系
-  items OrderItem[] // 订单项
+  items           OrderItem[] // 订单项
+  paymentAttempts OrderPaymentAttempt[] // 支付尝试
+  refunds         OrderRefund[] // 退款记录
+  disputes        OrderDispute[] // 支付争议
+  settlementEntries PaymentSettlementEntry[] // 结算流水
 
   @@index([userId, createdAt])
   @@index([buyerEmail, createdAt])
   @@index([status, createdAt])
   @@index([paymentStatus, createdAt])
   @@index([paymentProvider, createdAt])
+}
+
+model OrderPaymentAttempt {
+  id String @id @default(cuid())
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  provider                String
+  status                  String // OPEN, PAID, FAILED, EXPIRED
+  amount                  Decimal @db.Decimal(10, 2)
+  currency                String  @default("JPY")
+  externalSessionId       String?
+  externalPaymentIntentId String?
+  failureReason           String?
+  metadata                Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  paidAt    DateTime?
+  failedAt  DateTime?
+  expiredAt DateTime?
+
+  @@index([orderId, createdAt])
+  @@index([provider, status, createdAt])
+  @@index([externalSessionId])
+  @@index([externalPaymentIntentId])
+}
+
+model OrderRefund {
+  id String @id @default(cuid())
+
+  orderId String
+  order   Order  @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  provider                String
+  status                  String // PENDING, SUCCEEDED, FAILED, CANCELED
+  amount                  Decimal @db.Decimal(10, 2)
+  currency                String  @default("JPY")
+  reason                  String?
+  failureReason           String?
+  externalRefundId        String? @unique
+  externalPaymentIntentId String?
+  requestedByUserId       String?
+  metadata                Json?
+
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+  refundedAt DateTime?
+
+  settlementEntries PaymentSettlementEntry[] // 对应的结算流水
+
+  @@index([orderId, createdAt])
+  @@index([provider, status, createdAt])
+  @@index([requestedByUserId, createdAt])
+  @@index([externalPaymentIntentId])
+}
+
+model OrderDispute {
+  id String @id @default(cuid())
+
+  userId String?
+  user   User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  orderId String?
+  order   Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  provider                String
+  status                  String
+  reason                  String?
+  amount                  Decimal @db.Decimal(10, 2)
+  currency                String  @default("JPY")
+  externalDisputeId       String  @unique
+  externalPaymentIntentId String?
+  externalChargeId        String?
+  dueBy                   DateTime?
+  closedAt                DateTime?
+  metadata                Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status, updatedAt])
+  @@index([orderId, updatedAt])
+  @@index([provider, status, updatedAt])
+  @@index([externalPaymentIntentId])
+  @@index([externalChargeId])
+}
+
+model PaymentSettlementPayout {
+  id String @id @default(cuid())
+
+  provider         String
+  externalPayoutId String @unique
+  status           String
+  amount           Decimal @db.Decimal(10, 2)
+  currency         String  @default("JPY")
+  payoutMethod     String?
+  description      String?
+  statementDescriptor String?
+  rawData          Json?
+
+  payoutCreatedAt DateTime
+  arrivalDate     DateTime?
+  paidAt          DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  entries PaymentSettlementEntry[]
+
+  @@index([provider, payoutCreatedAt])
+  @@index([status, arrivalDate])
+}
+
+model PaymentSettlementEntry {
+  id String @id @default(cuid())
+
+  userId String?
+  user   User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  orderId String?
+  order   Order? @relation(fields: [orderId], references: [id], onDelete: SetNull)
+
+  refundId String?
+  refund   OrderRefund? @relation(fields: [refundId], references: [id], onDelete: SetNull)
+
+  payoutId String?
+  payout   PaymentSettlementPayout? @relation(fields: [payoutId], references: [id], onDelete: SetNull)
+
+  provider                     String
+  externalBalanceTransactionId String @unique
+  externalSourceId             String?
+  externalSourceType           String?
+  type                         String
+  reportingCategory            String?
+  status                       String
+  amount                       Decimal @db.Decimal(10, 2)
+  fee                          Decimal @db.Decimal(10, 2)
+  net                          Decimal @db.Decimal(10, 2)
+  currency                     String  @default("JPY")
+  description                  String?
+  occurredAt                   DateTime
+  availableOn                  DateTime?
+  reconciliationStatus         String  @default("OPEN")
+  reconciliationNote           String?
+  reconciledAt                 DateTime?
+  sourceMetadata               Json?
+  rawData                      Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, occurredAt])
+  @@index([orderId, occurredAt])
+  @@index([refundId, occurredAt])
+  @@index([payoutId, availableOn])
+  @@index([provider, status, occurredAt])
+  @@index([reconciliationStatus, occurredAt])
+  @@index([externalSourceId])
 }
 
 // ============================================

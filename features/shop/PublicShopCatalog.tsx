@@ -37,7 +37,10 @@ export default function PublicShopCatalog({
   const { t, locale } = useI18n();
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(191,219,254,0.5),_rgba(255,255,255,1)_36%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_54%,_#fff7ed_100%)] text-slate-950">
+    <main
+      data-testid="public-shop-catalog"
+      className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(191,219,254,0.5),_rgba(255,255,255,1)_36%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_54%,_#fff7ed_100%)] text-slate-950"
+    >
       <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-10 sm:px-6 lg:px-8">
         <header className="flex flex-col gap-5 rounded-[32px] border border-black/10 bg-white/80 p-6 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
@@ -86,6 +89,7 @@ export default function PublicShopCatalog({
               return (
                 <article
                   key={product.id}
+                  data-testid={`public-shop-catalog-product-${product.id}`}
                   className="overflow-hidden rounded-[28px] border border-black/10 bg-white/85 shadow-[0_20px_60px_rgba(15,23,42,0.06)]"
                 >
                   <Link

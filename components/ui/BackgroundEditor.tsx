@@ -55,7 +55,7 @@ export default function BackgroundEditor({
   });
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2" data-testid="background-editor">
       {label && (
         <label className="block text-xs font-medium text-black mb-1.5">{label}</label>
       )}
@@ -65,6 +65,7 @@ export default function BackgroundEditor({
         <button
           type="button"
           onClick={() => setBackgroundType("color")}
+          data-testid="background-type-color"
           className={`rounded px-3 py-1.5 text-xs transition-colors ${
             background.type === "color"
               ? "bg-black text-white"
@@ -77,6 +78,7 @@ export default function BackgroundEditor({
         <button
           type="button"
           onClick={() => setBackgroundType("image")}
+          data-testid="background-type-image"
           className={`rounded px-3 py-1.5 text-xs transition-colors ${
             background.type === "image"
               ? "bg-black text-white"
@@ -112,6 +114,7 @@ export default function BackgroundEditor({
             value={background.value}
             onChange={(e) => handleImageInputChange(e.target.value)}
             placeholder={t("backgroundEditor.imageUrlPlaceholder")}
+            data-testid="background-image-url-input"
             className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black mb-2"
             disabled={uploadingBackground || disabled}
           />
@@ -153,6 +156,7 @@ export default function BackgroundEditor({
                   size="sm"
                   onClick={() => setMediaPickerOpen(true)}
                   disabled={uploadingBackground || disabled}
+                  data-testid="background-open-media-picker"
                 >
                   {t("mediaLibrary.open")}
                 </Button>

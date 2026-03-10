@@ -23,7 +23,14 @@ import type {
   NewsArticleResponse,
 } from "./types";
 import type { PageConfig } from "@/domain/page-config/types";
-import type { CheckoutSessionResult, SerializedOrder } from "@/domain/shop";
+import type {
+  CheckoutSessionResult,
+  PaymentReconciliationReport,
+  PaymentSettlementReport,
+  PaymentSettlementSyncResult,
+  SerializedOrder,
+  SerializedOrderRefund,
+} from "@/domain/shop";
 import type {
   MediaAssetUsageContext,
   MediaAssetUsageFilter,
@@ -820,5 +827,172 @@ export const shopApi = {
       { status }
     );
     return response.order;
+  },
+
+  /**
+   * 创建订单退款（卖家）
+   */
+  async createOrderRefund(
+    id: string,
+    data?: { amount?: number | null; reason?: string | null }
+  ): Promise<{ order: SerializedOrder; refund: SerializedOrderRefund }> {
+    return apiClient.post<{ order: SerializedOrder; refund: SerializedOrderRefund }>(
+      `/api/shop/orders/${id}/refunds`,
+      data || {}
+    );
+  },
+
+  /**
+   * 获取 Stripe 对账报表
+   */
+  async getPaymentReconciliationReport(params?: {
+    start?: string;
+    end?: string;
+  }): Promise<PaymentReconciliationReport> {
+    const searchParams = new URLSearchParams();
+    if (params?.start) searchParams.set("start", params.start);
+    if (params?.end) searchParams.set("end", params.end);
+    const query = searchParams.toString();
+
+    return apiClient.get(
+      `/api/shop/payments/reconciliation${query ? `?${query}` : ""}`
+    );
+  },
+
+  /**
+   * 导出 Stripe 支付事件 CSV
+   */
+  async exportPaymentEventsCsv(params?: {
+    start?: string;
+    end?: string;
+  }): Promise<Blob> {
+    const searchParams = new URLSearchParams();
+    if (params?.start) searchParams.set("start", params.start);
+    if (params?.end) searchParams.set("end", params.end);
+    searchParams.set("export", "events");
+
+    const response = await fetch(
+      `/api/shop/payments/reconciliation?${searchParams.toString()}`,
+      {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      }
+    );
+
+    if (!response.ok) {
+      let errorMessage = "导出支付事件失败";
+
+      try {
+        const errorData = (await response.json()) as {
+          error?: string;
+          message?: string;
+        };
+        errorMessage = errorData.error || errorData.message || errorMessage;
+      } catch {
+        // noop
+      }
+
+      throw new Error(errorMessage);
+    }
+
+    return response.blob();
+  },
+
+  /**
+   * 导出对账异常 CSV
+   */
+  async exportPaymentAnomaliesCsv(params?: {
+    start?: string;
+    end?: string;
+  }): Promise<Blob> {
+    const searchParams = new URLSearchParams();
+    if (params?.start) searchParams.set("start", params.start);
+    if (params?.end) searchParams.set("end", params.end);
+    searchParams.set("export", "anomalies");
+
+    const response = await fetch(
+      `/api/shop/payments/reconciliation?${searchParams.toString()}`,
+      {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      }
+    );
+
+    if (!response.ok) {
+      let errorMessage = "导出对账异常失败";
+
+      try {
+        const errorData = (await response.json()) as {
+          error?: string;
+          message?: string;
+        };
+        errorMessage = errorData.error || errorData.message || errorMessage;
+      } catch {
+        // noop
+      }
+
+      throw new Error(errorMessage);
+    }
+
+    return response.blob();
+  },
+
+  /**
+   * 获取 Stripe 结算核销报表
+   */
+  async getPaymentSettlementReport(params?: {
+    start?: string;
+    end?: string;
+  }): Promise<PaymentSettlementReport> {
+    const searchParams = new URLSearchParams();
+    if (params?.start) searchParams.set("start", params.start);
+    if (params?.end) searchParams.set("end", params.end);
+    const query = searchParams.toString();
+
+    return apiClient.get(
+      `/api/shop/payments/settlements${query ? `?${query}` : ""}`
+    );
+  },
+
+  /**
+   * 同步 Stripe 结算流水和 payout
+   */
+  async syncPaymentSettlementLedger(params?: {
+    start?: string | null;
+    end?: string | null;
+  }): Promise<{
+    sync: PaymentSettlementSyncResult;
+    report: PaymentSettlementReport;
+  }> {
+    return apiClient.post("/api/shop/payments/settlements", {
+      start: params?.start || null,
+      end: params?.end || null,
+    });
+  },
+
+  /**
+   * 批量更新结算流水核销状态
+   */
+  async updatePaymentSettlementEntries(data: {
+    ids: string[];
+    reconciliationStatus: "OPEN" | "RECONCILED" | "IGNORED";
+    note?: string | null;
+    start?: string | null;
+    end?: string | null;
+  }): Promise<{
+    updated: {
+      updatedCount: number;
+    };
+    report: PaymentSettlementReport;
+  }> {
+    return apiClient.patch("/api/shop/payments/settlements", {
+      ids: data.ids,
+      reconciliationStatus: data.reconciliationStatus,
+      note: data.note || null,
+      start: data.start || null,
+      end: data.end || null,
+    });
   },
 };

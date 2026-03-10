@@ -2,7 +2,8 @@
 
 "use client";
 
-import { useState, type CSSProperties } from "react";
+import { useEffect, useState, type CSSProperties } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   BackButton,
   HeroSectionEditor,
@@ -37,7 +38,17 @@ import type { AdminEditorPanelItem, AdminEditorTabOption } from "@/components/ui
 
 type CMSTabId = "page" | "content";
 
+const CMS_PANEL_TO_TAB: Record<string, CMSTabId> = {
+  hero: "page",
+  background: "page",
+  theme: "page",
+  video: "content",
+  news: "content",
+  articles: "content",
+};
+
 export default function CMSPage() {
+  const searchParams = useSearchParams();
   const { user } = useUser();
   const { t } = useI18n();
   const { message: toastMessage, showToast } = useToast();
@@ -65,6 +76,32 @@ export default function CMSPage() {
     page: "hero",
     content: "video",
   });
+  const requestedTab = searchParams.get("tab");
+  const requestedPanel = searchParams.get("panel");
+  const focusTarget = searchParams.get("focus");
+  const initialArticleId = searchParams.get("articleId");
+
+  useEffect(() => {
+    const nextPanel =
+      requestedPanel && requestedPanel in CMS_PANEL_TO_TAB ? requestedPanel : null;
+    const nextTab =
+      requestedTab === "page" || requestedTab === "content"
+        ? requestedTab
+        : nextPanel
+          ? CMS_PANEL_TO_TAB[nextPanel]
+          : null;
+
+    if (nextTab) {
+      setActiveTab(nextTab);
+    }
+
+    if (nextTab && nextPanel) {
+      setOpenPanelByTab((prev) => ({
+        ...prev,
+        [nextTab]: nextPanel,
+      }));
+    }
+  }, [requestedPanel, requestedTab]);
 
   // 键盘快捷键支持
   useKeyboardShortcuts({
@@ -555,6 +592,7 @@ export default function CMSPage() {
           uploadingIndex={uploadingIndex}
           onToast={showToast}
           onError={handleError}
+          focusTarget={focusTarget}
         />
       ),
     },
@@ -577,6 +615,7 @@ export default function CMSPage() {
           }}
           onToast={showToast}
           onError={handleError}
+          focusTarget={focusTarget}
         />
       ),
     },
@@ -665,6 +704,7 @@ export default function CMSPage() {
           uploadingIndex={uploadingIndex === -1 ? -1 : null}
           onToast={showToast}
           onError={handleError}
+          focusTarget={focusTarget}
         />
       ),
     },
@@ -694,6 +734,8 @@ export default function CMSPage() {
               newsBackground: background,
             });
           }}
+          focusTarget={focusTarget}
+          initialArticleId={initialArticleId}
         />
       ),
     },

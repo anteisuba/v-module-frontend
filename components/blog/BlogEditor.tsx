@@ -5,6 +5,7 @@
 import { useState, useEffect } from "react";
 import { Input, Button, FormField, Alert, MediaPickerDialog } from "@/components/ui";
 import { BLOG_COVER } from "@/domain/media/usage";
+import { useScrollToElement } from "@/hooks/useScrollToElement";
 import { pageApi } from "@/lib/api";
 import { useToast } from "@/hooks/useToast";
 import { useErrorHandler } from "@/hooks/useErrorHandler";
@@ -32,6 +33,7 @@ interface BlogEditorProps {
   }) => Promise<void>;
   onCancel: () => void;
   saving?: boolean;
+  focusTarget?: string | null;
 }
 
 export default function BlogEditor({
@@ -39,10 +41,12 @@ export default function BlogEditor({
   onSave,
   onCancel,
   saving = false,
+  focusTarget = null,
 }: BlogEditorProps) {
   const { t } = useI18n();
   const { message: toastMessage, showToast } = useToast();
   const { error, handleError, clearError } = useErrorHandler();
+  useScrollToElement(focusTarget === "cover-image", "blog-cover-image-editor");
 
   const [title, setTitle] = useState(initialData?.title || "");
   const [content, setContent] = useState(initialData?.content || "");
@@ -153,8 +157,9 @@ export default function BlogEditor({
       </FormField>
 
       {/* 封面图 */}
-      <FormField label={t("blog.form.coverImage")}>
-        <div className="space-y-3 rounded-lg border border-black/10 bg-white/70 p-4">
+      <div id="blog-cover-image-editor">
+        <FormField label={t("blog.form.coverImage")}>
+          <div className="space-y-3 rounded-lg border border-black/10 bg-white/70 p-4">
           {coverImage && (
             <div className="mb-3">
               <div className="relative inline-block">
@@ -223,8 +228,9 @@ export default function BlogEditor({
               <div className="text-xs text-black/60">{t("common.uploading")}</div>
             )}
           </div>
-        </div>
-      </FormField>
+          </div>
+        </FormField>
+      </div>
 
       <MediaPickerDialog
         open={mediaPickerOpen}

@@ -81,7 +81,11 @@ export default function BlogList({ posts, userSlug, backgroundStyle }: BlogListP
   };
 
   return (
-    <main className="relative min-h-screen text-black" style={backgroundStyle || defaultBackgroundStyle}>
+    <main
+      data-testid="public-user-blog-list"
+      className="relative min-h-screen text-black"
+      style={backgroundStyle || defaultBackgroundStyle}
+    >
       {/* 右上角菜单按钮 */}
       <div className="fixed top-6 right-6 z-50 flex items-center gap-4 text-white">
         <button
@@ -122,6 +126,7 @@ export default function BlogList({ posts, userSlug, backgroundStyle }: BlogListP
             {postsWithStats.map((post) => (
               <div
                 key={post.id}
+                data-testid={`public-user-blog-post-${post.id}`}
                 className="bg-white/10 backdrop-blur-sm rounded-lg border border-white/20 overflow-hidden hover:bg-white/15 transition-colors"
               >
                 {/* 封面图 */}

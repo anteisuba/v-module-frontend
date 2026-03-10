@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import { NEWS_ITEM, type MediaAssetUsageContext } from "@/domain/media/usage";
+import { useScrollToElement } from "@/hooks/useScrollToElement";
 import {
   ImagePositionEditor,
   ConfirmDialog,
@@ -25,6 +26,7 @@ interface NewsSectionEditorProps {
   uploadingIndex?: number | null;
   onToast?: (message: string) => void;
   onError?: (message: string) => void;
+  focusTarget?: string | null;
 }
 
 // 通用开关组件
@@ -71,10 +73,12 @@ export default function NewsSectionEditor({
   uploadingIndex = null,
   onToast,
   onError,
+  focusTarget = null,
 }: NewsSectionEditorProps) {
   const { t } = useI18n();
   const [deleteConfirmItemId, setDeleteConfirmItemId] = useState<string | null>(null);
   const [pickerItemId, setPickerItemId] = useState<string | null>(null);
+  useScrollToElement(focusTarget === "news-items", "news-items-editor");
   // 获取 news section（不自动创建）
   function getNewsSection() {
     return config.sections.find((s) => s.type === "news");
@@ -253,7 +257,10 @@ export default function NewsSectionEditor({
   const newsSection = getNewsSection();
 
   return (
-    <div className="mb-6 rounded-2xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl">
+    <div
+      id="news-items-editor"
+      className="mb-6 rounded-2xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl"
+    >
       <div className="mb-4 space-y-3">
         <div className="flex items-center justify-between">
           <h2 className="text-lg font-semibold text-black">{t("newsSectionEditor.title")}</h2>

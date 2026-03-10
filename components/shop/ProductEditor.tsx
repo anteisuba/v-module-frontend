@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from "react";
 import { PRODUCT_IMAGE } from "@/domain/media/usage";
+import { useScrollToElement } from "@/hooks/useScrollToElement";
 import {
   Input,
   Button,
@@ -38,6 +39,7 @@ interface ProductEditorProps {
   }) => Promise<void>;
   onCancel: () => void;
   saving?: boolean;
+  focusTarget?: string | null;
 }
 
 export default function ProductEditor({
@@ -46,10 +48,15 @@ export default function ProductEditor({
   onSave,
   onCancel,
   saving = false,
+  focusTarget = null,
 }: ProductEditorProps) {
   const { t } = useI18n();
   const { message: toastMessage, showToast } = useToast();
   const { error, handleError, clearError } = useErrorHandler();
+  useScrollToElement(
+    focusTarget === "product-images",
+    "product-images-editor"
+  );
 
   const [name, setName] = useState(initialData?.name || "");
   const [description, setDescription] = useState(
@@ -263,8 +270,9 @@ export default function ProductEditor({
       </FormField>
 
       {/* 商品图片 */}
-      <FormField label={t("shop.form.images")}>
-        <div className="space-y-4">
+      <div id="product-images-editor">
+        <FormField label={t("shop.form.images")}>
+          <div className="space-y-4">
           {/* 图片网格 */}
           {images.length > 0 && (
             <div className="grid grid-cols-3 gap-4">
@@ -336,8 +344,9 @@ export default function ProductEditor({
               {t("mediaLibrary.open")}
             </Button>
           </div>
-        </div>
-      </FormField>
+          </div>
+        </FormField>
+      </div>
 
       <MediaPickerDialog
         open={mediaPickerOpen}

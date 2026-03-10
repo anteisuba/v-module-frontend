@@ -10,6 +10,7 @@ import {
   getUserPageDataBySlug,
 } from "@/domain/page-config";
 import type { PageConfig } from "@/domain/page-config/types";
+import { getE2EPublicPageState } from "@/lib/e2e/publicPageState";
 import { normalizePageConfig } from "@/utils/pageConfig";
 
 
@@ -19,20 +20,36 @@ export default async function UserPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const e2ePublicPageState = await getE2EPublicPageState(slug);
 
   // 使用共享查询函数（带缓存）
-  const user = await getUserPageDataBySlug(slug);
+  const user = e2ePublicPageState
+    ? {
+        slug,
+        displayName: e2ePublicPageState.displayName,
+        page: {
+          publishedConfig: e2ePublicPageState.publishedConfig,
+          draftConfig: e2ePublicPageState.publishedConfig,
+          themeColor: e2ePublicPageState.themeColor,
+          fontFamily: e2ePublicPageState.fontFamily,
+        },
+      }
+    : await getUserPageDataBySlug(slug);
 
   if (!user) {
     notFound();
   }
 
   // 直接从查询结果中获取配置
-  const config: PageConfig = normalizePageConfig(user.page?.publishedConfig);
+  const config: PageConfig = normalizePageConfig(
+    e2ePublicPageState?.publishedConfig ?? user.page?.publishedConfig
+  );
 
   // 从 Page 表中读取主题配置（如果存在）
-  const themeColor = user.page?.themeColor || "#000000";
-  const fontFamily = user.page?.fontFamily || "Inter";
+  const themeColor =
+    e2ePublicPageState?.themeColor || user.page?.themeColor || "#000000";
+  const fontFamily =
+    e2ePublicPageState?.fontFamily || user.page?.fontFamily || "Inter";
 
   return (
     <ThemeProvider themeColor={themeColor} fontFamily={fontFamily}>
@@ -55,9 +72,18 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const e2ePublicPageState = await getE2EPublicPageState(slug);
 
   // 使用共享查询函数（带缓存，与页面组件共享结果）
-  const user = await getUserPageDataBySlug(slug);
+  const user = e2ePublicPageState
+    ? {
+        slug,
+        displayName: e2ePublicPageState.displayName,
+        page: {
+          publishedConfig: e2ePublicPageState.publishedConfig,
+        },
+      }
+    : await getUserPageDataBySlug(slug);
 
   if (!user) {
     return {
@@ -65,7 +91,9 @@ export async function generateMetadata({
     };
   }
 
-  const config = normalizePageConfig(user.page?.publishedConfig);
+  const config = normalizePageConfig(
+    e2ePublicPageState?.publishedConfig ?? user.page?.publishedConfig
+  );
 
   return {
     title:

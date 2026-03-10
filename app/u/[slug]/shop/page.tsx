@@ -6,6 +6,11 @@ import { getProducts } from "@/domain/shop/services";
 import ProductList from "@/features/shop/ProductList";
 import type { PageConfig } from "@/domain/page-config/types";
 import { EMPTY_PAGE_CONFIG } from "@/domain/page-config/constants";
+import {
+  findE2EPublicPageState,
+  getE2EPublicPageProducts,
+  getE2EPublicSiteState,
+} from "@/lib/e2e/publicPageState";
 
 export default async function UserShopPage({
   params,
@@ -13,8 +18,20 @@ export default async function UserShopPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const e2eSiteState = await getE2EPublicSiteState();
+  const e2ePageState = findE2EPublicPageState(e2eSiteState, slug);
+  const e2eProducts = getE2EPublicPageProducts(e2eSiteState, slug);
 
-  const user = await getUserPageDataBySlug(slug);
+  const user = e2ePageState
+    ? {
+        id: `e2e-user-${slug}`,
+        slug,
+        displayName: e2ePageState.displayName,
+        page: {
+          publishedConfig: e2ePageState.publishedConfig,
+        },
+      }
+    : await getUserPageDataBySlug(slug);
 
   if (!user) {
     notFound();
@@ -31,11 +48,14 @@ export default async function UserShopPage({
   }
 
   // 获取已发布的商品
-  const productData = await getProducts({
-    userId: user.id,
-    status: "PUBLISHED",
-    limit: 100,
-  });
+  const productData =
+    e2eProducts !== null
+      ? { products: e2eProducts }
+      : await getProducts({
+          userId: user.id,
+          status: "PUBLISHED",
+          limit: 100,
+        });
 
   // 调试信息（开发环境）
   if (process.env.NODE_ENV === "development") {
@@ -88,7 +108,16 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const user = await getUserPageDataBySlug(slug);
+  const e2ePageState = findE2EPublicPageState(
+    await getE2EPublicSiteState(),
+    slug
+  );
+  const user = e2ePageState
+    ? {
+        slug,
+        displayName: e2ePageState.displayName,
+      }
+    : await getUserPageDataBySlug(slug);
 
   if (!user) {
     return {

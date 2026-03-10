@@ -2,6 +2,7 @@
 // 用户公开页面布局 - 注入主题色 CSS 变量
 
 import { prisma } from "@/lib/prisma";
+import { getE2EPublicPageState } from "@/lib/e2e/publicPageState";
 
 interface UserLayoutProps {
   children: React.ReactNode;
@@ -43,19 +44,25 @@ export default async function UserLayout({
   params,
 }: UserLayoutProps) {
   const { slug } = await params;
-
-  // 直接查询页面主题设置
-  const page = await prisma.page.findUnique({
-    where: { slug },
-    select: {
-      themeColor: true,
-      fontFamily: true,
-    },
-  });
+  const e2ePublicPageState = await getE2EPublicPageState(slug);
 
   // 获取主题色，如果未设置则使用默认黑色
-  const themeColor = page?.themeColor || "#000000";
-  const fontFamily = page?.fontFamily || "Inter";
+  let themeColor = e2ePublicPageState?.themeColor || "#000000";
+  let fontFamily = e2ePublicPageState?.fontFamily || "Inter";
+
+  if (!e2ePublicPageState) {
+    // 直接查询页面主题设置
+    const page = await prisma.page.findUnique({
+      where: { slug },
+      select: {
+        themeColor: true,
+        fontFamily: true,
+      },
+    });
+
+    themeColor = page?.themeColor || "#000000";
+    fontFamily = page?.fontFamily || "Inter";
+  }
 
   // 计算主题色相关的变体
   const themeHover = adjustBrightness(themeColor, 20);

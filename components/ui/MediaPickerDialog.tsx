@@ -36,6 +36,7 @@ export default function MediaPickerDialog({
 
   const dialogContent = (
     <div
+      data-testid="media-picker-dialog"
       className="fixed inset-0 z-[100000] bg-black/45 backdrop-blur-sm"
       onClick={onClose}
     >

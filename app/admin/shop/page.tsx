@@ -3,7 +3,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Alert,
   LoadingState,
@@ -15,7 +15,10 @@ import {
   SaveStatus,
   Button,
 } from "@/components/ui";
-import { SHOP_LIST_BACKGROUND } from "@/domain/media/usage";
+import {
+  SHOP_DETAIL_BACKGROUND,
+  SHOP_LIST_BACKGROUND,
+} from "@/domain/media/usage";
 import { pageApi, shopApi } from "@/lib/api";
 import { useUser } from "@/lib/context/UserContext";
 import { useToast } from "@/hooks/useToast";
@@ -40,8 +43,15 @@ interface Product {
 
 type EditorTabId = "layout" | "content";
 
+const SHOP_PANEL_TO_TAB: Record<string, EditorTabId> = {
+  "list-background": "layout",
+  "detail-background": "layout",
+  products: "content",
+};
+
 export default function ShopPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, loading: userLoading } = useUser();
   const { t } = useI18n();
   const { message: toastMessage, showToast } = useToast();
@@ -74,9 +84,11 @@ export default function ShopPage() {
   const [openPanelByTab, setOpenPanelByTab] = useState<
     Record<EditorTabId, string | null>
   >({
-    layout: "background",
+    layout: "list-background",
     content: "products",
   });
+  const requestedTab = searchParams.get("tab");
+  const requestedPanel = searchParams.get("panel");
 
   // 加载商品列表
   useEffect(() => {
@@ -86,6 +98,28 @@ export default function ShopPage() {
       router.push("/admin");
     }
   }, [user, userLoading]);
+
+  useEffect(() => {
+    const nextPanel =
+      requestedPanel && requestedPanel in SHOP_PANEL_TO_TAB ? requestedPanel : null;
+    const nextTab =
+      requestedTab === "layout" || requestedTab === "content"
+        ? requestedTab
+        : nextPanel
+          ? SHOP_PANEL_TO_TAB[nextPanel]
+          : null;
+
+    if (nextTab) {
+      setActiveTab(nextTab);
+    }
+
+    if (nextTab && nextPanel) {
+      setOpenPanelByTab((prev) => ({
+        ...prev,
+        [nextTab]: nextPanel,
+      }));
+    }
+  }, [requestedPanel, requestedTab]);
 
   async function loadProducts() {
     try {
@@ -225,7 +259,7 @@ export default function ShopPage() {
 
   const layoutPanels: AdminEditorPanelItem[] = [
     {
-      id: "background",
+      id: "list-background",
       title: t("shop.layout.listBackground"),
       description: t("admin.editorScaffold.panels.background.description"),
       actions: publishActions,
@@ -247,6 +281,35 @@ export default function ShopPage() {
             return result;
           }}
           usageContext={SHOP_LIST_BACKGROUND}
+          onToast={showToast}
+          onError={handleError}
+          previewHeight="h-48"
+        />
+      ),
+    },
+    {
+      id: "detail-background",
+      title: t("shop.layout.detailBackground"),
+      description: t("admin.editorScaffold.panels.background.description"),
+      actions: publishActions,
+      content: (
+        <BackgroundEditor
+          label={t("shop.layout.detailBackground")}
+          background={
+            config.shopDetailBackground || { type: "color", value: "#000000" }
+          }
+          onBackgroundChange={(background: BackgroundConfig) => {
+            setConfig({
+              ...config,
+              shopDetailBackground: background,
+            });
+          }}
+          disabled={saving || publishing}
+          onUploadImage={async (file, options) => {
+            const result = await pageApi.uploadImage(file, options);
+            return result;
+          }}
+          usageContext={SHOP_DETAIL_BACKGROUND}
           onToast={showToast}
           onError={handleError}
           previewHeight="h-48"

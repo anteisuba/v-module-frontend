@@ -375,6 +375,7 @@
     "pageTitle": "メディアライブラリ",
     "pageDescription": "アップロード済み画像を一覧し、背景・ブログカバー・商品画像に再利用できます。",
     "open": "ライブラリから選択",
+    "goToReplace": "置き換え先へ",
     "searchLabel": "素材を検索",
     "searchPlaceholder": "ファイル名または URL で検索",
     "uploadButton": "画像をアップロード",
@@ -396,6 +397,11 @@
     "deleteSelected": "選択を削除",
     "deleteSuccess": "メディア素材を削除しました",
     "deleteFailed": "メディア素材の削除に失敗しました",
+    "inUse": "{count} 箇所で使用中",
+    "notInUse": "安全に削除可能",
+    "inUseAction": "使用中",
+    "referencesLabel": "参照",
+    "moreReferences": "さらに {count} 箇所で参照中",
     "deleteConfirmTitle": "素材を削除",
     "deleteConfirmSingle": "この素材を削除しますか？まだ参照されている場合、公開ページの画像が壊れます。",
     "deleteConfirmBulk": "選択中の {count} 件の素材を削除しますか？まだ参照されている場合、公開ページの画像が壊れます。",
@@ -416,6 +422,13 @@
       "heroLogo": "Hero ロゴ",
       "heroSlide": "Hero スライド",
       "newsItem": "ニュース画像"
+    },
+    "referenceKinds": {
+      "pageDraft": "ページ下書き設定",
+      "pagePublished": "公開ページ設定",
+      "blogCover": "ブログカバー",
+      "productImage": "商品画像",
+      "newsArticleBackground": "ニュース記事背景"
     }
   },
   "newsArticleEditor": {

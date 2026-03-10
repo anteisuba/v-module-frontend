@@ -7,6 +7,11 @@ import BlogList from "@/features/blog/BlogList";
 import type { PageConfig } from "@/domain/page-config/types";
 import { EMPTY_PAGE_CONFIG } from "@/domain/page-config/constants";
 import { getServerSession } from "@/lib/session/userSession";
+import {
+  findE2EPublicPageState,
+  getE2EPublicPageBlogPosts,
+  getE2EPublicSiteState,
+} from "@/lib/e2e/publicPageState";
 
 export const dynamic = "force-dynamic";
 
@@ -16,8 +21,20 @@ export default async function UserBlogPage({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
+  const e2eSiteState = await getE2EPublicSiteState();
+  const e2ePageState = findE2EPublicPageState(e2eSiteState, slug);
+  const e2eBlogPosts = getE2EPublicPageBlogPosts(e2eSiteState, slug);
 
-  const user = await getUserPageDataBySlug(slug);
+  const user = e2ePageState
+    ? {
+        id: `e2e-user-${slug}`,
+        slug,
+        displayName: e2ePageState.displayName,
+        page: {
+          publishedConfig: e2ePageState.publishedConfig,
+        },
+      }
+    : await getUserPageDataBySlug(slug);
 
   if (!user) {
     notFound();
@@ -34,14 +51,17 @@ export default async function UserBlogPage({
   }
 
   // 获取已发布的博客文章
-  const session = await getServerSession();
-  const blogData = await getBlogPosts({
-    userSlug: slug,
-    published: true,
-    limit: 50,
-    viewerUserId: session.user?.id,
-    viewerEmail: session.user?.email,
-  });
+  const session = e2eBlogPosts === null ? await getServerSession() : null;
+  const blogData =
+    e2eBlogPosts !== null
+      ? { posts: e2eBlogPosts }
+      : await getBlogPosts({
+          userSlug: slug,
+          published: true,
+          limit: 50,
+          viewerUserId: session?.user?.id,
+          viewerEmail: session?.user?.email,
+        });
 
   // 调试信息（开发环境）
   if (process.env.NODE_ENV === "development") {
@@ -93,7 +113,19 @@ export async function generateMetadata({
   params: Promise<{ slug: string }>;
 }) {
   const { slug } = await params;
-  const user = await getUserPageDataBySlug(slug);
+  const e2ePageState = findE2EPublicPageState(
+    await getE2EPublicSiteState(),
+    slug
+  );
+  const user = e2ePageState
+    ? {
+        slug,
+        displayName: e2ePageState.displayName,
+        page: {
+          publishedConfig: e2ePageState.publishedConfig,
+        },
+      }
+    : await getUserPageDataBySlug(slug);
 
   if (!user) {
     return {

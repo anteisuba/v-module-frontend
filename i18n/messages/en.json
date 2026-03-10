@@ -375,6 +375,7 @@
     "pageTitle": "Media Library",
     "pageDescription": "Browse uploaded images in one place and reuse them across backgrounds, blog covers, and product images.",
     "open": "Choose from library",
+    "goToReplace": "Go replace",
     "searchLabel": "Search assets",
     "searchPlaceholder": "Search by filename or URL",
     "uploadButton": "Upload image",
@@ -396,6 +397,11 @@
     "deleteSelected": "Delete selected",
     "deleteSuccess": "Media assets deleted",
     "deleteFailed": "Failed to delete media assets",
+    "inUse": "Used in {count} places",
+    "notInUse": "Safe to delete",
+    "inUseAction": "In use",
+    "referencesLabel": "references",
+    "moreReferences": "{count} more references",
     "deleteConfirmTitle": "Delete assets",
     "deleteConfirmSingle": "Delete this asset? If it is still referenced, images on public pages will break.",
     "deleteConfirmBulk": "Delete the selected {count} assets? If they are still referenced, images on public pages will break.",
@@ -416,6 +422,13 @@
       "heroLogo": "Hero logo",
       "heroSlide": "Hero slide",
       "newsItem": "News item image"
+    },
+    "referenceKinds": {
+      "pageDraft": "Draft page config",
+      "pagePublished": "Published page config",
+      "blogCover": "Blog cover",
+      "productImage": "Product image",
+      "newsArticleBackground": "News article background"
     }
   },
   "newsArticleEditor": {

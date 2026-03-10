@@ -8,6 +8,7 @@ import {
   HERO_SLIDE,
   type MediaAssetUsageContext,
 } from "@/domain/media/usage";
+import { useScrollToElement } from "@/hooks/useScrollToElement";
 import {
   ImagePositionEditor,
   IconPicker,
@@ -34,6 +35,7 @@ interface HeroSectionEditorProps {
   uploadingIndex?: number | null;
   onToast?: (message: string) => void;
   onError?: (message: string) => void;
+  focusTarget?: string | null;
 }
 
 // 通用开关组件
@@ -80,12 +82,15 @@ export default function HeroSectionEditor({
   uploadingIndex = null,
   onToast,
   onError,
+  focusTarget = null,
 }: HeroSectionEditorProps) {
   const { t } = useI18n();
   const [deleteConfirmIndex, setDeleteConfirmIndex] = useState<number | null>(null);
   const [deleteSocialLinkIndex, setDeleteSocialLinkIndex] = useState<number | null>(null);
   const [logoPickerOpen, setLogoPickerOpen] = useState(false);
   const [slidePickerIndex, setSlidePickerIndex] = useState<number | null>(null);
+  useScrollToElement(focusTarget === "hero-logo", "hero-logo-editor");
+  useScrollToElement(focusTarget === "hero-slides", "hero-slides-editor");
   // 获取 hero section
   function getHeroSection() {
     return config.sections.find((s) => s.type === "hero");
@@ -329,7 +334,10 @@ export default function HeroSectionEditor({
       </div>
 
       {/* Logo 编辑（左上角） */}
-      <div className="mb-4 space-y-3 rounded-lg border border-black/10 bg-white/70 p-3">
+      <div
+        id="hero-logo-editor"
+        className="mb-4 space-y-3 rounded-lg border border-black/10 bg-white/70 p-3"
+      >
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-xs font-semibold text-black">{t("heroEditor.logo.title")}</h3>
           <ToggleSwitch
@@ -805,7 +813,7 @@ export default function HeroSectionEditor({
       </div>
 
       {/* 图片编辑 */}
-      <div className="mb-3">
+      <div id="hero-slides-editor" className="mb-3">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-xs font-semibold text-black">
             {t("heroEditor.slides.title")}（{heroSlides.length}张）

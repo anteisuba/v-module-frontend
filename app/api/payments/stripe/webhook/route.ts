@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
 import {
+  handleStripeDisputeUpdated,
   handleStripeCheckoutExpired,
   handleStripeCheckoutFailed,
   handleStripeCheckoutPaid,
@@ -17,6 +18,17 @@ function isCheckoutSession(
     object !== null &&
     "object" in object &&
     object.object === "checkout.session"
+  );
+}
+
+function isDisputeObject(
+  object: Stripe.Event.Data.Object
+): object is Stripe.Dispute {
+  return (
+    typeof object === "object" &&
+    object !== null &&
+    "object" in object &&
+    object.object === "dispute"
   );
 }
 
@@ -40,26 +52,38 @@ export async function POST(request: Request) {
       getStripeWebhookSecret()
     );
 
-    if (!isCheckoutSession(event.data.object)) {
-      return NextResponse.json({ received: true });
-    }
-
-    const session = event.data.object;
-
     switch (event.type) {
       case "checkout.session.completed":
-        if (session.payment_status === "paid") {
-          await handleStripeCheckoutPaid(session);
+        if (
+          isCheckoutSession(event.data.object) &&
+          event.data.object.payment_status === "paid"
+        ) {
+          await handleStripeCheckoutPaid(event.data.object);
         }
         break;
       case "checkout.session.async_payment_succeeded":
-        await handleStripeCheckoutPaid(session);
+        if (isCheckoutSession(event.data.object)) {
+          await handleStripeCheckoutPaid(event.data.object);
+        }
         break;
       case "checkout.session.async_payment_failed":
-        await handleStripeCheckoutFailed(session);
+        if (isCheckoutSession(event.data.object)) {
+          await handleStripeCheckoutFailed(event.data.object);
+        }
         break;
       case "checkout.session.expired":
-        await handleStripeCheckoutExpired(session);
+        if (isCheckoutSession(event.data.object)) {
+          await handleStripeCheckoutExpired(event.data.object);
+        }
+        break;
+      case "charge.dispute.created":
+      case "charge.dispute.updated":
+      case "charge.dispute.closed":
+      case "charge.dispute.funds_withdrawn":
+      case "charge.dispute.funds_reinstated":
+        if (isDisputeObject(event.data.object)) {
+          await handleStripeDisputeUpdated(event.data.object);
+        }
         break;
       default:
         break;

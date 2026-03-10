@@ -144,6 +144,10 @@ export default function OrdersPage() {
   }
 
   function getNextStatus(currentStatus: string): string | null {
+    if (currentStatus === "CANCELLED") {
+      return null;
+    }
+
     const statusFlow: Record<string, string> = {
       PENDING: "PAID",
       PAID: "SHIPPED",
@@ -165,6 +169,10 @@ export default function OrdersPage() {
 
   function formatPrice(price: number) {
     return `¥${price.toFixed(2)}`;
+  }
+
+  function handleViewOrder(orderId: string) {
+    router.push(`/admin/orders/${orderId}`);
   }
 
   function getStatusLabel(status: string) {
@@ -224,9 +232,25 @@ export default function OrdersPage() {
         </div>
 
         {/* 头部 */}
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold text-black">订单管理</h1>
-          <p className="mt-1 text-sm text-black/70">管理您的所有订单</p>
+        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+          <div>
+            <h1 className="text-2xl font-bold text-black">订单管理</h1>
+            <p className="mt-1 text-sm text-black/70">管理您的所有订单</p>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            <Button
+              variant="secondary"
+              onClick={() => router.push("/admin/orders/reconciliation")}
+            >
+              支付对账
+            </Button>
+            <Button
+              variant="secondary"
+              onClick={() => router.push("/admin/orders/reconciliation/settlements")}
+            >
+              结算核销
+            </Button>
+          </div>
         </div>
 
         <div className="mb-6 rounded-xl border border-black/10 bg-white/55 p-4 backdrop-blur-xl">
@@ -361,6 +385,13 @@ export default function OrdersPage() {
                       <div className="text-lg font-bold text-black">
                         {formatPrice(order.totalAmount)}
                       </div>
+                      <button
+                        type="button"
+                        onClick={() => handleViewOrder(order.id)}
+                        className="mt-3 rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black transition-colors hover:bg-white/80"
+                      >
+                        查看详情
+                      </button>
                     </div>
                   </div>
 
@@ -382,7 +413,7 @@ export default function OrdersPage() {
                   </div>
 
                   {/* 状态更新按钮 */}
-                  {nextStatus && (
+                  {nextStatus && order.paymentStatus !== "REFUNDED" && (
                     <div className="pt-4 border-t border-black/10">
                       <Button
                         variant="secondary"

@@ -3,6 +3,7 @@ import {
   normalizeMediaAssetUsageContexts,
   type MediaAssetUsageContext,
 } from "./usage";
+import type { MediaAssetReference } from "./references";
 
 export const MEDIA_ASSET_SELECT = {
   id: true,
@@ -27,11 +28,15 @@ export interface SerializedMediaAsset {
   size: number;
   originalName: string | null;
   usageContexts: MediaAssetUsageContext[];
+  isInUse: boolean;
+  referenceCount: number;
+  references: MediaAssetReference[];
   createdAt: string;
 }
 
 export function serializeMediaAsset(
-  asset: MediaAssetRecord
+  asset: MediaAssetRecord,
+  references: MediaAssetReference[] = []
 ): SerializedMediaAsset {
   return {
     id: asset.id,
@@ -40,6 +45,9 @@ export function serializeMediaAsset(
     size: asset.size,
     originalName: asset.originalName || null,
     usageContexts: normalizeMediaAssetUsageContexts(asset.usageContexts),
+    isInUse: references.length > 0,
+    referenceCount: references.length,
+    references,
     createdAt: asset.createdAt.toISOString(),
   };
 }

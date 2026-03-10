@@ -6,6 +6,7 @@ import {
   MEDIA_ASSET_SELECT,
   serializeMediaAsset,
 } from "@/domain/media/assets";
+import { buildMediaAssetReferenceMap } from "@/domain/media/reference-map";
 import {
   appendMediaAssetUsageContext,
   isMediaAssetUsageContext,
@@ -119,9 +120,12 @@ export async function GET(request: Request) {
     }),
     prisma.mediaAsset.count({ where }),
   ]);
+  const referencesByAssetId = await buildMediaAssetReferenceMap(userId, assets);
 
   return NextResponse.json({
-    assets: assets.map(serializeMediaAsset),
+    assets: assets.map((asset) =>
+      serializeMediaAsset(asset, referencesByAssetId.get(asset.id) || [])
+    ),
     pagination: {
       page,
       limit,
@@ -191,7 +195,7 @@ export async function PATCH(request: Request) {
 
   return NextResponse.json({
     ok: true,
-    assets: updatedAssets.map(serializeMediaAsset),
+    assets: updatedAssets.map((asset) => serializeMediaAsset(asset)),
   });
 }
 
@@ -228,6 +232,28 @@ export async function DELETE(request: Request) {
 
   if (assets.length === 0) {
     return NextResponse.json({ error: "Assets not found" }, { status: 404 });
+  }
+
+  const referencesByAssetId = await buildMediaAssetReferenceMap(userId, assets);
+  const blockedAssets = assets.filter(
+    (asset) => (referencesByAssetId.get(asset.id) || []).length > 0
+  );
+
+  if (blockedAssets.length > 0) {
+    return NextResponse.json(
+      {
+        error: "Some media assets are still in use and cannot be deleted",
+        code: "MEDIA_ASSETS_IN_USE",
+        details: {
+          blockedIds: blockedAssets.map((asset) => asset.id),
+          blockedCount: blockedAssets.length,
+          blockedAssets: blockedAssets.map((asset) =>
+            serializeMediaAsset(asset, referencesByAssetId.get(asset.id) || [])
+          ),
+        },
+      },
+      { status: 409 }
+    );
   }
 
   await Promise.all(

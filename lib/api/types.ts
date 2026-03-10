@@ -1,6 +1,7 @@
 // lib/api/types.ts
 
 import type { PageConfig } from "@/domain/page-config/types";
+import type { MediaAssetReference } from "@/domain/media/references";
 import type {
   MediaAssetUsageContext,
   MediaAssetUsageFilter,
@@ -86,6 +87,9 @@ export interface MediaAssetSummary {
   size: number;
   originalName: string | null;
   usageContexts: MediaAssetUsageContext[];
+  isInUse: boolean;
+  referenceCount: number;
+  references: MediaAssetReference[];
   createdAt: string;
 }
 
