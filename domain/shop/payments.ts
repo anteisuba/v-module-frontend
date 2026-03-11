@@ -2,9 +2,11 @@ import type Stripe from "stripe";
 import { prisma } from "@/lib/prisma";
 import { Prisma } from "@prisma/client";
 import {
+  fromStripeAmount,
   getStripeClient,
   getStripeCurrency,
   getStripeId,
+  getStripePlatformFeeBps,
   toStripeAmount,
 } from "@/lib/stripe";
 import {
@@ -32,8 +34,9 @@ import {
   type PublicOrderCreateInput,
   type SerializedOrder,
   type SerializedOrderRefund,
-} from "./services";
-import { sendOrderCreatedNotifications } from "./notifications";
+} from "@/domain/shop/services";
+import { sendOrderCreatedNotifications } from "@/domain/shop/notifications";
+import { getStripeCheckoutRoutingForUser } from "@/domain/shop/payout-accounts";
 
 function getBaseUrl() {
   return process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
@@ -92,6 +95,21 @@ export async function createStripeCheckout(
     const currency = getStripeCurrency();
     const sellerSlug = await getSellerSlug(reservedOrder.userId);
     const firstProductId = reservedOrder.items[0]?.productId || null;
+    const payoutRouting = await getStripeCheckoutRoutingForUser(reservedOrder.userId);
+    const paymentRoutingMode = payoutRouting
+      ? "STRIPE_CONNECT_DESTINATION"
+      : "PLATFORM";
+    const orderTotalMinor = toStripeAmount(reservedOrder.totalAmount, currency);
+    const platformFeeBps = payoutRouting ? getStripePlatformFeeBps() : 0;
+    const applicationFeeMinor =
+      platformFeeBps > 0 ? Math.round((orderTotalMinor * platformFeeBps) / 10_000) : 0;
+    const platformFeeAmount =
+      applicationFeeMinor > 0
+        ? fromStripeAmount(applicationFeeMinor, currency)
+        : 0;
+    const sellerNetExpectedAmount = payoutRouting
+      ? Math.max(reservedOrder.totalAmount - platformFeeAmount, 0)
+      : null;
 
     const session = await stripe.checkout.sessions.create({
       mode: "payment",
@@ -105,6 +123,8 @@ export async function createStripeCheckout(
         sellerId: reservedOrder.userId,
         buyerEmail: reservedOrder.buyerEmail,
         provider: ORDER_PAYMENT_PROVIDER_STRIPE,
+        paymentRoutingMode,
+        connectedAccountId: payoutRouting?.connectedAccountId || "",
       },
       payment_intent_data: {
         metadata: {
@@ -112,7 +132,21 @@ export async function createStripeCheckout(
           sellerId: reservedOrder.userId,
           buyerEmail: reservedOrder.buyerEmail,
           provider: ORDER_PAYMENT_PROVIDER_STRIPE,
+          paymentRoutingMode,
+          connectedAccountId: payoutRouting?.connectedAccountId || "",
         },
+        ...(payoutRouting
+          ? {
+              transfer_data: {
+                destination: payoutRouting.connectedAccountId,
+              },
+            }
+          : {}),
+        ...(applicationFeeMinor > 0
+          ? {
+              application_fee_amount: applicationFeeMinor,
+            }
+          : {}),
       },
       line_items: reservedOrder.items.map((item) => ({
         quantity: item.quantity,
@@ -134,6 +168,13 @@ export async function createStripeCheckout(
       sessionId: session.id,
       paymentIntentId: getStripeId(session.payment_intent),
       expiresAt: getSessionDateExpiry(session),
+      payoutAccountId: payoutRouting?.payoutAccountId || null,
+      paymentRoutingMode,
+      connectedAccountId: payoutRouting?.connectedAccountId || null,
+      platformFeeAmount: payoutRouting ? platformFeeAmount : null,
+      sellerGrossAmount: payoutRouting ? reservedOrder.totalAmount : null,
+      sellerNetExpectedAmount,
+      applicationFeeAmount: payoutRouting ? platformFeeAmount : null,
     });
 
     return {

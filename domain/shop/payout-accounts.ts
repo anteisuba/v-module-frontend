@@ -38,6 +38,11 @@ export interface SerializedSellerPayoutAccount {
   updatedAt: string;
 }
 
+export interface StripeCheckoutRouting {
+  payoutAccountId: string;
+  connectedAccountId: string;
+}
+
 interface StripeExternalBankSummary {
   bankNameMasked: string | null;
   bankLast4Masked: string | null;
@@ -239,6 +244,123 @@ export async function getSellerPayoutAccountForUser(userId: string) {
   return record ? serializeSellerPayoutAccount(record) : null;
 }
 
+export async function getStripeCheckoutRoutingForUser(
+  userId: string
+): Promise<StripeCheckoutRouting | null> {
+  const record = await prisma.sellerPayoutAccount.findUnique({
+    where: {
+      userId_provider: {
+        userId,
+        provider: PAYOUT_PROVIDER_STRIPE,
+      },
+    },
+    select: {
+      id: true,
+      providerAccountId: true,
+      status: true,
+      chargesEnabled: true,
+      payoutsEnabled: true,
+    },
+  });
+
+  if (
+    !record ||
+    record.status === SELLER_PAYOUT_ACCOUNT_STATUS_DISCONNECTED ||
+    !record.chargesEnabled ||
+    !record.payoutsEnabled
+  ) {
+    return null;
+  }
+
+  return {
+    payoutAccountId: record.id,
+    connectedAccountId: record.providerAccountId,
+  };
+}
+
+async function updateStripePayoutAccountRecord(
+  existing: {
+    id: string;
+    userId: string;
+    accountType: string;
+    country: string | null;
+    defaultCurrency: string | null;
+    displayNameSnapshot: string | null;
+    onboardingCompletedAt: Date | null;
+  },
+  account: Stripe.Account | Stripe.DeletedAccount
+) {
+  const user = await getUserForPayoutAccount(existing.userId);
+  const bankSummary =
+    "deleted" in account && account.deleted
+      ? {
+          bankNameMasked: null,
+          bankLast4Masked: null,
+        }
+      : await getStripeExternalBankSummary(account.id);
+
+  return prisma.sellerPayoutAccount.update({
+    where: { id: existing.id },
+    data: {
+      providerAccountId: account.id,
+      status: deriveStripeAccountStatus(account),
+      accountType:
+        "deleted" in account && account.deleted
+          ? existing.accountType
+          : account.type?.toUpperCase() || existing.accountType,
+      country:
+        "deleted" in account && account.deleted
+          ? existing.country
+          : account.country || null,
+      defaultCurrency:
+        "deleted" in account && account.deleted
+          ? existing.defaultCurrency
+          : account.default_currency?.toUpperCase() || null,
+      businessType:
+        "deleted" in account && account.deleted
+          ? null
+          : account.business_type || null,
+      displayNameSnapshot: user.displayName || existing.displayNameSnapshot,
+      detailsSubmitted:
+        "deleted" in account && account.deleted ? false : account.details_submitted,
+      chargesEnabled:
+        "deleted" in account && account.deleted ? false : account.charges_enabled,
+      payoutsEnabled:
+        "deleted" in account && account.deleted ? false : account.payouts_enabled,
+      requirementsCurrentlyDue: toNullableJsonArray(
+        "deleted" in account && account.deleted
+          ? null
+          : account.requirements?.currently_due || null
+      ),
+      requirementsEventuallyDue: toNullableJsonArray(
+        "deleted" in account && account.deleted
+          ? null
+          : account.requirements?.eventually_due || null
+      ),
+      requirementsPastDue: toNullableJsonArray(
+        "deleted" in account && account.deleted
+          ? null
+          : account.requirements?.past_due || null
+      ),
+      disabledReason:
+        "deleted" in account && account.deleted
+          ? "account_deleted"
+          : account.requirements?.disabled_reason || null,
+      bankNameMasked: bankSummary.bankNameMasked,
+      bankLast4Masked: bankSummary.bankLast4Masked,
+      onboardingCompletedAt:
+        "deleted" in account && account.deleted
+          ? existing.onboardingCompletedAt
+          : account.charges_enabled && account.payouts_enabled
+            ? existing.onboardingCompletedAt || new Date()
+            : existing.onboardingCompletedAt,
+      lastSyncedAt: new Date(),
+      disconnectedAt:
+        "deleted" in account && account.deleted ? new Date() : null,
+    },
+  });
+}
+
 export async function ensureStripePayoutAccountForUser(userId: string) {
   if (!isStripeConfigured()) {
     throw new Error("Stripe Checkout is not configured");
@@ -332,76 +454,42 @@ export async function syncStripePayoutAccountForUser(userId: string) {
   }
 
   const stripe = getStripeClient();
-  const user = await getUserForPayoutAccount(userId);
   const account = await stripe.accounts.retrieve(existing.providerAccountId);
-  const bankSummary =
-    "deleted" in account && account.deleted
-      ? {
-          bankNameMasked: null,
-          bankLast4Masked: null,
-        }
-      : await getStripeExternalBankSummary(account.id);
+  const record = await updateStripePayoutAccountRecord(existing, account);
 
-  const record = await prisma.sellerPayoutAccount.update({
-    where: { id: existing.id },
-    data: {
-      providerAccountId: account.id,
-      status: deriveStripeAccountStatus(account),
-      accountType:
-        "deleted" in account && account.deleted
-          ? existing.accountType
-          : account.type?.toUpperCase() || existing.accountType,
-      country:
-        "deleted" in account && account.deleted
-          ? existing.country
-          : account.country || null,
-      defaultCurrency:
-        "deleted" in account && account.deleted
-          ? existing.defaultCurrency
-          : account.default_currency?.toUpperCase() || null,
-      businessType:
-        "deleted" in account && account.deleted
-          ? null
-          : account.business_type || null,
-      displayNameSnapshot: user.displayName || existing.displayNameSnapshot,
-      detailsSubmitted:
-        "deleted" in account && account.deleted ? false : account.details_submitted,
-      chargesEnabled:
-        "deleted" in account && account.deleted ? false : account.charges_enabled,
-      payoutsEnabled:
-        "deleted" in account && account.deleted ? false : account.payouts_enabled,
-      requirementsCurrentlyDue: toNullableJsonArray(
-        "deleted" in account && account.deleted
-          ? null
-          : account.requirements?.currently_due || null
-      ),
-      requirementsEventuallyDue: toNullableJsonArray(
-        "deleted" in account && account.deleted
-          ? null
-          : account.requirements?.eventually_due || null
-      ),
-      requirementsPastDue: toNullableJsonArray(
-        "deleted" in account && account.deleted
-          ? null
-          : account.requirements?.past_due || null
-      ),
-      disabledReason:
-        "deleted" in account && account.deleted
-          ? "account_deleted"
-          : account.requirements?.disabled_reason || null,
-      bankNameMasked: bankSummary.bankNameMasked,
-      bankLast4Masked: bankSummary.bankLast4Masked,
-      onboardingCompletedAt:
-        "deleted" in account && account.deleted
-          ? existing.onboardingCompletedAt
-          : account.charges_enabled && account.payouts_enabled
-            ? existing.onboardingCompletedAt || new Date()
-            : existing.onboardingCompletedAt,
-      lastSyncedAt: new Date(),
-      disconnectedAt:
-        "deleted" in account && account.deleted ? new Date() : null,
+  return serializeSellerPayoutAccount(record);
+}
+
+export async function syncStripePayoutAccountByConnectedAccountId(
+  connectedAccountId: string,
+  inputAccount?: Stripe.Account | Stripe.DeletedAccount
+) {
+  if (!isStripeConfigured()) {
+    throw new Error("Stripe Checkout is not configured");
+  }
+
+  const existing = await prisma.sellerPayoutAccount.findUnique({
+    where: {
+      providerAccountId: connectedAccountId,
+    },
+    select: {
+      id: true,
+      userId: true,
+      accountType: true,
+      country: true,
+      defaultCurrency: true,
+      displayNameSnapshot: true,
+      onboardingCompletedAt: true,
     },
   });
+
+  if (!existing) {
+    return null;
+  }
+
+  const account =
+    inputAccount || (await getStripeClient().accounts.retrieve(connectedAccountId));
+  const record = await updateStripePayoutAccountRecord(existing, account);
 
   return serializeSellerPayoutAccount(record);
 }

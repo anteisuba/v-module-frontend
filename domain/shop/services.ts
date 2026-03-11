@@ -822,6 +822,10 @@ async function upsertPaymentAttemptForOrder(
     status: string;
     amount: Prisma.Decimal | number;
     currency: string;
+    connectedAccountId?: string | null;
+    externalChargeId?: string | null;
+    externalTransferId?: string | null;
+    applicationFeeAmount?: Prisma.Decimal | number | null;
     externalSessionId?: string | null;
     externalPaymentIntentId?: string | null;
     failureReason?: string | null;
@@ -849,6 +853,10 @@ async function upsertPaymentAttemptForOrder(
     status: input.status,
     amount: input.amount,
     currency: input.currency,
+    connectedAccountId: input.connectedAccountId || null,
+    externalChargeId: input.externalChargeId || null,
+    externalTransferId: input.externalTransferId || null,
+    applicationFeeAmount: input.applicationFeeAmount ?? null,
     externalSessionId: input.externalSessionId || null,
     externalPaymentIntentId: input.externalPaymentIntentId || null,
     failureReason: input.failureReason || null,
@@ -1081,6 +1089,13 @@ export async function attachStripePaymentSessionToOrder(
     sessionId: string;
     paymentIntentId?: string | null;
     expiresAt?: Date | null;
+    payoutAccountId?: string | null;
+    paymentRoutingMode?: "PLATFORM" | "STRIPE_CONNECT_DESTINATION";
+    connectedAccountId?: string | null;
+    platformFeeAmount?: Prisma.Decimal | number | null;
+    sellerGrossAmount?: Prisma.Decimal | number | null;
+    sellerNetExpectedAmount?: Prisma.Decimal | number | null;
+    applicationFeeAmount?: Prisma.Decimal | number | null;
   }
 ): Promise<SerializedOrder> {
   const order = await prisma.$transaction(async (tx) => {
@@ -1092,6 +1107,12 @@ export async function attachStripePaymentSessionToOrder(
         paymentExpiresAt: input.expiresAt || null,
         paymentFailureReason: null,
         paymentFailedAt: null,
+        payoutAccountId: input.payoutAccountId,
+        paymentRoutingMode: input.paymentRoutingMode,
+        connectedAccountId: input.connectedAccountId,
+        platformFeeAmount: input.platformFeeAmount,
+        sellerGrossAmount: input.sellerGrossAmount,
+        sellerNetExpectedAmount: input.sellerNetExpectedAmount,
       },
       ...ORDER_WITH_ITEMS_QUERY,
     });
@@ -1102,6 +1123,8 @@ export async function attachStripePaymentSessionToOrder(
       status: ORDER_PAYMENT_STATUS_OPEN,
       amount: updatedOrder.totalAmount,
       currency: updatedOrder.currency,
+      connectedAccountId: input.connectedAccountId || null,
+      applicationFeeAmount: input.applicationFeeAmount ?? null,
       externalSessionId: input.sessionId,
       externalPaymentIntentId: input.paymentIntentId || null,
       failureReason: null,
