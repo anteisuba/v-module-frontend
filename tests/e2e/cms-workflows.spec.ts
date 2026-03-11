@@ -236,3 +236,221 @@ test("replaces a referenced background asset from the media library flow", async
     value: "/uploads/new-background.jpg",
   });
 });
+
+test("replaces references directly inside the media library", async ({
+  page,
+}) => {
+  let currentAssets = [
+    createMediaAsset({
+      id: "asset-old",
+      src: "/uploads/old-background.jpg",
+      originalName: "old-background.jpg",
+      usageContexts: ["PAGE_BACKGROUND"],
+      isInUse: true,
+      referenceCount: 1,
+      references: [
+        {
+          kind: "PAGE_DRAFT_CONFIG",
+          entityId: "page-1",
+          entityLabel: "Creator Page",
+          field: "background.value",
+        },
+      ],
+    }),
+    createMediaAsset({
+      id: "asset-new",
+      src: "/uploads/new-background.jpg",
+      originalName: "new-background.jpg",
+      usageContexts: ["PAGE_BACKGROUND"],
+      isInUse: false,
+      referenceCount: 0,
+      references: [],
+    }),
+  ];
+  const replaceRequests: Array<Record<string, any>> = [];
+
+  await page.route("**/api/media-assets/replace", async (route) => {
+    const body = route.request().postDataJSON() as Record<string, any>;
+    replaceRequests.push(body);
+    currentAssets = [
+      {
+        ...currentAssets[0],
+        isInUse: false,
+        referenceCount: 0,
+        references: [],
+      },
+      {
+        ...currentAssets[1],
+        isInUse: true,
+        referenceCount: 1,
+        references: [
+          {
+            kind: "PAGE_DRAFT_CONFIG",
+            entityId: "page-1",
+            entityLabel: "Creator Page",
+            field: "background.value",
+          },
+        ],
+      },
+    ];
+
+    await fulfillJson(route, {
+      ok: true,
+      replacedReferenceCount: 1,
+      updatedEntityCount: 1,
+    });
+  });
+
+  await page.route("**/api/media-assets*", async (route) => {
+    await fulfillJson(route, {
+      assets: currentAssets,
+      pagination: {
+        page: 1,
+        limit: 24,
+        total: currentAssets.length,
+        totalPages: 1,
+      },
+    });
+  });
+
+  await page.goto("/admin/media");
+  await expect(page.getByTestId("media-library-browser")).toBeVisible();
+
+  await page.getByTestId("media-asset-open-replace-asset-old").click();
+  await expect(page.getByTestId("media-picker-dialog")).toBeVisible();
+  await expect(page.getByTestId("media-asset-select-asset-old")).toBeDisabled();
+
+  await page.getByTestId("media-asset-select-asset-new").click();
+
+  await expect.poll(() => replaceRequests.length).toBe(1);
+  expect(replaceRequests[0]).toEqual({
+    sourceAssetId: "asset-old",
+    targetAssetId: "asset-new",
+  });
+
+  await expect(
+    page.getByTestId("media-asset-card-asset-old").getByText("可安全删除")
+  ).toBeVisible();
+  await expect(
+    page.getByTestId("media-asset-card-asset-new").getByText("已被引用 1 处")
+  ).toBeVisible();
+  await expect(page.getByLabel("通知").getByText("已替换 1 处引用")).toBeVisible();
+});
+
+test("updates media usage tags in bulk from the media library", async ({
+  page,
+}) => {
+  let currentAssets = [
+    createMediaAsset({
+      id: "asset-1",
+      src: "/uploads/asset-1.jpg",
+      originalName: "asset-1.jpg",
+      usageContexts: [],
+    }),
+    createMediaAsset({
+      id: "asset-2",
+      src: "/uploads/asset-2.jpg",
+      originalName: "asset-2.jpg",
+      usageContexts: ["PAGE_BACKGROUND"],
+    }),
+  ];
+  const usageRequests: Array<Record<string, any>> = [];
+
+  await page.route("**/api/media-assets*", async (route) => {
+    if (route.request().method() === "PATCH") {
+      const body = route.request().postDataJSON() as Record<string, any>;
+      usageRequests.push(body);
+
+      currentAssets = currentAssets.map((asset) => {
+        if (!body.ids.includes(asset.id)) {
+          return asset;
+        }
+
+        if (body.action === "CLEAR") {
+          return {
+            ...asset,
+            usageContexts: [],
+          };
+        }
+
+        if (body.action === "REMOVE") {
+          return {
+            ...asset,
+            usageContexts: asset.usageContexts.filter(
+              (value) => value !== body.usageContext
+            ),
+          };
+        }
+
+        return {
+          ...asset,
+          usageContexts: Array.from(
+            new Set([...asset.usageContexts, body.usageContext])
+          ),
+        };
+      });
+
+      await fulfillJson(route, {
+        ok: true,
+        assets: currentAssets.filter((asset) => body.ids.includes(asset.id)),
+      });
+      return;
+    }
+
+    await fulfillJson(route, {
+      assets: currentAssets,
+      pagination: {
+        page: 1,
+        limit: 24,
+        total: currentAssets.length,
+        totalPages: 1,
+      },
+    });
+  });
+
+  await page.goto("/admin/media");
+  await expect(page.getByTestId("media-library-browser")).toBeVisible();
+
+  await page
+    .getByTestId("media-asset-card-asset-1")
+    .locator('input[type="checkbox"]')
+    .check();
+  await page
+    .getByTestId("media-asset-card-asset-2")
+    .locator('input[type="checkbox"]')
+    .check();
+
+  await page.getByTestId("media-library-bulk-tag-action").selectOption("ADD");
+  await page
+    .getByTestId("media-library-bulk-tag-context")
+    .selectOption("BLOG_COVER");
+  await page.getByTestId("media-library-bulk-tag-apply").click();
+
+  await expect.poll(() => usageRequests.length).toBe(1);
+  expect(usageRequests[0]).toEqual({
+    ids: ["asset-1", "asset-2"],
+    usageContext: "BLOG_COVER",
+    action: "ADD",
+  });
+  await expect(
+    page.getByTestId("media-asset-card-asset-1").getByText("博客封面")
+  ).toBeVisible();
+  await expect(
+    page.getByLabel("通知").getByText("已批量添加标签")
+  ).toBeVisible();
+
+  await page.getByTestId("media-library-bulk-tag-action").selectOption("CLEAR");
+  await page.getByTestId("media-library-bulk-tag-apply").click();
+
+  await expect.poll(() => usageRequests.length).toBe(2);
+  expect(usageRequests[1]).toEqual({
+    ids: ["asset-1", "asset-2"],
+    action: "CLEAR",
+  });
+  await expect(
+    page.getByTestId("media-asset-card-asset-1").getByText("未标记场景")
+  ).toBeVisible();
+  await expect(
+    page.getByLabel("通知").getByText("已清空已选素材标签")
+  ).toBeVisible();
+});

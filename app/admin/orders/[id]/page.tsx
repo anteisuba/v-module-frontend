@@ -437,7 +437,10 @@ export default function OrderDetailPage({
   }
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden">
+    <main
+      data-testid="admin-order-detail-page"
+      className="relative min-h-screen w-full overflow-hidden"
+    >
       <div className="absolute inset-0">
         <div
           className="absolute inset-0 bg-cover bg-center"
@@ -722,6 +725,7 @@ export default function OrderDetailPage({
                     value={refundAmount}
                     onChange={(event) => setRefundAmount(event.target.value)}
                     disabled={Boolean(refundEligibilityMessage) || refunding}
+                    data-testid="order-refund-amount"
                   />
                 </div>
                 <div>
@@ -732,6 +736,7 @@ export default function OrderDetailPage({
                     value={refundReason}
                     onChange={(event) => setRefundReason(event.target.value)}
                     rows={3}
+                    data-testid="order-refund-reason"
                     className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black placeholder:text-black/35"
                     placeholder="例如：买家取消、库存异常、售后补偿"
                     disabled={Boolean(refundEligibilityMessage) || refunding}
@@ -746,6 +751,7 @@ export default function OrderDetailPage({
                     onClick={handleRefund}
                     loading={refunding}
                     disabled={Boolean(refundEligibilityMessage)}
+                    data-testid="order-refund-submit"
                   >
                     发起退款
                   </Button>

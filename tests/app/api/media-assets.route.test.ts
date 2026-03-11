@@ -193,6 +193,95 @@ describe("/api/media-assets", () => {
     ]);
   });
 
+  it("removes a usage context from selected assets", async () => {
+    getServerSessionMock.mockResolvedValue({
+      user: { id: "user-1" },
+    });
+    mediaAssetFindManyMock.mockResolvedValue([
+      createAsset({
+        id: "asset-1",
+        usageContexts: ["PRODUCT_IMAGE", "BLOG_COVER"],
+      }),
+    ]);
+    mediaAssetUpdateMock.mockResolvedValue(
+      createAsset({
+        id: "asset-1",
+        usageContexts: ["PRODUCT_IMAGE"],
+      })
+    );
+
+    const response = await PATCH(
+      new Request("http://localhost/api/media-assets", {
+        method: "PATCH",
+        body: JSON.stringify({
+          ids: ["asset-1"],
+          action: "REMOVE",
+          usageContext: "BLOG_COVER",
+        }),
+      })
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(mediaAssetUpdateMock).toHaveBeenCalledWith({
+      where: { id: "asset-1" },
+      data: {
+        usageContexts: ["PRODUCT_IMAGE"],
+      },
+      select: expect.any(Object),
+    });
+    expect(payload.assets).toEqual([
+      expect.objectContaining({
+        id: "asset-1",
+        usageContexts: ["PRODUCT_IMAGE"],
+      }),
+    ]);
+  });
+
+  it("clears usage contexts for selected assets", async () => {
+    getServerSessionMock.mockResolvedValue({
+      user: { id: "user-1" },
+    });
+    mediaAssetFindManyMock.mockResolvedValue([
+      createAsset({
+        id: "asset-1",
+        usageContexts: ["PRODUCT_IMAGE", "BLOG_COVER"],
+      }),
+    ]);
+    mediaAssetUpdateMock.mockResolvedValue(
+      createAsset({
+        id: "asset-1",
+        usageContexts: [],
+      })
+    );
+
+    const response = await PATCH(
+      new Request("http://localhost/api/media-assets", {
+        method: "PATCH",
+        body: JSON.stringify({
+          ids: ["asset-1"],
+          action: "CLEAR",
+        }),
+      })
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(mediaAssetUpdateMock).toHaveBeenCalledWith({
+      where: { id: "asset-1" },
+      data: {
+        usageContexts: [],
+      },
+      select: expect.any(Object),
+    });
+    expect(payload.assets).toEqual([
+      expect.objectContaining({
+        id: "asset-1",
+        usageContexts: [],
+      }),
+    ]);
+  });
+
   it("blocks deletion when assets are still referenced", async () => {
     getServerSessionMock.mockResolvedValue({
       user: { id: "user-1" },

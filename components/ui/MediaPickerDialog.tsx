@@ -13,6 +13,7 @@ interface MediaPickerDialogProps {
   description?: string;
   selectedSrc?: string | null;
   selectLabel?: string;
+  disabledAssetIds?: string[];
   usageContext?: MediaAssetUsageContext;
   onSelect: (asset: MediaAssetSummary) => void;
   onClose: () => void;
@@ -24,6 +25,7 @@ export default function MediaPickerDialog({
   description,
   selectedSrc = null,
   selectLabel,
+  disabledAssetIds,
   usageContext,
   onSelect,
   onClose,
@@ -62,6 +64,7 @@ export default function MediaPickerDialog({
           <div className="overflow-y-auto px-6 py-5">
             <MediaLibraryBrowser
               selectedSrc={selectedSrc}
+              disabledAssetIds={disabledAssetIds}
               usageContext={usageContext}
               onSelect={(asset) => {
                 onSelect(asset);

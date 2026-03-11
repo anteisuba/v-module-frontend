@@ -8,6 +8,22 @@ datasource db {
   directUrl = env("DIRECT_URL") // 用于迁移的直接连接
 }
 
+enum PayoutProvider {
+  STRIPE
+}
+
+enum SellerPayoutAccountStatus {
+  NOT_STARTED
+  PENDING
+  RESTRICTED
+  ACTIVE
+  DISCONNECTED
+}
+
+enum PaymentRoutingMode {
+  PLATFORM
+  STRIPE_CONNECT_DESTINATION
+}
 
 model MediaAsset {
   id     String  @id @default(cuid())
@@ -48,6 +64,7 @@ model User {
   blogPosts           BlogPost[] // 用户创建的博客文章
   products            Product[] // 用户创建的商品
   orders              Order[] // 用户创建的订单（作为卖家）
+  payoutAccounts      SellerPayoutAccount[] // 卖家收款账户
   orderDisputes       OrderDispute[] // 支付争议 / chargeback
   settlementEntries   PaymentSettlementEntry[] // 支付结算流水
   blogLikes           BlogLike[] // 用户点赞的博客
@@ -56,6 +73,48 @@ model User {
   // 索引
   @@index([slug])
   @@index([email])
+}
+
+model SellerPayoutAccount {
+  id                String   @id @default(cuid())
+  userId            String
+  user              User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  provider          PayoutProvider
+  providerAccountId String   @unique // Stripe connected account id, e.g. acct_xxx
+  status            SellerPayoutAccountStatus @default(NOT_STARTED)
+
+  accountType         String   @default("STRIPE_EXPRESS")
+  country             String?
+  defaultCurrency     String?  @default("JPY")
+  businessType        String?
+  displayNameSnapshot String?
+
+  detailsSubmitted Boolean @default(false)
+  chargesEnabled   Boolean @default(false)
+  payoutsEnabled   Boolean @default(false)
+
+  requirementsCurrentlyDue Json?
+  requirementsEventuallyDue Json?
+  requirementsPastDue Json?
+  disabledReason     String?
+
+  bankNameMasked  String?
+  bankLast4Masked String?
+
+  onboardingStartedAt   DateTime?
+  onboardingCompletedAt DateTime?
+  lastSyncedAt          DateTime?
+  disconnectedAt        DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  orders Order[]
+
+  @@unique([userId, provider])
+  @@index([userId, provider, status])
+  @@index([provider, providerAccountId])
 }
 
 // ============================================
@@ -240,6 +299,16 @@ model Order {
   userId String // 卖家用户 ID
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
 
+  payoutAccountId    String?
+  payoutAccount      SellerPayoutAccount? @relation(fields: [payoutAccountId], references: [id], onDelete: SetNull)
+  paymentRoutingMode PaymentRoutingMode   @default(PLATFORM)
+  connectedAccountId String?
+  externalChargeId   String?
+  externalTransferId String?
+  platformFeeAmount  Decimal? @db.Decimal(10, 2)
+  sellerGrossAmount  Decimal? @db.Decimal(10, 2)
+  sellerNetExpectedAmount Decimal? @db.Decimal(10, 2)
+
   // 买家信息
   buyerEmail String // 买家邮箱
   buyerName  String? // 买家姓名（可选）
@@ -283,6 +352,10 @@ model Order {
   @@index([status, createdAt])
   @@index([paymentStatus, createdAt])
   @@index([paymentProvider, createdAt])
+  @@index([payoutAccountId, createdAt])
+  @@index([paymentRoutingMode, createdAt])
+  @@index([connectedAccountId])
+  @@index([externalChargeId])
 }
 
 model OrderPaymentAttempt {
@@ -295,6 +368,10 @@ model OrderPaymentAttempt {
   status                  String // OPEN, PAID, FAILED, EXPIRED
   amount                  Decimal @db.Decimal(10, 2)
   currency                String  @default("JPY")
+  connectedAccountId      String?
+  externalChargeId        String?
+  externalTransferId      String?
+  applicationFeeAmount    Decimal? @db.Decimal(10, 2)
   externalSessionId       String?
   externalPaymentIntentId String?
   failureReason           String?
@@ -308,6 +385,8 @@ model OrderPaymentAttempt {
 
   @@index([orderId, createdAt])
   @@index([provider, status, createdAt])
+  @@index([connectedAccountId])
+  @@index([externalChargeId])
   @@index([externalSessionId])
   @@index([externalPaymentIntentId])
 }
@@ -324,8 +403,12 @@ model OrderRefund {
   currency                String  @default("JPY")
   reason                  String?
   failureReason           String?
+  connectedAccountId      String?
+  externalChargeId        String?
   externalRefundId        String? @unique
   externalPaymentIntentId String?
+  externalTransferReversalId String?
+  applicationFeeRefundedAmount Decimal? @db.Decimal(10, 2)
   requestedByUserId       String?
   metadata                Json?
 
@@ -338,6 +421,8 @@ model OrderRefund {
   @@index([orderId, createdAt])
   @@index([provider, status, createdAt])
   @@index([requestedByUserId, createdAt])
+  @@index([connectedAccountId])
+  @@index([externalChargeId])
   @@index([externalPaymentIntentId])
 }
 
@@ -358,6 +443,8 @@ model OrderDispute {
   externalDisputeId       String  @unique
   externalPaymentIntentId String?
   externalChargeId        String?
+  connectedAccountId      String?
+  externalTransferReversalId String?
   dueBy                   DateTime?
   closedAt                DateTime?
   metadata                Json?
@@ -370,12 +457,15 @@ model OrderDispute {
   @@index([provider, status, updatedAt])
   @@index([externalPaymentIntentId])
   @@index([externalChargeId])
+  @@index([connectedAccountId])
 }
 
 model PaymentSettlementPayout {
   id String @id @default(cuid())
 
   provider         String
+  stripeAccountId  String?
+  accountScope     String?
   externalPayoutId String @unique
   status           String
   amount           Decimal @db.Decimal(10, 2)
@@ -396,6 +486,7 @@ model PaymentSettlementPayout {
 
   @@index([provider, payoutCreatedAt])
   @@index([status, arrivalDate])
+  @@index([stripeAccountId, payoutCreatedAt])
 }
 
 model PaymentSettlementEntry {
@@ -414,6 +505,8 @@ model PaymentSettlementEntry {
   payout   PaymentSettlementPayout? @relation(fields: [payoutId], references: [id], onDelete: SetNull)
 
   provider                     String
+  stripeAccountId              String?
+  accountScope                 String?
   externalBalanceTransactionId String @unique
   externalSourceId             String?
   externalSourceType           String?
@@ -442,6 +535,7 @@ model PaymentSettlementEntry {
   @@index([payoutId, availableOn])
   @@index([provider, status, occurredAt])
   @@index([reconciliationStatus, occurredAt])
+  @@index([stripeAccountId, availableOn])
   @@index([externalSourceId])
 }
 

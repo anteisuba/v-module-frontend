@@ -168,6 +168,7 @@ export default function ProductDetail({
             <button
               onClick={handleBuyNow}
               disabled={product.stock === 0}
+              data-testid="public-shop-buy-now"
               className="w-full rounded-xl bg-black px-6 py-4 text-lg font-medium text-white hover:bg-black/90 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
             >
               {product.stock === 0 ? "缺货" : "立即购买"}

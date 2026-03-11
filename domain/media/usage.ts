@@ -93,3 +93,16 @@ export function appendMediaAssetUsageContext(
 ): MediaAssetUsageContext[] {
   return normalizeMediaAssetUsageContexts([...(values || []), usageContext]);
 }
+
+export function removeMediaAssetUsageContext(
+  values: readonly string[] | null | undefined,
+  usageContext: MediaAssetUsageContext
+): MediaAssetUsageContext[] {
+  return normalizeMediaAssetUsageContexts(values).filter(
+    (value) => value !== usageContext
+  );
+}
+
+export function clearMediaAssetUsageContexts(): MediaAssetUsageContext[] {
+  return [];
+}

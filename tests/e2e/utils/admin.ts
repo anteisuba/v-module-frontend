@@ -1,5 +1,6 @@
 import type { BrowserContext, Page, Route } from "@playwright/test";
 import type { PageConfig } from "../../../domain/page-config/types";
+import type { SerializedOrder } from "../../../domain/shop";
 import type { MediaAssetSummary } from "../../../lib/api/types";
 import type { NewsArticle } from "../../../lib/api/types";
 import type {
@@ -255,6 +256,79 @@ export function createMediaAsset(
     referenceCount: 0,
     references: [],
     createdAt: "2026-03-10T00:00:00.000Z",
+    ...overrides,
+  };
+}
+
+export function createSerializedOrder(
+  overrides: Partial<SerializedOrder> = {}
+): SerializedOrder {
+  return {
+    id: "order-1",
+    userId: "user-1",
+    buyerEmail: "buyer@example.com",
+    buyerName: "Buyer",
+    totalAmount: 4900,
+    currency: "JPY",
+    status: "PAID",
+    paymentProvider: "STRIPE",
+    paymentStatus: "PAID",
+    paymentSessionId: "cs_test_123",
+    paymentIntentId: "pi_test_123",
+    paymentExpiresAt: null,
+    paymentFailedAt: null,
+    paymentFailureReason: null,
+    shippingAddress: {
+      country: "JP",
+      city: "Tokyo",
+      line1: "1-2-3",
+    },
+    shippingMethod: "EMS",
+    createdAt: "2026-03-10T00:00:00.000Z",
+    updatedAt: "2026-03-10T00:00:00.000Z",
+    paidAt: "2026-03-10T00:10:00.000Z",
+    shippedAt: null,
+    deliveredAt: null,
+    refundedAmount: 0,
+    pendingRefundAmount: 0,
+    refundableAmount: 4900,
+    items: [
+      {
+        id: "item-1",
+        orderId: "order-1",
+        productId: "product-1",
+        quantity: 1,
+        price: 4900,
+        subtotal: 4900,
+        createdAt: "2026-03-10T00:00:00.000Z",
+        product: {
+          id: "product-1",
+          name: "Creator Lightstick",
+          images: ["/hero/2.jpeg"],
+        },
+      },
+    ],
+    paymentAttempts: [
+      {
+        id: "attempt-1",
+        orderId: "order-1",
+        provider: "STRIPE",
+        status: "PAID",
+        amount: 4900,
+        currency: "JPY",
+        externalSessionId: "cs_test_123",
+        externalPaymentIntentId: "pi_test_123",
+        failureReason: null,
+        metadata: null,
+        createdAt: "2026-03-10T00:00:00.000Z",
+        updatedAt: "2026-03-10T00:10:00.000Z",
+        paidAt: "2026-03-10T00:10:00.000Z",
+        failedAt: null,
+        expiredAt: null,
+      },
+    ],
+    refunds: [],
+    disputes: [],
     ...overrides,
   };
 }

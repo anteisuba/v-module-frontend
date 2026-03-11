@@ -125,6 +125,54 @@ export interface DeleteMediaAssetsResponse {
   deletedCount: number;
 }
 
+export interface ReplaceMediaAssetReferencesResponse {
+  ok: boolean;
+  replacedReferenceCount: number;
+  updatedEntityCount: number;
+}
+
+export interface SellerPayoutAccountSummary {
+  id: string;
+  provider: string;
+  providerAccountId: string;
+  status: string;
+  accountType: string;
+  country: string | null;
+  defaultCurrency: string | null;
+  businessType: string | null;
+  displayNameSnapshot: string | null;
+  detailsSubmitted: boolean;
+  chargesEnabled: boolean;
+  payoutsEnabled: boolean;
+  requirementsCurrentlyDue: string[];
+  requirementsEventuallyDue: string[];
+  requirementsPastDue: string[];
+  disabledReason: string | null;
+  bankNameMasked: string | null;
+  bankLast4Masked: string | null;
+  onboardingStartedAt: string | null;
+  onboardingCompletedAt: string | null;
+  lastSyncedAt: string | null;
+  disconnectedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SellerPayoutAccountResponse {
+  account: SellerPayoutAccountSummary | null;
+}
+
+export interface StripeConnectOnboardingLinkResponse {
+  account: SellerPayoutAccountSummary;
+  url: string;
+  expiresAt: string | null;
+}
+
+export interface StripeConnectDashboardLinkResponse {
+  account: SellerPayoutAccountSummary;
+  url: string;
+}
+
 /**
  * 密码重置相关响应
  */

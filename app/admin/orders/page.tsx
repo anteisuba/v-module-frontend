@@ -214,7 +214,10 @@ export default function OrdersPage() {
   }
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden">
+    <main
+      data-testid="admin-orders-page"
+      className="relative min-h-screen w-full overflow-hidden"
+    >
       {/* 背景 */}
       <div className="absolute inset-0">
         <div
@@ -355,6 +358,7 @@ export default function OrdersPage() {
               return (
                 <div
                   key={order.id}
+                  data-testid={`admin-order-card-${order.id}`}
                   className="rounded-xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl"
                 >
                   <div className="flex items-start justify-between mb-4">
@@ -388,6 +392,7 @@ export default function OrdersPage() {
                       <button
                         type="button"
                         onClick={() => handleViewOrder(order.id)}
+                        data-testid={`admin-order-view-${order.id}`}
                         className="mt-3 rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black transition-colors hover:bg-white/80"
                       >
                         查看详情

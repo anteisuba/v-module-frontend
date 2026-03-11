@@ -11,6 +11,7 @@ import {
   ORDER_PAYMENT_PROVIDER_STRIPE,
   ORDER_PAYMENT_STATUS_EXPIRED,
   ORDER_PAYMENT_STATUS_FAILED,
+  ORDER_PAYMENT_STATUS_OPEN,
   ORDER_PAYMENT_STATUS_PAID,
   ORDER_PAYMENT_STATUS_PARTIALLY_REFUNDED,
   ORDER_PAYMENT_STATUS_REFUNDED,
@@ -23,6 +24,7 @@ import {
   cancelOpenOrderPayment,
   cancelOpenOrderPaymentBySession,
   createPublicOrder,
+  getOrderWithItemsById,
   markOrderPaidByPaymentSession,
   serializeOrderWithItems,
   syncOrderPaymentStatusFromRefunds,
@@ -173,6 +175,85 @@ export async function handleStripeCheckoutPaid(
   }
 
   return result;
+}
+
+export async function confirmStripeCheckoutSessionForOrder(input: {
+  orderId: string;
+  buyerEmail: string;
+  sessionId: string;
+}): Promise<SerializedOrder> {
+  const normalizedBuyerEmail = input.buyerEmail.trim().toLowerCase();
+  const normalizedSessionId = input.sessionId.trim();
+
+  if (!input.orderId.trim() || !normalizedBuyerEmail || !normalizedSessionId) {
+    throw new Error("orderId, buyerEmail, and sessionId are required");
+  }
+
+  const existingOrder = await prisma.order.findUnique({
+    where: { id: input.orderId },
+    ...ORDER_WITH_ITEMS_QUERY,
+  });
+
+  if (
+    !existingOrder ||
+    existingOrder.buyerEmail.trim().toLowerCase() !== normalizedBuyerEmail
+  ) {
+    throw new Error("Order not found");
+  }
+
+  const serializedExistingOrder = serializeOrderWithItems(existingOrder);
+
+  if (
+    serializedExistingOrder.paymentProvider !== ORDER_PAYMENT_PROVIDER_STRIPE ||
+    serializedExistingOrder.paymentStatus !== ORDER_PAYMENT_STATUS_OPEN
+  ) {
+    return serializedExistingOrder;
+  }
+
+  if (
+    serializedExistingOrder.paymentSessionId &&
+    serializedExistingOrder.paymentSessionId !== normalizedSessionId
+  ) {
+    throw new Error("Payment session mismatch");
+  }
+
+  const stripe = getStripeClient();
+  const session = await stripe.checkout.sessions.retrieve(normalizedSessionId, {
+    expand: ["payment_intent"],
+  });
+
+  const sessionOrderId =
+    session.client_reference_id || session.metadata?.orderId || null;
+
+  if (sessionOrderId !== input.orderId) {
+    throw new Error("Checkout session does not belong to this order");
+  }
+
+  if (session.payment_status === "paid") {
+    const result = await handleStripeCheckoutPaid(session);
+
+    if (result?.order) {
+      return result.order;
+    }
+
+    const paidOrder = await getOrderWithItemsById(input.orderId);
+
+    if (paidOrder) {
+      return paidOrder;
+    }
+  }
+
+  if (session.status === "expired") {
+    await handleStripeCheckoutExpired(session);
+
+    const cancelledOrder = await getOrderWithItemsById(input.orderId);
+
+    if (cancelledOrder) {
+      return cancelledOrder;
+    }
+  }
+
+  return serializedExistingOrder;
 }
 
 export async function handleStripeCheckoutFailed(

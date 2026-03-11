@@ -6,6 +6,7 @@ import Alert from "./Alert";
 import Button from "./Button";
 import ConfirmDialog from "./ConfirmDialog";
 import LoadingState from "./LoadingState";
+import MediaPickerDialog from "./MediaPickerDialog";
 import { getMediaAssetReferenceTarget } from "@/domain/media/reference-targets";
 import {
   MEDIA_ASSET_USAGE_CONTEXTS,
@@ -24,6 +25,7 @@ import { useI18n } from "@/lib/i18n/context";
 
 interface MediaLibraryBrowserProps {
   selectedSrc?: string | null;
+  disabledAssetIds?: string[];
   onSelect?: (asset: MediaAssetSummary) => void;
   selectLabel?: string;
   usageContext?: MediaAssetUsageContext;
@@ -85,6 +87,7 @@ function getReferenceLabel(
 
 export default function MediaLibraryBrowser({
   selectedSrc = null,
+  disabledAssetIds = [],
   onSelect,
   selectLabel,
   usageContext,
@@ -104,14 +107,36 @@ export default function MediaLibraryBrowser({
   const [loadingMore, setLoadingMore] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [updatingUsage, setUpdatingUsage] = useState(false);
   const [selectingAssetId, setSelectingAssetId] = useState<string | null>(null);
+  const [replacingSourceAssetId, setReplacingSourceAssetId] = useState<string | null>(
+    null
+  );
+  const [replaceSourceAsset, setReplaceSourceAsset] =
+    useState<MediaAssetSummary | null>(null);
   const [selectedAssetIds, setSelectedAssetIds] = useState<string[]>([]);
+  const [batchUsageAction, setBatchUsageAction] = useState<
+    "ADD" | "REMOVE" | "CLEAR"
+  >("ADD");
+  const [batchUsageContext, setBatchUsageContext] =
+    useState<MediaAssetUsageContext>(MEDIA_ASSET_USAGE_CONTEXTS[0]);
   const [deleteTargetIds, setDeleteTargetIds] = useState<string[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const assets = response?.assets || [];
   const pagination = response?.pagination;
   const hasMore = Boolean(pagination && pagination.page < pagination.totalPages);
+
+  const disabledAssetIdSet = useMemo(
+    () => new Set(disabledAssetIds),
+    [disabledAssetIds]
+  );
+  const selectedAssets = useMemo(
+    () =>
+      assets.filter((asset) => selectedAssetIds.includes(asset.id)),
+    [assets, selectedAssetIds]
+  );
+  const hasInUseSelection = selectedAssets.some((asset) => asset.isInUse);
 
   async function loadAssets(page = 1, append = false) {
     try {
@@ -214,6 +239,71 @@ export default function MediaLibraryBrowser({
     }
   }
 
+  async function handleReplaceAssetReferences(
+    sourceAsset: MediaAssetSummary,
+    targetAsset: MediaAssetSummary
+  ) {
+    if (sourceAsset.id === targetAsset.id) {
+      setError(t("mediaLibrary.replaceSameAsset"));
+      return;
+    }
+
+    try {
+      setReplacingSourceAssetId(sourceAsset.id);
+      const result = await pageApi.replaceMediaAssetReferences(
+        sourceAsset.id,
+        targetAsset.id
+      );
+      setReplaceSourceAsset(null);
+      await loadAssets(1);
+      showToast(
+        t("mediaLibrary.replaceSuccess").replace(
+          "{count}",
+          String(result.replacedReferenceCount)
+        )
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : t("mediaLibrary.replaceFailed")
+      );
+    } finally {
+      setReplacingSourceAssetId(null);
+    }
+  }
+
+  async function handleBatchUsageUpdate() {
+    if (selectedAssetIds.length === 0) {
+      return;
+    }
+
+    try {
+      setUpdatingUsage(true);
+
+      if (batchUsageAction === "CLEAR") {
+        await pageApi.clearMediaAssetUsage(selectedAssetIds);
+      } else if (batchUsageAction === "REMOVE") {
+        await pageApi.removeMediaAssetUsage(selectedAssetIds, batchUsageContext);
+      } else {
+        await pageApi.addMediaAssetUsage(selectedAssetIds, batchUsageContext);
+      }
+
+      await loadAssets(1);
+      showToast(
+        batchUsageAction === "CLEAR"
+          ? t("mediaLibrary.bulkTagSuccessClear")
+          : batchUsageAction === "REMOVE"
+            ? t("mediaLibrary.bulkTagSuccessRemove")
+            : t("mediaLibrary.bulkTagSuccessAdd")
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error ? err.message : t("mediaLibrary.bulkTagFailed")
+      );
+    } finally {
+      setUpdatingUsage(false);
+    }
+  }
+
   async function handleDeleteAssets(ids: string[]) {
     if (ids.length === 0) {
       return;
@@ -260,7 +350,7 @@ export default function MediaLibraryBrowser({
       Array.from(
         new Set([
           ...current,
-          ...assets.filter((asset) => !asset.isInUse).map((asset) => asset.id),
+          ...assets.map((asset) => asset.id),
         ])
       )
     );
@@ -291,38 +381,103 @@ export default function MediaLibraryBrowser({
 
       {!isPickerMode ? (
         <div className="flex flex-col gap-3 rounded-2xl border border-black/10 bg-white/55 p-4 backdrop-blur-xl md:flex-row md:items-center md:justify-between">
-          <div className="text-xs text-black/60">
-            {t("mediaLibrary.selectedCount").replace(
-              "{count}",
-              String(selectedAssetIds.length)
-            )}
+          <div className="space-y-2">
+            <div className="text-xs text-black/60">
+              {t("mediaLibrary.selectedCount").replace(
+                "{count}",
+                String(selectedAssetIds.length)
+              )}
+            </div>
+            {hasInUseSelection ? (
+              <div className="text-[11px] text-amber-700">
+                {t("mediaLibrary.deleteSelectionWarning")}
+              </div>
+            ) : null}
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={selectAllVisibleAssets}
-              disabled={assets.length === 0 || deleting}
-            >
-              {t("mediaLibrary.selectAllVisible")}
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => setSelectedAssetIds([])}
-              disabled={selectedAssetIds.length === 0 || deleting}
-            >
-              {t("mediaLibrary.clearSelection")}
-            </Button>
-            <Button
-              variant="danger"
-              size="sm"
-              onClick={() => setDeleteTargetIds(selectedAssetIds)}
-              disabled={selectedAssetIds.length === 0 || deleting}
-              loading={deleting}
-            >
-              {t("mediaLibrary.deleteSelected")}
-            </Button>
+          <div className="flex flex-col gap-3 md:items-end">
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={selectAllVisibleAssets}
+                disabled={assets.length === 0 || deleting || updatingUsage}
+              >
+                {t("mediaLibrary.selectAllVisible")}
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setSelectedAssetIds([])}
+                disabled={
+                  selectedAssetIds.length === 0 || deleting || updatingUsage
+                }
+              >
+                {t("mediaLibrary.clearSelection")}
+              </Button>
+              <Button
+                variant="danger"
+                size="sm"
+                onClick={() => setDeleteTargetIds(selectedAssetIds)}
+                disabled={
+                  selectedAssetIds.length === 0 ||
+                  deleting ||
+                  updatingUsage ||
+                  hasInUseSelection
+                }
+                loading={deleting}
+              >
+                {t("mediaLibrary.deleteSelected")}
+              </Button>
+            </div>
+
+            <div className="grid gap-2 md:grid-cols-[150px_220px_auto]">
+              <select
+                value={batchUsageAction}
+                onChange={(event) =>
+                  setBatchUsageAction(
+                    event.target.value as "ADD" | "REMOVE" | "CLEAR"
+                  )
+                }
+                data-testid="media-library-bulk-tag-action"
+                className="rounded-lg border border-black/10 bg-white px-3 py-2 text-xs text-black"
+              >
+                <option value="ADD">{t("mediaLibrary.bulkTagAdd")}</option>
+                <option value="REMOVE">{t("mediaLibrary.bulkTagRemove")}</option>
+                <option value="CLEAR">{t("mediaLibrary.bulkTagClear")}</option>
+              </select>
+              <select
+                value={batchUsageContext}
+                onChange={(event) =>
+                  setBatchUsageContext(
+                    event.target.value as MediaAssetUsageContext
+                  )
+                }
+                data-testid="media-library-bulk-tag-context"
+                disabled={batchUsageAction === "CLEAR"}
+                className="rounded-lg border border-black/10 bg-white px-3 py-2 text-xs text-black disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {MEDIA_ASSET_USAGE_CONTEXTS.map((value) => (
+                  <option key={value} value={value}>
+                    {getUsageLabel(t, value)}
+                  </option>
+                ))}
+              </select>
+              <Button
+                variant="secondary"
+                size="md"
+                onClick={() => void handleBatchUsageUpdate()}
+                loading={updatingUsage}
+                disabled={
+                  selectedAssetIds.length === 0 ||
+                  deleting ||
+                  updatingUsage ||
+                  (batchUsageAction !== "CLEAR" && !batchUsageContext)
+                }
+                data-testid="media-library-bulk-tag-apply"
+              >
+                {t("mediaLibrary.bulkTagApply")}
+              </Button>
+            </div>
           </div>
         </div>
       ) : null}
@@ -421,6 +576,7 @@ export default function MediaLibraryBrowser({
             {assets.map((asset) => {
               const isSelected = selectedSrc === asset.src;
               const isChecked = selectedAssetIds.includes(asset.id);
+              const isSelectionDisabled = disabledAssetIdSet.has(asset.id);
               const label = getAssetLabel(asset, t("mediaLibrary.fileFallback"));
               const visibleReferences = asset.references.slice(0, 2);
 
@@ -442,7 +598,7 @@ export default function MediaLibraryBrowser({
                           type="checkbox"
                           checked={isChecked}
                           onChange={() => toggleAssetSelection(asset.id)}
-                          disabled={asset.isInUse || deleting}
+                          disabled={deleting || updatingUsage}
                           className="mr-1.5"
                         />
                         {t("mediaLibrary.selectShort")}
@@ -546,14 +702,22 @@ export default function MediaLibraryBrowser({
                           size="sm"
                           onClick={() => void handleSelectAsset(asset)}
                           loading={selectingAssetId === asset.id}
+                          disabled={isSelectionDisabled}
                           data-testid={`media-asset-select-${asset.id}`}
                         >
                           {selectLabel || t("mediaLibrary.select")}
                         </Button>
                       ) : (
                         asset.isInUse ? (
-                          <Button variant="secondary" size="sm" disabled>
-                            {t("mediaLibrary.inUseAction")}
+                          <Button
+                            variant="secondary"
+                            size="sm"
+                            onClick={() => setReplaceSourceAsset(asset)}
+                            loading={replacingSourceAssetId === asset.id}
+                            disabled={deleting}
+                            data-testid={`media-asset-open-replace-${asset.id}`}
+                          >
+                            {t("mediaLibrary.replaceAction")}
                           </Button>
                         ) : (
                           <Button
@@ -607,6 +771,24 @@ export default function MediaLibraryBrowser({
         variant="danger"
         onConfirm={() => void handleDeleteAssets(deleteTargetIds || [])}
         onCancel={() => setDeleteTargetIds(null)}
+      />
+      <MediaPickerDialog
+        open={Boolean(replaceSourceAsset)}
+        title={t("mediaLibrary.replaceTitle")}
+        description={t("mediaLibrary.replaceDescription")}
+        selectedSrc={replaceSourceAsset?.src || null}
+        selectLabel={t("mediaLibrary.replaceSelect")}
+        disabledAssetIds={replaceSourceAsset ? [replaceSourceAsset.id] : []}
+        onSelect={(asset) => {
+          if (replaceSourceAsset) {
+            void handleReplaceAssetReferences(replaceSourceAsset, asset);
+          }
+        }}
+        onClose={() => {
+          if (!replacingSourceAssetId) {
+            setReplaceSourceAsset(null);
+          }
+        }}
       />
     </div>
   );

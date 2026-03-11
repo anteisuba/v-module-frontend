@@ -9,8 +9,10 @@ import {
 import { buildMediaAssetReferenceMap } from "@/domain/media/reference-map";
 import {
   appendMediaAssetUsageContext,
+  clearMediaAssetUsageContexts,
   isMediaAssetUsageContext,
   isMediaAssetUsageFilter,
+  removeMediaAssetUsageContext,
   type MediaAssetUsageContext,
 } from "@/domain/media/usage";
 import { deleteManagedMediaSource } from "@/lib/mediaStorage";
@@ -53,6 +55,12 @@ async function requireUserId() {
   }
 
   return session.user.id;
+}
+
+type MediaAssetUsageAction = "ADD" | "REMOVE" | "CLEAR";
+
+function isMediaAssetUsageAction(value: unknown): value is MediaAssetUsageAction {
+  return value === "ADD" || value === "REMOVE" || value === "CLEAR";
 }
 
 export async function GET(request: Request) {
@@ -142,15 +150,21 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  let payload: { ids?: unknown; usageContext?: unknown };
+  let payload: { ids?: unknown; usageContext?: unknown; action?: unknown };
 
   try {
-    payload = (await request.json()) as { ids?: unknown; usageContext?: unknown };
+    payload = (await request.json()) as {
+      ids?: unknown;
+      usageContext?: unknown;
+      action?: unknown;
+    };
   } catch {
     return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
   }
 
   const ids = parseIdList(payload.ids);
+  const action =
+    typeof payload.action === "string" ? payload.action.trim() : "ADD";
   const usageContext =
     typeof payload.usageContext === "string"
       ? payload.usageContext.trim()
@@ -160,7 +174,11 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: "No asset ids provided" }, { status: 400 });
   }
 
-  if (!isMediaAssetUsageContext(usageContext)) {
+  if (!isMediaAssetUsageAction(action)) {
+    return NextResponse.json({ error: "Invalid usage action" }, { status: 400 });
+  }
+
+  if (action !== "CLEAR" && !isMediaAssetUsageContext(usageContext)) {
     return NextResponse.json({ error: "Invalid usage context" }, { status: 400 });
   }
 
@@ -183,10 +201,18 @@ export async function PATCH(request: Request) {
       prisma.mediaAsset.update({
         where: { id: asset.id },
         data: {
-          usageContexts: appendMediaAssetUsageContext(
-            asset.usageContexts,
-            usageContext as MediaAssetUsageContext
-          ),
+          usageContexts:
+            action === "CLEAR"
+              ? clearMediaAssetUsageContexts()
+              : action === "REMOVE"
+                ? removeMediaAssetUsageContext(
+                    asset.usageContexts,
+                    usageContext as MediaAssetUsageContext
+                  )
+                : appendMediaAssetUsageContext(
+                    asset.usageContexts,
+                    usageContext as MediaAssetUsageContext
+                  ),
         },
         select: MEDIA_ASSET_SELECT,
       })

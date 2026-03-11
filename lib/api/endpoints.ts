@@ -16,6 +16,11 @@ import type {
   MediaAssetListParams,
   MediaAssetUsageResponse,
   DeleteMediaAssetsResponse,
+  ReplaceMediaAssetReferencesResponse,
+  SellerPayoutAccountResponse,
+  StripeConnectDashboardLinkResponse,
+  StripeConnectOnboardingLinkResponse,
+  SellerPayoutAccountSummary,
   ForgotPasswordResponse,
   ResetPasswordResponse,
   NewsArticle,
@@ -236,6 +241,31 @@ export const pageApi = {
     return apiClient.patch<MediaAssetUsageResponse>("/api/media-assets", {
       ids,
       usageContext,
+      action: "ADD",
+    });
+  },
+
+  /**
+   * 批量移除媒体资产使用场景
+   */
+  async removeMediaAssetUsage(
+    ids: string[],
+    usageContext: MediaAssetUsageContext
+  ): Promise<MediaAssetUsageResponse> {
+    return apiClient.patch<MediaAssetUsageResponse>("/api/media-assets", {
+      ids,
+      usageContext,
+      action: "REMOVE",
+    });
+  },
+
+  /**
+   * 清空媒体资产使用场景
+   */
+  async clearMediaAssetUsage(ids: string[]): Promise<MediaAssetUsageResponse> {
+    return apiClient.patch<MediaAssetUsageResponse>("/api/media-assets", {
+      ids,
+      action: "CLEAR",
     });
   },
 
@@ -248,6 +278,22 @@ export const pageApi = {
     return apiClient.deleteJson<DeleteMediaAssetsResponse>(
       "/api/media-assets",
       { ids }
+    );
+  },
+
+  /**
+   * 直接替换媒体资产引用
+   */
+  async replaceMediaAssetReferences(
+    sourceAssetId: string,
+    targetAssetId: string
+  ): Promise<ReplaceMediaAssetReferencesResponse> {
+    return apiClient.post<ReplaceMediaAssetReferencesResponse>(
+      "/api/media-assets/replace",
+      {
+        sourceAssetId,
+        targetAssetId,
+      }
     );
   },
 
@@ -798,6 +844,25 @@ export const shopApi = {
   },
 
   /**
+   * 公开确认 Stripe Checkout 成功回流
+   */
+  async confirmPublicOrder(
+    id: string,
+    buyerEmail: string,
+    sessionId: string
+  ): Promise<SerializedOrder> {
+    const response = await apiClient.post<{ order: SerializedOrder }>(
+      `/api/shop/orders/${id}/confirm`,
+      {
+        buyerEmail: buyerEmail.trim(),
+        sessionId: sessionId.trim(),
+      },
+      { skipAuth: true }
+    );
+    return response.order;
+  },
+
+  /**
    * 公开结账创建订单
    */
   async createCheckoutOrder(data: {
@@ -994,5 +1059,45 @@ export const shopApi = {
       start: data.start || null,
       end: data.end || null,
     });
+  },
+};
+
+export const connectApi = {
+  async getMyPayoutAccount(): Promise<SellerPayoutAccountSummary | null> {
+    const response = await apiClient.get<SellerPayoutAccountResponse>(
+      "/api/payments/connect/accounts/me"
+    );
+    return response.account;
+  },
+
+  async createPayoutAccount(): Promise<SellerPayoutAccountSummary> {
+    const response = await apiClient.post<SellerPayoutAccountResponse>(
+      "/api/payments/connect/accounts"
+    );
+
+    if (!response.account) {
+      throw new Error("Stripe payout account was not created");
+    }
+
+    return response.account;
+  },
+
+  async syncPayoutAccount(): Promise<SellerPayoutAccountSummary | null> {
+    const response = await apiClient.post<SellerPayoutAccountResponse>(
+      "/api/payments/connect/accounts/sync"
+    );
+    return response.account;
+  },
+
+  async createOnboardingLink(): Promise<StripeConnectOnboardingLinkResponse> {
+    return apiClient.post<StripeConnectOnboardingLinkResponse>(
+      "/api/payments/connect/accounts/onboarding-link"
+    );
+  },
+
+  async createDashboardLink(): Promise<StripeConnectDashboardLinkResponse> {
+    return apiClient.post<StripeConnectDashboardLinkResponse>(
+      "/api/payments/connect/accounts/dashboard-link"
+    );
   },
 };
