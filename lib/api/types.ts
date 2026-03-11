@@ -1,6 +1,11 @@
 // lib/api/types.ts
 
 import type { PageConfig } from "@/domain/page-config/types";
+import type { MediaAssetReference } from "@/domain/media/references";
+import type {
+  MediaAssetUsageContext,
+  MediaAssetUsageFilter,
+} from "@/domain/media/usage";
 
 /**
  * API 响应基础类型
@@ -72,6 +77,100 @@ export interface UploadResponse {
   src: string;
   mimeType: string;
   size: number;
+  asset?: MediaAssetSummary;
+}
+
+export interface MediaAssetSummary {
+  id: string;
+  src: string;
+  mimeType: string;
+  size: number;
+  originalName: string | null;
+  usageContexts: MediaAssetUsageContext[];
+  isInUse: boolean;
+  referenceCount: number;
+  references: MediaAssetReference[];
+  createdAt: string;
+}
+
+export interface MediaAssetListResponse {
+  assets: MediaAssetSummary[];
+  pagination: {
+    page: number;
+    limit: number;
+    total: number;
+    totalPages: number;
+  };
+}
+
+export interface UploadImageOptions {
+  usageContext?: MediaAssetUsageContext;
+}
+
+export interface MediaAssetListParams {
+  page?: number;
+  limit?: number;
+  query?: string;
+  usageContext?: MediaAssetUsageFilter;
+}
+
+export interface MediaAssetUsageResponse {
+  ok: boolean;
+  assets: MediaAssetSummary[];
+}
+
+export interface DeleteMediaAssetsResponse {
+  ok: boolean;
+  deletedIds: string[];
+  deletedCount: number;
+}
+
+export interface ReplaceMediaAssetReferencesResponse {
+  ok: boolean;
+  replacedReferenceCount: number;
+  updatedEntityCount: number;
+}
+
+export interface SellerPayoutAccountSummary {
+  id: string;
+  provider: string;
+  providerAccountId: string;
+  status: string;
+  accountType: string;
+  country: string | null;
+  defaultCurrency: string | null;
+  businessType: string | null;
+  displayNameSnapshot: string | null;
+  detailsSubmitted: boolean;
+  chargesEnabled: boolean;
+  payoutsEnabled: boolean;
+  requirementsCurrentlyDue: string[];
+  requirementsEventuallyDue: string[];
+  requirementsPastDue: string[];
+  disabledReason: string | null;
+  bankNameMasked: string | null;
+  bankLast4Masked: string | null;
+  onboardingStartedAt: string | null;
+  onboardingCompletedAt: string | null;
+  lastSyncedAt: string | null;
+  disconnectedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface SellerPayoutAccountResponse {
+  account: SellerPayoutAccountSummary | null;
+}
+
+export interface StripeConnectOnboardingLinkResponse {
+  account: SellerPayoutAccountSummary;
+  url: string;
+  expiresAt: string | null;
+}
+
+export interface StripeConnectDashboardLinkResponse {
+  account: SellerPayoutAccountSummary;
+  url: string;
 }
 
 /**

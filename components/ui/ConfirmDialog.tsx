@@ -43,6 +43,7 @@ export default function ConfirmDialog({
 
   const dialogContent = (
     <div
+      data-testid="confirm-dialog"
       className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={onCancel}
       onKeyDown={handleKeyDown}
@@ -73,6 +74,7 @@ export default function ConfirmDialog({
           <button
             type="button"
             onClick={onCancel}
+            data-testid="confirm-dialog-cancel"
             className="rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black/20 focus:ring-offset-2 cursor-pointer border border-black/20 bg-white/70 text-black hover:bg-white/80 active:bg-white/90 px-4 py-2.5 text-sm"
           >
             {cancelLabel || t("common.cancel")}
@@ -80,6 +82,7 @@ export default function ConfirmDialog({
           <button
             type="button"
             onClick={onConfirm}
+            data-testid="confirm-dialog-confirm"
             className={[
               "rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black/20 focus:ring-offset-2 cursor-pointer px-4 py-2.5 text-sm",
               variant === "danger"

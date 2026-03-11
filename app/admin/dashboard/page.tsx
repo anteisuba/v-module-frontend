@@ -59,6 +59,20 @@ export default function DashboardPage() {
       description: t("admin.dashboard.pages.comments.description"),
       available: true,
     },
+    {
+      id: "media",
+      label: t("admin.dashboard.pages.media.label"),
+      href: "/admin/media",
+      description: t("admin.dashboard.pages.media.description"),
+      available: true,
+    },
+    {
+      id: "payouts",
+      label: t("admin.dashboard.pages.payouts.label"),
+      href: "/admin/settings/payouts",
+      description: t("admin.dashboard.pages.payouts.description"),
+      available: true,
+    },
   ], [t]);
 
   function handleNavigate() {

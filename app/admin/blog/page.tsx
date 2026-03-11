@@ -3,7 +3,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Alert,
   LoadingState,
@@ -15,6 +15,10 @@ import {
   SaveStatus,
   Button,
 } from "@/components/ui";
+import {
+  BLOG_DETAIL_BACKGROUND,
+  BLOG_LIST_BACKGROUND,
+} from "@/domain/media/usage";
 import { blogApi, pageApi } from "@/lib/api";
 import { useUser } from "@/lib/context/UserContext";
 import { useToast } from "@/hooks/useToast";
@@ -37,8 +41,15 @@ interface BlogPost {
 
 type EditorTabId = "layout" | "content";
 
+const BLOG_PANEL_TO_TAB: Record<string, EditorTabId> = {
+  "list-background": "layout",
+  "detail-background": "layout",
+  posts: "content",
+};
+
 export default function BlogPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { user, loading: userLoading } = useUser();
   const { t } = useI18n();
   const { message: toastMessage, showToast } = useToast();
@@ -66,9 +77,11 @@ export default function BlogPage() {
   const [openPanelByTab, setOpenPanelByTab] = useState<
     Record<EditorTabId, string | null>
   >({
-    layout: "background",
+    layout: "list-background",
     content: "posts",
   });
+  const requestedTab = searchParams.get("tab");
+  const requestedPanel = searchParams.get("panel");
 
   // 加载博客列表
   useEffect(() => {
@@ -78,6 +91,28 @@ export default function BlogPage() {
       router.push("/admin");
     }
   }, [user, userLoading]);
+
+  useEffect(() => {
+    const nextPanel =
+      requestedPanel && requestedPanel in BLOG_PANEL_TO_TAB ? requestedPanel : null;
+    const nextTab =
+      requestedTab === "layout" || requestedTab === "content"
+        ? requestedTab
+        : nextPanel
+          ? BLOG_PANEL_TO_TAB[nextPanel]
+          : null;
+
+    if (nextTab) {
+      setActiveTab(nextTab);
+    }
+
+    if (nextTab && nextPanel) {
+      setOpenPanelByTab((prev) => ({
+        ...prev,
+        [nextTab]: nextPanel,
+      }));
+    }
+  }, [requestedPanel, requestedTab]);
 
   // 保存草稿处理
   const handleSaveDraft = async () => {
@@ -195,7 +230,7 @@ export default function BlogPage() {
 
   const layoutPanels: AdminEditorPanelItem[] = [
     {
-      id: "background",
+      id: "list-background",
       title: t("blog.layout.listBackground"),
       description: t("admin.editorScaffold.panels.background.description"),
       actions: publishActions,
@@ -212,14 +247,48 @@ export default function BlogPage() {
             });
           }}
           disabled={saving || publishing}
-          onUploadImage={async (file) => {
+          onUploadImage={async (file, options) => {
             try {
-              const result = await pageApi.uploadImage(file);
+              const result = await pageApi.uploadImage(file, options);
               return result;
             } catch (e) {
               throw e;
             }
           }}
+          usageContext={BLOG_LIST_BACKGROUND}
+          onToast={showToast}
+          onError={handleError}
+          previewHeight="h-48"
+        />
+      ),
+    },
+    {
+      id: "detail-background",
+      title: t("blog.layout.detailBackground"),
+      description: t("admin.editorScaffold.panels.background.description"),
+      actions: publishActions,
+      content: (
+        <BackgroundEditor
+          label={t("blog.layout.detailBackground")}
+          background={
+            config.blogDetailBackground || { type: "color", value: "#000000" }
+          }
+          onBackgroundChange={(background: BackgroundConfig) => {
+            setConfig({
+              ...config,
+              blogDetailBackground: background,
+            });
+          }}
+          disabled={saving || publishing}
+          onUploadImage={async (file, options) => {
+            try {
+              const result = await pageApi.uploadImage(file, options);
+              return result;
+            } catch (e) {
+              throw e;
+            }
+          }}
+          usageContext={BLOG_DETAIL_BACKGROUND}
           onToast={showToast}
           onError={handleError}
           previewHeight="h-48"

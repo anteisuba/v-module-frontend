@@ -49,8 +49,23 @@ export function getStripeWebhookSecret() {
   return webhookSecret;
 }
 
+export function getStripeConnectWebhookSecret() {
+  return process.env.STRIPE_CONNECT_WEBHOOK_SECRET || getStripeWebhookSecret();
+}
+
 export function getStripeCurrency() {
   return (process.env.STRIPE_CURRENCY || "JPY").toLowerCase();
+}
+
+export function getStripePlatformFeeBps() {
+  const rawValue = process.env.STRIPE_PLATFORM_FEE_BPS?.trim() || "0";
+  const value = Number(rawValue);
+
+  if (!Number.isFinite(value) || value <= 0) {
+    return 0;
+  }
+
+  return Math.min(Math.round(value), 10_000);
 }
 
 export function toStripeAmount(amount: number, currency: string) {
@@ -67,6 +82,16 @@ export function toStripeAmount(amount: number, currency: string) {
   }
 
   return Math.round(amount * 100);
+}
+
+export function fromStripeAmount(amount: number, currency: string) {
+  const normalizedCurrency = currency.toLowerCase();
+
+  if (ZERO_DECIMAL_CURRENCIES.has(normalizedCurrency)) {
+    return amount;
+  }
+
+  return amount / 100;
 }
 
 export function getStripeId(

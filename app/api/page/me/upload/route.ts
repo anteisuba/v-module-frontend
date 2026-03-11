@@ -5,25 +5,19 @@ import { writeFile, mkdir } from "fs/promises";
 import path from "path";
 import { getServerSession } from "@/lib/session/userSession";
 import { prisma } from "@/lib/prisma";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  MEDIA_ASSET_SELECT,
+  serializeMediaAsset,
+  type SelectedMediaAssetRecord,
+} from "@/domain/media/assets";
+import {
+  isMediaAssetUsageContext,
+  type MediaAssetUsageContext,
+} from "@/domain/media/usage";
+import { getS3Client } from "@/lib/mediaStorage";
 
 export const runtime = "nodejs";
-
-// 初始化 S3 客户端（用于 Cloudflare R2 或其他 S3 兼容存储）
-function getS3Client() {
-  if (!process.env.R2_ACCOUNT_ID || !process.env.R2_ACCESS_KEY_ID || !process.env.R2_SECRET_ACCESS_KEY) {
-    return null;
-  }
-
-  return new S3Client({
-    region: "auto",
-    endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
-    credentials: {
-      accessKeyId: process.env.R2_ACCESS_KEY_ID,
-      secretAccessKey: process.env.R2_SECRET_ACCESS_KEY,
-    },
-  });
-}
 
 export async function POST(request: Request) {
   // 1. 校验登录
@@ -46,9 +40,21 @@ export async function POST(request: Request) {
   // 3. 解析 FormData
   const formData = await request.formData();
   const file = formData.get("file") as File | null;
+  const usageContextValue = formData.get("usageContext");
+  const rawUsageContext =
+    typeof usageContextValue === "string" && usageContextValue.trim()
+      ? usageContextValue.trim()
+      : null;
 
   if (!file) {
     return NextResponse.json({ error: "No file provided" }, { status: 400 });
+  }
+
+  if (rawUsageContext && !isMediaAssetUsageContext(rawUsageContext)) {
+    return NextResponse.json(
+      { error: "Invalid usage context" },
+      { status: 400 }
+    );
   }
 
   // 4. 验证文件类型
@@ -72,6 +78,13 @@ export async function POST(request: Request) {
     const s3Client = getS3Client();
     const useCloudStorage = s3Client && process.env.R2_BUCKET_NAME;
     const isVercel = process.env.VERCEL === "1";
+    let assetRecord: SelectedMediaAssetRecord | null = null;
+    const usageContext = rawUsageContext
+      ? (rawUsageContext as MediaAssetUsageContext)
+      : null;
+    const usageContexts: MediaAssetUsageContext[] = usageContext
+      ? [usageContext]
+      : [];
 
     if (useCloudStorage) {
       // 使用 Cloudflare R2 存储（生产环境推荐）
@@ -113,26 +126,29 @@ export async function POST(request: Request) {
 
       const publicUrl = `${process.env.R2_PUBLIC_URL.replace(/\/$/, "")}/${key}`;
 
-      // 将图片信息记录到数据库（MediaAsset 表）- S3 和数据库联动
-      // 注意：需要先运行迁移：npx prisma migrate dev --name add_user_media_asset
       try {
-        // 检查 MediaAsset 表是否支持 userId（迁移后）
-        // 如果迁移未运行，这里会失败，但不影响上传
-        await prisma.mediaAsset.create({
+        assetRecord = await prisma.mediaAsset.create({
           data: {
-            userId: userId, // 关联到 User
-            src: publicUrl, // S3/R2 URL
+            userId: userId,
+            src: publicUrl,
             mimeType: file.type,
             size: file.size,
             originalName: file.name,
+            usageContexts,
           },
+          select: MEDIA_ASSET_SELECT,
         });
       } catch (error: any) {
-        // 如果 MediaAsset 创建失败，不影响上传流程
         console.warn("Failed to create MediaAsset record (upload still succeeded):", error);
       }
 
-      return NextResponse.json({ ok: true, src: publicUrl });
+      return NextResponse.json({
+        ok: true,
+        src: publicUrl,
+        mimeType: file.type,
+        size: file.size,
+        asset: assetRecord ? serializeMediaAsset(assetRecord) : undefined,
+      });
     } else if (isVercel) {
       // 在 Vercel 上但没有配置 R2，返回错误
       return NextResponse.json(
@@ -179,26 +195,29 @@ export async function POST(request: Request) {
       // 返回文件路径（相对于 public）
       const publicPath = `/uploads/${user.slug}/${filename}`;
       
-      // 将图片信息记录到数据库（MediaAsset 表）- 本地文件系统
-      // 注意：需要先运行迁移：npx prisma migrate dev --name add_user_media_asset
       try {
-        // 检查 MediaAsset 表是否支持 userId（迁移后）
-        // 如果迁移未运行，这里会失败，但不影响上传
-        await prisma.mediaAsset.create({
+        assetRecord = await prisma.mediaAsset.create({
           data: {
-            userId: userId, // 关联到 User
-            src: publicPath, // 本地路径
+            userId: userId,
+            src: publicPath,
             mimeType: file.type,
             size: file.size,
             originalName: file.name,
+            usageContexts,
           },
+          select: MEDIA_ASSET_SELECT,
         });
       } catch (error: any) {
-        // 如果 MediaAsset 创建失败，不影响上传流程
         console.warn("Failed to create MediaAsset record (upload still succeeded):", error);
       }
 
-      return NextResponse.json({ ok: true, src: publicPath });
+      return NextResponse.json({
+        ok: true,
+        src: publicPath,
+        mimeType: file.type,
+        size: file.size,
+        asset: assetRecord ? serializeMediaAsset(assetRecord) : undefined,
+      });
     }
   } catch (error) {
     console.error("Upload error:", error);

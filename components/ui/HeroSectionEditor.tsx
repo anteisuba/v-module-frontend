@@ -3,7 +3,20 @@
 "use client";
 
 import { useState } from "react";
-import { ImagePositionEditor, IconPicker, Button, Input, ConfirmDialog } from "@/components/ui";
+import {
+  HERO_LOGO,
+  HERO_SLIDE,
+  type MediaAssetUsageContext,
+} from "@/domain/media/usage";
+import { useScrollToElement } from "@/hooks/useScrollToElement";
+import {
+  ImagePositionEditor,
+  IconPicker,
+  Button,
+  Input,
+  ConfirmDialog,
+  MediaPickerDialog,
+} from "@/components/ui";
 import { useI18n } from "@/lib/i18n/context";
 import type {
   PageConfig,
@@ -15,10 +28,14 @@ interface HeroSectionEditorProps {
   config: PageConfig;
   onConfigChange: (config: PageConfig) => void;
   disabled?: boolean;
-  onUploadImage?: (file: File) => Promise<{ src: string }>;
+  onUploadImage?: (
+    file: File,
+    options?: { usageContext?: MediaAssetUsageContext }
+  ) => Promise<{ src: string }>;
   uploadingIndex?: number | null;
   onToast?: (message: string) => void;
   onError?: (message: string) => void;
+  focusTarget?: string | null;
 }
 
 // 通用开关组件
@@ -65,10 +82,15 @@ export default function HeroSectionEditor({
   uploadingIndex = null,
   onToast,
   onError,
+  focusTarget = null,
 }: HeroSectionEditorProps) {
   const { t } = useI18n();
   const [deleteConfirmIndex, setDeleteConfirmIndex] = useState<number | null>(null);
   const [deleteSocialLinkIndex, setDeleteSocialLinkIndex] = useState<number | null>(null);
+  const [logoPickerOpen, setLogoPickerOpen] = useState(false);
+  const [slidePickerIndex, setSlidePickerIndex] = useState<number | null>(null);
+  useScrollToElement(focusTarget === "hero-logo", "hero-logo-editor");
+  useScrollToElement(focusTarget === "hero-slides", "hero-slides-editor");
   // 获取 hero section
   function getHeroSection() {
     return config.sections.find((s) => s.type === "hero");
@@ -135,6 +157,18 @@ export default function HeroSectionEditor({
     onConfigChange({
       ...config,
       showSocialLinks: !currentValue,
+    });
+  }
+
+  function updateLogoSrc(src: string) {
+    onConfigChange({
+      ...config,
+      logo: {
+        ...config.logo,
+        src,
+        alt: config.logo?.alt || "Logo",
+        opacity: config.logo?.opacity ?? 1,
+      },
     });
   }
 
@@ -238,7 +272,9 @@ export default function HeroSectionEditor({
   async function uploadImage(index: number, file: File) {
     if (!onUploadImage) return;
     try {
-      const result = await onUploadImage(file);
+      const result = await onUploadImage(file, {
+        usageContext: HERO_SLIDE,
+      });
       updateHeroSlide(index, { src: result.src });
       onToast?.(t("heroEditor.slides.uploadSuccess").replace("{index}", String(index + 1)));
     } catch (e) {
@@ -298,7 +334,10 @@ export default function HeroSectionEditor({
       </div>
 
       {/* Logo 编辑（左上角） */}
-      <div className="mb-4 space-y-3 rounded-lg border border-black/10 bg-white/70 p-3">
+      <div
+        id="hero-logo-editor"
+        className="mb-4 space-y-3 rounded-lg border border-black/10 bg-white/70 p-3"
+      >
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-xs font-semibold text-black">{t("heroEditor.logo.title")}</h3>
           <ToggleSwitch
@@ -366,7 +405,9 @@ export default function HeroSectionEditor({
               const inputElement = e.currentTarget;
               if (file && onUploadImage) {
                 try {
-                  const result = await onUploadImage(file);
+                  const result = await onUploadImage(file, {
+                    usageContext: HERO_LOGO,
+                  });
                   onConfigChange({
                     ...config,
                     logo: {
@@ -387,6 +428,16 @@ export default function HeroSectionEditor({
               }
             }}
           />
+          <div className="mt-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setLogoPickerOpen(true)}
+              disabled={disabled}
+            >
+              {t("mediaLibrary.open")}
+            </Button>
+          </div>
         </div>
         
         {/* Logo 透明度调整 */}
@@ -762,7 +813,7 @@ export default function HeroSectionEditor({
       </div>
 
       {/* 图片编辑 */}
-      <div className="mb-3">
+      <div id="hero-slides-editor" className="mb-3">
         <div className="mb-3 flex items-center justify-between">
           <h3 className="text-xs font-semibold text-black">
             {t("heroEditor.slides.title")}（{heroSlides.length}张）
@@ -962,6 +1013,16 @@ export default function HeroSectionEditor({
                       }
                     }}
                   />
+                  <div className="mt-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setSlidePickerIndex(index)}
+                      disabled={isUploading || disabled}
+                    >
+                      {t("mediaLibrary.open")}
+                    </Button>
+                  </div>
                 </div>
 
                 {/* 或使用图片链接 */}
@@ -1025,6 +1086,37 @@ export default function HeroSectionEditor({
           }
         }}
         onCancel={() => setDeleteSocialLinkIndex(null)}
+      />
+
+      <MediaPickerDialog
+        open={logoPickerOpen}
+        selectedSrc={config.logo?.src || null}
+        usageContext={HERO_LOGO}
+        onClose={() => setLogoPickerOpen(false)}
+        onSelect={(asset) => {
+          updateLogoSrc(asset.src);
+          onToast?.(t("mediaLibrary.selected"));
+        }}
+      />
+
+      <MediaPickerDialog
+        open={slidePickerIndex !== null}
+        selectedSrc={
+          slidePickerIndex !== null ? heroSlides[slidePickerIndex]?.src || null : null
+        }
+        usageContext={HERO_SLIDE}
+        onClose={() => setSlidePickerIndex(null)}
+        onSelect={(asset) => {
+          if (slidePickerIndex === null) return;
+          updateHeroSlide(slidePickerIndex, { src: asset.src });
+          onToast?.(
+            t("heroEditor.slides.updated").replace(
+              "{index}",
+              String(slidePickerIndex + 1)
+            )
+          );
+          setSlidePickerIndex(null);
+        }}
       />
     </div>
   );

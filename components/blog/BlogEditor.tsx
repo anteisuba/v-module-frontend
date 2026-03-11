@@ -3,7 +3,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Input, Button, FormField, Alert } from "@/components/ui";
+import { Input, Button, FormField, Alert, MediaPickerDialog } from "@/components/ui";
+import { BLOG_COVER } from "@/domain/media/usage";
+import { useScrollToElement } from "@/hooks/useScrollToElement";
 import { pageApi } from "@/lib/api";
 import { useToast } from "@/hooks/useToast";
 import { useErrorHandler } from "@/hooks/useErrorHandler";
@@ -31,6 +33,7 @@ interface BlogEditorProps {
   }) => Promise<void>;
   onCancel: () => void;
   saving?: boolean;
+  focusTarget?: string | null;
 }
 
 export default function BlogEditor({
@@ -38,10 +41,12 @@ export default function BlogEditor({
   onSave,
   onCancel,
   saving = false,
+  focusTarget = null,
 }: BlogEditorProps) {
   const { t } = useI18n();
   const { message: toastMessage, showToast } = useToast();
   const { error, handleError, clearError } = useErrorHandler();
+  useScrollToElement(focusTarget === "cover-image", "blog-cover-image-editor");
 
   const [title, setTitle] = useState(initialData?.title || "");
   const [content, setContent] = useState(initialData?.content || "");
@@ -54,6 +59,7 @@ export default function BlogEditor({
   >(initialData?.externalLinks || []);
   const [published, setPublished] = useState(initialData?.published || false);
   const [uploadingCover, setUploadingCover] = useState(false);
+  const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
 
   // 添加外部链接
   function addExternalLink() {
@@ -80,9 +86,11 @@ export default function BlogEditor({
   async function handleCoverImageUpload(file: File) {
     try {
       setUploadingCover(true);
-      const result = await pageApi.uploadImage(file);
+      const result = await pageApi.uploadImage(file, {
+        usageContext: BLOG_COVER,
+      });
       setCoverImage(result.src);
-      showToast("封面图片上传成功");
+      showToast(t("mediaLibrary.uploaded"));
     } catch (err) {
       handleError(err);
     } finally {
@@ -149,8 +157,9 @@ export default function BlogEditor({
       </FormField>
 
       {/* 封面图 */}
-      <FormField label={t("blog.form.coverImage")}>
-        <div className="space-y-3 rounded-lg border border-black/10 bg-white/70 p-4">
+      <div id="blog-cover-image-editor">
+        <FormField label={t("blog.form.coverImage")}>
+          <div className="space-y-3 rounded-lg border border-black/10 bg-white/70 p-4">
           {coverImage && (
             <div className="mb-3">
               <div className="relative inline-block">
@@ -193,6 +202,16 @@ export default function BlogEditor({
               />
             </div>
             <div>
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => setMediaPickerOpen(true)}
+                disabled={saving || uploadingCover}
+              >
+                {t("mediaLibrary.open")}
+              </Button>
+            </div>
+            <div>
               <label className="block text-xs text-black/70 mb-2">
                 或输入图片链接
               </label>
@@ -209,8 +228,20 @@ export default function BlogEditor({
               <div className="text-xs text-black/60">{t("common.uploading")}</div>
             )}
           </div>
-        </div>
-      </FormField>
+          </div>
+        </FormField>
+      </div>
+
+      <MediaPickerDialog
+        open={mediaPickerOpen}
+        selectedSrc={coverImage}
+        usageContext={BLOG_COVER}
+        onClose={() => setMediaPickerOpen(false)}
+        onSelect={(asset) => {
+          setCoverImage(asset.src);
+          showToast(t("mediaLibrary.selected"));
+        }}
+      />
 
       {/* 视频链接 */}
       <FormField label={t("blog.form.videoUrl")}>

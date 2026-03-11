@@ -16,7 +16,25 @@ export const ORDER_PAYMENT_STATUS_OPEN = "OPEN" as const;
 export const ORDER_PAYMENT_STATUS_PAID = "PAID" as const;
 export const ORDER_PAYMENT_STATUS_FAILED = "FAILED" as const;
 export const ORDER_PAYMENT_STATUS_EXPIRED = "EXPIRED" as const;
+export const ORDER_PAYMENT_STATUS_PARTIALLY_REFUNDED =
+  "PARTIALLY_REFUNDED" as const;
 export const ORDER_PAYMENT_STATUS_REFUNDED = "REFUNDED" as const;
+
+export const ORDER_REFUND_STATUS_PENDING = "PENDING" as const;
+export const ORDER_REFUND_STATUS_SUCCEEDED = "SUCCEEDED" as const;
+export const ORDER_REFUND_STATUS_FAILED = "FAILED" as const;
+export const ORDER_REFUND_STATUS_CANCELED = "CANCELED" as const;
+
+export const ORDER_DISPUTE_STATUS_WARNING_NEEDS_RESPONSE =
+  "warning_needs_response" as const;
+export const ORDER_DISPUTE_STATUS_WARNING_UNDER_REVIEW =
+  "warning_under_review" as const;
+export const ORDER_DISPUTE_STATUS_WARNING_CLOSED =
+  "warning_closed" as const;
+export const ORDER_DISPUTE_STATUS_NEEDS_RESPONSE = "needs_response" as const;
+export const ORDER_DISPUTE_STATUS_UNDER_REVIEW = "under_review" as const;
+export const ORDER_DISPUTE_STATUS_WON = "won" as const;
+export const ORDER_DISPUTE_STATUS_LOST = "lost" as const;
 
 export const ORDER_WITH_ITEMS_QUERY =
   Prisma.validator<Prisma.OrderDefaultArgs>()({
@@ -32,6 +50,15 @@ export const ORDER_WITH_ITEMS_QUERY =
             },
           },
         },
+      },
+      paymentAttempts: {
+        orderBy: { createdAt: "asc" },
+      },
+      refunds: {
+        orderBy: { createdAt: "desc" },
+      },
+      disputes: {
+        orderBy: { createdAt: "desc" },
       },
     },
   });
@@ -115,6 +142,61 @@ export interface SerializedOrderItem {
   } | null;
 }
 
+export interface SerializedOrderPaymentAttempt {
+  id: string;
+  orderId: string;
+  provider: string;
+  status: string;
+  amount: number;
+  currency: string;
+  externalSessionId: string | null;
+  externalPaymentIntentId: string | null;
+  failureReason: string | null;
+  metadata: Prisma.JsonValue | null;
+  createdAt: string;
+  updatedAt: string;
+  paidAt: string | null;
+  failedAt: string | null;
+  expiredAt: string | null;
+}
+
+export interface SerializedOrderRefund {
+  id: string;
+  orderId: string;
+  provider: string;
+  status: string;
+  amount: number;
+  currency: string;
+  reason: string | null;
+  failureReason: string | null;
+  externalRefundId: string | null;
+  externalPaymentIntentId: string | null;
+  requestedByUserId: string | null;
+  metadata: Prisma.JsonValue | null;
+  createdAt: string;
+  updatedAt: string;
+  refundedAt: string | null;
+}
+
+export interface SerializedOrderDispute {
+  id: string;
+  userId: string | null;
+  orderId: string | null;
+  provider: string;
+  status: string;
+  reason: string | null;
+  amount: number;
+  currency: string;
+  externalDisputeId: string;
+  externalPaymentIntentId: string | null;
+  externalChargeId: string | null;
+  dueBy: string | null;
+  closedAt: string | null;
+  metadata: Prisma.JsonValue | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface SerializedOrder {
   id: string;
   userId: string;
@@ -137,7 +219,13 @@ export interface SerializedOrder {
   paidAt: string | null;
   shippedAt: string | null;
   deliveredAt: string | null;
+  refundedAmount: number;
+  pendingRefundAmount: number;
+  refundableAmount: number;
   items: SerializedOrderItem[];
+  paymentAttempts: SerializedOrderPaymentAttempt[];
+  refunds: SerializedOrderRefund[];
+  disputes: SerializedOrderDispute[];
 }
 
 export interface CheckoutSessionResult {
@@ -176,7 +264,204 @@ function normalizeOrderItems(items: OrderItemInput[]): OrderItemInput[] {
   }));
 }
 
+function toIsoStringOrNull(value: Date | null | undefined) {
+  return value ? value.toISOString() : null;
+}
+
+function serializeOrderPaymentAttempt(
+  attempt: {
+    id: string;
+    orderId: string;
+    provider: string;
+    status: string;
+    amount: Prisma.Decimal;
+    currency: string;
+    externalSessionId: string | null;
+    externalPaymentIntentId: string | null;
+    failureReason: string | null;
+    metadata: Prisma.JsonValue | null;
+    createdAt: Date;
+    updatedAt: Date;
+    paidAt: Date | null;
+    failedAt: Date | null;
+    expiredAt: Date | null;
+  }
+): SerializedOrderPaymentAttempt {
+  return {
+    id: attempt.id,
+    orderId: attempt.orderId,
+    provider: attempt.provider,
+    status: attempt.status,
+    amount: Number(attempt.amount),
+    currency: attempt.currency,
+    externalSessionId: attempt.externalSessionId,
+    externalPaymentIntentId: attempt.externalPaymentIntentId,
+    failureReason: attempt.failureReason,
+    metadata: attempt.metadata ?? null,
+    createdAt: attempt.createdAt.toISOString(),
+    updatedAt: attempt.updatedAt.toISOString(),
+    paidAt: toIsoStringOrNull(attempt.paidAt),
+    failedAt: toIsoStringOrNull(attempt.failedAt),
+    expiredAt: toIsoStringOrNull(attempt.expiredAt),
+  };
+}
+
+function serializeOrderRefund(
+  refund: {
+    id: string;
+    orderId: string;
+    provider: string;
+    status: string;
+    amount: Prisma.Decimal;
+    currency: string;
+    reason: string | null;
+    failureReason: string | null;
+    externalRefundId: string | null;
+    externalPaymentIntentId: string | null;
+    requestedByUserId: string | null;
+    metadata: Prisma.JsonValue | null;
+    createdAt: Date;
+    updatedAt: Date;
+    refundedAt: Date | null;
+  }
+): SerializedOrderRefund {
+  return {
+    id: refund.id,
+    orderId: refund.orderId,
+    provider: refund.provider,
+    status: refund.status,
+    amount: Number(refund.amount),
+    currency: refund.currency,
+    reason: refund.reason,
+    failureReason: refund.failureReason,
+    externalRefundId: refund.externalRefundId,
+    externalPaymentIntentId: refund.externalPaymentIntentId,
+    requestedByUserId: refund.requestedByUserId,
+    metadata: refund.metadata ?? null,
+    createdAt: refund.createdAt.toISOString(),
+    updatedAt: refund.updatedAt.toISOString(),
+    refundedAt: toIsoStringOrNull(refund.refundedAt),
+  };
+}
+
+function serializeOrderDispute(
+  dispute: {
+    id: string;
+    userId: string | null;
+    orderId: string | null;
+    provider: string;
+    status: string;
+    reason: string | null;
+    amount: Prisma.Decimal;
+    currency: string;
+    externalDisputeId: string;
+    externalPaymentIntentId: string | null;
+    externalChargeId: string | null;
+    dueBy: Date | null;
+    closedAt: Date | null;
+    metadata: Prisma.JsonValue | null;
+    createdAt: Date;
+    updatedAt: Date;
+  }
+): SerializedOrderDispute {
+  return {
+    id: dispute.id,
+    userId: dispute.userId,
+    orderId: dispute.orderId,
+    provider: dispute.provider,
+    status: dispute.status,
+    reason: dispute.reason,
+    amount: Number(dispute.amount),
+    currency: dispute.currency,
+    externalDisputeId: dispute.externalDisputeId,
+    externalPaymentIntentId: dispute.externalPaymentIntentId,
+    externalChargeId: dispute.externalChargeId,
+    dueBy: toIsoStringOrNull(dispute.dueBy),
+    closedAt: toIsoStringOrNull(dispute.closedAt),
+    metadata: dispute.metadata ?? null,
+    createdAt: dispute.createdAt.toISOString(),
+    updatedAt: dispute.updatedAt.toISOString(),
+  };
+}
+
+function getSuccessfulRefundAmount(refunds: SerializedOrderRefund[]) {
+  return refunds
+    .filter((refund) => refund.status === ORDER_REFUND_STATUS_SUCCEEDED)
+    .reduce((sum, refund) => sum + refund.amount, 0);
+}
+
+function getPendingRefundAmount(refunds: SerializedOrderRefund[]) {
+  return refunds
+    .filter((refund) => refund.status === ORDER_REFUND_STATUS_PENDING)
+    .reduce((sum, refund) => sum + refund.amount, 0);
+}
+
 export function serializeOrderWithItems(order: OrderWithItemsRecord): SerializedOrder {
+  const paymentAttempts = Array.isArray((order as { paymentAttempts?: unknown }).paymentAttempts)
+    ? ((order as { paymentAttempts: Array<{
+        id: string;
+        orderId: string;
+        provider: string;
+        status: string;
+        amount: Prisma.Decimal;
+        currency: string;
+        externalSessionId: string | null;
+        externalPaymentIntentId: string | null;
+        failureReason: string | null;
+        metadata: Prisma.JsonValue | null;
+        createdAt: Date;
+        updatedAt: Date;
+        paidAt: Date | null;
+        failedAt: Date | null;
+        expiredAt: Date | null;
+      }> }).paymentAttempts.map(serializeOrderPaymentAttempt))
+    : [];
+  const refunds = Array.isArray((order as { refunds?: unknown }).refunds)
+    ? ((order as { refunds: Array<{
+        id: string;
+        orderId: string;
+        provider: string;
+        status: string;
+        amount: Prisma.Decimal;
+        currency: string;
+        reason: string | null;
+        failureReason: string | null;
+        externalRefundId: string | null;
+        externalPaymentIntentId: string | null;
+        requestedByUserId: string | null;
+        metadata: Prisma.JsonValue | null;
+        createdAt: Date;
+        updatedAt: Date;
+        refundedAt: Date | null;
+      }> }).refunds.map(serializeOrderRefund))
+    : [];
+  const disputes = Array.isArray((order as { disputes?: unknown }).disputes)
+    ? ((order as { disputes: Array<{
+        id: string;
+        userId: string | null;
+        orderId: string | null;
+        provider: string;
+        status: string;
+        reason: string | null;
+        amount: Prisma.Decimal;
+        currency: string;
+        externalDisputeId: string;
+        externalPaymentIntentId: string | null;
+        externalChargeId: string | null;
+        dueBy: Date | null;
+        closedAt: Date | null;
+        metadata: Prisma.JsonValue | null;
+        createdAt: Date;
+        updatedAt: Date;
+      }> }).disputes.map(serializeOrderDispute))
+    : [];
+  const refundedAmount = getSuccessfulRefundAmount(refunds);
+  const pendingRefundAmount = getPendingRefundAmount(refunds);
+  const refundableAmount = Math.max(
+    Number(order.totalAmount) - refundedAmount - pendingRefundAmount,
+    0
+  );
+
   return {
     id: order.id,
     userId: order.userId,
@@ -200,9 +485,12 @@ export function serializeOrderWithItems(order: OrderWithItemsRecord): Serialized
     shippingMethod: order.shippingMethod,
     createdAt: order.createdAt.toISOString(),
     updatedAt: order.updatedAt.toISOString(),
-    paidAt: order.paidAt ? order.paidAt.toISOString() : null,
-    shippedAt: order.shippedAt ? order.shippedAt.toISOString() : null,
-    deliveredAt: order.deliveredAt ? order.deliveredAt.toISOString() : null,
+    paidAt: toIsoStringOrNull(order.paidAt),
+    shippedAt: toIsoStringOrNull(order.shippedAt),
+    deliveredAt: toIsoStringOrNull(order.deliveredAt),
+    refundedAmount,
+    pendingRefundAmount,
+    refundableAmount,
     items: order.items.map((item) => ({
       id: item.id,
       orderId: item.orderId,
@@ -219,6 +507,9 @@ export function serializeOrderWithItems(order: OrderWithItemsRecord): Serialized
           }
         : null,
     })),
+    paymentAttempts,
+    refunds,
+    disputes,
   };
 }
 
@@ -523,6 +814,135 @@ async function loadOrderWithItems(
   });
 }
 
+async function upsertPaymentAttemptForOrder(
+  tx: Prisma.TransactionClient,
+  input: {
+    orderId: string;
+    provider: string;
+    status: string;
+    amount: Prisma.Decimal | number;
+    currency: string;
+    connectedAccountId?: string | null;
+    externalChargeId?: string | null;
+    externalTransferId?: string | null;
+    applicationFeeAmount?: Prisma.Decimal | number | null;
+    externalSessionId?: string | null;
+    externalPaymentIntentId?: string | null;
+    failureReason?: string | null;
+    metadata?: Prisma.InputJsonValue | null;
+    paidAt?: Date | null;
+    failedAt?: Date | null;
+    expiredAt?: Date | null;
+  }
+) {
+  const existingAttempt = input.externalSessionId
+    ? await tx.orderPaymentAttempt.findFirst({
+        where: {
+          orderId: input.orderId,
+          provider: input.provider,
+          externalSessionId: input.externalSessionId,
+        },
+        select: {
+          id: true,
+        },
+      })
+    : null;
+
+  const data = {
+    provider: input.provider,
+    status: input.status,
+    amount: input.amount,
+    currency: input.currency,
+    connectedAccountId: input.connectedAccountId || null,
+    externalChargeId: input.externalChargeId || null,
+    externalTransferId: input.externalTransferId || null,
+    applicationFeeAmount: input.applicationFeeAmount ?? null,
+    externalSessionId: input.externalSessionId || null,
+    externalPaymentIntentId: input.externalPaymentIntentId || null,
+    failureReason: input.failureReason || null,
+    paidAt: input.paidAt || null,
+    failedAt: input.failedAt || null,
+    expiredAt: input.expiredAt || null,
+    ...(input.metadata !== undefined
+      ? {
+          metadata: input.metadata === null ? Prisma.JsonNull : input.metadata,
+        }
+      : {}),
+  };
+
+  if (existingAttempt) {
+    return tx.orderPaymentAttempt.update({
+      where: { id: existingAttempt.id },
+      data,
+    });
+  }
+
+  return tx.orderPaymentAttempt.create({
+    data: {
+      orderId: input.orderId,
+      ...data,
+    },
+  });
+}
+
+export async function syncOrderPaymentStatusFromRefunds(
+  tx: Prisma.TransactionClient,
+  orderId: string
+) {
+  const order = await tx.order.findUnique({
+    where: { id: orderId },
+    select: {
+      id: true,
+      status: true,
+      totalAmount: true,
+      paymentStatus: true,
+      refunds: {
+        select: {
+          amount: true,
+          status: true,
+        },
+      },
+    },
+  });
+
+  if (!order) {
+    throw new Error("Order not found while syncing refund state");
+  }
+
+  const refundedAmount = order.refunds
+    .filter((refund) => refund.status === ORDER_REFUND_STATUS_SUCCEEDED)
+    .reduce((sum, refund) => sum + Number(refund.amount), 0);
+
+  let nextPaymentStatus = order.paymentStatus;
+
+  if (refundedAmount <= 0) {
+    return order.paymentStatus;
+  }
+
+  if (refundedAmount >= Number(order.totalAmount)) {
+    nextPaymentStatus = ORDER_PAYMENT_STATUS_REFUNDED;
+  } else {
+    nextPaymentStatus = ORDER_PAYMENT_STATUS_PARTIALLY_REFUNDED;
+  }
+
+  if (nextPaymentStatus !== order.paymentStatus) {
+    await tx.order.update({
+      where: { id: orderId },
+      data: {
+        paymentStatus: nextPaymentStatus,
+        ...(nextPaymentStatus === ORDER_PAYMENT_STATUS_REFUNDED &&
+        order.status === ORDER_STATUS_PAID
+          ? {
+              status: ORDER_STATUS_CANCELLED,
+            }
+          : {}),
+      },
+    });
+  }
+
+  return nextPaymentStatus;
+}
+
 async function restoreOrderInventory(
   tx: Prisma.TransactionClient,
   orderId: string
@@ -669,18 +1089,60 @@ export async function attachStripePaymentSessionToOrder(
     sessionId: string;
     paymentIntentId?: string | null;
     expiresAt?: Date | null;
+    payoutAccountId?: string | null;
+    paymentRoutingMode?: "PLATFORM" | "STRIPE_CONNECT_DESTINATION";
+    connectedAccountId?: string | null;
+    platformFeeAmount?: Prisma.Decimal | number | null;
+    sellerGrossAmount?: Prisma.Decimal | number | null;
+    sellerNetExpectedAmount?: Prisma.Decimal | number | null;
+    applicationFeeAmount?: Prisma.Decimal | number | null;
   }
 ): Promise<SerializedOrder> {
-  const order = await prisma.order.update({
-    where: { id: orderId },
-    data: {
-      paymentSessionId: input.sessionId,
-      paymentIntentId: input.paymentIntentId || null,
-      paymentExpiresAt: input.expiresAt || null,
-      paymentFailureReason: null,
-      paymentFailedAt: null,
-    },
-    ...ORDER_WITH_ITEMS_QUERY,
+  const order = await prisma.$transaction(async (tx) => {
+    const updatedOrder = await tx.order.update({
+      where: { id: orderId },
+      data: {
+        paymentSessionId: input.sessionId,
+        paymentIntentId: input.paymentIntentId || null,
+        paymentExpiresAt: input.expiresAt || null,
+        paymentFailureReason: null,
+        paymentFailedAt: null,
+        payoutAccountId: input.payoutAccountId,
+        paymentRoutingMode: input.paymentRoutingMode,
+        connectedAccountId: input.connectedAccountId,
+        platformFeeAmount: input.platformFeeAmount,
+        sellerGrossAmount: input.sellerGrossAmount,
+        sellerNetExpectedAmount: input.sellerNetExpectedAmount,
+      },
+      ...ORDER_WITH_ITEMS_QUERY,
+    });
+
+    await upsertPaymentAttemptForOrder(tx, {
+      orderId: updatedOrder.id,
+      provider: updatedOrder.paymentProvider || ORDER_PAYMENT_PROVIDER_STRIPE,
+      status: ORDER_PAYMENT_STATUS_OPEN,
+      amount: updatedOrder.totalAmount,
+      currency: updatedOrder.currency,
+      connectedAccountId: input.connectedAccountId || null,
+      applicationFeeAmount: input.applicationFeeAmount ?? null,
+      externalSessionId: input.sessionId,
+      externalPaymentIntentId: input.paymentIntentId || null,
+      failureReason: null,
+      metadata: {
+        source: "checkout-session",
+      },
+      paidAt: null,
+      failedAt: null,
+      expiredAt: null,
+    });
+
+    const refreshedOrder = await loadOrderWithItems(tx, orderId);
+
+    if (!refreshedOrder) {
+      throw new Error("Failed to load order after attaching payment session");
+    }
+
+    return refreshedOrder;
   });
 
   return serializeOrderWithItems(order);
@@ -693,7 +1155,12 @@ export async function markOrderPaidByPaymentSession(
   return prisma.$transaction(async (tx) => {
     const existing = await tx.order.findUnique({
       where: { paymentSessionId },
-      select: { id: true },
+      select: {
+        id: true,
+        totalAmount: true,
+        currency: true,
+        paymentProvider: true,
+      },
     });
 
     if (!existing) {
@@ -713,6 +1180,23 @@ export async function markOrderPaidByPaymentSession(
         paymentFailedAt: null,
         paymentFailureReason: null,
       },
+    });
+
+    await upsertPaymentAttemptForOrder(tx, {
+      orderId: existing.id,
+      provider: existing.paymentProvider || ORDER_PAYMENT_PROVIDER_STRIPE,
+      status: ORDER_PAYMENT_STATUS_PAID,
+      amount: existing.totalAmount,
+      currency: existing.currency,
+      externalSessionId: paymentSessionId,
+      externalPaymentIntentId: paymentIntentId || null,
+      failureReason: null,
+      metadata: {
+        source: "webhook",
+      },
+      paidAt: new Date(),
+      failedAt: null,
+      expiredAt: null,
     });
 
     const order = await loadOrderWithItems(tx, existing.id);
@@ -736,6 +1220,22 @@ export async function cancelOpenOrderPayment(
   }
 ): Promise<{ order: SerializedOrder; changed: boolean } | null> {
   return prisma.$transaction(async (tx) => {
+    const currentOrder = await tx.order.findUnique({
+      where: { id: orderId },
+      select: {
+        id: true,
+        totalAmount: true,
+        currency: true,
+        paymentProvider: true,
+        paymentSessionId: true,
+        paymentIntentId: true,
+      },
+    });
+
+    if (!currentOrder) {
+      return null;
+    }
+
     const updated = await tx.order.updateMany({
       where: {
         id: orderId,
@@ -747,6 +1247,31 @@ export async function cancelOpenOrderPayment(
         paymentFailedAt: new Date(),
         paymentFailureReason: input.reason,
       },
+    });
+
+    const failureTimestamp = new Date();
+
+    await upsertPaymentAttemptForOrder(tx, {
+      orderId: currentOrder.id,
+      provider: currentOrder.paymentProvider || ORDER_PAYMENT_PROVIDER_STRIPE,
+      status: input.paymentStatus,
+      amount: currentOrder.totalAmount,
+      currency: currentOrder.currency,
+      externalSessionId: currentOrder.paymentSessionId,
+      externalPaymentIntentId: currentOrder.paymentIntentId,
+      failureReason: input.reason,
+      metadata: {
+        source: "payment-cancel",
+      },
+      paidAt: null,
+      failedAt:
+        input.paymentStatus === ORDER_PAYMENT_STATUS_FAILED
+          ? failureTimestamp
+          : null,
+      expiredAt:
+        input.paymentStatus === ORDER_PAYMENT_STATUS_EXPIRED
+          ? failureTimestamp
+          : null,
     });
 
     const order = await loadOrderWithItems(tx, orderId);

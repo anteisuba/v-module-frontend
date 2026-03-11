@@ -38,11 +38,19 @@
         "comments": {
           "label": "Comment Moderation",
           "description": "Review blog comments before they appear publicly"
-        }
+        },
+          "media": {
+            "label": "Media Library",
+            "description": "Browse uploaded assets and reuse them across backgrounds, blog, and shop editors"
+          },
+          "payouts": {
+            "label": "Payout Settings",
+            "description": "Connect a Stripe payout account and review whether this seller can charge and receive payouts"
+          }
+        },
+        "comingSoon": "Coming soon"
       },
-      "comingSoon": "Coming soon"
-    },
-    "editorScaffold": {
+      "editorScaffold": {
       "tabs": {
         "layout": {
           "title": "Page Layout",
@@ -66,9 +74,64 @@
         "create": {
           "description": "Create new content and set its initial presentation."
         }
+        }
+      },
+      "payouts": {
+        "eyebrow": "Stripe Connect",
+        "title": "Seller payout settings",
+        "subtitle": "Connect an independent payout account for this seller. After buyers pay, Stripe will settle funds to this connected account and then send payouts to the linked bank account.",
+        "backToDashboard": "Back to edit directory",
+        "emptyState": "No Stripe payout account has been created yet. Start onboarding and Stripe will guide this seller through profile, payment capability, and bank-account setup.",
+        "sections": {
+          "account": "Account overview",
+          "nextSteps": "Next steps and risk flags",
+          "currentlyDue": "Currently due requirements",
+          "pastDue": "Past due requirements",
+          "eventuallyDue": "Eventually due requirements"
+        },
+        "actions": {
+          "startOnboarding": "Start Stripe payout onboarding",
+          "continueOnboarding": "Continue Stripe payout setup",
+          "openDashboard": "Open Stripe Express Dashboard",
+          "sync": "Sync Stripe status"
+        },
+        "status": {
+          "NOT_STARTED": "Not started",
+          "PENDING": "Pending",
+          "RESTRICTED": "Restricted",
+          "ACTIVE": "Active",
+          "DISCONNECTED": "Disconnected"
+        },
+        "fields": {
+          "providerAccountId": "Stripe account",
+          "country": "Country / region",
+          "defaultCurrency": "Default currency",
+          "lastSyncedAt": "Last synced",
+          "detailsSubmitted": "Details submitted",
+          "chargesEnabled": "Charges enabled",
+          "payoutsEnabled": "Payouts enabled",
+          "bankAccount": "Bank account summary",
+          "bankUnavailable": "No bank summary is available yet. Confirm the linked bank account inside the Stripe Express Dashboard.",
+          "disabledReason": "Disabled reason",
+          "none": "Nothing is due right now"
+        },
+        "flags": {
+          "ready": "Ready",
+          "notReady": "Not ready"
+        },
+        "hints": {
+          "active": "This seller account can already charge and receive payouts. You can still open the Stripe Express Dashboard to review payout timing, submit more information, or update bank details.",
+          "pending": "This seller account is not fully enabled yet. Continue Stripe onboarding, then sync again after returning to confirm whether capabilities are live."
+        },
+        "messages": {
+          "returned": "Returned from Stripe and refreshed the latest account status.",
+          "synced": "Stripe payout account status updated."
+        },
+        "errors": {
+          "loadFailed": "Failed to load the payout account. Please try again later."
+        }
       }
-    }
-  },
+    },
   "auth": {
     "login": {
       "title": "Login",
@@ -202,6 +265,7 @@
     "success": "Success",
     "uploading": "Uploading...",
     "add": "Add",
+    "replace": "Replace",
     "previous": "Previous",
     "next": "Next",
     "published": "Published",
@@ -363,6 +427,84 @@
     "preview": "Background Preview",
     "imageLoadError": "Image load failed",
     "noImage": "No image"
+  },
+  "mediaLibrary": {
+    "title": "Media Library",
+    "description": "Reuse images you've already uploaded, or upload new assets here.",
+    "pageTitle": "Media Library",
+    "pageDescription": "Browse uploaded images in one place and reuse them across backgrounds, blog covers, and product images.",
+    "open": "Choose from library",
+    "goToReplace": "Go replace",
+    "replaceAction": "Replace references",
+    "replaceTitle": "Replace asset references",
+    "replaceDescription": "Choose a new image to replace every current reference to this asset.",
+    "replaceSelect": "Replace with this",
+    "replaceSuccess": "Replaced {count} references",
+    "replaceFailed": "Failed to replace references",
+    "replaceSameAsset": "Choose a different asset to replace with",
+    "searchLabel": "Search assets",
+    "searchPlaceholder": "Search by filename or URL",
+    "uploadButton": "Upload image",
+    "refresh": "Refresh",
+    "loadMore": "Load more",
+    "select": "Use this image",
+    "selectShort": "Select",
+    "copyUrl": "Copy URL",
+    "copiedUrl": "Image URL copied",
+    "copyFailed": "Failed to copy image URL",
+    "selected": "Image selected",
+    "uploaded": "Image uploaded successfully",
+    "filterLabel": "Usage",
+    "filterAll": "All usage",
+    "filterUnspecified": "Unspecified",
+    "selectedCount": "{count} selected",
+    "deleteSelectionWarning": "Some selected assets are still in use. They cannot be deleted in bulk, but tags can still be updated.",
+    "selectAllVisible": "Select visible",
+    "clearSelection": "Clear selection",
+    "deleteSelected": "Delete selected",
+    "bulkTagAdd": "Add tag in bulk",
+    "bulkTagRemove": "Remove tag in bulk",
+    "bulkTagClear": "Clear all tags",
+    "bulkTagApply": "Apply to selection",
+    "bulkTagSuccessAdd": "Tag added to selected assets",
+    "bulkTagSuccessRemove": "Tag removed from selected assets",
+    "bulkTagSuccessClear": "Cleared tags for selected assets",
+    "bulkTagFailed": "Failed to update asset tags",
+    "deleteSuccess": "Media assets deleted",
+    "deleteFailed": "Failed to delete media assets",
+    "inUse": "Used in {count} places",
+    "notInUse": "Safe to delete",
+    "inUseAction": "In use",
+    "referencesLabel": "references",
+    "moreReferences": "{count} more references",
+    "deleteConfirmTitle": "Delete assets",
+    "deleteConfirmSingle": "Delete this asset? If it is still referenced, images on public pages will break.",
+    "deleteConfirmBulk": "Delete the selected {count} assets? If they are still referenced, images on public pages will break.",
+    "empty": "No assets yet. Upload your first image.",
+    "noResults": "No matching assets found.",
+    "loadFailed": "Failed to load media library",
+    "fileFallback": "Untitled image",
+    "usage": {
+      "pageBackground": "Page background",
+      "blogListBackground": "Blog list background",
+      "blogDetailBackground": "Blog detail background",
+      "blogCover": "Blog cover",
+      "shopListBackground": "Shop list background",
+      "shopDetailBackground": "Product detail background",
+      "productImage": "Product image",
+      "newsPageBackground": "News page background",
+      "newsArticleBackground": "News article background",
+      "heroLogo": "Hero logo",
+      "heroSlide": "Hero slide",
+      "newsItem": "News item image"
+    },
+    "referenceKinds": {
+      "pageDraft": "Draft page config",
+      "pagePublished": "Published page config",
+      "blogCover": "Blog cover",
+      "productImage": "Product image",
+      "newsArticleBackground": "News article background"
+    }
   },
   "newsArticleEditor": {
     "title": "News Article Management",

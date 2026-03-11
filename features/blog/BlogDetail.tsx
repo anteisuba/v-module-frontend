@@ -145,6 +145,7 @@ export default function BlogDetail({
 
   return (
     <article
+      data-testid="public-user-blog-detail"
       className="relative min-h-screen w-full overflow-hidden text-black py-16 px-6"
       style={backgroundStyle || defaultBackgroundStyle}
     >
@@ -214,7 +215,12 @@ export default function BlogDetail({
           )}
 
           {/* 标题 */}
-          <h2 className="mb-4 text-lg font-semibold text-black">{post.title}</h2>
+          <h2
+            data-testid="public-user-blog-detail-title"
+            className="mb-4 text-lg font-semibold text-black"
+          >
+            {post.title}
+          </h2>
 
           {/* 日期 */}
           <div className="mb-4 flex items-center gap-3 text-xs text-black/60">

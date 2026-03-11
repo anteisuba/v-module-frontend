@@ -6,6 +6,11 @@ import { getProductById } from "@/domain/shop/services";
 import ProductDetail from "@/features/shop/ProductDetail";
 import type { PageConfig } from "@/domain/page-config/types";
 import { EMPTY_PAGE_CONFIG } from "@/domain/page-config/constants";
+import {
+  findE2EPublicPageState,
+  getE2EPublicPageProduct,
+  getE2EPublicSiteState,
+} from "@/lib/e2e/publicPageState";
 
 export default async function ProductDetailPage({
   params,
@@ -13,8 +18,19 @@ export default async function ProductDetailPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
+  const e2eSiteState = await getE2EPublicSiteState();
+  const e2ePageState = findE2EPublicPageState(e2eSiteState, slug);
+  const e2eProduct = getE2EPublicPageProduct(e2eSiteState, slug, id);
 
-  const user = await getUserPageDataBySlug(slug);
+  const user = e2ePageState
+    ? {
+        slug,
+        displayName: e2ePageState.displayName,
+        page: {
+          publishedConfig: e2ePageState.publishedConfig,
+        },
+      }
+    : await getUserPageDataBySlug(slug);
 
   if (!user) {
     notFound();
@@ -30,7 +46,7 @@ export default async function ProductDetailPage({
   }
 
   // 获取商品
-  const product = await getProductById(id);
+  const product = e2eProduct ?? (await getProductById(id));
 
   if (
     !product ||
@@ -95,7 +111,9 @@ export async function generateMetadata({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
-  const product = await getProductById(id);
+  const product =
+    getE2EPublicPageProduct(await getE2EPublicSiteState(), slug, id) ??
+    (await getProductById(id));
 
   if (!product || product.status !== "PUBLISHED") {
     return {

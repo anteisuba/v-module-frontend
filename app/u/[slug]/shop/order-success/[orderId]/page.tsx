@@ -4,6 +4,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import type { SerializedOrder } from "@/domain/shop";
 import { Alert, Button, FormField, Input, LoadingState } from "@/components/ui";
 import { shopApi } from "@/lib/api";
@@ -18,6 +19,7 @@ export default function OrderSuccessPage({
   params: Promise<{ slug: string; orderId: string }>;
 }) {
   const { t } = useI18n();
+  const searchParams = useSearchParams();
   const menu = useHeroMenu();
   const { error, handleError, clearError } = useErrorHandler();
   const [slug, setSlug] = useState<string | null>(null);
@@ -27,6 +29,11 @@ export default function OrderSuccessPage({
   const [loading, setLoading] = useState(true);
   const [loadingOrder, setLoadingOrder] = useState(false);
   const [refreshingStatus, setRefreshingStatus] = useState(false);
+  const [confirmingPayment, setConfirmingPayment] = useState(false);
+  const [confirmedSessionId, setConfirmedSessionId] = useState<string | null>(
+    null
+  );
+  const stripeSessionId = searchParams.get("session_id")?.trim() || null;
 
   useEffect(() => {
     async function loadParams() {
@@ -65,6 +72,37 @@ export default function OrderSuccessPage({
       order.paymentStatus !== "OPEN"
     ) {
       return;
+    }
+
+    if (stripeSessionId && confirmedSessionId !== stripeSessionId) {
+      let cancelled = false;
+
+      setConfirmingPayment(true);
+      setConfirmedSessionId(stripeSessionId);
+
+      void shopApi
+        .confirmPublicOrder(orderId, buyerEmail, stripeSessionId)
+        .then((confirmedOrder) => {
+          if (cancelled) {
+            return;
+          }
+
+          setOrder(confirmedOrder);
+        })
+        .catch((err) => {
+          if (!cancelled) {
+            handleError(err);
+          }
+        })
+        .finally(() => {
+          if (!cancelled) {
+            setConfirmingPayment(false);
+          }
+        });
+
+      return () => {
+        cancelled = true;
+      };
     }
 
     let cancelled = false;
@@ -106,11 +144,14 @@ export default function OrderSuccessPage({
       window.clearInterval(intervalId);
     };
   }, [
-    buyerEmail,
-    orderId,
-    order?.paymentProvider,
-    order?.paymentStatus,
-    order?.status,
+      buyerEmail,
+      confirmedSessionId,
+      handleError,
+      orderId,
+      order?.paymentProvider,
+      order?.paymentStatus,
+      order?.status,
+      stripeSessionId,
   ]);
 
   async function loadOrder(emailToLoad?: string, currentOrderId?: string) {
@@ -297,7 +338,10 @@ export default function OrderSuccessPage({
   const statusPresentation = getStatusPresentation(order);
 
   return (
-    <div className="relative min-h-screen py-16 px-6">
+    <div
+      data-testid="public-shop-order-success-page"
+      className="relative min-h-screen py-16 px-6"
+    >
       {/* 右上角菜单按钮 */}
       <div className="fixed top-6 right-6 z-50 flex items-center gap-4 text-white">
         <button
@@ -334,7 +378,9 @@ export default function OrderSuccessPage({
             </svg>
           </div>
           <h1 className="text-3xl font-bold mb-2 text-center">
+            <span data-testid="public-shop-order-status-title">
             {statusPresentation.title}
+            </span>
           </h1>
           <p className="text-black/60 text-center">
             订单号: {orderId?.slice(0, 8).toUpperCase() || "--"}
@@ -354,6 +400,7 @@ export default function OrderSuccessPage({
             <form onSubmit={handleLookupSubmit} className="space-y-4">
               <FormField label="下单邮箱" required>
                 <Input
+                  data-testid="order-success-email"
                   type="email"
                   value={buyerEmail}
                   onChange={(event) => setBuyerEmail(event.target.value)}
@@ -361,7 +408,12 @@ export default function OrderSuccessPage({
                   required
                 />
               </FormField>
-              <Button type="submit" variant="primary" className="w-full">
+              <Button
+                type="submit"
+                variant="primary"
+                className="w-full"
+                data-testid="order-success-lookup"
+              >
                 查看订单详情
               </Button>
             </form>
@@ -371,11 +423,18 @@ export default function OrderSuccessPage({
             {awaitingPayment ? (
               <div className="bg-amber-50 rounded-lg p-4 border border-amber-200 text-sm text-amber-800">
                 {statusPresentation.subtitle}
-                {refreshingStatus ? " 正在刷新订单状态..." : " 如果几秒后仍未更新，可稍后刷新页面。"}
+                {confirmingPayment
+                  ? " 正在向 Stripe 确认支付结果..."
+                  : refreshingStatus
+                    ? " 正在刷新订单状态..."
+                    : " 如果几秒后仍未更新，可稍后刷新页面。"}
               </div>
             ) : null}
 
-            <div className="bg-white/55 rounded-lg p-6 border border-black/10">
+            <div
+              data-testid="public-shop-order-detail-card"
+              className="bg-white/55 rounded-lg p-6 border border-black/10"
+            >
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div>
                   <h2 className="text-xl font-semibold mb-1">订单详情</h2>
@@ -398,7 +457,10 @@ export default function OrderSuccessPage({
               </div>
             </div>
 
-            <div className="bg-white/55 rounded-lg p-6 border border-black/10">
+            <div
+              data-testid="public-shop-order-buyer-card"
+              className="bg-white/55 rounded-lg p-6 border border-black/10"
+            >
               <h3 className="font-semibold mb-4">买家信息</h3>
               <div className="space-y-2 text-sm text-black/70">
                 <p>邮箱：{order.buyerEmail}</p>

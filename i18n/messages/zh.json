@@ -38,11 +38,19 @@
         "comments": {
           "label": "评论审核",
           "description": "审核博客评论并管理公开展示"
-        }
+        },
+          "media": {
+            "label": "媒体库",
+            "description": "查看已上传素材，并复用到背景、博客和商品编辑中"
+          },
+          "payouts": {
+            "label": "收款设置",
+            "description": "绑定 Stripe 收款账户，并查看当前可收款 / 可打款状态"
+          }
+        },
+        "comingSoon": "待开发"
       },
-      "comingSoon": "待开发"
-    },
-    "editorScaffold": {
+      "editorScaffold": {
       "tabs": {
         "layout": {
           "title": "页面布局",
@@ -65,10 +73,65 @@
         },
         "create": {
           "description": "创建新内容并设置初始展示信息。"
+          }
+        }
+      },
+      "payouts": {
+        "eyebrow": "Stripe Connect",
+        "title": "卖家收款设置",
+        "subtitle": "为当前账号绑定独立收款账户。买家支付成功后，后续资金将由 Stripe 结算到这个卖家的 connected account，再按 Stripe payout 打到绑定银行卡。",
+        "backToDashboard": "返回编辑目录",
+        "emptyState": "当前还没有创建 Stripe 收款账户。开始绑定后，Stripe 会引导你完成基础资料、收款能力和银行卡设置。",
+        "sections": {
+          "account": "账户概览",
+          "nextSteps": "下一步与风险提示",
+          "currentlyDue": "当前待补资料",
+          "pastDue": "已逾期待补资料",
+          "eventuallyDue": "后续可能需要补充"
+        },
+        "actions": {
+          "startOnboarding": "开始绑定 Stripe 收款",
+          "continueOnboarding": "继续完成 Stripe 收款设置",
+          "openDashboard": "打开 Stripe Express Dashboard",
+          "sync": "同步 Stripe 状态"
+        },
+        "status": {
+          "NOT_STARTED": "未开始",
+          "PENDING": "待完成",
+          "RESTRICTED": "受限",
+          "ACTIVE": "已启用",
+          "DISCONNECTED": "已断开"
+        },
+        "fields": {
+          "providerAccountId": "Stripe Account",
+          "country": "国家 / 地区",
+          "defaultCurrency": "默认货币",
+          "lastSyncedAt": "最近同步",
+          "detailsSubmitted": "资料已提交",
+          "chargesEnabled": "可收款",
+          "payoutsEnabled": "可打款",
+          "bankAccount": "银行卡摘要",
+          "bankUnavailable": "尚未同步到可展示的银行卡摘要，请在 Stripe Express Dashboard 中确认绑定情况。",
+          "disabledReason": "受限原因",
+          "none": "当前没有待补项"
+        },
+        "flags": {
+          "ready": "已就绪",
+          "notReady": "未就绪"
+        },
+        "hints": {
+          "active": "这个账号已经具备收款和打款能力。你仍然可以打开 Stripe Express Dashboard 查看 payout 节奏、补资料或调整银行账户。",
+          "pending": "当前账号还没有完全开通。继续完成 Stripe onboarding，并在返回后点一次“同步 Stripe 状态”确认能力是否生效。"
+        },
+        "messages": {
+          "returned": "已从 Stripe 返回，当前状态已重新同步。",
+          "synced": "Stripe 收款账户状态已更新。"
+        },
+        "errors": {
+          "loadFailed": "加载收款账户失败，请稍后再试。"
         }
       }
-    }
-  },
+    },
   "auth": {
     "login": {
       "title": "登录",
@@ -202,6 +265,7 @@
     "success": "成功",
     "uploading": "上传中...",
     "add": "添加",
+    "replace": "替换",
     "previous": "上一页",
     "next": "下一页",
     "published": "已发布",
@@ -363,6 +427,84 @@
     "preview": "背景预览",
     "imageLoadError": "图片加载失败",
     "noImage": "暂无图片"
+  },
+  "mediaLibrary": {
+    "title": "媒体库",
+    "description": "复用你已经上传的图片，或直接在这里上传新素材。",
+    "pageTitle": "媒体库",
+    "pageDescription": "统一查看已上传图片，并把素材复用到背景、博客封面和商品图片。",
+    "open": "从媒体库选择",
+    "goToReplace": "前往替换",
+    "replaceAction": "直接替换引用",
+    "replaceTitle": "替换引用资源",
+    "replaceDescription": "选择一张新图片，批量替换这张素材在页面和内容中的所有引用。",
+    "replaceSelect": "替换为这张图",
+    "replaceSuccess": "已替换 {count} 处引用",
+    "replaceFailed": "替换引用失败",
+    "replaceSameAsset": "请选择另一张素材作为替换目标",
+    "searchLabel": "搜索素材",
+    "searchPlaceholder": "按文件名或 URL 搜索",
+    "uploadButton": "上传新图片",
+    "refresh": "刷新列表",
+    "loadMore": "加载更多",
+    "select": "使用这张图",
+    "selectShort": "勾选",
+    "copyUrl": "复制链接",
+    "copiedUrl": "图片链接已复制",
+    "copyFailed": "复制图片链接失败",
+    "selected": "已选择图片",
+    "uploaded": "图片上传成功",
+    "filterLabel": "使用场景",
+    "filterAll": "全部场景",
+    "filterUnspecified": "未标记场景",
+    "selectedCount": "已选择 {count} 项",
+    "deleteSelectionWarning": "选中的素材里包含正在使用的项，不能批量删除，但可以继续批量维护标签。",
+    "selectAllVisible": "全选当前列表",
+    "clearSelection": "清空选择",
+    "deleteSelected": "删除已选",
+    "bulkTagAdd": "批量添加标签",
+    "bulkTagRemove": "批量移除标签",
+    "bulkTagClear": "清空全部标签",
+    "bulkTagApply": "应用到已选素材",
+    "bulkTagSuccessAdd": "已批量添加标签",
+    "bulkTagSuccessRemove": "已批量移除标签",
+    "bulkTagSuccessClear": "已清空已选素材标签",
+    "bulkTagFailed": "批量维护标签失败",
+    "deleteSuccess": "媒体素材已删除",
+    "deleteFailed": "删除媒体素材失败",
+    "inUse": "已被引用 {count} 处",
+    "notInUse": "可安全删除",
+    "inUseAction": "正在使用",
+    "referencesLabel": "引用",
+    "moreReferences": "还有 {count} 处引用未展开",
+    "deleteConfirmTitle": "确认删除素材",
+    "deleteConfirmSingle": "确定要删除这张素材吗？如果它仍被页面或内容引用，公开页面中的图片会失效。",
+    "deleteConfirmBulk": "确定要删除已选的 {count} 项素材吗？如果它们仍被页面或内容引用，公开页面中的图片会失效。",
+    "empty": "还没有素材，先上传第一张图片。",
+    "noResults": "没有找到匹配的素材。",
+    "loadFailed": "加载媒体库失败",
+    "fileFallback": "未命名图片",
+    "usage": {
+      "pageBackground": "页面背景",
+      "blogListBackground": "博客列表背景",
+      "blogDetailBackground": "博客详情背景",
+      "blogCover": "博客封面",
+      "shopListBackground": "商店列表背景",
+      "shopDetailBackground": "商品详情背景",
+      "productImage": "商品图片",
+      "newsPageBackground": "新闻页面背景",
+      "newsArticleBackground": "新闻文章背景",
+      "heroLogo": "Hero Logo",
+      "heroSlide": "Hero 轮播图",
+      "newsItem": "新闻模块图片"
+    },
+    "referenceKinds": {
+      "pageDraft": "页面草稿配置",
+      "pagePublished": "页面已发布配置",
+      "blogCover": "博客封面",
+      "productImage": "商品图片",
+      "newsArticleBackground": "新闻文章背景"
+    }
   },
   "newsArticleEditor": {
     "title": "新闻文章管理",

@@ -55,6 +55,7 @@ export default function CMSHeader({
             onClick={onSaveDraft}
             disabled={disabled || saving || publishing}
             loading={saving}
+            data-testid="cms-save-draft"
           >
             {saving ? t("cms.saving") : t("cms.saveDraft")}
           </Button>
@@ -68,6 +69,7 @@ export default function CMSHeader({
             onClick={onPublish}
             disabled={disabled || saving || publishing}
             loading={publishing}
+            data-testid="cms-publish"
           >
             {publishing ? t("cms.publishing") : t("cms.publish")}
           </Button>

@@ -40,6 +40,7 @@ function ProductCard({ product, userSlug, formatPrice }: {
   return (
     <Link
       href={`/u/${userSlug}/shop/${product.id}`}
+      data-testid={`public-user-shop-product-${product.id}`}
       className="group rounded-lg overflow-hidden border border-black/10 bg-white hover:shadow-lg transition-shadow"
     >
       {imageSrc && !imageError ? (
@@ -125,7 +126,11 @@ export default function ProductList({ products, userSlug, backgroundStyle }: Pro
   };
 
   return (
-    <main className="relative min-h-screen text-black" style={backgroundStyle || defaultBackgroundStyle}>
+    <main
+      data-testid="public-user-shop-list"
+      className="relative min-h-screen text-black"
+      style={backgroundStyle || defaultBackgroundStyle}
+    >
       {/* 右上角菜单按钮 */}
       <div className="fixed top-6 right-6 z-50 flex items-center gap-4 text-white">
         <button

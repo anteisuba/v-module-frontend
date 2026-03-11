@@ -73,6 +73,8 @@ export function AdminEditorTabs({
               key={tab.id}
               type="button"
               onClick={() => onChange(tab.id)}
+              data-testid={`admin-tab-${tab.id}`}
+              data-state={isActive ? "active" : "inactive"}
               className={joinClasses(
                 "rounded-[22px] border px-4 py-4 text-left transition-colors",
                 isActive
@@ -114,6 +116,8 @@ export function AdminEditorAccordion({
               <button
                 type="button"
                 onClick={() => onToggle(panel.id)}
+                data-testid={`admin-panel-toggle-${panel.id}`}
+                data-state={isOpen ? "open" : "closed"}
                 className="flex min-w-0 flex-1 items-start gap-4 text-left"
                 aria-expanded={isOpen}
                 aria-controls={`editor-panel-${panel.id}`}
@@ -146,6 +150,7 @@ export function AdminEditorAccordion({
             {isOpen ? (
               <div
                 id={`editor-panel-${panel.id}`}
+                data-testid={`admin-panel-body-${panel.id}`}
                 className={joinClasses(
                   "border-t border-black/10 px-3 pb-3 pt-3 sm:px-4 sm:pb-4",
                   panel.bodyClassName

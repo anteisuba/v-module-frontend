@@ -15,11 +15,15 @@
     "check": "tsc --noEmit",
     "test": "vitest run",
     "test:watch": "vitest",
+    "test:e2e": "playwright test",
     "postinstall": "prisma generate",
     "db:seed": "tsx prisma/seed.ts",
-    "db:migrate": "prisma migrate dev",
+    "db:migrate": "tsx scripts/apply-migrations.ts",
+    "db:migrate:status": "tsx scripts/apply-migrations.ts --status",
+    "db:migrate:prisma-dev": "prisma migrate dev",
     "db:studio": "prisma studio",
-    "clear-rate-limit": "tsx scripts/clear-rate-limit.ts"
+    "clear-rate-limit": "tsx scripts/clear-rate-limit.ts",
+    "playwright:install": "playwright install chromium"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.957.0",
@@ -39,6 +43,7 @@
     "zod": "^4.2.1"
   },
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/nodemailer": "^6.4.14",

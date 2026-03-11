@@ -2,7 +2,13 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useEffect, useRef, useState } from "react";
+import {
+  NEWS_ARTICLE_BACKGROUND,
+  NEWS_PAGE_BACKGROUND,
+  type MediaAssetUsageContext,
+} from "@/domain/media/usage";
+import { useScrollToElement } from "@/hooks/useScrollToElement";
 import { newsArticleApi } from "@/lib/api";
 import { ApiError, NetworkError } from "@/lib/api/errors";
 import type { NewsArticle } from "@/lib/api/types";
@@ -14,10 +20,15 @@ interface NewsArticleEditorProps {
   disabled?: boolean;
   onToast?: (message: string) => void;
   onError?: (message: string) => void;
-  onUploadImage?: (file: File) => Promise<{ src: string }>;
+  onUploadImage?: (
+    file: File,
+    options?: { usageContext?: MediaAssetUsageContext }
+  ) => Promise<{ src: string }>;
   // 新闻页面背景配置（用于 NewsListSection、/news 和 /news/[id] 页面）
   newsBackground?: { type: "color" | "image"; value: string };
   onNewsBackgroundChange?: (background: { type: "color" | "image"; value: string }) => void;
+  focusTarget?: string | null;
+  initialArticleId?: string | null;
 }
 
 const CATEGORIES = ["ALL", "MEDIA", "MAGAZINE", "あの", "ANO"];
@@ -34,6 +45,8 @@ export default function NewsArticleEditor({
   onUploadImage,
   newsBackground,
   onNewsBackgroundChange,
+  focusTarget = null,
+  initialArticleId = null,
 }: NewsArticleEditorProps) {
   const { t } = useI18n();
   const [articles, setArticles] = useState<NewsArticle[]>([]);
@@ -46,6 +59,16 @@ export default function NewsArticleEditor({
   const [tags, setTags] = useState<string[]>(["ALL"]); // 动态标签列表
   const [newTag, setNewTag] = useState(""); // 新标签输入
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null); // 删除确认对话框
+  const hasOpenedInitialArticleRef = useRef(false);
+
+  useScrollToElement(
+    focusTarget === "news-background",
+    "news-page-background-editor"
+  );
+  useScrollToElement(
+    focusTarget === "news-article-background" && Boolean(editingArticle),
+    "news-article-background-editor"
+  );
 
   // 表单状态
   const [formData, setFormData] = useState({
@@ -112,6 +135,16 @@ export default function NewsArticleEditor({
     loadArticles();
   }, [currentPage, selectedTag]);
 
+  useEffect(() => {
+    if (!initialArticleId) {
+      return;
+    }
+
+    hasOpenedInitialArticleRef.current = false;
+    setSelectedTag("ALL");
+    setCurrentPage(1);
+  }, [initialArticleId]);
+
   // 添加新标签
   const handleAddTag = () => {
     if (newTag.trim() && !tags.includes(newTag.trim())) {
@@ -177,6 +210,59 @@ export default function NewsArticleEditor({
     setEditingArticle(article);
     setIsCreating(false);
   };
+
+  useEffect(() => {
+    if (!initialArticleId || hasOpenedInitialArticleRef.current || loading) {
+      return;
+    }
+
+    const existingArticle = articles.find((article) => article.id === initialArticleId);
+    if (existingArticle) {
+      handleEdit(existingArticle);
+      hasOpenedInitialArticleRef.current = true;
+      return;
+    }
+
+    let active = true;
+
+    void (async () => {
+      try {
+        const article = await newsArticleApi.getArticle(initialArticleId);
+        if (!active) {
+          return;
+        }
+
+        setArticles((current) => [
+          article,
+          ...current.filter((item) => item.id !== article.id),
+        ]);
+
+        const articleTag = article.tag?.trim();
+        if (articleTag) {
+          setTags((current) =>
+            current.includes(articleTag) ? current : [...current, articleTag]
+          );
+        }
+
+        handleEdit(article);
+        hasOpenedInitialArticleRef.current = true;
+      } catch (err) {
+        if (!active) {
+          return;
+        }
+
+        if (err instanceof ApiError || err instanceof NetworkError) {
+          onError?.(err.message);
+        } else {
+          onError?.(t("newsArticleEditor.list.loadFailed"));
+        }
+      }
+    })();
+
+    return () => {
+      active = false;
+    };
+  }, [articles, initialArticleId, loading, onError, t]);
 
   // 保存文章
   const handleSave = async () => {
@@ -287,13 +373,17 @@ export default function NewsArticleEditor({
 
       {/* 新闻页面背景设置（用于 NewsListSection、/news 和 /news/[id] 页面） */}
       {newsBackground && onNewsBackgroundChange && (
-        <div className="mb-4 rounded-lg border border-black/10 bg-white/70 p-4">
+        <div
+          id="news-page-background-editor"
+          className="mb-4 rounded-lg border border-black/10 bg-white/70 p-4"
+        >
           <BackgroundEditor
             label={t("newsArticleEditor.newsBackground.label")}
             background={newsBackground}
             onBackgroundChange={onNewsBackgroundChange}
             disabled={disabled}
             onUploadImage={onUploadImage}
+            usageContext={NEWS_PAGE_BACKGROUND}
             onToast={(msg) => onToast?.(msg || t("newsArticleEditor.newsBackground.uploadSuccess"))}
             onError={onError}
             previewHeight="h-32"
@@ -461,6 +551,7 @@ export default function NewsArticleEditor({
                 }}
                 disabled={disabled}
                 onUploadImage={onUploadImage}
+                usageContext={NEWS_ARTICLE_BACKGROUND}
                 onToast={onToast}
                 onError={onError}
                 previewHeight="h-16"
@@ -643,7 +734,7 @@ export default function NewsArticleEditor({
                 </div>
 
                 {/* 背景编辑（仅用于文章详情页） */}
-                <div>
+                <div id="news-article-background-editor">
                   <BackgroundEditor
                     label={t("newsArticleEditor.form.articleBackground.label")}
                     background={{
@@ -659,6 +750,7 @@ export default function NewsArticleEditor({
                     }}
                     disabled={disabled}
                     onUploadImage={onUploadImage}
+                    usageContext={NEWS_ARTICLE_BACKGROUND}
                     onToast={onToast}
                     onError={onError}
                     previewHeight="h-16"

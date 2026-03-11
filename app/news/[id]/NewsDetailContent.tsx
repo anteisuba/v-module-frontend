@@ -276,7 +276,11 @@ export function NewsDetailContent({
     : pageConfig?.newsBackground?.type || "color";
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden" style={pageBackgroundStyle}>
+    <main
+      data-testid="public-news-detail"
+      className="relative min-h-screen w-full overflow-hidden"
+      style={pageBackgroundStyle}
+    >
       {/* 右上角菜单按钮 */}
       <div className="fixed top-6 right-6 z-50 flex items-center gap-4 text-white">
         <button
@@ -576,7 +580,12 @@ export function NewsDetailContent({
         ) : (
           <div className="mb-6 rounded-xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl">
             {/* 文章标题 */}
-            <h2 className="mb-4 text-lg font-semibold text-black">{article.title}</h2>
+            <h2
+              data-testid="public-news-detail-title"
+              className="mb-4 text-lg font-semibold text-black"
+            >
+              {article.title}
+            </h2>
 
             {/* 元信息 */}
             <div className="mb-4 flex items-center gap-3 text-xs text-black/60">

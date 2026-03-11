@@ -38,7 +38,11 @@ export default function PageRenderer({ config }: { config: PageConfig }) {
   } as const;
 
   return (
-    <main className="min-h-screen" style={backgroundStyle}>
+    <main
+      className="min-h-screen"
+      style={backgroundStyle}
+      data-testid="public-page-renderer"
+    >
       {/* Bento Grid 容器：移动端单列，桌面端 4 列 */}
       <div className="grid grid-cols-1 gap-4 p-4 md:grid-cols-4 auto-rows-min">
         {sortedSections.map((section) => {

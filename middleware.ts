@@ -20,6 +20,14 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  const isE2EBypassEnabled =
+    process.env.E2E_BYPASS_AUTH === "1" &&
+    request.cookies.get("vtuber_e2e_bypass")?.value === "1";
+
+  if (isE2EBypassEnabled) {
+    return NextResponse.next();
+  }
+
   // 检查是否是公开路由
   const isPublicRoute = publicRoutes.some(
     (route) => pathname === route || pathname.startsWith(route + "/")

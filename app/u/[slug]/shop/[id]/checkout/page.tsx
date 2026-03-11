@@ -136,7 +136,10 @@ export default function CheckoutPage({
   const totalPrice = product.price * quantity;
 
   return (
-    <div className="relative min-h-screen bg-white py-16 px-6 text-black">
+    <div
+      data-testid="public-shop-checkout-page"
+      className="relative min-h-screen bg-white py-16 px-6 text-black"
+    >
       {/* 右上角菜单按钮 */}
       <div className="fixed top-6 right-6 z-50 flex items-center gap-4 text-black">
         <button
@@ -231,6 +234,7 @@ export default function CheckoutPage({
           <form onSubmit={handleSubmit} className="space-y-4">
             <FormField label="邮箱 *" required>
               <Input
+                data-testid="checkout-buyer-email"
                 type="email"
                 value={buyerEmail}
                 onChange={(e) => setBuyerEmail(e.target.value)}
@@ -318,6 +322,7 @@ export default function CheckoutPage({
               className="w-full"
               loading={submitting}
               disabled={product.stock === 0}
+              data-testid="checkout-submit"
             >
               前往 Stripe 支付
             </Button>

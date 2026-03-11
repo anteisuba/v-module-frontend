@@ -7,6 +7,7 @@ const {
   handleStripeCheckoutPaidMock,
   handleStripeCheckoutFailedMock,
   handleStripeCheckoutExpiredMock,
+  handleStripeDisputeUpdatedMock,
 } = vi.hoisted(() => ({
   constructEventMock: vi.fn(),
   getStripeClientMock: vi.fn(),
@@ -14,6 +15,7 @@ const {
   handleStripeCheckoutPaidMock: vi.fn(),
   handleStripeCheckoutFailedMock: vi.fn(),
   handleStripeCheckoutExpiredMock: vi.fn(),
+  handleStripeDisputeUpdatedMock: vi.fn(),
 }));
 
 vi.mock("@/lib/stripe", () => ({
@@ -25,6 +27,7 @@ vi.mock("@/domain/shop", () => ({
   handleStripeCheckoutPaid: handleStripeCheckoutPaidMock,
   handleStripeCheckoutFailed: handleStripeCheckoutFailedMock,
   handleStripeCheckoutExpired: handleStripeCheckoutExpiredMock,
+  handleStripeDisputeUpdated: handleStripeDisputeUpdatedMock,
 }));
 
 import { POST } from "@/app/api/payments/stripe/webhook/route";
@@ -99,6 +102,41 @@ describe("POST /api/payments/stripe/webhook", () => {
     expect(handleStripeCheckoutExpiredMock).toHaveBeenCalledWith(
       expect.objectContaining({
         id: "cs_test_expired",
+      })
+    );
+    expect(handleStripeCheckoutPaidMock).not.toHaveBeenCalled();
+  });
+
+  it("records dispute events without treating them as checkout sessions", async () => {
+    constructEventMock.mockReturnValue({
+      type: "charge.dispute.created",
+      data: {
+        object: {
+          object: "dispute",
+          id: "du_test_123",
+          amount: 5000,
+          currency: "jpy",
+          status: "needs_response",
+          reason: "fraudulent",
+          charge: "ch_test_123",
+        },
+      },
+    });
+
+    const response = await POST(
+      new Request("http://localhost/api/payments/stripe/webhook", {
+        method: "POST",
+        headers: {
+          "stripe-signature": "sig_test",
+        },
+        body: "payload",
+      })
+    );
+
+    expect(response.status).toBe(200);
+    expect(handleStripeDisputeUpdatedMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "du_test_123",
       })
     );
     expect(handleStripeCheckoutPaidMock).not.toHaveBeenCalled();

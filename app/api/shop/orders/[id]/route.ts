@@ -5,6 +5,8 @@ import { getServerSession } from "@/lib/session/userSession";
 import {
   ORDER_PAYMENT_PROVIDER_STRIPE,
   ORDER_PAYMENT_STATUS_PAID,
+  ORDER_PAYMENT_STATUS_PARTIALLY_REFUNDED,
+  ORDER_PAYMENT_STATUS_REFUNDED,
   ORDER_PAYMENT_STATUS_OPEN,
   ORDER_STATUS_AWAITING_PAYMENT,
   ORDER_STATUS_CANCELLED,
@@ -148,6 +150,16 @@ export async function PUT(
   }
 
   if (
+    existing.paymentStatus === ORDER_PAYMENT_STATUS_REFUNDED &&
+    previousStatus !== status
+  ) {
+    return NextResponse.json(
+      { error: "Fully refunded orders cannot change fulfillment status manually" },
+      { status: 400 }
+    );
+  }
+
+  if (
     previousStatus !== status &&
     !isManualTransitionAllowed(previousStatus, status)
   ) {
@@ -177,7 +189,12 @@ export async function PUT(
     updateData.paidAt = new Date();
   }
   if (status === ORDER_STATUS_PAID) {
-    updateData.paymentStatus = existing.paymentStatus || ORDER_PAYMENT_STATUS_PAID;
+    updateData.paymentStatus =
+      existing.paymentStatus === ORDER_PAYMENT_STATUS_PARTIALLY_REFUNDED
+        ? ORDER_PAYMENT_STATUS_PARTIALLY_REFUNDED
+        : existing.paymentStatus === ORDER_PAYMENT_STATUS_REFUNDED
+          ? ORDER_PAYMENT_STATUS_REFUNDED
+          : existing.paymentStatus || ORDER_PAYMENT_STATUS_PAID;
   }
   if (status === ORDER_STATUS_SHIPPED && !existing.shippedAt) {
     updateData.shippedAt = new Date();

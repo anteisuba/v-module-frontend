@@ -11,6 +11,16 @@ import type {
   PagePublishResponse,
   PageUpdateResponse,
   UploadResponse,
+  UploadImageOptions,
+  MediaAssetListResponse,
+  MediaAssetListParams,
+  MediaAssetUsageResponse,
+  DeleteMediaAssetsResponse,
+  ReplaceMediaAssetReferencesResponse,
+  SellerPayoutAccountResponse,
+  StripeConnectDashboardLinkResponse,
+  StripeConnectOnboardingLinkResponse,
+  SellerPayoutAccountSummary,
   ForgotPasswordResponse,
   ResetPasswordResponse,
   NewsArticle,
@@ -18,7 +28,18 @@ import type {
   NewsArticleResponse,
 } from "./types";
 import type { PageConfig } from "@/domain/page-config/types";
-import type { CheckoutSessionResult, SerializedOrder } from "@/domain/shop";
+import type {
+  CheckoutSessionResult,
+  PaymentReconciliationReport,
+  PaymentSettlementReport,
+  PaymentSettlementSyncResult,
+  SerializedOrder,
+  SerializedOrderRefund,
+} from "@/domain/shop";
+import type {
+  MediaAssetUsageContext,
+  MediaAssetUsageFilter,
+} from "@/domain/media/usage";
 
 type BlogCommentStatus = "PENDING" | "APPROVED" | "REJECTED";
 
@@ -179,10 +200,101 @@ export const pageApi = {
   /**
    * 上传图片
    */
-  async uploadImage(file: File): Promise<UploadResponse> {
+  async uploadImage(
+    file: File,
+    options?: UploadImageOptions
+  ): Promise<UploadResponse> {
     const formData = new FormData();
     formData.append("file", file);
+    if (options?.usageContext) {
+      formData.append("usageContext", options.usageContext);
+    }
     return apiClient.upload<UploadResponse>("/api/page/me/upload", formData);
+  },
+
+  /**
+   * 获取当前用户的媒体资产
+   */
+  async getMediaAssets(
+    params?: MediaAssetListParams
+  ): Promise<MediaAssetListResponse> {
+    const searchParams = new URLSearchParams();
+    if (params?.page) searchParams.set("page", params.page.toString());
+    if (params?.limit) searchParams.set("limit", params.limit.toString());
+    if (params?.query) searchParams.set("query", params.query);
+    if (params?.usageContext) {
+      searchParams.set("usageContext", params.usageContext);
+    }
+    const query = searchParams.toString();
+    return apiClient.get<MediaAssetListResponse>(
+      `/api/media-assets${query ? `?${query}` : ""}`
+    );
+  },
+
+  /**
+   * 为媒体资产补充使用场景
+   */
+  async addMediaAssetUsage(
+    ids: string[],
+    usageContext: MediaAssetUsageContext
+  ): Promise<MediaAssetUsageResponse> {
+    return apiClient.patch<MediaAssetUsageResponse>("/api/media-assets", {
+      ids,
+      usageContext,
+      action: "ADD",
+    });
+  },
+
+  /**
+   * 批量移除媒体资产使用场景
+   */
+  async removeMediaAssetUsage(
+    ids: string[],
+    usageContext: MediaAssetUsageContext
+  ): Promise<MediaAssetUsageResponse> {
+    return apiClient.patch<MediaAssetUsageResponse>("/api/media-assets", {
+      ids,
+      usageContext,
+      action: "REMOVE",
+    });
+  },
+
+  /**
+   * 清空媒体资产使用场景
+   */
+  async clearMediaAssetUsage(ids: string[]): Promise<MediaAssetUsageResponse> {
+    return apiClient.patch<MediaAssetUsageResponse>("/api/media-assets", {
+      ids,
+      action: "CLEAR",
+    });
+  },
+
+  /**
+   * 删除媒体资产
+   */
+  async deleteMediaAssets(
+    ids: string[]
+  ): Promise<DeleteMediaAssetsResponse> {
+    return apiClient.deleteJson<DeleteMediaAssetsResponse>(
+      "/api/media-assets",
+      { ids }
+    );
+  },
+
+  /**
+   * 直接替换媒体资产引用
+   */
+  async replaceMediaAssetReferences(
+    sourceAssetId: string,
+    targetAssetId: string
+  ): Promise<ReplaceMediaAssetReferencesResponse> {
+    return apiClient.post<ReplaceMediaAssetReferencesResponse>(
+      "/api/media-assets/replace",
+      {
+        sourceAssetId,
+        targetAssetId,
+      }
+    );
   },
 
   /**
@@ -732,6 +844,25 @@ export const shopApi = {
   },
 
   /**
+   * 公开确认 Stripe Checkout 成功回流
+   */
+  async confirmPublicOrder(
+    id: string,
+    buyerEmail: string,
+    sessionId: string
+  ): Promise<SerializedOrder> {
+    const response = await apiClient.post<{ order: SerializedOrder }>(
+      `/api/shop/orders/${id}/confirm`,
+      {
+        buyerEmail: buyerEmail.trim(),
+        sessionId: sessionId.trim(),
+      },
+      { skipAuth: true }
+    );
+    return response.order;
+  },
+
+  /**
    * 公开结账创建订单
    */
   async createCheckoutOrder(data: {
@@ -761,5 +892,212 @@ export const shopApi = {
       { status }
     );
     return response.order;
+  },
+
+  /**
+   * 创建订单退款（卖家）
+   */
+  async createOrderRefund(
+    id: string,
+    data?: { amount?: number | null; reason?: string | null }
+  ): Promise<{ order: SerializedOrder; refund: SerializedOrderRefund }> {
+    return apiClient.post<{ order: SerializedOrder; refund: SerializedOrderRefund }>(
+      `/api/shop/orders/${id}/refunds`,
+      data || {}
+    );
+  },
+
+  /**
+   * 获取 Stripe 对账报表
+   */
+  async getPaymentReconciliationReport(params?: {
+    start?: string;
+    end?: string;
+  }): Promise<PaymentReconciliationReport> {
+    const searchParams = new URLSearchParams();
+    if (params?.start) searchParams.set("start", params.start);
+    if (params?.end) searchParams.set("end", params.end);
+    const query = searchParams.toString();
+
+    return apiClient.get(
+      `/api/shop/payments/reconciliation${query ? `?${query}` : ""}`
+    );
+  },
+
+  /**
+   * 导出 Stripe 支付事件 CSV
+   */
+  async exportPaymentEventsCsv(params?: {
+    start?: string;
+    end?: string;
+  }): Promise<Blob> {
+    const searchParams = new URLSearchParams();
+    if (params?.start) searchParams.set("start", params.start);
+    if (params?.end) searchParams.set("end", params.end);
+    searchParams.set("export", "events");
+
+    const response = await fetch(
+      `/api/shop/payments/reconciliation?${searchParams.toString()}`,
+      {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      }
+    );
+
+    if (!response.ok) {
+      let errorMessage = "导出支付事件失败";
+
+      try {
+        const errorData = (await response.json()) as {
+          error?: string;
+          message?: string;
+        };
+        errorMessage = errorData.error || errorData.message || errorMessage;
+      } catch {
+        // noop
+      }
+
+      throw new Error(errorMessage);
+    }
+
+    return response.blob();
+  },
+
+  /**
+   * 导出对账异常 CSV
+   */
+  async exportPaymentAnomaliesCsv(params?: {
+    start?: string;
+    end?: string;
+  }): Promise<Blob> {
+    const searchParams = new URLSearchParams();
+    if (params?.start) searchParams.set("start", params.start);
+    if (params?.end) searchParams.set("end", params.end);
+    searchParams.set("export", "anomalies");
+
+    const response = await fetch(
+      `/api/shop/payments/reconciliation?${searchParams.toString()}`,
+      {
+        method: "GET",
+        credentials: "include",
+        cache: "no-store",
+      }
+    );
+
+    if (!response.ok) {
+      let errorMessage = "导出对账异常失败";
+
+      try {
+        const errorData = (await response.json()) as {
+          error?: string;
+          message?: string;
+        };
+        errorMessage = errorData.error || errorData.message || errorMessage;
+      } catch {
+        // noop
+      }
+
+      throw new Error(errorMessage);
+    }
+
+    return response.blob();
+  },
+
+  /**
+   * 获取 Stripe 结算核销报表
+   */
+  async getPaymentSettlementReport(params?: {
+    start?: string;
+    end?: string;
+  }): Promise<PaymentSettlementReport> {
+    const searchParams = new URLSearchParams();
+    if (params?.start) searchParams.set("start", params.start);
+    if (params?.end) searchParams.set("end", params.end);
+    const query = searchParams.toString();
+
+    return apiClient.get(
+      `/api/shop/payments/settlements${query ? `?${query}` : ""}`
+    );
+  },
+
+  /**
+   * 同步 Stripe 结算流水和 payout
+   */
+  async syncPaymentSettlementLedger(params?: {
+    start?: string | null;
+    end?: string | null;
+  }): Promise<{
+    sync: PaymentSettlementSyncResult;
+    report: PaymentSettlementReport;
+  }> {
+    return apiClient.post("/api/shop/payments/settlements", {
+      start: params?.start || null,
+      end: params?.end || null,
+    });
+  },
+
+  /**
+   * 批量更新结算流水核销状态
+   */
+  async updatePaymentSettlementEntries(data: {
+    ids: string[];
+    reconciliationStatus: "OPEN" | "RECONCILED" | "IGNORED";
+    note?: string | null;
+    start?: string | null;
+    end?: string | null;
+  }): Promise<{
+    updated: {
+      updatedCount: number;
+    };
+    report: PaymentSettlementReport;
+  }> {
+    return apiClient.patch("/api/shop/payments/settlements", {
+      ids: data.ids,
+      reconciliationStatus: data.reconciliationStatus,
+      note: data.note || null,
+      start: data.start || null,
+      end: data.end || null,
+    });
+  },
+};
+
+export const connectApi = {
+  async getMyPayoutAccount(): Promise<SellerPayoutAccountSummary | null> {
+    const response = await apiClient.get<SellerPayoutAccountResponse>(
+      "/api/payments/connect/accounts/me"
+    );
+    return response.account;
+  },
+
+  async createPayoutAccount(): Promise<SellerPayoutAccountSummary> {
+    const response = await apiClient.post<SellerPayoutAccountResponse>(
+      "/api/payments/connect/accounts"
+    );
+
+    if (!response.account) {
+      throw new Error("Stripe payout account was not created");
+    }
+
+    return response.account;
+  },
+
+  async syncPayoutAccount(): Promise<SellerPayoutAccountSummary | null> {
+    const response = await apiClient.post<SellerPayoutAccountResponse>(
+      "/api/payments/connect/accounts/sync"
+    );
+    return response.account;
+  },
+
+  async createOnboardingLink(): Promise<StripeConnectOnboardingLinkResponse> {
+    return apiClient.post<StripeConnectOnboardingLinkResponse>(
+      "/api/payments/connect/accounts/onboarding-link"
+    );
+  },
+
+  async createDashboardLink(): Promise<StripeConnectDashboardLinkResponse> {
+    return apiClient.post<StripeConnectDashboardLinkResponse>(
+      "/api/payments/connect/accounts/dashboard-link"
+    );
   },
 };

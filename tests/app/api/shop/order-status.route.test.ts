@@ -167,4 +167,33 @@ describe("PUT /api/shop/orders/[id]", () => {
     });
     expect(updateMock).not.toHaveBeenCalled();
   });
+
+  it("rejects fulfillment status changes for fully refunded orders", async () => {
+    findUniqueMock.mockResolvedValue({
+      id: "order-1",
+      userId: "seller-1",
+      status: "PAID",
+      paymentProvider: "STRIPE",
+      paymentStatus: "REFUNDED",
+      paidAt: new Date("2026-03-08T00:30:00.000Z"),
+      shippedAt: null,
+      deliveredAt: null,
+    });
+
+    const response = await PUT(
+      new Request("http://localhost/api/shop/orders/order-1", {
+        method: "PUT",
+        body: JSON.stringify({ status: "SHIPPED" }),
+      }),
+      {
+        params: Promise.resolve({ id: "order-1" }),
+      }
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "Fully refunded orders cannot change fulfillment status manually",
+    });
+    expect(updateMock).not.toHaveBeenCalled();
+  });
 });

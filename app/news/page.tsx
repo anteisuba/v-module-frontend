@@ -118,7 +118,11 @@ function NewsListContent() {
   const backUrl = getBackUrl();
 
   return (
-    <main className="relative min-h-screen text-black" style={backgroundStyle}>
+    <main
+      data-testid="public-news-list"
+      className="relative min-h-screen text-black"
+      style={backgroundStyle}
+    >
       {/* 右上角菜单按钮 */}
       <div className="fixed top-6 right-6 z-50 flex items-center gap-4 text-white">
         <button
@@ -172,6 +176,7 @@ function NewsListContent() {
               <Link
                 key={article.id}
                 href={`/news/${article.id}`}
+                data-testid={`public-news-article-${article.id}`}
                 className="block rounded-lg border border-black/10 bg-black/5 p-4 transition-colors hover:bg-black/10"
               >
                 <div className="mb-2 flex items-center gap-3 text-sm text-black/60">

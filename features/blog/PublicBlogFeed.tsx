@@ -35,7 +35,10 @@ export default function PublicBlogFeed({ posts }: PublicBlogFeedProps) {
   const { t, locale } = useI18n();
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(251,207,232,0.55),_rgba(255,255,255,1)_38%),linear-gradient(180deg,_#fff8f1_0%,_#ffffff_58%,_#f8fafc_100%)] text-slate-950">
+    <main
+      data-testid="public-blog-feed"
+      className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(251,207,232,0.55),_rgba(255,255,255,1)_38%),linear-gradient(180deg,_#fff8f1_0%,_#ffffff_58%,_#f8fafc_100%)] text-slate-950"
+    >
       <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-10 sm:px-6 lg:px-8">
         <header className="flex flex-col gap-5 rounded-[32px] border border-black/10 bg-white/80 p-6 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur xl:flex-row xl:items-end xl:justify-between">
           <div className="max-w-3xl">
@@ -83,6 +86,7 @@ export default function PublicBlogFeed({ posts }: PublicBlogFeedProps) {
               return (
                 <article
                   key={post.id}
+                  data-testid={`public-blog-feed-post-${post.id}`}
                   className="grid gap-0 overflow-hidden rounded-[32px] border border-black/10 bg-white/85 shadow-[0_20px_60px_rgba(15,23,42,0.06)] md:grid-cols-[280px_minmax(0,1fr)]"
                 >
                   <Link

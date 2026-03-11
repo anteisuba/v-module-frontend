@@ -7,6 +7,11 @@ import BlogDetail from "@/features/blog/BlogDetail";
 import type { PageConfig } from "@/domain/page-config/types";
 import { EMPTY_PAGE_CONFIG } from "@/domain/page-config/constants";
 import { getServerSession } from "@/lib/session/userSession";
+import {
+  findE2EPublicPageState,
+  getE2EPublicPageBlogPost,
+  getE2EPublicSiteState,
+} from "@/lib/e2e/publicPageState";
 
 export const dynamic = "force-dynamic";
 
@@ -16,8 +21,19 @@ export default async function BlogDetailPage({
   params: Promise<{ slug: string; id: string }>;
 }) {
   const { slug, id } = await params;
+  const e2eSiteState = await getE2EPublicSiteState();
+  const e2ePageState = findE2EPublicPageState(e2eSiteState, slug);
+  const e2ePost = getE2EPublicPageBlogPost(e2eSiteState, slug, id);
 
-  const user = await getUserPageDataBySlug(slug);
+  const user = e2ePageState
+    ? {
+        slug,
+        displayName: e2ePageState.displayName,
+        page: {
+          publishedConfig: e2ePageState.publishedConfig,
+        },
+      }
+    : await getUserPageDataBySlug(slug);
 
   if (!user) {
     notFound();
@@ -34,12 +50,14 @@ export default async function BlogDetailPage({
   }
 
   // 获取博客文章
-  const session = await getServerSession();
-  const post = await getBlogPostDetailById(id, {
-    viewerUserId: session.user?.id,
-    viewerEmail: session.user?.email,
-    commentsLimit: 50,
-  });
+  const session = e2ePost === null ? await getServerSession() : null;
+  const post =
+    e2ePost ??
+    (await getBlogPostDetailById(id, {
+      viewerUserId: session?.user?.id,
+      viewerEmail: session?.user?.email,
+      commentsLimit: 50,
+    }));
 
   if (!post || !post.published || post.userSlug !== slug) {
     notFound();
@@ -103,8 +121,13 @@ export async function generateMetadata({
 }: {
   params: Promise<{ slug: string; id: string }>;
 }) {
-  const { id } = await params;
-  const post = await getBlogPostById(id);
+  const { slug, id } = await params;
+  const e2ePost = getE2EPublicPageBlogPost(
+    await getE2EPublicSiteState(),
+    slug,
+    id
+  );
+  const post = e2ePost ?? (await getBlogPostById(id));
 
   if (!post || !post.published) {
     return {
