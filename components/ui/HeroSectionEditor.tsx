@@ -283,7 +283,7 @@ export default function HeroSectionEditor({
   }
 
   // 使用图片链接
-  function useImageUrl(index: number, url: string) {
+  function handleImageUrlChange(index: number, url: string) {
     updateHeroSlide(index, { src: url });
     onToast?.(t("heroEditor.slides.updated").replace("{index}", String(index + 1)));
   }
@@ -1033,7 +1033,7 @@ export default function HeroSectionEditor({
                   <input
                     type="text"
                     value={slide?.src || ""}
-                    onChange={(e) => useImageUrl(index, e.target.value)}
+                    onChange={(e) => handleImageUrlChange(index, e.target.value)}
                     placeholder={t("heroEditor.slides.linkPlaceholder")}
                     className="mt-2 w-full rounded-lg border border-black/10 bg-white/70 px-3 py-2 text-xs text-black placeholder:text-black/30"
                     disabled={isUploading || disabled}
@@ -1121,4 +1121,3 @@ export default function HeroSectionEditor({
     </div>
   );
 }
-

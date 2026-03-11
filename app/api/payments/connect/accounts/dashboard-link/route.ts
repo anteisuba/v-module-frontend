@@ -4,7 +4,8 @@ import { createConnectErrorResponse, getAuthenticatedUserId } from "../../shared
 
 export const runtime = "nodejs";
 
-export async function POST(_request: Request) {
+export async function POST(request: Request) {
+  void request;
   const userId = await getAuthenticatedUserId();
 
   if (!userId) {

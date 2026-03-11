@@ -7,6 +7,10 @@ export interface PaymentReconciliationAttemptRecord {
   status: string;
   amount: number;
   currency: string;
+  connectedAccountId?: string | null;
+  externalChargeId?: string | null;
+  externalTransferId?: string | null;
+  applicationFeeAmount?: number | null;
   externalSessionId: string | null;
   externalPaymentIntentId: string | null;
   failureReason: string | null;
@@ -24,6 +28,9 @@ export interface PaymentReconciliationRefundRecord {
   currency: string;
   reason: string | null;
   failureReason: string | null;
+  connectedAccountId?: string | null;
+  externalChargeId?: string | null;
+  applicationFeeRefundedAmount?: number | null;
   externalRefundId: string | null;
   externalPaymentIntentId: string | null;
   createdAt: string;
@@ -39,6 +46,7 @@ export interface PaymentReconciliationDisputeRecord {
   externalDisputeId: string;
   externalPaymentIntentId: string | null;
   externalChargeId: string | null;
+  connectedAccountId?: string | null;
   dueBy: string | null;
   closedAt: string | null;
   createdAt: string;
@@ -47,6 +55,14 @@ export interface PaymentReconciliationDisputeRecord {
 
 export interface PaymentReconciliationOrderRecord {
   id: string;
+  payoutAccountId?: string | null;
+  paymentRoutingMode?: "PLATFORM" | "STRIPE_CONNECT_DESTINATION";
+  connectedAccountId?: string | null;
+  externalChargeId?: string | null;
+  externalTransferId?: string | null;
+  platformFeeAmount?: number | null;
+  sellerGrossAmount?: number | null;
+  sellerNetExpectedAmount?: number | null;
   buyerEmail: string;
   buyerName: string | null;
   totalAmount: number;
@@ -94,6 +110,8 @@ export interface PaymentReconciliationEvent {
   createdAt: string;
   orderStatus: string;
   paymentStatus: string | null;
+  paymentRoutingMode?: "PLATFORM" | "STRIPE_CONNECT_DESTINATION";
+  connectedAccountId?: string | null;
   paymentSessionId: string | null;
   paymentIntentId: string | null;
   externalRefundId: string | null;
@@ -113,6 +131,8 @@ export interface PaymentReconciliationAnomaly {
   suggestedAction: string;
   orderStatus: string;
   paymentStatus: string | null;
+  paymentRoutingMode?: "PLATFORM" | "STRIPE_CONNECT_DESTINATION";
+  connectedAccountId?: string | null;
   paymentSessionId: string | null;
   paymentIntentId: string | null;
   createdAt: string;
@@ -225,6 +245,9 @@ function buildEvents(
         createdAt: attempt.createdAt,
         orderStatus: order.status,
         paymentStatus: order.paymentStatus,
+        paymentRoutingMode: order.paymentRoutingMode,
+        connectedAccountId:
+          attempt.connectedAccountId || order.connectedAccountId,
         paymentSessionId: attempt.externalSessionId || order.paymentSessionId,
         paymentIntentId:
           attempt.externalPaymentIntentId || order.paymentIntentId,
@@ -254,6 +277,9 @@ function buildEvents(
         createdAt: refund.createdAt,
         orderStatus: order.status,
         paymentStatus: order.paymentStatus,
+        paymentRoutingMode: order.paymentRoutingMode,
+        connectedAccountId:
+          refund.connectedAccountId || order.connectedAccountId,
         paymentSessionId: order.paymentSessionId,
         paymentIntentId:
           refund.externalPaymentIntentId || order.paymentIntentId,
@@ -280,6 +306,8 @@ function pushAnomaly(
     orderId: order.id,
     buyerEmail: order.buyerEmail,
     buyerName: order.buyerName,
+    paymentRoutingMode: order.paymentRoutingMode,
+    connectedAccountId: order.connectedAccountId,
     paymentSessionId: order.paymentSessionId,
     paymentIntentId: order.paymentIntentId,
     createdAt: order.updatedAt,
@@ -551,6 +579,14 @@ export function buildPaymentReconciliationReportFromOrders(
 function serializeOrdersForReconciliation(
   records: Array<{
     id: string;
+    payoutAccountId: string | null;
+    paymentRoutingMode: "PLATFORM" | "STRIPE_CONNECT_DESTINATION";
+    connectedAccountId: string | null;
+    externalChargeId: string | null;
+    externalTransferId: string | null;
+    platformFeeAmount: { toString(): string } | null;
+    sellerGrossAmount: { toString(): string } | null;
+    sellerNetExpectedAmount: { toString(): string } | null;
     buyerEmail: string;
     buyerName: string | null;
     totalAmount: { toString(): string };
@@ -571,6 +607,10 @@ function serializeOrdersForReconciliation(
       status: string;
       amount: { toString(): string };
       currency: string;
+      connectedAccountId: string | null;
+      externalChargeId: string | null;
+      externalTransferId: string | null;
+      applicationFeeAmount: { toString(): string } | null;
       externalSessionId: string | null;
       externalPaymentIntentId: string | null;
       failureReason: string | null;
@@ -587,6 +627,9 @@ function serializeOrdersForReconciliation(
       currency: string;
       reason: string | null;
       failureReason: string | null;
+      connectedAccountId: string | null;
+      externalChargeId: string | null;
+      applicationFeeRefundedAmount: { toString(): string } | null;
       externalRefundId: string | null;
       externalPaymentIntentId: string | null;
       createdAt: Date;
@@ -601,6 +644,7 @@ function serializeOrdersForReconciliation(
       externalDisputeId: string;
       externalPaymentIntentId: string | null;
       externalChargeId: string | null;
+      connectedAccountId: string | null;
       dueBy: Date | null;
       closedAt: Date | null;
       createdAt: Date;
@@ -610,6 +654,19 @@ function serializeOrdersForReconciliation(
 ): PaymentReconciliationOrderRecord[] {
   return records.map((order) => ({
     id: order.id,
+    payoutAccountId: order.payoutAccountId,
+    paymentRoutingMode: order.paymentRoutingMode,
+    connectedAccountId: order.connectedAccountId,
+    externalChargeId: order.externalChargeId,
+    externalTransferId: order.externalTransferId,
+    platformFeeAmount:
+      order.platformFeeAmount == null ? null : Number(order.platformFeeAmount.toString()),
+    sellerGrossAmount:
+      order.sellerGrossAmount == null ? null : Number(order.sellerGrossAmount.toString()),
+    sellerNetExpectedAmount:
+      order.sellerNetExpectedAmount == null
+        ? null
+        : Number(order.sellerNetExpectedAmount.toString()),
     buyerEmail: order.buyerEmail,
     buyerName: order.buyerName,
     totalAmount: Number(order.totalAmount.toString()),
@@ -630,6 +687,13 @@ function serializeOrdersForReconciliation(
       status: attempt.status,
       amount: Number(attempt.amount.toString()),
       currency: attempt.currency,
+      connectedAccountId: attempt.connectedAccountId,
+      externalChargeId: attempt.externalChargeId,
+      externalTransferId: attempt.externalTransferId,
+      applicationFeeAmount:
+        attempt.applicationFeeAmount == null
+          ? null
+          : Number(attempt.applicationFeeAmount.toString()),
       externalSessionId: attempt.externalSessionId,
       externalPaymentIntentId: attempt.externalPaymentIntentId,
       failureReason: attempt.failureReason,
@@ -646,6 +710,12 @@ function serializeOrdersForReconciliation(
       currency: refund.currency,
       reason: refund.reason,
       failureReason: refund.failureReason,
+      connectedAccountId: refund.connectedAccountId,
+      externalChargeId: refund.externalChargeId,
+      applicationFeeRefundedAmount:
+        refund.applicationFeeRefundedAmount == null
+          ? null
+          : Number(refund.applicationFeeRefundedAmount.toString()),
       externalRefundId: refund.externalRefundId,
       externalPaymentIntentId: refund.externalPaymentIntentId,
       createdAt: refund.createdAt.toISOString(),
@@ -660,6 +730,7 @@ function serializeOrdersForReconciliation(
       externalDisputeId: dispute.externalDisputeId,
       externalPaymentIntentId: dispute.externalPaymentIntentId,
       externalChargeId: dispute.externalChargeId,
+      connectedAccountId: dispute.connectedAccountId,
       dueBy: dispute.dueBy?.toISOString() || null,
       closedAt: dispute.closedAt?.toISOString() || null,
       createdAt: dispute.createdAt.toISOString(),
@@ -686,6 +757,14 @@ export async function getPaymentReconciliationReport(
     },
     select: {
       id: true,
+      payoutAccountId: true,
+      paymentRoutingMode: true,
+      connectedAccountId: true,
+      externalChargeId: true,
+      externalTransferId: true,
+      platformFeeAmount: true,
+      sellerGrossAmount: true,
+      sellerNetExpectedAmount: true,
       buyerEmail: true,
       buyerName: true,
       totalAmount: true,
@@ -710,6 +789,10 @@ export async function getPaymentReconciliationReport(
           status: true,
           amount: true,
           currency: true,
+          connectedAccountId: true,
+          externalChargeId: true,
+          externalTransferId: true,
+          applicationFeeAmount: true,
           externalSessionId: true,
           externalPaymentIntentId: true,
           failureReason: true,
@@ -731,6 +814,9 @@ export async function getPaymentReconciliationReport(
           currency: true,
           reason: true,
           failureReason: true,
+          connectedAccountId: true,
+          externalChargeId: true,
+          applicationFeeRefundedAmount: true,
           externalRefundId: true,
           externalPaymentIntentId: true,
           createdAt: true,
@@ -750,6 +836,7 @@ export async function getPaymentReconciliationReport(
           externalDisputeId: true,
           externalPaymentIntentId: true,
           externalChargeId: true,
+          connectedAccountId: true,
           dueBy: true,
           closedAt: true,
           createdAt: true,

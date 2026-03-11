@@ -2,6 +2,18 @@
 
 import { z } from "zod";
 
+function isLocalHttpUrl(url: string) {
+  try {
+    const parsed = new URL(url);
+    return (
+      parsed.protocol === "http:" &&
+      ["localhost", "127.0.0.1", "0.0.0.0"].includes(parsed.hostname)
+    );
+  } catch {
+    return false;
+  }
+}
+
 /**
  * 环境变量 Schema 定义
  * 使用 Zod 进行类型安全的验证
@@ -166,7 +178,8 @@ function validateEnv() {
     // 检查 HTTPS
     if (
       (isProduction || isVercel) &&
-      result.data.NEXT_PUBLIC_BASE_URL.startsWith("http://")
+      result.data.NEXT_PUBLIC_BASE_URL.startsWith("http://") &&
+      !isLocalHttpUrl(result.data.NEXT_PUBLIC_BASE_URL)
     ) {
       warnings.push("生产环境应使用 HTTPS URL");
     }
@@ -176,8 +189,6 @@ function validateEnv() {
       warnings.forEach((warning) => {
         console.warn(`  - ${warning}`);
       });
-    } else {
-      console.log("✅ 环境变量验证通过");
     }
   }
 

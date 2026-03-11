@@ -9,7 +9,6 @@ import HeroThumbStrip from "./HeroThumbStrip";
 import HeroMenu from "./HeroMenu";
 import { useHeroMenu } from "../hooks/useHeroMenu";
 import type { HeroSlide } from "../types";
-import { FALLBACK_SLIDES } from "../constants";
 
 import type { SocialLinkItem } from "@/domain/page-config/types";
 

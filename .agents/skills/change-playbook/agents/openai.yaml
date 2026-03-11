@@ -1,0 +1,6 @@
+interface:
+  display_name: "Change Playbook"
+  short_description: "Implement repo changes with checks and doc sync"
+  default_prompt: "Use $change-playbook to implement a change in this repository."
+policy:
+  allow_implicit_invocation: true

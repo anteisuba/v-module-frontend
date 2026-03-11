@@ -34,7 +34,7 @@ async function main() {
     await prisma.user.deleteMany({
       where: { email },
     });
-  } catch (error) {
+  } catch {
     // 如果表不存在或其他错误，忽略（可能是首次运行）
     console.log("注意: 跳过删除 User（可能表尚未创建）");
   }

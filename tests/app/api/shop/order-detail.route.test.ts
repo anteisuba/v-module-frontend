@@ -23,6 +23,14 @@ import { GET } from "@/app/api/shop/orders/[id]/route";
 const baseOrderRecord = {
   id: "order-1",
   userId: "seller-1",
+  payoutAccountId: "payout-1",
+  paymentRoutingMode: "STRIPE_CONNECT_DESTINATION",
+  connectedAccountId: "acct_test_123",
+  externalChargeId: "ch_test_123",
+  externalTransferId: "tr_test_123",
+  platformFeeAmount: new Prisma.Decimal("8.00"),
+  sellerGrossAmount: new Prisma.Decimal("88.00"),
+  sellerNetExpectedAmount: new Prisma.Decimal("80.00"),
   buyerEmail: "buyer@example.com",
   buyerName: "Alice",
   totalAmount: new Prisma.Decimal("88.00"),
@@ -42,6 +50,31 @@ const baseOrderRecord = {
   paidAt: null,
   shippedAt: null,
   deliveredAt: null,
+  paymentAttempts: [
+    {
+      id: "attempt-1",
+      orderId: "order-1",
+      provider: "STRIPE",
+      status: "PAID",
+      amount: new Prisma.Decimal("88.00"),
+      currency: "JPY",
+      connectedAccountId: "acct_test_123",
+      externalChargeId: "ch_test_123",
+      externalTransferId: "tr_test_123",
+      applicationFeeAmount: new Prisma.Decimal("8.00"),
+      externalSessionId: "cs_test_123",
+      externalPaymentIntentId: "pi_test_123",
+      failureReason: null,
+      metadata: null,
+      createdAt: new Date("2026-03-08T00:00:00.000Z"),
+      updatedAt: new Date("2026-03-08T00:10:00.000Z"),
+      paidAt: new Date("2026-03-08T00:10:00.000Z"),
+      failedAt: null,
+      expiredAt: null,
+    },
+  ],
+  refunds: [],
+  disputes: [],
   items: [
     {
       id: "item-1",
@@ -82,6 +115,10 @@ describe("GET /api/shop/orders/[id]", () => {
     expect(payload.order).toMatchObject({
       id: "order-1",
       buyerEmail: "buyer@example.com",
+      paymentRoutingMode: "STRIPE_CONNECT_DESTINATION",
+      connectedAccountId: "acct_test_123",
+      platformFeeAmount: 8,
+      sellerNetExpectedAmount: 80,
       totalAmount: 88,
       items: [
         {

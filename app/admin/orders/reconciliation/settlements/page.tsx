@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import type {
   PaymentSettlementEntryRecord,
@@ -35,7 +35,7 @@ export default function SettlementReconciliationPage() {
   const router = useRouter();
   const { user, loading: userLoading } = useUser();
   const { t } = useI18n();
-  const { message: toastMessage, showToast } = useToast();
+  const { message: toastMessage, info: showToast } = useToast();
   const { error, handleError, clearError } = useErrorHandler();
 
   const [report, setReport] = useState<PaymentSettlementReport | null>(null);
@@ -48,18 +48,7 @@ export default function SettlementReconciliationPage() {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [note, setNote] = useState("");
 
-  useEffect(() => {
-    if (!userLoading && !user) {
-      router.push("/admin");
-      return;
-    }
-
-    if (!userLoading && user) {
-      void loadReport();
-    }
-  }, [user, userLoading]);
-
-  async function loadReport() {
+  const loadReport = useCallback(async () => {
     try {
       if (!report) {
         setLoading(true);
@@ -81,7 +70,18 @@ export default function SettlementReconciliationPage() {
       setLoading(false);
       setRefreshing(false);
     }
-  }
+  }, [endDate, handleError, report, startDate]);
+
+  useEffect(() => {
+    if (!userLoading && !user) {
+      router.push("/admin");
+      return;
+    }
+
+    if (!userLoading && user) {
+      void loadReport();
+    }
+  }, [loadReport, router, user, userLoading]);
 
   async function handleSync() {
     try {
@@ -196,6 +196,18 @@ export default function SettlementReconciliationPage() {
       return "bg-red-100 text-red-700";
     }
     return "bg-amber-100 text-amber-700";
+  }
+
+  function getRoutingLabel(mode: string | null) {
+    return mode === "STRIPE_CONNECT_DESTINATION"
+      ? "Connect 路由"
+      : "平台 fallback";
+  }
+
+  function getRoutingStyle(mode: string | null) {
+    return mode === "STRIPE_CONNECT_DESTINATION"
+      ? "bg-emerald-100 text-emerald-700"
+      : "bg-slate-200 text-slate-700";
   }
 
   const summaryCards = useMemo(() => {
@@ -381,6 +393,7 @@ export default function SettlementReconciliationPage() {
                           <span className="rounded-full bg-black/5 px-2 py-0.5 text-[10px] font-medium text-black/70">{entry.externalSourceType || entry.type}</span>
                           <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getSettlementStatusStyle(entry.status)}`}>{entry.status.toUpperCase()}</span>
                           <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getWriteOffStyle(entry.reconciliationStatus)}`}>{entry.reconciliationStatus}</span>
+                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getRoutingStyle(entry.paymentRoutingMode ?? null)}`}>{getRoutingLabel(entry.paymentRoutingMode ?? null)}</span>
                         </div>
                         <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
                           <div>
@@ -393,11 +406,29 @@ export default function SettlementReconciliationPage() {
                             <div className="mt-1 text-xs text-black/45 break-all">
                               {entry.externalSourceId || entry.externalBalanceTransactionId}
                             </div>
+                            <div className="mt-1 text-xs text-black/45 break-all">
+                              {entry.connectedAccountId
+                                ? `Connected ${entry.connectedAccountId}`
+                                : entry.stripeAccountId
+                                  ? `Stripe Account ${entry.stripeAccountId}`
+                                  : "当前未关联 connected account"}
+                            </div>
+                            {(entry.platformFeeAmount != null ||
+                              entry.sellerNetExpectedAmount != null) ? (
+                              <div className="mt-1 text-xs text-black/45">
+                                平台手续费 {formatPrice(entry.platformFeeAmount || 0, entry.currency)}
+                                {" / "}
+                                卖家预估净额 {formatPrice(entry.sellerNetExpectedAmount || 0, entry.currency)}
+                              </div>
+                            ) : null}
                           </div>
                           <div className="text-right text-xs text-black/50">
                             <div>发生时间 {formatDate(entry.occurredAt)}</div>
                             <div>可结算 {formatDate(entry.availableOn)}</div>
                             <div>到账 payout {entry.payoutExternalId || "待进入 payout"}</div>
+                            {entry.accountScope ? (
+                              <div>Scope {entry.accountScope}</div>
+                            ) : null}
                           </div>
                         </div>
                         {entry.reconciliationNote ? (
@@ -429,6 +460,11 @@ export default function SettlementReconciliationPage() {
                         <div className="mb-2 flex flex-wrap items-center gap-2">
                           <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getPayoutStyle(payout.status)}`}>{payout.status}</span>
                           <span className="text-[11px] text-black/45">{payout.externalPayoutId}</span>
+                          {payout.accountScope ? (
+                            <span className="text-[11px] text-black/45">
+                              Scope {payout.accountScope}
+                            </span>
+                          ) : null}
                         </div>
                         <div className="text-sm font-semibold text-black">
                           账户 payout {formatPrice(payout.amount, payout.currency)}
@@ -438,6 +474,11 @@ export default function SettlementReconciliationPage() {
                         </div>
                         <div className="mt-1 text-xs text-black/45">
                           关联流水 {payout.linkedEntryCount} 条 / 未核销 {payout.unreconciledEntryCount} 条
+                        </div>
+                        <div className="mt-1 text-xs text-black/45 break-all">
+                          {payout.stripeAccountId
+                            ? `Stripe Account ${payout.stripeAccountId}`
+                            : "平台 payout"}
                         </div>
                       </div>
                       <div className="shrink-0 text-right text-xs text-black/50">

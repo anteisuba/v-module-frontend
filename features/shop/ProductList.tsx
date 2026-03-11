@@ -163,7 +163,7 @@ export default function ProductList({ products, userSlug, backgroundStyle }: Pro
           <div className="py-12 text-center">
             <p className="text-black/60 mb-4">暂无已发布的商品</p>
             <p className="text-sm text-black/40">
-              提示：请确保商品状态设置为"已发布"
+              提示：请确保商品状态设置为“已发布”
             </p>
           </div>
         ) : (

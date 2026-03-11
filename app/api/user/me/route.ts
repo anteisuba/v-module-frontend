@@ -2,7 +2,6 @@
 
 import { NextResponse } from "next/server";
 import { getServerSession } from "@/lib/session/userSession";
-import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs"; // Session requires Node.js runtime
 
@@ -15,4 +14,3 @@ export async function GET() {
 
   return NextResponse.json({ ok: true, user: session.user });
 }
-

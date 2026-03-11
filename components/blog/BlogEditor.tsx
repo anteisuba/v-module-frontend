@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Input, Button, FormField, Alert, MediaPickerDialog } from "@/components/ui";
 import { BLOG_COVER } from "@/domain/media/usage";
 import { useScrollToElement } from "@/hooks/useScrollToElement";
@@ -44,7 +44,7 @@ export default function BlogEditor({
   focusTarget = null,
 }: BlogEditorProps) {
   const { t } = useI18n();
-  const { message: toastMessage, showToast } = useToast();
+  const { message: toastMessage, info: showToast } = useToast();
   const { error, handleError, clearError } = useErrorHandler();
   useScrollToElement(focusTarget === "cover-image", "blog-cover-image-editor");
 
@@ -163,6 +163,8 @@ export default function BlogEditor({
           {coverImage && (
             <div className="mb-3">
               <div className="relative inline-block">
+                {/* Dynamic admin uploads can be local or remote, so keep native img here. */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={coverImage}
                   alt="Cover"

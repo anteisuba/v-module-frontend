@@ -1,6 +1,7 @@
 // domain/news/services.ts
 
 import { prisma } from "@/lib/prisma";
+import { Prisma } from "@prisma/client";
 import type { NewsArticle } from "@/lib/api/types";
 
 /**
@@ -14,7 +15,7 @@ export async function getPublishedNewsArticles(params: {
 }): Promise<NewsArticle[]> {
   const { limit = 10, category, userSlug } = params;
 
-  const where: any = {
+  const where: Prisma.NewsArticleWhereInput = {
     published: true, // 只获取已发布的文章
   };
 
@@ -43,15 +44,26 @@ export async function getPublishedNewsArticles(params: {
   });
 
   // 转换数据格式，添加 userSlug，并确保日期字段为字符串格式
-  return articles.map(({ user, createdAt, updatedAt, publishedAt, shareChannels, ...article }) => ({
-    ...article,
-    userSlug: user?.slug || null,
-    createdAt: createdAt.toISOString(),
-    updatedAt: updatedAt.toISOString(),
-    publishedAt: publishedAt ? publishedAt.toISOString() : null,
-    // 正确转换 shareChannels（Prisma JsonValue 类型）
-    shareChannels: shareChannels && typeof shareChannels === 'object' && Array.isArray(shareChannels)
-      ? shareChannels as Array<{ platform: string; enabled: boolean }>
-      : null,
-  }));
+  return articles.map(
+    ({ user, createdAt, updatedAt, publishedAt, shareChannels, ...article }) => ({
+      ...article,
+      userSlug: user?.slug || null,
+      createdAt: createdAt.toISOString(),
+      updatedAt: updatedAt.toISOString(),
+      publishedAt: publishedAt ? publishedAt.toISOString() : null,
+      shareChannels:
+        Array.isArray(shareChannels) &&
+        shareChannels.every(
+          (channel) =>
+            typeof channel === "object" &&
+            channel !== null &&
+            "platform" in channel &&
+            typeof channel.platform === "string" &&
+            "enabled" in channel &&
+            typeof channel.enabled === "boolean"
+        )
+          ? (shareChannels as Array<{ platform: string; enabled: boolean }>)
+          : null,
+    })
+  );
 }

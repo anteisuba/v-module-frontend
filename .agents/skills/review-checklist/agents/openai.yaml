@@ -1,0 +1,6 @@
+interface:
+  display_name: "Review Checklist"
+  short_description: "Review repo changes with project-specific risk checks"
+  default_prompt: "Use $review-checklist to review changes in this repository."
+policy:
+  allow_implicit_invocation: true

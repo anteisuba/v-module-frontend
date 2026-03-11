@@ -10,6 +10,7 @@ import { normalizePageConfig } from "@/utils/pageConfig";
 export const runtime = "nodejs"; // Prisma requires Node.js runtime
 
 export async function POST(request: Request) {
+  void request;
   // 1. 校验登录
   const session = await getServerSession();
   if (!session?.user?.id) {
@@ -70,4 +71,3 @@ export async function POST(request: Request) {
     publishedConfig: normalizePageConfig(updatedPage.publishedConfig),
   });
 }
-

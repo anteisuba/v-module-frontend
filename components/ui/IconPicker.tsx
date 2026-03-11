@@ -380,7 +380,6 @@ export function IconPicker({ value, onChange, disabled = false }: IconPickerProp
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string>("全部");
-  const [position, setPosition] = useState({ top: 0, left: 0, width: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
   const popupRef = useRef<HTMLDivElement>(null);
   const buttonRef = useRef<HTMLButtonElement>(null); // 按钮引用，用于检查点击来源
@@ -425,34 +424,6 @@ export function IconPicker({ value, onChange, disabled = false }: IconPickerProp
     setIsOpen(false);
     setSearchQuery("");
   }
-
-  // 计算弹窗宽度（absolute 定位不需要计算 top/left）
-  useEffect(() => {
-    if (isOpen && containerRef.current && typeof window !== "undefined") {
-      const updateWidth = () => {
-        if (containerRef.current) {
-          const rect = containerRef.current.getBoundingClientRect();
-          setPosition({
-            top: 0,
-            left: 0,
-            width: rect.width,
-          });
-        }
-      };
-
-      // 使用 requestAnimationFrame 确保 DOM 已更新
-      requestAnimationFrame(() => {
-        updateWidth();
-      });
-
-      // 监听窗口大小变化
-      window.addEventListener("resize", updateWidth);
-
-      return () => {
-        window.removeEventListener("resize", updateWidth);
-      };
-    }
-  }, [isOpen]);
 
   // 全局点击监听器 - 不使用事件冒泡
   useEffect(() => {

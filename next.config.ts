@@ -1,5 +1,8 @@
 import type { NextConfig } from "next";
 
+process.env.BROWSERSLIST_IGNORE_OLD_DATA = "1";
+process.env.BASELINE_BROWSER_MAPPING_IGNORE_OLD_DATA = "1";
+
 const nextConfig: NextConfig = {
   // Vercel 生产环境优化配置
 
@@ -8,6 +11,11 @@ const nextConfig: NextConfig = {
 
   // 移除 X-Powered-By 响应头（安全最佳实践）
   poweredByHeader: false,
+
+  env: {
+    BROWSERSLIST_IGNORE_OLD_DATA: "1",
+    BASELINE_BROWSER_MAPPING_IGNORE_OLD_DATA: "1",
+  },
 
   // 图片优化配置
   images: {

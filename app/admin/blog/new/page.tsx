@@ -21,8 +21,8 @@ export default function NewBlogPage() {
   const router = useRouter();
   const { user, loading: userLoading } = useUser();
   const { t } = useI18n();
-  const { message: toastMessage, showToast } = useToast();
-  const { error, handleError, clearError } = useErrorHandler();
+  const { info: showToast } = useToast();
+  const { handleError } = useErrorHandler();
 
   const [saving, setSaving] = useState(false);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Alert,
@@ -34,7 +34,7 @@ function formatDate(value: string | null) {
   });
 }
 
-export default function AdminPayoutSettingsPage() {
+function AdminPayoutSettingsPageContent() {
   const { t } = useI18n();
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -417,5 +417,19 @@ export default function AdminPayoutSettingsPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function AdminPayoutSettingsPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <LoadingState message="加载中..." />
+        </div>
+      }
+    >
+      <AdminPayoutSettingsPageContent />
+    </Suspense>
   );
 }

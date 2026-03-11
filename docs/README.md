@@ -1,12 +1,13 @@
 # v-module-frontend Docs
 
-`docs/` 是人类维护者的正式长文档层。AI / 代理的短入口在根 [`../CLAUDE.md`](../CLAUDE.md)，AI 扩展上下文集中在 [`./zh-CN/agent/`](./zh-CN/agent/)。
+`docs/` 是人类维护者的正式长文档层。AI / 代理的根入口以 [`../AGENTS.md`](../AGENTS.md) 为主，兼容说明保留在 [`../CLAUDE.md`](../CLAUDE.md)；AI 扩展上下文集中在 [`./zh-CN/agent/`](./zh-CN/agent/)。
 
 ## 中文
 
 ### 文档分层
 
-- AI 北极星入口：[`../CLAUDE.md`](../CLAUDE.md)
+- AI 根入口：[`../AGENTS.md`](../AGENTS.md)
+- AI 兼容入口：[`../CLAUDE.md`](../CLAUDE.md)
 - AI 扩展上下文：[`./zh-CN/agent/repo-brief.md`](./zh-CN/agent/repo-brief.md)、[`./zh-CN/agent/repo-map.md`](./zh-CN/agent/repo-map.md)、[`./zh-CN/agent/workflows.md`](./zh-CN/agent/workflows.md)、[`./zh-CN/agent/next-steps.md`](./zh-CN/agent/next-steps.md)
 - 人类中文长文档：[`./zh-CN/`](./zh-CN/)
 - 人类日文长文档：[`./ja/`](./ja/)
@@ -14,19 +15,21 @@
 ### 5-10 分钟快速阅读顺序
 
 1. [项目概览](./zh-CN/overview/project-overview.md)
-2. [系统架构](./zh-CN/architecture/system-architecture.md)
-3. [本地开发与命令](./zh-CN/development/setup-and-commands.md)
-4. [当前状态](./zh-CN/overview/current-status.md)
-5. [后续待办](./zh-CN/overview/backlog.md)
+2. [当前状态](./zh-CN/overview/current-status.md)
+3. [后续待办](./zh-CN/overview/backlog.md)
+4. [路由与 API](./zh-CN/development/routes-and-api.md)
+5. [数据库与基础设施](./zh-CN/development/database-and-infra.md)
 6. [AI 快速摘要](./zh-CN/agent/repo-brief.md)
 
 ### 审计快照
 
-- `pnpm build`：通过
+- `pnpm build`：通过，当前为标准构建输出
 - `pnpm check`：通过
-- `pnpm lint`：失败，当前为 `62 errors / 93 warnings`
-- 自动化测试文件：未发现
-- 迁移前基线：共 `33` 个 Markdown，其中 `31` 个位于 `document/`
+- `pnpm test`：通过，当前为 `27` 个文件 `81` 个测试
+- `pnpm lint`：通过，当前为 `0 errors / 0 warnings`
+- `pnpm test:e2e`：通过，当前为 `11` 个 Chromium 场景
+- 自动化测试文件：已存在 `Vitest + Playwright`，位于 `tests/`，并已进入实际执行
+- 当前 Prisma migration 目录：`13`
 
 ### 中文长文档索引
 
@@ -45,11 +48,12 @@
 
 ## 日本語
 
-`docs/` は人間向けの正式な長文書レイヤーです。AI の短い入口はリポジトリ直下の [`../CLAUDE.md`](../CLAUDE.md) で、AI 補助文脈は中国語の [`./zh-CN/agent/`](./zh-CN/agent/) に集約します。
+`docs/` は人間向けの正式な長文書レイヤーです。AI の根入口は [`../AGENTS.md`](../AGENTS.md) を優先し、互換説明は [`../CLAUDE.md`](../CLAUDE.md) に残しています。AI 補助文脈は中国語の [`./zh-CN/agent/`](./zh-CN/agent/) に集約しています。
 
 ### レイヤー構成
 
-- AI 入口: [`../CLAUDE.md`](../CLAUDE.md)
+- AI 根入口: [`../AGENTS.md`](../AGENTS.md)
+- AI 互換入口: [`../CLAUDE.md`](../CLAUDE.md)
 - AI 補助文脈: [`./zh-CN/agent/repo-brief.md`](./zh-CN/agent/repo-brief.md)、[`./zh-CN/agent/repo-map.md`](./zh-CN/agent/repo-map.md)、[`./zh-CN/agent/workflows.md`](./zh-CN/agent/workflows.md)、[`./zh-CN/agent/next-steps.md`](./zh-CN/agent/next-steps.md)
 - 日本語長文書: [`./ja/`](./ja/)
 - 中国語長文書: [`./zh-CN/`](./zh-CN/)
@@ -57,10 +61,10 @@
 ### 5-10 分で読む順番
 
 1. [プロジェクト概要](./ja/overview/project-overview.md)
-2. [システム構成](./ja/architecture/system-architecture.md)
-3. [ローカル開発とコマンド](./ja/development/setup-and-commands.md)
-4. [現状](./ja/overview/current-status.md)
-5. [バックログ](./ja/overview/backlog.md)
+2. [現状](./ja/overview/current-status.md)
+3. [バックログ](./ja/overview/backlog.md)
+4. [ルートと API](./ja/development/routes-and-api.md)
+5. [データベースと基盤](./ja/development/database-and-infra.md)
 
 ### 日本語長文書索引
 

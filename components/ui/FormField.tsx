@@ -3,7 +3,12 @@
 
 "use client";
 
-import { ReactNode, isValidElement, cloneElement } from "react";
+import {
+  type ReactNode,
+  cloneElement,
+  isValidElement,
+  useId,
+} from "react";
 
 interface FormFieldProps {
   label: string;
@@ -15,6 +20,13 @@ interface FormFieldProps {
   className?: string;
 }
 
+type FormFieldChildProps = {
+  id?: string;
+  className?: string;
+  "aria-invalid"?: "true";
+  "aria-describedby"?: string;
+};
+
 export default function FormField({
   label,
   required = false,
@@ -24,7 +36,8 @@ export default function FormField({
   id,
   className = "",
 }: FormFieldProps) {
-  const fieldId = id || `field-${Math.random().toString(36).substr(2, 9)}`;
+  const generatedId = useId();
+  const fieldId = id || generatedId;
   const errorId = `${fieldId}-error`;
   const helpId = `${fieldId}-help`;
 
@@ -46,8 +59,8 @@ export default function FormField({
           .filter(Boolean)
           .join(" ")}
       >
-        {isValidElement(children)
-          ? cloneElement(children as React.ReactElement<any>, {
+        {isValidElement<FormFieldChildProps>(children)
+          ? cloneElement(children, {
               id: fieldId,
               "aria-invalid": error ? "true" : undefined,
               "aria-describedby": [
@@ -57,7 +70,7 @@ export default function FormField({
                 .filter(Boolean)
                 .join(" ") || undefined,
               className: [
-                (children.props as { className?: string })?.className,
+                children.props.className,
                 error && "border-red-500",
               ]
                 .filter(Boolean)
@@ -88,4 +101,3 @@ export default function FormField({
     </div>
   );
 }
-

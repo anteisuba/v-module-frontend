@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   LoadingState,
@@ -29,7 +29,7 @@ import type { AdminEditorPanelItem, AdminEditorTabOption } from "@/components/ui
 
 type EditorTabId = "layout" | "content";
 
-export default function EditBlogPage({
+function EditBlogPageContent({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -38,7 +38,7 @@ export default function EditBlogPage({
   const searchParams = useSearchParams();
   const { user, loading: userLoading } = useUser();
   const { t } = useI18n();
-  const { message: toastMessage, showToast } = useToast();
+  const { message: toastMessage, info: showToast } = useToast();
   const { error, handleError, clearError } = useErrorHandler();
   const { config, setConfig, loading: configLoading, hasUnsavedChanges, markAsSaved } = usePageConfig();
   const { saving: savingConfig, publishing, saveDraft, publish } = usePageConfigActions({
@@ -83,28 +83,10 @@ export default function EditBlogPage({
     loadParams();
   }, [params]);
 
-  useEffect(() => {
-    if (blogId && !userLoading && user) {
-      loadBlogPost();
-    } else if (!userLoading && !user) {
-      router.push("/admin");
-    }
-  }, [blogId, user, userLoading]);
-
-  useEffect(() => {
-    if (!focusTarget) {
+  const loadBlogPost = useCallback(async () => {
+    if (!blogId) {
       return;
     }
-
-    setActiveTab("content");
-    setOpenPanelByTab((prev) => ({
-      ...prev,
-      content: "editor",
-    }));
-  }, [focusTarget]);
-
-  async function loadBlogPost() {
-    if (!blogId) return;
     try {
       setLoading(true);
       const post = await blogApi.getPost(blogId);
@@ -123,7 +105,27 @@ export default function EditBlogPage({
     } finally {
       setLoading(false);
     }
-  }
+  }, [blogId, handleError, router]);
+
+  useEffect(() => {
+    if (blogId && !userLoading && user) {
+      void loadBlogPost();
+    } else if (!userLoading && !user) {
+      router.push("/admin");
+    }
+  }, [blogId, loadBlogPost, router, user, userLoading]);
+
+  useEffect(() => {
+    if (!focusTarget) {
+      return;
+    }
+
+    setActiveTab("content");
+    setOpenPanelByTab((prev) => ({
+      ...prev,
+      content: "editor",
+    }));
+  }, [focusTarget]);
 
   async function handleSave(data: {
     title: string;
@@ -166,7 +168,7 @@ export default function EditBlogPage({
       await saveDraft();
       markAsSaved();
       setLastSaved(new Date());
-    } catch (e) {
+    } catch {
       // 错误已由 handleError 处理
     }
   };
@@ -357,5 +359,23 @@ export default function EditBlogPage({
           onCancel={() => setShowPublishConfirm(false)}
         />
     </AdminEditorPage>
+  );
+}
+
+export default function EditBlogPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <LoadingState message="加载中..." />
+        </div>
+      }
+    >
+      <EditBlogPageContent params={params} />
+    </Suspense>
   );
 }

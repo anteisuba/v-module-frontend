@@ -19,6 +19,10 @@ import { getS3Client } from "@/lib/mediaStorage";
 
 export const runtime = "nodejs";
 
+function isErrnoException(error: unknown): error is NodeJS.ErrnoException {
+  return typeof error === "object" && error !== null && "code" in error;
+}
+
 export async function POST(request: Request) {
   // 1. 校验登录
   const session = await getServerSession();
@@ -138,7 +142,7 @@ export async function POST(request: Request) {
           },
           select: MEDIA_ASSET_SELECT,
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.warn("Failed to create MediaAsset record (upload still succeeded):", error);
       }
 
@@ -170,8 +174,8 @@ export async function POST(request: Request) {
       // 确保目录存在
       try {
         await mkdir(uploadDir, { recursive: true });
-      } catch (mkdirError: any) {
-        if (mkdirError.code === "ENOENT") {
+      } catch (mkdirError: unknown) {
+        if (isErrnoException(mkdirError) && mkdirError.code === "ENOENT") {
           const publicUploadsDir = path.join(process.cwd(), "public", "uploads");
           await mkdir(publicUploadsDir, { recursive: true });
           await mkdir(uploadDir, { recursive: true });
@@ -207,7 +211,7 @@ export async function POST(request: Request) {
           },
           select: MEDIA_ASSET_SELECT,
         });
-      } catch (error: any) {
+      } catch (error: unknown) {
         console.warn("Failed to create MediaAsset record (upload still succeeded):", error);
       }
 

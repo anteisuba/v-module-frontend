@@ -137,7 +137,7 @@ export default function BackgroundEditor({
                         file,
                         usageContext ? { usageContext } : undefined
                       );
-                    } catch (e) {
+                    } catch {
                       // 错误已由 hooks 处理
                     } finally {
                       if (inputElement) {
@@ -204,4 +204,3 @@ export default function BackgroundEditor({
     </div>
   );
 }
-

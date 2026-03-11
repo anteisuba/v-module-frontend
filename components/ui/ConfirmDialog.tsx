@@ -3,7 +3,6 @@
 
 "use client";
 
-import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useI18n } from "@/lib/i18n/context";
 
@@ -108,4 +107,3 @@ export default function ConfirmDialog({
 
   return null;
 }
-

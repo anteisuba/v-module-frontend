@@ -13,10 +13,11 @@ import {
   LoadingState,
   MediaPickerDialog,
 } from "@/components/ui";
-import { pageApi, shopApi } from "@/lib/api";
+import { pageApi } from "@/lib/api";
 import { useToast } from "@/hooks/useToast";
 import { useErrorHandler } from "@/hooks/useErrorHandler";
 import { useI18n } from "@/lib/i18n/context";
+import type { SerializedOrder } from "@/domain/shop";
 
 interface ProductEditorProps {
   initialData?: {
@@ -42,6 +43,8 @@ interface ProductEditorProps {
   focusTarget?: string | null;
 }
 
+type RelatedOrderSummary = Pick<SerializedOrder, "id" | "createdAt" | "status">;
+
 export default function ProductEditor({
   initialData,
   productId,
@@ -51,7 +54,7 @@ export default function ProductEditor({
   focusTarget = null,
 }: ProductEditorProps) {
   const { t } = useI18n();
-  const { message: toastMessage, showToast } = useToast();
+  const { message: toastMessage, info: showToast } = useToast();
   const { error, handleError, clearError } = useErrorHandler();
   useScrollToElement(
     focusTarget === "product-images",
@@ -69,14 +72,14 @@ export default function ProductEditor({
   const [images, setImages] = useState<string[]>(initialData?.images || []);
   const [status, setStatus] = useState(initialData?.status || "DRAFT");
   const [uploadingImages, setUploadingImages] = useState<number[]>([]);
-  const [relatedOrders, setRelatedOrders] = useState<any[]>([]);
+  const [relatedOrders] = useState<RelatedOrderSummary[]>([]);
   const [mediaPickerOpen, setMediaPickerOpen] = useState(false);
   const [mediaPickerTargetIndex, setMediaPickerTargetIndex] = useState<number | null>(null);
 
   // 加载相关订单
   useEffect(() => {
     if (productId) {
-      loadRelatedOrders();
+      void loadRelatedOrders();
     }
   }, [productId]);
 
@@ -278,6 +281,8 @@ export default function ProductEditor({
             <div className="grid grid-cols-3 gap-4">
               {images.map((img, index) => (
                 <div key={index} className="relative group">
+                  {/* Dynamic admin uploads can be local or remote, so keep native img here. */}
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={img}
                     alt={`Product ${index + 1}`}

@@ -2,8 +2,8 @@
 
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode } from "react";
-import { locales, localeNames, defaultLocale, type Locale } from "@/i18n/config";
+import { createContext, useContext, useState, type ReactNode } from "react";
+import { locales, defaultLocale, type Locale } from "@/i18n/config";
 import zhMessages from "@/i18n/messages/zh.json";
 import jaMessages from "@/i18n/messages/ja.json";
 import enMessages from "@/i18n/messages/en.json";
@@ -24,16 +24,36 @@ interface I18nContextType {
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
-export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(defaultLocale);
+function getInitialLocale(): Locale {
+  if (typeof window === "undefined") {
+    return defaultLocale;
+  }
 
-  useEffect(() => {
-    // 从 localStorage 读取保存的语言
-    const savedLocale = localStorage.getItem("locale") as Locale;
-    if (savedLocale && locales.includes(savedLocale)) {
-      setLocaleState(savedLocale);
+  const savedLocale = window.localStorage.getItem("locale");
+  return savedLocale && locales.includes(savedLocale as Locale)
+    ? (savedLocale as Locale)
+    : defaultLocale;
+}
+
+function readMessageValue(
+  source: Record<string, unknown>,
+  key: string
+): string | null {
+  let value: unknown = source;
+
+  for (const segment of key.split(".")) {
+    if (typeof value !== "object" || value === null || !(segment in value)) {
+      return null;
     }
-  }, []);
+
+    value = (value as Record<string, unknown>)[segment];
+  }
+
+  return typeof value === "string" ? value : null;
+}
+
+export function I18nProvider({ children }: { children: ReactNode }) {
+  const [locale, setLocaleState] = useState<Locale>(getInitialLocale);
 
   const setLocale = (newLocale: Locale) => {
     setLocaleState(newLocale);
@@ -41,18 +61,17 @@ export function I18nProvider({ children }: { children: ReactNode }) {
   };
 
   const t = (key: string): string => {
-    const keys = key.split(".");
-    let value: any = messages[locale];
-    
-    for (const k of keys) {
-      value = value?.[k];
-      if (value === undefined) {
-        console.warn(`Translation key "${key}" not found for locale "${locale}"`);
-        return key;
-      }
+    const translated = readMessageValue(
+      messages[locale] as Record<string, unknown>,
+      key
+    );
+
+    if (translated == null) {
+      console.warn(`Translation key "${key}" not found for locale "${locale}"`);
+      return key;
     }
-    
-    return typeof value === "string" ? value : key;
+
+    return translated;
   };
 
   return (
@@ -67,6 +86,6 @@ export function useI18n() {
   if (context === undefined) {
     throw new Error("useI18n must be used within an I18nProvider");
   }
+
   return context;
 }
-

@@ -68,6 +68,8 @@ export interface PaymentSettlementEntryRecord {
   id: string;
   externalBalanceTransactionId: string;
   provider: string;
+  stripeAccountId?: string | null;
+  accountScope?: string | null;
   externalSourceId: string | null;
   externalSourceType: string | null;
   type: string;
@@ -89,6 +91,10 @@ export interface PaymentSettlementEntryRecord {
   buyerName: string | null;
   orderStatus: string | null;
   paymentStatus: string | null;
+  paymentRoutingMode?: string | null;
+  connectedAccountId?: string | null;
+  platformFeeAmount?: number | null;
+  sellerNetExpectedAmount?: number | null;
   refundId: string | null;
   refundStatus: string | null;
   payoutId: string | null;
@@ -102,6 +108,8 @@ export interface PaymentSettlementPayoutBaseRecord {
   id: string;
   externalPayoutId: string;
   provider: string;
+  stripeAccountId?: string | null;
+  accountScope?: string | null;
   status: string;
   amount: number;
   currency: string;
@@ -1137,6 +1145,8 @@ export async function getPaymentSettlementReport(
         id: true,
         externalBalanceTransactionId: true,
         provider: true,
+        stripeAccountId: true,
+        accountScope: true,
         externalSourceId: true,
         externalSourceType: true,
         type: true,
@@ -1161,6 +1171,10 @@ export async function getPaymentSettlementReport(
             buyerName: true,
             status: true,
             paymentStatus: true,
+            paymentRoutingMode: true,
+            connectedAccountId: true,
+            platformFeeAmount: true,
+            sellerNetExpectedAmount: true,
           },
         },
         refund: {
@@ -1172,6 +1186,8 @@ export async function getPaymentSettlementReport(
         payout: {
           select: {
             externalPayoutId: true,
+            stripeAccountId: true,
+            accountScope: true,
             status: true,
             arrivalDate: true,
             payoutCreatedAt: true,
@@ -1195,6 +1211,8 @@ export async function getPaymentSettlementReport(
         id: true,
         externalPayoutId: true,
         provider: true,
+        stripeAccountId: true,
+        accountScope: true,
         status: true,
         amount: true,
         currency: true,
@@ -1264,6 +1282,8 @@ export async function getPaymentSettlementReport(
         id: entry.id,
         externalBalanceTransactionId: entry.externalBalanceTransactionId,
         provider: entry.provider,
+        stripeAccountId: entry.stripeAccountId,
+        accountScope: entry.accountScope,
         externalSourceId: entry.externalSourceId,
         externalSourceType: entry.externalSourceType,
         type: entry.type,
@@ -1286,6 +1306,16 @@ export async function getPaymentSettlementReport(
         buyerName: entry.order?.buyerName || null,
         orderStatus: entry.order?.status || null,
         paymentStatus: entry.order?.paymentStatus || null,
+        paymentRoutingMode: entry.order?.paymentRoutingMode || null,
+        connectedAccountId: entry.order?.connectedAccountId || null,
+        platformFeeAmount:
+          entry.order?.platformFeeAmount == null
+            ? null
+            : Number(entry.order.platformFeeAmount),
+        sellerNetExpectedAmount:
+          entry.order?.sellerNetExpectedAmount == null
+            ? null
+            : Number(entry.order.sellerNetExpectedAmount),
         refundId: entry.refundId,
         refundStatus: entry.refund?.status || null,
         payoutId: entry.payoutId,
@@ -1298,6 +1328,8 @@ export async function getPaymentSettlementReport(
         id: payout.id,
         externalPayoutId: payout.externalPayoutId,
         provider: payout.provider,
+        stripeAccountId: payout.stripeAccountId,
+        accountScope: payout.accountScope,
         status: payout.status,
         amount: Number(payout.amount),
         currency: payout.currency,

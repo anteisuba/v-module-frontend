@@ -11,7 +11,7 @@ import PageLoading from "@/components/ui/PageLoading";
 function useSafeI18n() {
   try {
     return useI18n();
-  } catch (error) {
+  } catch {
     // 如果不在 I18nProvider 中，返回默认的翻译函数
     return {
       locale: "zh" as const,

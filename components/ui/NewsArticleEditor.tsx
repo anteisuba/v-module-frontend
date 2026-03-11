@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useCallback } from "react";
 import {
   NEWS_ARTICLE_BACKGROUND,
   NEWS_PAGE_BACKGROUND,
@@ -31,7 +31,6 @@ interface NewsArticleEditorProps {
   initialArticleId?: string | null;
 }
 
-const CATEGORIES = ["ALL", "MEDIA", "MAGAZINE", "あの", "ANO"];
 const SHARE_PLATFORMS = [
   { id: "twitter", label: "Twitter/X" },
   { id: "facebook", label: "Facebook" },
@@ -87,7 +86,7 @@ export default function NewsArticleEditor({
   });
 
   // 加载文章列表
-  const loadArticles = async () => {
+  const loadArticles = useCallback(async () => {
     setLoading(true);
     try {
       const response = await newsArticleApi.getArticles({
@@ -129,11 +128,11 @@ export default function NewsArticleEditor({
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentPage, onError, selectedTag, t]);
 
   useEffect(() => {
-    loadArticles();
-  }, [currentPage, selectedTag]);
+    void loadArticles();
+  }, [loadArticles]);
 
   useEffect(() => {
     if (!initialArticleId) {
@@ -180,7 +179,7 @@ export default function NewsArticleEditor({
   };
 
   // 开始编辑文章
-  const handleEdit = (article: NewsArticle) => {
+  const handleEdit = useCallback((article: NewsArticle) => {
     // 如果正在编辑同一篇文章，保留当前表单数据
     if (editingArticle?.id === article.id) {
       // 保持当前表单数据不变
@@ -209,7 +208,7 @@ export default function NewsArticleEditor({
     });
     setEditingArticle(article);
     setIsCreating(false);
-  };
+  }, [editingArticle?.id]);
 
   useEffect(() => {
     if (!initialArticleId || hasOpenedInitialArticleRef.current || loading) {
@@ -262,7 +261,7 @@ export default function NewsArticleEditor({
     return () => {
       active = false;
     };
-  }, [articles, initialArticleId, loading, onError, t]);
+  }, [articles, handleEdit, initialArticleId, loading, onError, t]);
 
   // 保存文章
   const handleSave = async () => {
@@ -313,7 +312,7 @@ export default function NewsArticleEditor({
         // 创建新文章后，重置表单
         resetForm();
       }
-      loadArticles();
+      await loadArticles();
     } catch (err) {
       if (err instanceof ApiError || err instanceof NetworkError) {
         onError?.(err.message);
@@ -328,7 +327,7 @@ export default function NewsArticleEditor({
     try {
       await newsArticleApi.deleteArticle(id);
       onToast?.(t("newsArticleEditor.list.deleted"));
-      loadArticles();
+      await loadArticles();
       setDeleteConfirmId(null);
     } catch (err) {
       if (err instanceof ApiError || err instanceof NetworkError) {
@@ -839,4 +838,3 @@ export default function NewsArticleEditor({
     </div>
   );
 }
-

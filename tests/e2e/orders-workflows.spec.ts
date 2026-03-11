@@ -1,10 +1,22 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Route } from "@playwright/test";
 import {
   bootstrapAdminE2E,
   createSerializedOrder,
   fulfillJson,
   mockCurrentUser,
 } from "./utils/admin";
+
+type RefundRequest = {
+  amount: number;
+  reason: string | null;
+};
+
+function readRequestBody(route: Route): Record<string, unknown> {
+  const body = route.request().postDataJSON();
+  return body && typeof body === "object" && !Array.isArray(body)
+    ? (body as Record<string, unknown>)
+    : {};
+}
 
 test.beforeEach(async ({ context, page }) => {
   await bootstrapAdminE2E(context, page);
@@ -14,10 +26,15 @@ test.beforeEach(async ({ context, page }) => {
 test("opens order detail from admin list and submits a partial refund", async ({
   page,
 }) => {
-  const refundRequests: Array<Record<string, any>> = [];
+  const refundRequests: RefundRequest[] = [];
   let currentOrder = createSerializedOrder({
     id: "order-e2e-1",
     totalAmount: 5200,
+    paymentRoutingMode: "PLATFORM",
+    connectedAccountId: null,
+    platformFeeAmount: null,
+    sellerGrossAmount: null,
+    sellerNetExpectedAmount: null,
     refundableAmount: 5200,
     items: [
       {
@@ -43,6 +60,10 @@ test("opens order detail from admin list and submits a partial refund", async ({
         status: "PAID",
         amount: 5200,
         currency: "JPY",
+        connectedAccountId: null,
+        externalChargeId: "ch_test_order_e2e",
+        externalTransferId: null,
+        applicationFeeAmount: null,
         externalSessionId: "cs_test_order_e2e",
         externalPaymentIntentId: "pi_test_order_e2e",
         failureReason: null,
@@ -69,7 +90,7 @@ test("opens order detail from admin list and submits a partial refund", async ({
   });
 
   await page.route("**/api/shop/orders/order-e2e-1/refunds", async (route) => {
-    const body = route.request().postDataJSON() as Record<string, any>;
+    const body = readRequestBody(route) as RefundRequest;
     refundRequests.push(body);
 
     const refund = {
@@ -121,6 +142,8 @@ test("opens order detail from admin list and submits a partial refund", async ({
 
   await expect(page).toHaveURL(/\/admin\/orders\/order-e2e-1$/);
   await expect(page.getByTestId("admin-order-detail-page")).toBeVisible();
+  await expect(page.getByText("平台统一收款 fallback")).toBeVisible();
+  await expect(page.getByText("平台统一收款").first()).toBeVisible();
 
   await page.getByTestId("order-refund-amount").fill("1200");
   await page.getByTestId("order-refund-reason").fill("买家取消部分商品");

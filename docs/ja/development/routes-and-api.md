@@ -1,7 +1,7 @@
 # ルートと API
 
 - 简体中文: [路由与 API](../../zh-CN/development/routes-and-api.md)
-- 最終更新: 2026-03-08
+- 最終更新: 2026-03-11
 
 ## 目的
 
@@ -37,9 +37,11 @@
 | `/u/[slug]/shop` | 商品一覧 |
 | `/u/[slug]/shop/[id]` | 商品詳細 |
 | `/u/[slug]/shop/[id]/checkout` | 公開注文ページ |
-| `/u/[slug]/shop/order-success/[orderId]` | 注文成功の仮ページ |
+| `/u/[slug]/shop/order-success/[orderId]` | 注文成功 / 詳細ページ。`buyerEmail` 参照と `session_id` による補確認に対応 |
 | `/blog` | 全体の公開ブログ入口。公開済みブログを集約表示 |
 | `/shop` | 全体の公開ショップ入口。公開済み商品を集約表示 |
+
+注記: `/test`、`/test/stripe-hosted` は内部検証用で、プロダクトの正式入口ではない。
 
 ## 管理画面
 
@@ -54,10 +56,16 @@
 | `/admin/blog` | ブログ一覧 |
 | `/admin/blog/new` | ブログ新規作成 |
 | `/admin/blog/[id]` | ブログ編集 |
+| `/admin/comments` | コメント審査 |
+| `/admin/media` | 統合メディアライブラリ |
 | `/admin/shop` | 商品一覧 |
 | `/admin/shop/new` | 商品新規作成 |
 | `/admin/shop/[id]` | 商品編集 |
 | `/admin/orders` | 注文一覧 |
+| `/admin/orders/[id]` | 注文詳細、返金、支払いタイムライン |
+| `/admin/orders/reconciliation` | Stripe 支払い照合 |
+| `/admin/orders/reconciliation/settlements` | Stripe 精算照合 |
+| `/admin/settings/payouts` | Stripe Connect 収益口座設定 |
 
 ## API 分類
 
@@ -89,7 +97,14 @@
 - `GET/POST /api/blog/posts`
 - `GET/PUT/DELETE /api/blog/posts/[id]`
 - `GET/POST /api/blog/posts/[id]/comments`
+- `GET /api/blog/comments`
+- `PUT/DELETE /api/blog/comments/[id]`
 - `GET/POST /api/blog/posts/[id]/like`
+
+### メディアライブラリ
+
+- `GET/PATCH/DELETE /api/media-assets`
+- `POST /api/media-assets/replace`
 
 ### ショップ / 注文
 
@@ -97,11 +112,38 @@
 - `GET/PUT/DELETE /api/shop/products/[id]`
 - `POST /api/shop/checkout`
 - `GET /api/shop/orders`
+- `GET /api/shop/orders/[id]`
 - `PUT /api/shop/orders/[id]`
+- `POST /api/shop/orders/[id]/confirm`
+- `POST /api/shop/orders/[id]/refunds`
+
+### 決済、照合、Connect
+
+- `POST /api/payments/stripe/webhook`
+- `POST /api/payments/stripe/connect/webhook`
+- `POST /api/payments/connect/accounts`
+- `GET /api/payments/connect/accounts/me`
+- `GET/POST /api/payments/connect/accounts/onboarding-link`
+- `POST /api/payments/connect/accounts/dashboard-link`
+- `POST /api/payments/connect/accounts/sync`
+- `GET /api/shop/payments/reconciliation`
+- `GET/POST/PATCH /api/shop/payments/settlements`
+
+### 内部ジョブ
+
+- `POST /api/internal/cron/stripe-finance-sync`
 
 ## 権限メモ
 
 - `middleware.ts` は `/admin/*` を保護し、ログイン系だけ例外
 - ブログのコメントといいねは匿名利用を許容
-- `POST /api/shop/checkout` は匿名訪問者向けの公開チェックアウト入口
-- `/api/shop/orders*` は売り手管理向けの注文一覧 / 状態更新だけを担当する
+- `GET /api/blog/comments` と `PUT/DELETE /api/blog/comments/[id]` は売り手自身の審査画面向け
+- `GET/PATCH/DELETE /api/media-assets` と `POST /api/media-assets/replace` は管理画面のメディアライブラリ専用
+- `POST /api/shop/checkout` は匿名訪問者向けの公開チェックアウト入口で、注文確保、在庫減算、Stripe Checkout Session 作成を行う
+- `POST /api/shop/orders/[id]/confirm` は公開注文成功ページから `session_id` を使って支払い確定を補うための API
+- `GET /api/shop/orders/[id]` は売り手セッションでも、`buyerEmail` を明示した公開参照でも利用できる
+- `PUT /api/shop/orders/[id]` と `POST /api/shop/orders/[id]/refunds` は売り手管理用。Stripe 未決済注文を手動で `PAID` にはできない
+- `POST /api/payments/stripe/webhook` は Checkout 成功、非同期成功 / 失敗、期限切れ、dispute を処理する
+- `POST /api/payments/stripe/connect/webhook` と `/api/payments/connect/accounts/*` は売り手の Stripe Connect 口座同期 / onboarding 用
+- `GET /api/shop/payments/reconciliation` と `GET/POST/PATCH /api/shop/payments/settlements` は支払い運用向けで、`paymentRoutingMode`、connected account、charge / transfer、platform fee、seller net のスナップショットを返す
+- `POST /api/internal/cron/stripe-finance-sync` は内部同期用で、公開 API として扱わない

@@ -1,5 +1,4 @@
 // domain/hero/services.ts
-import { prisma } from "@/lib/prisma";
 import type { HeroSlideDB } from "./types";
 import { DEFAULT_HERO_SLIDES } from "./constants";
 
@@ -53,6 +52,7 @@ export function fillSlidesWithDefaults(dbSlides: HeroSlideDB[]): HeroSlideDB[] {
 export async function getPublicHeroSlides(
   siteKey?: string
 ): Promise<HeroSlideDB[]> {
+  void siteKey;
   // 直接返回默认配置
   return DEFAULT_HERO_SLIDES;
 }

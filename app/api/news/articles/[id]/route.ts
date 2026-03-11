@@ -1,10 +1,19 @@
 // app/api/news/articles/[id]/route.ts
 
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { getServerSession } from "@/lib/session/userSession";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
+
+function asOptionalString(value: unknown) {
+  return typeof value === "string" ? value : null;
+}
+
+function asOptionalBoolean(value: unknown) {
+  return typeof value === "boolean" ? value : null;
+}
 
 // GET: 获取单篇文章
 export async function GET(
@@ -36,13 +45,10 @@ export async function GET(
     }
   }
 
-  // 返回文章和用户 slug
   const { user, ...articleData } = article;
-  // 移除 Prisma 的 user 关系对象，只保留需要的字段
-  const { user: _, ...cleanArticleData } = articleData as any;
-  return NextResponse.json({ 
+  return NextResponse.json({
     article: {
-      ...cleanArticleData,
+      ...articleData,
       userSlug: user?.slug || null,
     },
   });
@@ -74,31 +80,48 @@ export async function PUT(
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  let body;
+  let body: Record<string, unknown>;
   try {
     body = await request.json();
-  } catch (e) {
+  } catch {
     return NextResponse.json(
       { error: "Invalid JSON in request body" },
       { status: 400 }
     );
   }
 
-  const { title, content, category, tag, shareUrl, shareChannels, published, backgroundType, backgroundValue } =
-    body;
+  const {
+    title,
+    content,
+    category,
+    tag,
+    shareUrl,
+    shareChannels,
+    published,
+    backgroundType,
+    backgroundValue,
+  } = body;
 
-  const updateData: any = {};
-  if (title !== undefined) updateData.title = title;
-  if (content !== undefined) updateData.content = content;
-  if (category !== undefined) updateData.category = category;
-  if (tag !== undefined) updateData.tag = tag || null;
-  if (shareUrl !== undefined) updateData.shareUrl = shareUrl || null;
-  if (shareChannels !== undefined) updateData.shareChannels = shareChannels;
-  if (backgroundType !== undefined) updateData.backgroundType = backgroundType || "color";
-  if (backgroundValue !== undefined) updateData.backgroundValue = backgroundValue || "#000000";
-  if (published !== undefined) {
-    updateData.published = published;
-    if (published && !existing.publishedAt) {
+  const updateData: Prisma.NewsArticleUpdateInput = {};
+  if (title !== undefined) updateData.title = asOptionalString(title) || "";
+  if (content !== undefined) updateData.content = asOptionalString(content) || "";
+  if (category !== undefined) updateData.category = asOptionalString(category) || "";
+  if (tag !== undefined) updateData.tag = asOptionalString(tag);
+  if (shareUrl !== undefined) updateData.shareUrl = asOptionalString(shareUrl);
+  if (shareChannels !== undefined) {
+    updateData.shareChannels =
+      shareChannels === null ? Prisma.JsonNull : (shareChannels as Prisma.InputJsonValue);
+  }
+  if (backgroundType !== undefined) {
+    updateData.backgroundType = asOptionalString(backgroundType) || "color";
+  }
+  if (backgroundValue !== undefined) {
+    updateData.backgroundValue = asOptionalString(backgroundValue) || "#000000";
+  }
+  const nextPublished = asOptionalBoolean(published);
+  if (nextPublished !== null) {
+    updateData.published = nextPublished;
+    if (nextPublished && !existing.publishedAt) {
       updateData.publishedAt = new Date();
     }
   }
@@ -113,7 +136,7 @@ export async function PUT(
 
 // DELETE: 删除文章
 export async function DELETE(
-  request: Request,
+  _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await getServerSession();
@@ -143,4 +166,3 @@ export async function DELETE(
 
   return NextResponse.json({ ok: true });
 }
-

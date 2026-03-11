@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import type { SerializedOrder } from "@/domain/shop";
 import {
@@ -33,7 +33,7 @@ export default function OrderDetailPage({
   const router = useRouter();
   const { user, loading: userLoading } = useUser();
   const { t } = useI18n();
-  const { message: toastMessage, showToast } = useToast();
+  const { message: toastMessage, info: showToast } = useToast();
   const { error, handleError, clearError } = useErrorHandler();
 
   const [orderId, setOrderId] = useState<string | null>(null);
@@ -51,6 +51,19 @@ export default function OrderDetailPage({
     })();
   }, [params]);
 
+  const loadOrder = useCallback(async (id: string) => {
+    try {
+      setLoading(true);
+      const nextOrder = await shopApi.getOrder(id);
+      setOrder(nextOrder);
+    } catch (err) {
+      handleError(err);
+      router.push("/admin/orders");
+    } finally {
+      setLoading(false);
+    }
+  }, [handleError, router]);
+
   useEffect(() => {
     if (!userLoading && !user) {
       router.push("/admin");
@@ -60,7 +73,7 @@ export default function OrderDetailPage({
     if (!userLoading && user && orderId) {
       void loadOrder(orderId);
     }
-  }, [orderId, router, user, userLoading]);
+  }, [loadOrder, orderId, router, user, userLoading]);
 
   useEffect(() => {
     if (!order) {
@@ -72,20 +85,7 @@ export default function OrderDetailPage({
     } else {
       setRefundAmount("");
     }
-  }, [order?.id, order?.refundableAmount]);
-
-  async function loadOrder(id: string) {
-    try {
-      setLoading(true);
-      const nextOrder = await shopApi.getOrder(id);
-      setOrder(nextOrder);
-    } catch (err) {
-      handleError(err);
-      router.push("/admin/orders");
-    } finally {
-      setLoading(false);
-    }
-  }
+  }, [order]);
 
   function formatDate(dateString: string | null) {
     if (!dateString) {
@@ -161,6 +161,31 @@ export default function OrderDetailPage({
     };
 
     return colors[status || ""] || "bg-gray-100 text-gray-700";
+  }
+
+  function getRoutingModeLabel(mode: SerializedOrder["paymentRoutingMode"]) {
+    return mode === "STRIPE_CONNECT_DESTINATION"
+      ? "卖家 Stripe Connect"
+      : "平台统一收款";
+  }
+
+  function getRoutingModeDescription(orderRecord: SerializedOrder) {
+    if (orderRecord.paymentProvider !== "STRIPE") {
+      return "当前订单不走 Stripe Checkout";
+    }
+
+    if (orderRecord.paymentRoutingMode === "STRIPE_CONNECT_DESTINATION") {
+      return "资金直接路由到卖家的 Stripe connected account。";
+    }
+
+    return "当前仍走平台统一收款 fallback，未使用卖家 connected account。";
+  }
+
+  function formatOptionalPrice(
+    amount: number | null | undefined,
+    currency = "JPY"
+  ) {
+    return amount == null ? " - " : formatPrice(amount, currency);
   }
 
   function getDisputeStatusLabel(status: string) {
@@ -263,6 +288,11 @@ export default function OrderDetailPage({
     for (const attempt of order.paymentAttempts) {
       const baseDescription = [
         attempt.provider,
+        attempt.connectedAccountId
+          ? `Connected ${attempt.connectedAccountId}`
+          : null,
+        attempt.externalChargeId ? `Charge ${attempt.externalChargeId}` : null,
+        attempt.externalTransferId ? `Transfer ${attempt.externalTransferId}` : null,
         attempt.externalSessionId ? `Session ${attempt.externalSessionId}` : null,
         attempt.externalPaymentIntentId
           ? `Intent ${attempt.externalPaymentIntentId}`
@@ -525,6 +555,7 @@ export default function OrderDetailPage({
                     <div className="flex items-center gap-4">
                       <div className="h-14 w-14 overflow-hidden rounded-lg bg-black/5">
                         {item.product?.images?.[0] ? (
+                          /* eslint-disable-next-line @next/next/no-img-element */
                           <img
                             src={item.product.images[0]}
                             alt={item.product.name}
@@ -612,8 +643,32 @@ export default function OrderDetailPage({
                   <dd>{order.paymentProvider || "未记录"}</dd>
                 </div>
                 <div>
+                  <dt className="text-xs text-black/45">收款路由</dt>
+                  <dd>{getRoutingModeLabel(order.paymentRoutingMode)}</dd>
+                </div>
+                <div>
                   <dt className="text-xs text-black/45">支付状态</dt>
                   <dd>{getPaymentStatusLabel(order.paymentStatus)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-black/45">路由说明</dt>
+                  <dd>{getRoutingModeDescription(order)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-black/45">Payout Account</dt>
+                  <dd className="break-all">{order.payoutAccountId || " - "}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-black/45">Connected Account</dt>
+                  <dd className="break-all">{order.connectedAccountId || " - "}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-black/45">Charge ID</dt>
+                  <dd className="break-all">{order.externalChargeId || " - "}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-black/45">Transfer ID</dt>
+                  <dd className="break-all">{order.externalTransferId || " - "}</dd>
                 </div>
                 <div>
                   <dt className="text-xs text-black/45">Checkout Session</dt>
@@ -630,6 +685,18 @@ export default function OrderDetailPage({
                 <div>
                   <dt className="text-xs text-black/45">支付失败原因</dt>
                   <dd>{order.paymentFailureReason || " - "}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-black/45">平台手续费快照</dt>
+                  <dd>{formatOptionalPrice(order.platformFeeAmount, order.currency)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-black/45">卖家收款总额快照</dt>
+                  <dd>{formatOptionalPrice(order.sellerGrossAmount, order.currency)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-black/45">卖家预估净额快照</dt>
+                  <dd>{formatOptionalPrice(order.sellerNetExpectedAmount, order.currency)}</dd>
                 </div>
               </dl>
             </section>

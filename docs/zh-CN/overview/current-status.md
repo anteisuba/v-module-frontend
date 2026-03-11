@@ -1,7 +1,7 @@
 # 当前状态
 
 - 日本語: [現状](../../ja/overview/current-status.md)
-- 最后更新: 2026-03-10
+- 最后更新: 2026-03-11
 
 ## 用途
 
@@ -18,6 +18,7 @@
 - `pnpm build`
 - `pnpm check`
 - `pnpm test`
+- `pnpm test:e2e`
 - `pnpm lint`
 - `git ls-files`
 - 路由、API、Prisma 模型与主要页面代码
@@ -31,51 +32,53 @@
 
 ## 命令审计结果
 
-- `pnpm build`：当前 Windows 环境可能在 `prisma generate` 阶段触发 `EPERM` 锁文件错误；拆开执行 `pnpm prisma generate --no-engine` + `pnpm exec next build` 已通过
+- `pnpm build`：通过；`middleware -> proxy`、`prisma.config.ts` 迁移和本地构建 warning 已清理，当前为标准 build 输出
 - `pnpm check`：通过
-- `pnpm test`：通过
-- `pnpm lint`：失败，`62 errors / 93 warnings`
-- 自动化测试文件：已存在，覆盖认证、页面草稿保存/发布、CMS 浏览器层发布、CMS 发布到 `/u/[slug]` 的公开页回归、媒体库引用跳转替换、库内直接替换引用、媒体库批量标签维护、blog/news/shop 公开入口与详情页端到端回归、公开页读取、博客/商品/新闻后台编辑接口、Stripe Checkout 创建、Stripe 托管结账成功/取消回流浏览器链路、Stripe Webhook（含 dispute）、订单详情读取、订单列表筛选/导出、后台订单详情退款浏览器链路、退款路由、支付对账/结算核销接口、内部定时同步接口、邮件通知降级行为、博客评论公开/审核接口
-- 迁移前文档数量：`33` 个 Markdown，其中 `31` 个位于 `document/`
+- `pnpm test`：通过，当前为 `27` 个文件 `81` 个测试
+- `pnpm test:e2e`：通过，当前为 `11` 个 Chromium 场景
+- `pnpm lint`：通过，当前为 `0 errors / 0 warnings`
+- 自动化测试文件：仓库内已存在 `Vitest + Playwright` 规格，并已实际执行覆盖认证、页面配置、媒体库、公开内容、Shop 公开结账、订单详情 / 退款 / 导出、Stripe Checkout / Webhook / Connect / 对账 / 结算、内部定时同步和 payout onboarding 回流等场景
+- Prisma migration 目录：当前为 `13` 个
 
 ## 已完成
 
 - 用户系统：注册、登录、退出、密码重置、后台鉴权中间件
-- 页面配置系统：草稿与发布版本分离，公开页读取发布配置
-- 页面配置清理：`PageConfig.links` 已从 schema / types / 默认配置移除，历史 `links` section 会在读写和公开渲染时自动清洗
-- 最小自动化测试基线：已接入 `vitest`，覆盖登录认证、公开页配置读取、公开结账订单创建
-- 订单详情页：公开下单成功页已可基于 `orderId + buyerEmail` 读取并展示订单详情
-- 卖家订单管理：后台订单列表已支持搜索、状态过滤和 CSV 导出，后台订单详情页已提供支付时间线、退款记录和手动退款入口
-- Stripe Checkout：`POST /api/shop/checkout` 已改为创建 Stripe Checkout Session；公开结账页会跳转到 Stripe 托管支付页
-- Stripe Webhook：`POST /api/payments/stripe/webhook` 已处理支付成功、异步失败和会话过期，并回写订单支付状态与库存补偿
-- Stripe 退款基础设施：订单已记录 `OrderPaymentAttempt` / `OrderRefund`，后台可对 Stripe 已支付订单发起部分退款或全额退款，并回写支付状态
-- 支付对账：后台已提供 Stripe 对账页，可查看支付汇总、导出支付/退款事件 CSV、导出异常清单，并按异常跳转到具体订单
-- 结算核销：后台已提供 Stripe 结算核销页，可同步 `balance transactions` / `payouts`、查看 payout 汇总、识别缺失结算流水，并批量标记核销状态
-- dispute / chargeback：Stripe webhook 与后台订单详情已支持记录和展示 dispute 状态；支付对账会对待响应争议和败诉 chargeback 产生异常提示
-- 自动定时同步：已提供内部 cron 路由，可按卖家批量同步 Stripe 结算流水、payout 和 dispute 数据
-- 订单通知：Stripe 支付确认后会向买家发送确认邮件、向卖家发送新订单提醒；状态更新时会向买家发送状态变更邮件
-- 后台编辑骨架：CMS、博客、商店列表/详情页已统一为 tab + 单开折叠面板结构
-- 媒体库：后台已提供统一媒体库页面，支持复用、按使用场景筛选、批量选择、删除保护、引用追踪、库内直接替换引用资源、批量标签维护，以及跳转到具体编辑器替换入口
+- 页面配置系统：草稿与发布版本分离，公开页读取发布配置；历史 `links` section 会在读写和渲染时自动清洗
+- 后台编辑骨架：CMS、博客、商店列表 / 详情页已统一为 tab + 单开折叠面板结构
 - 公开页：`/u/[slug]` 支持主题色、字体、背景、Hero、News、Video 等配置渲染
 - 公开入口：`/blog`、`/shop` 已改为全站公开内容入口，不再依赖固定用户 slug
 - 新闻系统：新闻列表页、详情页、后台编辑与发布接口
-- 博客系统：后台列表/编辑、公开列表/详情、点赞接口、评论接口与前端 UI
-- 评论审核：`BlogComment` 已引入 `PENDING / APPROVED / REJECTED` 状态，历史评论迁移后保持公开可见；访客评论默认进入待审核，卖家后台已可搜索、审核和删除评论
-- 商店系统：后台商品管理、商店列表/商品详情背景编辑、公开商品列表/详情、公开结账接口 `POST /api/shop/checkout`、卖家订单列表、订单状态更新
+- 博客系统：后台列表 / 编辑、公开列表 / 详情、点赞接口、评论接口与前端 UI
+- 评论审核：`BlogComment` 已支持 `PENDING / APPROVED / REJECTED`，访客评论默认进入待审核，卖家后台可搜索、审核和删除
+- 商店系统：后台商品管理、公开商品列表 / 详情、公开结账、订单成功页访客查询、卖家订单列表 / 详情 / 状态更新
+- 退款与争议：订单已记录 `OrderPaymentAttempt`、`OrderRefund`、`OrderDispute`，后台可对 Stripe 已支付订单发起退款并查看 dispute 时间线
+- Stripe Checkout：`POST /api/shop/checkout` 会创建托管 Checkout Session；公开结账页跳转到 Stripe 支付页
+- Stripe Webhook：`POST /api/payments/stripe/webhook` 已处理支付成功、异步失败、会话过期和 dispute，并回写订单支付状态与库存补偿
+- 支付对账：后台已提供 Stripe 对账页，可查看事件、异常、导出 CSV，并按异常跳转到订单
+- 结算核销：后台已提供 Stripe 结算核销页，可同步 `balance transactions` / `payouts`、查看 payout 汇总并批量标记核销状态
+- Stripe Connect：已提供卖家收款账户模型、onboarding / dashboard link / account sync API、`/admin/settings/payouts` 页面，以及 destination charge 与 `PLATFORM` fallback 路由
+- Connect 运维可见性：后台订单详情、对账页和结算页已展示 `paymentRoutingMode`、connected account、charge / transfer、platform fee、seller net 等快照字段
+- 自动定时同步：已提供内部 cron 路由，可按卖家批量同步 Stripe 结算流水、payout 和 dispute 数据
+- 订单通知：Stripe 支付确认后会向买家发送确认邮件、向卖家发送新订单提醒；订单状态更新时会向买家发送状态变更邮件
+- 媒体库：后台已提供统一媒体库页面，支持复用、按使用场景筛选、批量选择、删除保护、引用追踪、库内直接替换引用资源与批量标签维护
 - 媒体上传：后台上传接口、本地文件系统与 R2 分支、`MediaAsset` 数据记录
 - 国际化基础：存在 `zh`、`ja`、`en` 文案文件与语言切换器
 
 ## 部分完成 / 存在缺口
 
-- 当前支付仍只接入 Stripe 单一通道；虽然退款后台、基础对账页、结算核销页、争议处理和自动同步已具备闭环，但 PayPal / 本地支付方式和更深入的支付流程已暂时后置，保留为后续优化 TODO
+- 当前支付正式路线仍是 Stripe 单一通道；PayPal / 本地支付方式已明确后置
+- Stripe Connect 主链路已可用，但更细粒度的运营筛选、告警和更广泛的浏览器回归仍可继续增强
+- 工程基线已进入“可构建 / 可检查 / 可测试 / 可跑 e2e”的稳定态，但 Playwright 仍主要是本地单 worker、单浏览器执行，尚未形成 CI / 多浏览器回归矩阵
 
 ## 未实现
 
-- 购物车
+- 购物车与多商品结账
 - 库存预警
 - Turnstile / 验证码
 - 直播日程 `ScheduleBlock`
+- PayPal / 本地支付方式
+- 更完整的 SEO、监控、日志和错误追踪
 
 ## 当前结论
 
-这是一个“功能已成型、闭环未完全打磨、工程债务明显”的项目。后续开发应优先补齐功能矛盾和质量问题，再扩展新能力。
+这已经是一个“公开页 + CMS + 内容 + 商店订单 + Stripe 支付运维”都已成型的项目，不应再按原型判断。下一阶段重点应该放在 Playwright 持续执行、Stripe Connect 运维闭环打磨和更广泛的回归覆盖，而不是把媒体库、warning 清理或 PayPal 重新误判成当前最高优先级。

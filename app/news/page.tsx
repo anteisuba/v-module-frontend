@@ -2,8 +2,8 @@
 
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { newsArticleApi, pageApi } from "@/lib/api";
 import { ApiError, NetworkError } from "@/lib/api/errors";
@@ -15,7 +15,6 @@ import type { NewsArticle } from "@/lib/api/types";
 import type { PageConfig } from "@/domain/page-config/types";
 
 function NewsListContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const { t } = useI18n();
   const menu = useHeroMenu();
@@ -64,7 +63,7 @@ function NewsListContent() {
     loadPageConfig();
   }, [searchParams, firstArticleUserSlug]);
 
-  const loadArticles = async () => {
+  const loadArticles = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
@@ -86,11 +85,11 @@ function NewsListContent() {
       setLoading(false);
       setIsInitialLoad(false);
     }
-  };
+  }, [currentPage]);
 
   useEffect(() => {
-    loadArticles();
-  }, [currentPage]);
+    void loadArticles();
+  }, [loadArticles]);
 
   // 获取背景样式
   const getBackgroundStyle = (): React.CSSProperties => {
@@ -233,4 +232,3 @@ export default function NewsListPage() {
     </Suspense>
   );
 }
-

@@ -1,6 +1,13 @@
 "use client";
 
-import { useDeferredValue, useEffect, useMemo, useState } from "react";
+import {
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useCallback,
+} from "react";
 import Link from "next/link";
 import Alert from "./Alert";
 import Button from "./Button";
@@ -94,7 +101,7 @@ export default function MediaLibraryBrowser({
   className,
 }: MediaLibraryBrowserProps) {
   const { t } = useI18n();
-  const { message: toastMessage, showToast } = useToast();
+  const { message: toastMessage, info: showToast } = useToast();
   const isPickerMode = Boolean(onSelect);
 
   const [query, setQuery] = useState("");
@@ -123,7 +130,8 @@ export default function MediaLibraryBrowser({
   const [deleteTargetIds, setDeleteTargetIds] = useState<string[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const assets = response?.assets || [];
+  const responseRef = useRef<MediaAssetListResponse | null>(null);
+  const assets = useMemo(() => response?.assets || [], [response]);
   const pagination = response?.pagination;
   const hasMore = Boolean(pagination && pagination.page < pagination.totalPages);
 
@@ -138,12 +146,16 @@ export default function MediaLibraryBrowser({
   );
   const hasInUseSelection = selectedAssets.some((asset) => asset.isInUse);
 
-  async function loadAssets(page = 1, append = false) {
+  useEffect(() => {
+    responseRef.current = response;
+  }, [response]);
+
+  const loadAssets = useCallback(async (page = 1, append = false) => {
     try {
       setError(null);
       if (append) {
         setLoadingMore(true);
-      } else if (response) {
+      } else if (responseRef.current) {
         setRefreshing(true);
       } else {
         setLoading(true);
@@ -175,12 +187,12 @@ export default function MediaLibraryBrowser({
       setRefreshing(false);
       setLoadingMore(false);
     }
-  }
+  }, [deferredQuery, t, usageFilter]);
 
   useEffect(() => {
     setSelectedAssetIds([]);
     void loadAssets(1);
-  }, [deferredQuery, usageFilter]);
+  }, [deferredQuery, loadAssets, usageFilter]);
 
   async function handleUpload(file: File) {
     try {

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -60,7 +60,7 @@ export default function CommentsPage() {
   const router = useRouter();
   const { user, loading: userLoading } = useUser();
   const { t } = useI18n();
-  const { message: toastMessage, showToast } = useToast();
+  const { message: toastMessage, info: showToast } = useToast();
   const { error, handleError, clearError } = useErrorHandler();
 
   const [comments, setComments] = useState<ModerationComment[]>([]);
@@ -88,15 +88,7 @@ export default function CommentsPage() {
     return () => window.clearTimeout(timeoutId);
   }, [searchQuery]);
 
-  useEffect(() => {
-    if (!userLoading && user) {
-      void loadComments();
-    } else if (!userLoading && !user) {
-      router.push("/admin");
-    }
-  }, [user, userLoading, debouncedQuery, statusFilter]);
-
-  async function loadComments() {
+  const loadComments = useCallback(async () => {
     try {
       if (!hasLoadedOnce) {
         setLoading(true);
@@ -121,7 +113,15 @@ export default function CommentsPage() {
       setLoading(false);
       setRefreshing(false);
     }
-  }
+  }, [debouncedQuery, handleError, hasLoadedOnce, showToast, statusFilter, t]);
+
+  useEffect(() => {
+    if (!userLoading && user) {
+      void loadComments();
+    } else if (!userLoading && !user) {
+      router.push("/admin");
+    }
+  }, [loadComments, router, user, userLoading]);
 
   async function handleUpdateStatus(
     commentId: string,

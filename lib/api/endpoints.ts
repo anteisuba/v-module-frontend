@@ -33,12 +33,12 @@ import type {
   PaymentReconciliationReport,
   PaymentSettlementReport,
   PaymentSettlementSyncResult,
+  Product as ShopProduct,
   SerializedOrder,
   SerializedOrderRefund,
 } from "@/domain/shop";
 import type {
   MediaAssetUsageContext,
-  MediaAssetUsageFilter,
 } from "@/domain/media/usage";
 
 type BlogCommentStatus = "PENDING" | "APPROVED" | "REJECTED";
@@ -65,6 +65,21 @@ type ApiModerationBlogComment = ApiBlogComment & {
     title: string;
     published: boolean;
   };
+};
+
+type ApiBlogPost = {
+  id: string;
+  userId: string;
+  userSlug: string | null;
+  title: string;
+  content: string;
+  coverImage: string | null;
+  videoUrl: string | null;
+  externalLinks: Array<{ url: string; label: string }> | null;
+  published: boolean;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string | null;
 };
 
 /**
@@ -498,7 +513,7 @@ export const blogApi = {
     updatedAt: string;
     publishedAt: string | null;
   }> {
-    const response = await apiClient.get<{ post: any }>(
+    const response = await apiClient.get<{ post: ApiBlogPost }>(
       `/api/blog/posts/${id}`
     );
     return response.post;
@@ -514,8 +529,8 @@ export const blogApi = {
     videoUrl?: string | null;
     externalLinks?: Array<{ url: string; label: string }> | null;
     published?: boolean;
-  }): Promise<any> {
-    const response = await apiClient.post<{ post: any }>(
+  }): Promise<ApiBlogPost> {
+    const response = await apiClient.post<{ post: ApiBlogPost }>(
       "/api/blog/posts",
       data
     );
@@ -535,8 +550,8 @@ export const blogApi = {
       externalLinks?: Array<{ url: string; label: string }> | null;
       published?: boolean;
     }
-  ): Promise<any> {
-    const response = await apiClient.put<{ post: any }>(
+  ): Promise<ApiBlogPost> {
+    const response = await apiClient.put<{ post: ApiBlogPost }>(
       `/api/blog/posts/${id}`,
       data
     );
@@ -697,20 +712,8 @@ export const shopApi = {
   /**
    * 获取单个商品
    */
-  async getProduct(id: string): Promise<{
-    id: string;
-    userId: string;
-    userSlug: string | null;
-    name: string;
-    description: string | null;
-    price: number;
-    stock: number;
-    images: string[];
-    status: string;
-    createdAt: string;
-    updatedAt: string;
-  }> {
-    const response = await apiClient.get<{ product: any }>(
+  async getProduct(id: string): Promise<ShopProduct> {
+    const response = await apiClient.get<{ product: ShopProduct }>(
       `/api/shop/products/${id}`
     );
     return response.product;
@@ -726,8 +729,8 @@ export const shopApi = {
     stock?: number;
     images: string[];
     status?: string;
-  }): Promise<any> {
-    const response = await apiClient.post<{ product: any }>(
+  }): Promise<ShopProduct> {
+    const response = await apiClient.post<{ product: ShopProduct }>(
       "/api/shop/products",
       data
     );
@@ -747,8 +750,8 @@ export const shopApi = {
       images?: string[];
       status?: string;
     }
-  ): Promise<any> {
-    const response = await apiClient.put<{ product: any }>(
+  ): Promise<ShopProduct> {
+    const response = await apiClient.put<{ product: ShopProduct }>(
       `/api/shop/products/${id}`,
       data
     );

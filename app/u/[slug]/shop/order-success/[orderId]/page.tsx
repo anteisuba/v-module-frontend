@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
 import type { SerializedOrder } from "@/domain/shop";
@@ -13,7 +13,7 @@ import { useHeroMenu } from "@/features/home-hero/hooks/useHeroMenu";
 import HeroMenu from "@/features/home-hero/components/HeroMenu";
 import { useErrorHandler } from "@/hooks/useErrorHandler";
 
-export default function OrderSuccessPage({
+function OrderSuccessPageContent({
   params,
 }: {
   params: Promise<{ slug: string; orderId: string }>;
@@ -44,6 +44,46 @@ export default function OrderSuccessPage({
     loadParams();
   }, [params]);
 
+  const loadOrder = useCallback(async (
+    emailToLoad: string,
+    currentOrderId?: string
+  ) => {
+    const resolvedOrderId = currentOrderId || orderId;
+    const normalizedEmail = emailToLoad.trim();
+
+    if (!resolvedOrderId) {
+      return;
+    }
+
+    if (!normalizedEmail) {
+      handleError(new Error("请输入下单时使用的邮箱"));
+      setLoading(false);
+      return;
+    }
+
+    try {
+      setLoadingOrder(true);
+      clearError();
+      const orderDetail = await shopApi.getPublicOrder(
+        resolvedOrderId,
+        normalizedEmail
+      );
+      setOrder(orderDetail);
+      setBuyerEmail(normalizedEmail);
+      window.sessionStorage.setItem(
+        `shop:order-access:${resolvedOrderId}`,
+        normalizedEmail
+      );
+    } catch (err) {
+      window.sessionStorage.removeItem(`shop:order-access:${resolvedOrderId}`);
+      setOrder(null);
+      handleError(err);
+    } finally {
+      setLoading(false);
+      setLoadingOrder(false);
+    }
+  }, [clearError, handleError, orderId]);
+
   useEffect(() => {
     if (!orderId) {
       return;
@@ -60,7 +100,7 @@ export default function OrderSuccessPage({
 
     setBuyerEmail(savedBuyerEmail);
     void loadOrder(savedBuyerEmail, orderId);
-  }, [orderId]);
+  }, [loadOrder, orderId]);
 
   useEffect(() => {
     if (
@@ -144,56 +184,17 @@ export default function OrderSuccessPage({
       window.clearInterval(intervalId);
     };
   }, [
-      buyerEmail,
-      confirmedSessionId,
-      handleError,
-      orderId,
-      order?.paymentProvider,
-      order?.paymentStatus,
-      order?.status,
-      stripeSessionId,
+    buyerEmail,
+    confirmedSessionId,
+    handleError,
+    order,
+    orderId,
+    stripeSessionId,
   ]);
-
-  async function loadOrder(emailToLoad?: string, currentOrderId?: string) {
-    const resolvedOrderId = currentOrderId || orderId;
-    const normalizedEmail = (emailToLoad || buyerEmail).trim();
-
-    if (!resolvedOrderId) {
-      return;
-    }
-
-    if (!normalizedEmail) {
-      handleError(new Error("请输入下单时使用的邮箱"));
-      setLoading(false);
-      return;
-    }
-
-    try {
-      setLoadingOrder(true);
-      clearError();
-      const orderDetail = await shopApi.getPublicOrder(
-        resolvedOrderId,
-        normalizedEmail
-      );
-      setOrder(orderDetail);
-      setBuyerEmail(normalizedEmail);
-      window.sessionStorage.setItem(
-        `shop:order-access:${resolvedOrderId}`,
-        normalizedEmail
-      );
-    } catch (err) {
-      window.sessionStorage.removeItem(`shop:order-access:${resolvedOrderId}`);
-      setOrder(null);
-      handleError(err);
-    } finally {
-      setLoading(false);
-      setLoadingOrder(false);
-    }
-  }
 
   function handleLookupSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    void loadOrder();
+    void loadOrder(buyerEmail);
   }
 
   function formatPrice(price: number) {
@@ -512,5 +513,23 @@ export default function OrderSuccessPage({
         </div>
       </div>
     </div>
+  );
+}
+
+export default function OrderSuccessPage({
+  params,
+}: {
+  params: Promise<{ slug: string; orderId: string }>;
+}) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <LoadingState message="加载中..." />
+        </div>
+      }
+    >
+      <OrderSuccessPageContent params={params} />
+    </Suspense>
   );
 }

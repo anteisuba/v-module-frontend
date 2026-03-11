@@ -22,6 +22,40 @@ const BILIBILI_ERROR_PATTERNS = [
   /bili-fe-fp/i, // Bilibili 指纹识别
 ];
 
+function stringifyUnknown(value: unknown): string {
+  if (typeof value === "string") {
+    return value;
+  }
+
+  if (value instanceof Error) {
+    return value.stack || value.message;
+  }
+
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    "message" in value &&
+    typeof (value as { message?: unknown }).message === "string"
+  ) {
+    return (value as { message: string }).message;
+  }
+
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    "stack" in value &&
+    typeof (value as { stack?: unknown }).stack === "string"
+  ) {
+    return (value as { stack: string }).stack;
+  }
+
+  try {
+    return JSON.stringify(value);
+  } catch {
+    return String(value);
+  }
+}
+
 /**
  * 检查错误是否来自 Bilibili 播放器
  */
@@ -35,27 +69,15 @@ function isBilibiliError(message: string, source?: string): boolean {
  * 在开发环境中过滤掉 Bilibili 播放器相关的错误和警告
  */
 export function installErrorFilter() {
-  if (typeof window === 'undefined') return;
+  if (typeof window === "undefined") return;
 
   // 保存原始的 console.error 和 console.warn
   const originalError = console.error;
   const originalWarn = console.warn;
 
   // 重写 console.error
-  console.error = (...args: any[]) => {
-    // 检查所有参数，包括错误对象、堆栈等
-    const messages = args.map((arg) => {
-      if (typeof arg === 'string') return arg;
-      if (arg?.message) return arg.message;
-      if (arg?.stack) return arg.stack;
-      if (arg?.toString) return arg.toString();
-      try {
-        return JSON.stringify(arg);
-      } catch {
-        return String(arg);
-      }
-    });
-    const fullMessage = messages.join(' ');
+  console.error = (...args: unknown[]) => {
+    const fullMessage = args.map(stringifyUnknown).join(" ");
 
     // 检查是否是 Bilibili 相关错误
     if (isBilibiliError(fullMessage)) {
@@ -68,20 +90,8 @@ export function installErrorFilter() {
   };
 
   // 重写 console.warn
-  console.warn = (...args: any[]) => {
-    // 检查所有参数
-    const messages = args.map((arg) => {
-      if (typeof arg === 'string') return arg;
-      if (arg?.message) return arg.message;
-      if (arg?.stack) return arg.stack;
-      if (arg?.toString) return arg.toString();
-      try {
-        return JSON.stringify(arg);
-      } catch {
-        return String(arg);
-      }
-    });
-    const fullMessage = messages.join(' ');
+  console.warn = (...args: unknown[]) => {
+    const fullMessage = args.map(stringifyUnknown).join(" ");
 
     // 检查是否是 Bilibili 相关警告
     if (isBilibiliError(fullMessage)) {
@@ -94,27 +104,29 @@ export function installErrorFilter() {
   };
 
   // 过滤全局错误事件
-  window.addEventListener('error', (event) => {
-    const message = event.message || '';
-    const source = event.filename || event.target?.toString() || '';
-    const errorString = event.error?.toString() || event.error?.message || '';
+  window.addEventListener("error", (event) => {
+    const message = event.message || "";
+    const source = event.filename || String(event.target || "");
+    const errorString =
+      event.error instanceof Error
+        ? event.error.toString()
+        : stringifyUnknown(event.error);
     const fullMessage = `${message} ${source} ${errorString}`;
-    
+
     if (isBilibiliError(fullMessage, source)) {
       event.stopPropagation();
       event.preventDefault();
       return false;
     }
-  }, true); // 使用捕获阶段
+  }, true);
 
   // 过滤未捕获的 Promise 错误
-  window.addEventListener('unhandledrejection', (event) => {
-    const message = event.reason?.message || String(event.reason || '');
-    
+  window.addEventListener("unhandledrejection", (event) => {
+    const message = stringifyUnknown(event.reason);
+
     if (isBilibiliError(message)) {
       event.preventDefault();
       return false;
     }
   });
 }
-

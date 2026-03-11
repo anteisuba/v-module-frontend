@@ -52,10 +52,6 @@ export default function NewsCarousel({ items, layout }: Props) {
       itemsPerView,
     });
 
-  if (items.length === 0) {
-    return null; // 如果没有图片，不渲染
-  }
-
   // 计算容器的 translateX 值，实现向左移动动画
   // gap-6 = 24px (1.5rem)，需要精确计算每个项目的宽度和 gap
   const itemWidthPercent = 100 / itemsPerView;
@@ -77,6 +73,10 @@ export default function NewsCarousel({ items, layout }: Props) {
     window.addEventListener("resize", handleResize);
     return () => window.removeEventListener("resize", handleResize);
   }, []);
+
+  if (items.length === 0 || currentItems.length === 0) {
+    return null;
+  }
 
   // 计算 translateX：每个项目宽度 + gap
   const itemWidthPx = containerWidth > 0 

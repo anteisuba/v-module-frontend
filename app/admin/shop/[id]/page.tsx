@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   LoadingState,
@@ -29,7 +29,7 @@ import type { AdminEditorPanelItem, AdminEditorTabOption } from "@/components/ui
 
 type EditorTabId = "layout" | "content";
 
-export default function EditProductPage({
+function EditProductPageContent({
   params,
 }: {
   params: Promise<{ id: string }>;
@@ -38,7 +38,7 @@ export default function EditProductPage({
   const searchParams = useSearchParams();
   const { user, loading: userLoading } = useUser();
   const { t } = useI18n();
-  const { message: toastMessage, showToast } = useToast();
+  const { message: toastMessage, info: showToast } = useToast();
   const { error, handleError, clearError } = useErrorHandler();
   const {
     config,
@@ -93,28 +93,10 @@ export default function EditProductPage({
     loadParams();
   }, [params]);
 
-  useEffect(() => {
-    if (productId && !userLoading && user) {
-      loadProduct();
-    } else if (!userLoading && !user) {
-      router.push("/admin");
-    }
-  }, [productId, user, userLoading]);
-
-  useEffect(() => {
-    if (!focusTarget) {
+  const loadProduct = useCallback(async () => {
+    if (!productId) {
       return;
     }
-
-    setActiveTab("content");
-    setOpenPanelByTab((prev) => ({
-      ...prev,
-      content: "editor",
-    }));
-  }, [focusTarget]);
-
-  async function loadProduct() {
-    if (!productId) return;
     try {
       setLoading(true);
       const prod = await shopApi.getProduct(productId);
@@ -133,7 +115,27 @@ export default function EditProductPage({
     } finally {
       setLoading(false);
     }
-  }
+  }, [handleError, productId, router]);
+
+  useEffect(() => {
+    if (productId && !userLoading && user) {
+      void loadProduct();
+    } else if (!userLoading && !user) {
+      router.push("/admin");
+    }
+  }, [loadProduct, productId, router, user, userLoading]);
+
+  useEffect(() => {
+    if (!focusTarget) {
+      return;
+    }
+
+    setActiveTab("content");
+    setOpenPanelByTab((prev) => ({
+      ...prev,
+      content: "editor",
+    }));
+  }, [focusTarget]);
 
   async function handleSave(data: {
     name: string;
@@ -173,7 +175,7 @@ export default function EditProductPage({
       await saveDraft();
       markAsSaved();
       setLastSaved(new Date());
-    } catch (e) {
+    } catch {
       // 错误已由 handleError 处理
     }
   };
@@ -184,7 +186,7 @@ export default function EditProductPage({
       markAsSaved();
       setLastSaved(new Date());
       setShowPublishConfirm(false);
-    } catch (e) {
+    } catch {
       // 错误已由 handleError 处理
     }
   };
@@ -357,5 +359,23 @@ export default function EditProductPage({
           onCancel={() => setShowPublishConfirm(false)}
         />
     </AdminEditorPage>
+  );
+}
+
+export default function EditProductPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <LoadingState message="加载中..." />
+        </div>
+      }
+    >
+      <EditProductPageContent params={params} />
+    </Suspense>
   );
 }

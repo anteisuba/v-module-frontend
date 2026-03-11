@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useCallback } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type {
@@ -47,7 +47,7 @@ export default function OrdersReconciliationPage() {
   const router = useRouter();
   const { user, loading: userLoading } = useUser();
   const { t } = useI18n();
-  const { message: toastMessage, showToast } = useToast();
+  const { message: toastMessage, info: showToast } = useToast();
   const { error, handleError, clearError } = useErrorHandler();
 
   const [report, setReport] = useState<PaymentReconciliationReport | null>(null);
@@ -58,18 +58,7 @@ export default function OrdersReconciliationPage() {
   const [startDate, setStartDate] = useState(getDefaultStartDate());
   const [endDate, setEndDate] = useState(getDefaultEndDate());
 
-  useEffect(() => {
-    if (!userLoading && !user) {
-      router.push("/admin");
-      return;
-    }
-
-    if (!userLoading && user) {
-      void loadReport();
-    }
-  }, [user, userLoading]);
-
-  async function loadReport() {
+  const loadReport = useCallback(async () => {
     try {
       if (!report) {
         setLoading(true);
@@ -88,7 +77,18 @@ export default function OrdersReconciliationPage() {
       setLoading(false);
       setRefreshing(false);
     }
-  }
+  }, [endDate, handleError, report, startDate]);
+
+  useEffect(() => {
+    if (!userLoading && !user) {
+      router.push("/admin");
+      return;
+    }
+
+    if (!userLoading && user) {
+      void loadReport();
+    }
+  }, [loadReport, router, user, userLoading]);
 
   function formatDate(dateString: string) {
     return new Date(dateString).toLocaleString("zh-CN", {
@@ -136,6 +136,22 @@ export default function OrdersReconciliationPage() {
       return "bg-gray-100 text-gray-700";
     }
     return "bg-amber-100 text-amber-700";
+  }
+
+  function getRoutingLabel(
+    mode: PaymentReconciliationEvent["paymentRoutingMode"]
+  ) {
+    return mode === "STRIPE_CONNECT_DESTINATION"
+      ? "Connect 路由"
+      : "平台 fallback";
+  }
+
+  function getRoutingStyle(
+    mode: PaymentReconciliationEvent["paymentRoutingMode"]
+  ) {
+    return mode === "STRIPE_CONNECT_DESTINATION"
+      ? "bg-emerald-100 text-emerald-700"
+      : "bg-slate-200 text-slate-700";
   }
 
   const summaryCards = useMemo(() => {
@@ -388,6 +404,18 @@ export default function OrdersReconciliationPage() {
                         <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-black/45">
                           <span>订单状态 {anomaly.orderStatus}</span>
                           <span>支付状态 {anomaly.paymentStatus || "未记录"}</span>
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getRoutingStyle(
+                              anomaly.paymentRoutingMode
+                            )}`}
+                          >
+                            {getRoutingLabel(anomaly.paymentRoutingMode)}
+                          </span>
+                          {anomaly.connectedAccountId ? (
+                            <span className="break-all">
+                              Connected {anomaly.connectedAccountId}
+                            </span>
+                          ) : null}
                           <span>{formatDate(anomaly.createdAt)}</span>
                         </div>
                       </div>
@@ -436,6 +464,13 @@ export default function OrdersReconciliationPage() {
                           >
                             {event.status}
                           </span>
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getRoutingStyle(
+                              event.paymentRoutingMode
+                            )}`}
+                          >
+                            {getRoutingLabel(event.paymentRoutingMode)}
+                          </span>
                         </div>
                         <div className="text-sm font-semibold text-black">
                           {formatPrice(event.amount)} / {event.buyerName || event.buyerEmail}
@@ -445,6 +480,11 @@ export default function OrdersReconciliationPage() {
                         </div>
                         <div className="mt-1 text-xs text-black/45">
                           {event.paymentIntentId || event.paymentSessionId || "无外部标识"}
+                        </div>
+                        <div className="mt-1 text-xs text-black/45">
+                          {event.connectedAccountId
+                            ? `Connected ${event.connectedAccountId}`
+                            : "当前未关联 connected account"}
                         </div>
                         {event.reason ? (
                           <div className="mt-2 text-xs text-black/55">

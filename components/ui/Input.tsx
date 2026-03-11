@@ -3,7 +3,7 @@
 
 "use client";
 
-import { InputHTMLAttributes, forwardRef } from "react";
+import { type InputHTMLAttributes, forwardRef, useId } from "react";
 
 interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   label?: string;
@@ -14,7 +14,8 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 const Input = forwardRef<HTMLInputElement, InputProps>(
   ({ label, helpText, error, className = "", ...props }, ref) => {
-    const inputId = props.id || `input-${Math.random().toString(36).substr(2, 9)}`;
+    const generatedId = useId();
+    const inputId = props.id || generatedId;
     const errorId = `${inputId}-error`;
     const helpId = `${inputId}-help`;
 
@@ -78,4 +79,3 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
 Input.displayName = "Input";
 
 export default Input;
-

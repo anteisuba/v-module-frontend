@@ -1,11 +1,11 @@
 # 改善レポート
 
 - 简体中文: [优化报告](../../zh-CN/overview/optimization-report.md)
-- 最終更新: 2026-03-07
+- 最終更新: 2026-03-11
 
 ## 目的
 
-今すぐ取り組むべき技術的改善項目をまとめ、次の開発が不安定な土台の上に積み上がらないようにします。
+今すぐ取り組むべき工学改善項目をまとめ、次の開発が弱い土台の上に積み上がらないようにします。
 
 ## 適用範囲
 
@@ -15,9 +15,11 @@
 
 ## 参照根拠
 
-- `pnpm lint`
 - `pnpm build`
 - `pnpm check`
+- `pnpm test`
+- `pnpm test:e2e`
+- `pnpm lint`
 - 主要画面と API の抜き取り確認
 
 ## 関連文書
@@ -26,37 +28,24 @@
 - [バックログ](./backlog.md)
 - [システム構成](../architecture/system-architecture.md)
 
-## P0: 正しさと整合性
+## P0: 現時点で新しい阻害要因なし
 
-- 公開注文画面と注文作成 API の認証要件が矛盾している
-- `PageConfig.links` と実際のレンダラが一致していない
-- ルート `/blog` と `/shop` が固定 slug に依存している
+- 公開チェックアウト / 注文 API の意味衝突、固定 slug、メディアライブラリ欠落、lint error 阻害はこのラウンドで解消済み
+- 現在は `pnpm build`、`pnpm check`、`pnpm test`、`pnpm lint`、`pnpm test:e2e` がすべて実行可能
 
-## P1: Lint を止めている問題
+## P1: 継続実行と長期保守性
 
-- 現在 `pnpm lint` は `62 errors / 93 warnings` で失敗
-- 主なエラーは `@typescript-eslint/no-explicit-any` で、現在およそ `43` 件
-- そのほか Hooks の条件付き呼び出し、render 中の `Math.random()` / `Date.now()`、effect 内の同期 `setState` がある
-- 問題が集中している領域:
-  - `components/ui/*`
-  - `features/video-section/*`
-  - `lib/api/endpoints.ts`
-  - 一部の `app/api/*` と `app/u/*`
+- `pnpm lint` warning と `middleware` / Prisma 設定の非推奨項目は解消済みで、今後はこの基線を崩さないことが重要
+- Playwright シナリオは CMS、公開コンテンツ、注文、Connect onboarding まであり、このラウンドで `11` 個の Chromium シナリオを安定実行済み。次は CI と複数ブラウザ回帰
+- Stripe Connect の routing / account スナップショットは注文、照合、精算に表示済みで、次はフィルタ、エクスポート、異常アラートを補強する段階
 
-## P2: 保守性
+## P2: プラットフォーム互換層と次段階
 
-- 未使用変数と不完全な依存配列が多く、ページ境界が崩れ始めている
-- 管理画面と公開画面に重複スタイルと状態管理がある
-- 古い文書と現行コードの乖離は今回 `docs/` で整理した
-
-## プラットフォーム警告
-
-- `middleware.ts` は Next.js で非推奨になり、将来 `proxy` へ移行が必要
-- `package.json#prisma` は Prisma 側で廃止予定、`prisma.config.ts` への移行が必要
-- `baseline-browser-mapping` が古いという警告が build ログに出ている
+- 現在は `proxy.ts`、`prisma.config.ts`、スクリプト層 preload により Next / Prisma / Playwright の出力を安定化している。Next / Browserslist を更新する際はこの互換層を再点検する
+- デプロイ環境では引き続き HTTPS `NEXT_PUBLIC_BASE_URL`、R2、Stripe などの設定整合性を維持する必要がある
 
 ## 推奨実行順
 
-1. P0 の機能矛盾を解消
-2. Lint を止めている Hooks / purity / `any` を整理
-3. その後に決済、カート、メディアライブラリなどを拡張
+1. Playwright の継続実行と CI / 複数ブラウザ回帰を補う
+2. Stripe Connect 運用画面をさらに磨く
+3. その後にカート、在庫アラート、`ScheduleBlock`、SEO / 監視などを進める

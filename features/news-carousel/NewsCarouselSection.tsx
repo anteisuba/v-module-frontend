@@ -11,13 +11,11 @@ import type { NewsItem } from "./types";
 export default function NewsCarouselSection() {
   const [items, setItems] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchNewsItems() {
       try {
         setLoading(true);
-        setError(null);
         const newsItems = await newsApi.getNewsItems();
         
         // 如果没有图片，不显示错误，只是不显示轮播
@@ -43,7 +41,6 @@ export default function NewsCarouselSection() {
         // 如果目录不存在或其他错误，静默处理，不显示错误
         // 这样即使没有图片也不会影响页面显示
         setItems([]);
-        setError(null); // 不设置错误，静默失败
       } finally {
         setLoading(false);
       }
@@ -63,4 +60,3 @@ export default function NewsCarouselSection() {
 
   return <NewsCarousel items={items} />;
 }
-

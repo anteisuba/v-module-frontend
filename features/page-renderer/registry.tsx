@@ -58,8 +58,7 @@ export function renderSection(section: SectionConfig, pageConfig?: PageConfig): 
   }
 
   // TypeScript exhaustive check
-  const _exhaustive: never = section;
-  console.warn(`Unknown section type: ${(_exhaustive as any).type}`);
+  const exhaustiveCheck: never = section;
+  console.warn("Unknown section type", exhaustiveCheck);
   return null;
 }
-

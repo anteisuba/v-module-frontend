@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -22,13 +22,13 @@ export default function CheckoutPage({
 }) {
   const router = useRouter();
   const { t } = useI18n();
-  const { message: toastMessage, showToast } = useToast();
+  const { message: toastMessage, info: showToast } = useToast();
   const { error, handleError, clearError } = useErrorHandler();
   const menu = useHeroMenu();
 
   const [slug, setSlug] = useState<string | null>(null);
   const [productId, setProductId] = useState<string | null>(null);
-  const [product, setProduct] = useState<any>(null);
+  const [product, setProduct] = useState<Awaited<ReturnType<typeof shopApi.getProduct>> | null>(null);
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
@@ -52,16 +52,14 @@ export default function CheckoutPage({
     loadParams();
   }, [params]);
 
-  useEffect(() => {
-    if (productId) {
-      loadProduct();
+  const loadProduct = useCallback(async () => {
+    if (!productId) {
+      return;
     }
-  }, [productId]);
 
-  async function loadProduct() {
     try {
       setLoading(true);
-      const prod = await shopApi.getProduct(productId!);
+      const prod = await shopApi.getProduct(productId);
       setProduct(prod);
     } catch (err) {
       handleError(err);
@@ -69,10 +67,20 @@ export default function CheckoutPage({
     } finally {
       setLoading(false);
     }
-  }
+  }, [handleError, productId, router]);
+
+  useEffect(() => {
+    if (productId) {
+      void loadProduct();
+    }
+  }, [loadProduct, productId]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+
+    if (!product) {
+      return;
+    }
 
     if (!buyerEmail.trim()) {
       showToast("请输入邮箱");

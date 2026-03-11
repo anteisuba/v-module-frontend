@@ -1,7 +1,7 @@
 # 优化报告
 
 - 日本語: [改善レポート](../../ja/overview/optimization-report.md)
-- 最后更新: 2026-03-07
+- 最后更新: 2026-03-11
 
 ## 用途
 
@@ -15,9 +15,11 @@
 
 ## 来源依据
 
-- `pnpm lint`
 - `pnpm build`
 - `pnpm check`
+- `pnpm test`
+- `pnpm test:e2e`
+- `pnpm lint`
 - 关键页面与 API 抽样扫描
 
 ## 相关链接
@@ -26,37 +28,24 @@
 - [后续待办](./backlog.md)
 - [系统架构](../architecture/system-architecture.md)
 
-## P0：正确性与一致性
+## P0：当前无新增阻断
 
-- 订单链路矛盾：公开结账页面向访客，但订单创建 API 要求登录
-- `PageConfig.links` 类型与实际渲染逻辑不一致，容易制造假能力
-- 根级 `/blog`、`/shop` 硬编码 slug，会让部署和产品语义混乱
+- 本轮已修复公开结账 / 订单 API 的语义冲突、`/blog` `/shop` 固定 slug、媒体库缺失和 lint error 阻断
+- 当前 `pnpm build`、`pnpm check`、`pnpm test`、`pnpm lint`、`pnpm test:e2e` 均可执行，未发现新的阻断级功能矛盾
 
-## P1：Lint 阻塞项
+## P1：持续执行与长期可维护性
 
-- 当前 `pnpm lint` 失败，结果为 `62 errors / 93 warnings`
-- 主导错误类型是 `@typescript-eslint/no-explicit-any`，当前约 `43` 处
-- 还存在多处 Hooks 调用顺序错误、render 中使用 `Math.random()` / `Date.now()`、effect 中同步 `setState`
-- 典型风险文件集中在：
-  - `components/ui/*`
-  - `features/video-section/*`
-  - `lib/api/endpoints.ts`
-  - 若干 `app/api/*` 与 `app/u/*` 页面
+- `pnpm lint` warning 和 `middleware` / Prisma 配置弃用项已清理完成，当前更重要的是守住新基线，不让工具噪音重新回流
+- Playwright 场景已经覆盖 CMS、公开内容、订单与 Connect onboarding，且本轮已稳定执行 `11` 个 Chromium 场景；下一步是 CI 接入、多浏览器覆盖和夹具沉淀
+- Stripe Connect 的 routing / account 快照已经进入后台订单、对账和结算视图，后续可继续补筛选、导出和异常告警，而不是回头优先做 PayPal
 
-## P2：可维护性问题
+## P2：平台兼容层与后续增强
 
-- 大量未使用变量和不完整依赖数组，说明页面组件正在积累边界漂移
-- 后台与公开页存在重复样式和重复状态处理逻辑
-- 历史文档长期与代码不一致，已通过本次文档重构统一收口
-
-## 平台与工具警告
-
-- `middleware.ts` 约定已被 Next.js 标记为过时，后续需要迁移到 `proxy`
-- `package.json#prisma` 配置已被 Prisma 标记为弃用，后续应迁移到 `prisma.config.ts`
-- `baseline-browser-mapping` 数据过旧，构建日志建议升级
+- 当前通过 `proxy.ts`、`prisma.config.ts` 以及脚本层 preload 兼容处理，保持 Next / Prisma / Playwright 输出干净；升级 Next / Browserslist 时需要复核并尝试移除这层兼容
+- 部署环境仍需保持公网 HTTPS `NEXT_PUBLIC_BASE_URL`、R2、Stripe 等配置正确，当前本地构建不再对 `localhost / 127.0.0.1` 反复报伪生产警告
 
 ## 建议执行顺序
 
-1. 先修 P0 功能矛盾
-2. 再清理会阻断 lint 的 Hooks / purity / any 问题
-3. 最后推进支付、购物车、媒体库等新增能力
+1. 先把 Playwright 持续执行和 CI / 多浏览器回归补上
+2. 再继续打磨 Stripe Connect 运维视图
+3. 最后推进购物车、库存预警、`ScheduleBlock`、SEO / 监控等新增能力

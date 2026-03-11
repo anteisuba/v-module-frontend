@@ -1,10 +1,19 @@
 // app/api/news/articles/route.ts
 
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { getServerSession } from "@/lib/session/userSession";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
+
+function asOptionalString(value: unknown) {
+  return typeof value === "string" ? value : null;
+}
+
+function asOptionalBoolean(value: unknown) {
+  return typeof value === "boolean" ? value : null;
+}
 
 // GET: 获取新闻列表（支持分页和过滤）
 export async function GET(request: Request) {
@@ -24,7 +33,7 @@ export async function GET(request: Request) {
   const skip = (page - 1) * limit;
 
   // 构建查询条件
-  const where: any = {};
+  const where: Prisma.NewsArticleWhereInput = {};
   if (category) {
     where.category = category;
   }
@@ -42,7 +51,10 @@ export async function GET(request: Request) {
       // where.userId 已经在上面设置了
     } else {
       // 未登录用户不能查看未发布的文章
-      return NextResponse.json({ articles: [], pagination: { page, limit, total: 0, totalPages: 0 } });
+      return NextResponse.json({
+        articles: [],
+        pagination: { page, limit, total: 0, totalPages: 0 },
+      });
     }
   } else if (published === "null") {
     // 查看所有文章（包括已发布和未发布），但只显示当前用户的
@@ -96,19 +108,33 @@ export async function POST(request: Request) {
 
   const userId = session.user.id;
 
-  let body;
+  let body: Record<string, unknown>;
   try {
     body = await request.json();
-  } catch (e) {
+  } catch {
     return NextResponse.json(
       { error: "Invalid JSON in request body" },
       { status: 400 }
     );
   }
 
-  const { title, content, category, tag, shareUrl, shareChannels, published, backgroundType, backgroundValue } = body;
+  const {
+    title,
+    content,
+    category,
+    tag,
+    shareUrl,
+    shareChannels,
+    published,
+    backgroundType,
+    backgroundValue,
+  } = body;
 
-  if (!title || !content || !category) {
+  const normalizedTitle = asOptionalString(title)?.trim() || "";
+  const normalizedContent = asOptionalString(content)?.trim() || "";
+  const normalizedCategory = asOptionalString(category)?.trim() || "";
+
+  if (!normalizedTitle || !normalizedContent || !normalizedCategory) {
     return NextResponse.json(
       { error: "title, content, and category are required" },
       { status: 400 }
@@ -118,19 +144,21 @@ export async function POST(request: Request) {
   const article = await prisma.newsArticle.create({
     data: {
       userId,
-      title,
-      content,
-      category,
-      tag: tag || null,
-      shareUrl: shareUrl || null,
-      shareChannels: shareChannels || null,
-      backgroundType: backgroundType || "color",
-      backgroundValue: backgroundValue || "#000000",
-      published: published === true,
-      publishedAt: published === true ? new Date() : null,
+      title: normalizedTitle,
+      content: normalizedContent,
+      category: normalizedCategory,
+      tag: asOptionalString(tag),
+      shareUrl: asOptionalString(shareUrl),
+      shareChannels:
+        shareChannels === undefined || shareChannels === null
+          ? Prisma.JsonNull
+          : (shareChannels as Prisma.InputJsonValue),
+      backgroundType: asOptionalString(backgroundType) || "color",
+      backgroundValue: asOptionalString(backgroundValue) || "#000000",
+      published: asOptionalBoolean(published) === true,
+      publishedAt: asOptionalBoolean(published) === true ? new Date() : null,
     },
   });
 
   return NextResponse.json({ article });
 }
-

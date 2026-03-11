@@ -114,6 +114,7 @@ export default function ImagePositionEditor({
       style={{ userSelect: "none" }}
     >
       {/* 图片 */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
       <img
         src={src}
         alt={alt || "Preview"}
@@ -181,4 +182,3 @@ export default function ImagePositionEditor({
     </div>
   );
 }
-

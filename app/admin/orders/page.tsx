@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import type { SerializedOrder } from "@/domain/shop";
 import {
@@ -25,7 +25,7 @@ export default function OrdersPage() {
   const router = useRouter();
   const { user, loading: userLoading } = useUser();
   const { t } = useI18n();
-  const { message: toastMessage, showToast } = useToast();
+  const { message: toastMessage, info: showToast } = useToast();
   const { error, handleError, clearError } = useErrorHandler();
 
   const [orders, setOrders] = useState<Order[]>([]);
@@ -50,15 +50,7 @@ export default function OrdersPage() {
     return () => window.clearTimeout(timeoutId);
   }, [searchQuery]);
 
-  useEffect(() => {
-    if (!userLoading && user) {
-      void loadOrders();
-    } else if (!userLoading && !user) {
-      router.push("/admin");
-    }
-  }, [user, userLoading, debouncedQuery, statusFilter]);
-
-  async function loadOrders() {
+  const loadOrders = useCallback(async () => {
     try {
       if (!hasLoadedOnce) {
         setLoading(true);
@@ -99,7 +91,15 @@ export default function OrdersPage() {
       setLoading(false);
       setRefreshing(false);
     }
-  }
+  }, [debouncedQuery, handleError, hasLoadedOnce, showToast, statusFilter]);
+
+  useEffect(() => {
+    if (!userLoading && user) {
+      void loadOrders();
+    } else if (!userLoading && !user) {
+      router.push("/admin");
+    }
+  }, [loadOrders, router, user, userLoading]);
 
   async function updateOrderStatus(orderId: string, newStatus: string) {
     try {

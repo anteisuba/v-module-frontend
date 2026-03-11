@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Alert,
@@ -47,12 +47,12 @@ const BLOG_PANEL_TO_TAB: Record<string, EditorTabId> = {
   posts: "content",
 };
 
-export default function BlogPage() {
+function BlogPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading: userLoading } = useUser();
   const { t } = useI18n();
-  const { message: toastMessage, showToast } = useToast();
+  const { message: toastMessage, info: showToast } = useToast();
   const { error, handleError, clearError } = useErrorHandler();
   const { config, setConfig, loading: configLoading, hasUnsavedChanges, markAsSaved } = usePageConfig();
   const { saving, publishing, saveDraft, publish } = usePageConfigActions({
@@ -83,14 +83,27 @@ export default function BlogPage() {
   const requestedTab = searchParams.get("tab");
   const requestedPanel = searchParams.get("panel");
 
+  const loadPosts = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await blogApi.getPosts({ page: 1, limit: 100 });
+      setPosts(response.posts);
+    } catch (err) {
+      handleError(err);
+      showToast(t("blog.list.loadFailed"));
+    } finally {
+      setLoading(false);
+    }
+  }, [handleError, showToast, t]);
+
   // 加载博客列表
   useEffect(() => {
     if (!userLoading && user) {
-      loadPosts();
+      void loadPosts();
     } else if (!userLoading && !user) {
       router.push("/admin");
     }
-  }, [user, userLoading]);
+  }, [loadPosts, router, user, userLoading]);
 
   useEffect(() => {
     const nextPanel =
@@ -120,7 +133,7 @@ export default function BlogPage() {
       await saveDraft();
       markAsSaved();
       setLastSaved(new Date());
-    } catch (e) {
+    } catch {
       // 错误已由 handleError 处理
     }
   };
@@ -132,7 +145,7 @@ export default function BlogPage() {
       markAsSaved();
       setLastSaved(new Date());
       setShowPublishConfirm(false);
-    } catch (e) {
+    } catch {
       // 错误已由 handleError 处理
     }
   };
@@ -143,26 +156,11 @@ export default function BlogPage() {
     router.push(path);
   };
 
-  async function loadPosts() {
-    try {
-      setLoading(true);
-      // 管理后台显示所有文章（包括草稿和已发布的），不传递 published 参数
-      // API 会自动过滤只显示当前用户的文章
-      const response = await blogApi.getPosts({ page: 1, limit: 100 });
-      setPosts(response.posts);
-    } catch (err) {
-      handleError(err);
-      showToast(t("blog.list.loadFailed"));
-    } finally {
-      setLoading(false);
-    }
-  }
-
   async function handleDelete(id: string) {
     try {
       setDeletingId(id);
       await blogApi.deletePost(id);
-      setPosts(posts.filter((p) => p.id !== id));
+      setPosts((currentPosts) => currentPosts.filter((post) => post.id !== id));
       showToast(t("blog.list.deleted"));
       setShowDeleteConfirm(false);
       setPostToDelete(null);
@@ -247,14 +245,7 @@ export default function BlogPage() {
             });
           }}
           disabled={saving || publishing}
-          onUploadImage={async (file, options) => {
-            try {
-              const result = await pageApi.uploadImage(file, options);
-              return result;
-            } catch (e) {
-              throw e;
-            }
-          }}
+          onUploadImage={(file, options) => pageApi.uploadImage(file, options)}
           usageContext={BLOG_LIST_BACKGROUND}
           onToast={showToast}
           onError={handleError}
@@ -280,14 +271,7 @@ export default function BlogPage() {
             });
           }}
           disabled={saving || publishing}
-          onUploadImage={async (file, options) => {
-            try {
-              const result = await pageApi.uploadImage(file, options);
-              return result;
-            } catch (e) {
-              throw e;
-            }
-          }}
+          onUploadImage={(file, options) => pageApi.uploadImage(file, options)}
           usageContext={BLOG_DETAIL_BACKGROUND}
           onToast={showToast}
           onError={handleError}
@@ -324,6 +308,8 @@ export default function BlogPage() {
                 <div className="flex items-start gap-4">
                   {post.coverImage ? (
                     <div className="flex-shrink-0">
+                      {/* Dynamic admin uploads can be local or remote, so keep native img here. */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={post.coverImage}
                         alt={post.title}
@@ -480,5 +466,19 @@ export default function BlogPage() {
         onCancel={() => setShowPublishConfirm(false)}
       />
     </AdminEditorPage>
+  );
+}
+
+export default function BlogPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <LoadingState message="加载中..." />
+        </div>
+      }
+    >
+      <BlogPageContent />
+    </Suspense>
   );
 }

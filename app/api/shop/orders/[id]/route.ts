@@ -1,6 +1,7 @@
 // app/api/shop/orders/[id]/route.ts
 
 import { NextResponse } from "next/server";
+import { Prisma } from "@prisma/client";
 import { getServerSession } from "@/lib/session/userSession";
 import {
   ORDER_PAYMENT_PROVIDER_STRIPE,
@@ -95,17 +96,17 @@ export async function PUT(
   const userId = session.user.id;
   const { id } = await params;
 
-  let body;
+  let body: Record<string, unknown>;
   try {
     body = await request.json();
-  } catch (e) {
+  } catch {
     return NextResponse.json(
       { error: "Invalid JSON in request body" },
       { status: 400 }
     );
   }
 
-  const { status } = body;
+  const status = typeof body.status === "string" ? body.status : null;
 
   if (!status) {
     return NextResponse.json(
@@ -182,7 +183,7 @@ export async function PUT(
   }
 
   // 更新订单状态
-  const updateData: any = { status };
+  const updateData: Prisma.OrderUpdateInput = { status };
 
   // 根据状态更新时间戳
   if (status === ORDER_STATUS_PAID && !existing.paidAt) {

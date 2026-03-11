@@ -30,7 +30,6 @@ function ToggleSwitch({
   disabled?: boolean;
   label: string;
 }) {
-  const { t } = useI18n();
   return (
     <div className="flex items-center gap-2">
       <label className="text-xs text-black/70">{label}</label>
@@ -60,8 +59,6 @@ export default function VideoSectionEditor({
   config,
   onConfigChange,
   disabled = false,
-  onToast,
-  onError,
 }: VideoSectionEditorProps) {
   const { t } = useI18n();
   const [deleteConfirmItemId, setDeleteConfirmItemId] = useState<string | null>(null);
@@ -634,5 +631,3 @@ export default function VideoSectionEditor({
     </div>
   );
 }
-
-

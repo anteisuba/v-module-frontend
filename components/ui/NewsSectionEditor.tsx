@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { NEWS_ITEM, type MediaAssetUsageContext } from "@/domain/media/usage";
 import { useScrollToElement } from "@/hooks/useScrollToElement";
 import {
@@ -13,7 +13,7 @@ import {
 } from "@/components/ui";
 import { SectionLayoutControl } from "@/components/ui/SectionLayoutControl";
 import { useI18n } from "@/lib/i18n/context";
-import type { PageConfig, NewsSectionProps } from "@/domain/page-config/types";
+import type { PageConfig } from "@/domain/page-config/types";
 
 interface NewsSectionEditorProps {
   config: PageConfig;
@@ -78,7 +78,14 @@ export default function NewsSectionEditor({
   const { t } = useI18n();
   const [deleteConfirmItemId, setDeleteConfirmItemId] = useState<string | null>(null);
   const [pickerItemId, setPickerItemId] = useState<string | null>(null);
+  const nextIdRef = useRef(0);
   useScrollToElement(focusTarget === "news-items", "news-items-editor");
+
+  function createEditorId(prefix: "news" | "news-item") {
+    nextIdRef.current += 1;
+    return `${prefix}-${nextIdRef.current}`;
+  }
+
   // 获取 news section（不自动创建）
   function getNewsSection() {
     return config.sections.find((s) => s.type === "news");
@@ -86,10 +93,10 @@ export default function NewsSectionEditor({
 
   // 确保 news section 存在
   function ensureNewsSection() {
-    let newsSection = getNewsSection();
+    const newsSection = getNewsSection();
     if (!newsSection) {
       const newSection = {
-        id: `news-${Date.now()}`,
+        id: createEditorId("news"),
         type: "news" as const,
         enabled: true,
         order:
@@ -147,7 +154,7 @@ export default function NewsSectionEditor({
     if (disabled) return; // 如果禁用，直接返回
     
     const newItem = {
-      id: `news-item-${Date.now()}`,
+      id: createEditorId("news-item"),
       src: "",
       alt: "",
       href: "",
@@ -158,7 +165,7 @@ export default function NewsSectionEditor({
     if (!newsSection) {
       // 如果 section 不存在，创建新的 section 并添加第一个 item
       const newSection = {
-        id: `news-${Date.now()}`,
+        id: createEditorId("news"),
         type: "news" as const,
         enabled: true,
         order:
@@ -636,4 +643,3 @@ export default function NewsSectionEditor({
     </div>
   );
 }
-

@@ -175,7 +175,7 @@ export function NewsDetailContent({
     switch (platform) {
       case "twitter":
         window.open(
-          `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(title)}`,
+          `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(`${title} ${text}`)}`,
           "_blank"
         );
         break;
@@ -665,4 +665,3 @@ export function NewsDetailContent({
     </main>
   );
 }
-

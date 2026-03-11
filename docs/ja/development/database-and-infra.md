@@ -1,11 +1,11 @@
 # データベースと基盤
 
 - 简体中文: [数据库与基础设施](../../zh-CN/development/database-and-infra.md)
-- 最終更新: 2026-03-07
+- 最終更新: 2026-03-11
 
 ## 目的
 
-データモデル、migration 方法、セッション基盤、ストレージ構成、旧 DB 文書の統合先をまとめます。
+データモデル、migration 方法、セッション基盤、ストレージ構成、決済運用を支える基盤要素をまとめます。
 
 ## 適用範囲
 
@@ -29,23 +29,46 @@
 
 ## 現在の Prisma モデル
 
+### ユーザーとページ設定
+
 - `User`
 - `Page`
 - `UserPasswordResetToken`
+
+### コンテンツとメディア
+
 - `MediaAsset`
 - `NewsArticle`
 - `BlogPost`
 - `BlogLike`
 - `BlogComment`
 - `Product`
+
+### 注文と決済
+
 - `Order`
 - `OrderItem`
+- `OrderPaymentAttempt`
+- `OrderRefund`
+- `OrderDispute`
+
+### 収益口座と精算
+
+- `SellerPayoutAccount`
+- `PaymentSettlementPayout`
+- `PaymentSettlementEntry`
 
 ## migration 状態
 
-- リポジトリ内には `6` 件の Prisma migration がある
+- リポジトリ内には `13` 件の Prisma migration ディレクトリがある
+- 直近の migration では Stripe 精算台帳と売り手収益口座 / Connect 関連フィールドが追加された
 - 標準入口は `pnpm db:migrate`
-- `prisma/seed.ts` がテストユーザーと初期ページ設定を作る
+- `schema.prisma` を変更したら `prisma generate`、関連 route handler、seed、文書の同期確認が必要
+
+## Seed 基線
+
+- `prisma/seed.ts` は `test@example.com / 123456` のテストユーザーを作成する
+- 同時に slug `testuser` と既定ページ設定も作成する
 
 ## 基盤上の制約
 
@@ -53,6 +76,8 @@
 - DB は PostgreSQL 前提
 - 本番 migration では `DIRECT_URL` の用意が望ましい
 - アップロードは R2 かローカル filesystem に依存
+- Stripe Checkout / Webhook / Connect / 精算同期には対応する Stripe 環境変数と webhook 設定が必要
+- `Decimal`、`Date`、`Json` は API レスポンスで明示的にシリアライズする必要がある
 
 ## Supabase / RLS 補足
 

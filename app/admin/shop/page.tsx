@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Alert,
@@ -49,12 +49,12 @@ const SHOP_PANEL_TO_TAB: Record<string, EditorTabId> = {
   products: "content",
 };
 
-export default function ShopPage() {
+function ShopPageContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, loading: userLoading } = useUser();
   const { t } = useI18n();
-  const { message: toastMessage, showToast } = useToast();
+  const { message: toastMessage, info: showToast } = useToast();
   const { error, handleError, clearError } = useErrorHandler();
   const {
     config,
@@ -90,14 +90,27 @@ export default function ShopPage() {
   const requestedTab = searchParams.get("tab");
   const requestedPanel = searchParams.get("panel");
 
+  const loadProducts = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await shopApi.getProducts({ page: 1, limit: 100 });
+      setProducts(response.products);
+    } catch (err) {
+      handleError(err);
+      showToast(t("shop.list.loadFailed"));
+    } finally {
+      setLoading(false);
+    }
+  }, [handleError, showToast, t]);
+
   // 加载商品列表
   useEffect(() => {
     if (!userLoading && user) {
-      loadProducts();
+      void loadProducts();
     } else if (!userLoading && !user) {
       router.push("/admin");
     }
-  }, [user, userLoading]);
+  }, [loadProducts, router, user, userLoading]);
 
   useEffect(() => {
     const nextPanel =
@@ -121,26 +134,13 @@ export default function ShopPage() {
     }
   }, [requestedPanel, requestedTab]);
 
-  async function loadProducts() {
-    try {
-      setLoading(true);
-      // 管理后台显示所有商品（包括草稿和已发布的），不传递 status 参数
-      // API 会自动过滤只显示当前用户的商品
-      const response = await shopApi.getProducts({ page: 1, limit: 100 });
-      setProducts(response.products);
-    } catch (err) {
-      handleError(err);
-      showToast(t("shop.list.loadFailed"));
-    } finally {
-      setLoading(false);
-    }
-  }
-
   async function handleDelete(id: string) {
     try {
       setDeletingId(id);
       await shopApi.deleteProduct(id);
-      setProducts(products.filter((p) => p.id !== id));
+      setProducts((currentProducts) =>
+        currentProducts.filter((product) => product.id !== id)
+      );
       showToast(t("shop.list.deleted"));
       setShowDeleteConfirm(false);
       setProductToDelete(null);
@@ -157,7 +157,7 @@ export default function ShopPage() {
       await saveDraft();
       markAsSaved();
       setLastSaved(new Date());
-    } catch (e) {
+    } catch {
       // 错误已由 handleError 处理
     }
   };
@@ -168,7 +168,7 @@ export default function ShopPage() {
       markAsSaved();
       setLastSaved(new Date());
       setShowPublishConfirm(false);
-    } catch (e) {
+    } catch {
       // 错误已由 handleError 处理
     }
   };
@@ -345,6 +345,8 @@ export default function ShopPage() {
                 <div className="flex items-start gap-4">
                   {product.images && product.images.length > 0 ? (
                     <div className="flex-shrink-0">
+                      {/* Dynamic admin uploads can be local or remote, so keep native img here. */}
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={product.images[0]}
                         alt={product.name}
@@ -523,5 +525,19 @@ export default function ShopPage() {
         onCancel={() => setShowPublishConfirm(false)}
       />
     </AdminEditorPage>
+  );
+}
+
+export default function ShopPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          <LoadingState message="加载中..." />
+        </div>
+      }
+    >
+      <ShopPageContent />
+    </Suspense>
   );
 }

@@ -1,4 +1,5 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Route } from "@playwright/test";
+import type { MediaAssetUsageContext } from "@/domain/media/usage";
 import {
   bootstrapAdminE2E,
   createPublicPageStateCookie,
@@ -8,14 +9,47 @@ import {
   mockCurrentUser,
 } from "./utils/admin";
 
+type DraftSaveRequest = {
+  draftConfig: ReturnType<typeof createPageConfig>;
+  themeColor?: string;
+  fontFamily?: string;
+};
+
+type PublishRequest = {
+  publishedConfig: ReturnType<typeof createPageConfig>;
+};
+
+type ReplaceRequest = {
+  sourceAssetId: string;
+  targetAssetId: string;
+};
+
+type UsageRequest = {
+  ids: string[];
+  usageContext?: MediaAssetUsageContext;
+  action: "ADD" | "REMOVE" | "CLEAR";
+};
+
+function readRequestBody(route: Route): Record<string, unknown> {
+  const body = route.request().postDataJSON();
+  return body && typeof body === "object" && !Array.isArray(body)
+    ? (body as Record<string, unknown>)
+    : {};
+}
+
+function getHeroTitleFromConfig(config: ReturnType<typeof createPageConfig>) {
+  const heroSection = config.sections[0];
+  return heroSection?.type === "hero" ? heroSection.props.title : undefined;
+}
+
 test.beforeEach(async ({ context, page }) => {
   await bootstrapAdminE2E(context, page);
   await mockCurrentUser(page);
 });
 
 test("saves a CMS draft and publishes the updated page", async ({ page }) => {
-  const saveRequests: Array<Record<string, any>> = [];
-  const publishRequests: Array<Record<string, any>> = [];
+  const saveRequests: DraftSaveRequest[] = [];
+  const publishRequests: PublishRequest[] = [];
   let currentDraft = createPageConfig({
     background: {
       type: "image",
@@ -40,11 +74,11 @@ test("saves a CMS draft and publishes the updated page", async ({ page }) => {
       return;
     }
 
-    const body = route.request().postDataJSON() as Record<string, any>;
+    const body = readRequestBody(route) as DraftSaveRequest;
     saveRequests.push(body);
     currentDraft = body.draftConfig;
-    currentThemeColor = body.themeColor;
-    currentFontFamily = body.fontFamily;
+    currentThemeColor = body.themeColor || currentThemeColor;
+    currentFontFamily = body.fontFamily || currentFontFamily;
 
     await fulfillJson(route, {
       ok: true,
@@ -88,9 +122,7 @@ test("saves a CMS draft and publishes the updated page", async ({ page }) => {
 
   await expect.poll(() => saveRequests.length).toBe(1);
   await expect(page.getByLabel("通知").getByText("草稿已保存")).toBeVisible();
-  expect(saveRequests[0]?.draftConfig?.sections?.[0]?.props?.title).toBe(
-    "直播预告"
-  );
+  expect(getHeroTitleFromConfig(saveRequests[0].draftConfig)).toBe("直播预告");
   expect(saveRequests[0]?.draftConfig?.hasPublished).toBeUndefined();
 
   await page.getByTestId("cms-publish").click();
@@ -101,13 +133,9 @@ test("saves a CMS draft and publishes the updated page", async ({ page }) => {
   await expect.poll(() => publishRequests.length).toBe(1);
   await expect(page.getByLabel("通知").getByText("已发布！")).toBeVisible();
 
-  expect(saveRequests[1]?.draftConfig?.sections?.[0]?.props?.title).toBe(
-    "直播预告"
-  );
+  expect(getHeroTitleFromConfig(saveRequests[1].draftConfig)).toBe("直播预告");
   expect(saveRequests[1]?.draftConfig?.hasPublished).toBe(true);
-  expect(
-    publishRequests[0]?.publishedConfig?.sections?.[0]?.props?.title
-  ).toBe("直播预告");
+  expect(getHeroTitleFromConfig(publishRequests[0].publishedConfig)).toBe("直播预告");
 
   await page.goto("/u/creator");
 
@@ -139,7 +167,7 @@ test("saves a CMS draft and publishes the updated page", async ({ page }) => {
 test("replaces a referenced background asset from the media library flow", async ({
   page,
 }) => {
-  const saveRequests: Array<Record<string, any>> = [];
+  const saveRequests: DraftSaveRequest[] = [];
   let currentDraft = createPageConfig({
     background: {
       type: "image",
@@ -194,7 +222,7 @@ test("replaces a referenced background asset from the media library flow", async
       return;
     }
 
-    const body = route.request().postDataJSON() as Record<string, any>;
+    const body = readRequestBody(route) as DraftSaveRequest;
     saveRequests.push(body);
     currentDraft = body.draftConfig;
 
@@ -267,10 +295,10 @@ test("replaces references directly inside the media library", async ({
       references: [],
     }),
   ];
-  const replaceRequests: Array<Record<string, any>> = [];
+  const replaceRequests: ReplaceRequest[] = [];
 
   await page.route("**/api/media-assets/replace", async (route) => {
-    const body = route.request().postDataJSON() as Record<string, any>;
+    const body = readRequestBody(route) as ReplaceRequest;
     replaceRequests.push(body);
     currentAssets = [
       {
@@ -354,11 +382,11 @@ test("updates media usage tags in bulk from the media library", async ({
       usageContexts: ["PAGE_BACKGROUND"],
     }),
   ];
-  const usageRequests: Array<Record<string, any>> = [];
+  const usageRequests: UsageRequest[] = [];
 
   await page.route("**/api/media-assets*", async (route) => {
     if (route.request().method() === "PATCH") {
-      const body = route.request().postDataJSON() as Record<string, any>;
+      const body = readRequestBody(route) as UsageRequest;
       usageRequests.push(body);
 
       currentAssets = currentAssets.map((asset) => {
@@ -373,13 +401,17 @@ test("updates media usage tags in bulk from the media library", async ({
           };
         }
 
-        if (body.action === "REMOVE") {
+        if (body.action === "REMOVE" && body.usageContext) {
           return {
             ...asset,
             usageContexts: asset.usageContexts.filter(
               (value) => value !== body.usageContext
             ),
           };
+        }
+
+        if (!body.usageContext) {
+          return asset;
         }
 
         return {
