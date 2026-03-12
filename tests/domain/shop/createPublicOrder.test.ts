@@ -4,6 +4,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const { prismaMock } = vi.hoisted(() => ({
   prismaMock: {
     $transaction: vi.fn(),
+    order: {
+      findUnique: vi.fn(),
+    },
   },
 }));
 
@@ -19,6 +22,48 @@ describe("createPublicOrder", () => {
   });
 
   it("aggregates duplicate items and creates a serialized order", async () => {
+    const createdOrderRecord = {
+      id: "order-1",
+      userId: "seller-1",
+      buyerEmail: "buyer@example.com",
+      buyerName: "Alice",
+      totalAmount: new Prisma.Decimal("60.00"),
+      currency: "JPY",
+      status: "AWAITING_PAYMENT",
+      paymentProvider: "STRIPE",
+      paymentStatus: "OPEN",
+      paymentSessionId: null,
+      paymentIntentId: null,
+      paymentExpiresAt: null,
+      paymentFailedAt: null,
+      paymentFailureReason: null,
+      shippingAddress: { city: "Tokyo" },
+      shippingMethod: "standard",
+      createdAt: new Date("2026-03-08T00:00:00.000Z"),
+      updatedAt: new Date("2026-03-08T00:00:00.000Z"),
+      paidAt: null,
+      shippedAt: null,
+      deliveredAt: null,
+      items: [
+        {
+          id: "item-1",
+          orderId: "order-1",
+          productId: "product-1",
+          price: new Prisma.Decimal("20.00"),
+          quantity: 3,
+          subtotal: new Prisma.Decimal("60.00"),
+          createdAt: new Date("2026-03-08T00:00:00.000Z"),
+          product: {
+            id: "product-1",
+            name: "Album",
+            images: ["cover.jpg"],
+          },
+        },
+      ],
+      paymentAttempts: [],
+      refunds: [],
+      disputes: [],
+    };
     const tx = {
       product: {
         findMany: vi.fn().mockResolvedValue([
@@ -34,45 +79,6 @@ describe("createPublicOrder", () => {
       },
       order: {
         create: vi.fn().mockResolvedValue({ id: "order-1" }),
-        findUnique: vi.fn().mockResolvedValue({
-          id: "order-1",
-          userId: "seller-1",
-        buyerEmail: "buyer@example.com",
-        buyerName: "Alice",
-        totalAmount: new Prisma.Decimal("60.00"),
-        currency: "JPY",
-        status: "AWAITING_PAYMENT",
-        paymentProvider: "STRIPE",
-        paymentStatus: "OPEN",
-        paymentSessionId: null,
-        paymentIntentId: null,
-        paymentExpiresAt: null,
-        paymentFailedAt: null,
-        paymentFailureReason: null,
-        shippingAddress: { city: "Tokyo" },
-        shippingMethod: "standard",
-        createdAt: new Date("2026-03-08T00:00:00.000Z"),
-          updatedAt: new Date("2026-03-08T00:00:00.000Z"),
-          paidAt: null,
-          shippedAt: null,
-          deliveredAt: null,
-          items: [
-            {
-              id: "item-1",
-              orderId: "order-1",
-              productId: "product-1",
-              price: new Prisma.Decimal("20.00"),
-              quantity: 3,
-              subtotal: new Prisma.Decimal("60.00"),
-              createdAt: new Date("2026-03-08T00:00:00.000Z"),
-              product: {
-                id: "product-1",
-                name: "Album",
-                images: ["cover.jpg"],
-              },
-            },
-          ],
-        }),
       },
       orderItem: {
         create: vi.fn().mockResolvedValue(undefined),
@@ -80,6 +86,7 @@ describe("createPublicOrder", () => {
     };
 
     prismaMock.$transaction.mockImplementation(async (callback) => callback(tx));
+    prismaMock.order.findUnique.mockResolvedValue(createdOrderRecord);
 
     const order = await createPublicOrder({
       buyerEmail: " buyer@example.com ",
@@ -123,6 +130,10 @@ describe("createPublicOrder", () => {
           decrement: 3,
         },
       },
+    });
+    expect(prismaMock.order.findUnique).toHaveBeenCalledWith({
+      where: { id: "order-1" },
+      include: expect.any(Object),
     });
     expect(order).toMatchObject({
       id: "order-1",

@@ -833,6 +833,19 @@ async function loadOrderWithItems(
   });
 }
 
+async function requireSerializedOrder(
+  orderId: string,
+  errorMessage: string
+): Promise<SerializedOrder> {
+  const order = await loadOrderWithItems(prisma, orderId);
+
+  if (!order) {
+    throw new Error(errorMessage);
+  }
+
+  return serializeOrderWithItems(order);
+}
+
 async function upsertPaymentAttemptForOrder(
   tx: Prisma.TransactionClient,
   input: {
@@ -1014,7 +1027,7 @@ export async function createPublicOrder(
     throw new Error("Order must have at least one item");
   }
 
-  return await prisma.$transaction(async (tx) => {
+  const orderId = await prisma.$transaction(async (tx) => {
     const productIds = normalizedItems.map((item) => item.productId);
     const products = await tx.product.findMany({
       where: {
@@ -1092,14 +1105,10 @@ export async function createPublicOrder(
       });
     }
 
-    const createdOrder = await loadOrderWithItems(tx, order.id);
-
-    if (!createdOrder) {
-      throw new Error("Failed to load created order");
-    }
-
-    return serializeOrderWithItems(createdOrder);
+    return order.id;
   });
+
+  return requireSerializedOrder(orderId, "Failed to load created order");
 }
 
 export async function attachStripePaymentSessionToOrder(
@@ -1116,8 +1125,8 @@ export async function attachStripePaymentSessionToOrder(
     sellerNetExpectedAmount?: Prisma.Decimal | number | null;
     applicationFeeAmount?: Prisma.Decimal | number | null;
   }
-): Promise<SerializedOrder> {
-  const order = await prisma.$transaction(async (tx) => {
+): Promise<void> {
+  await prisma.$transaction(async (tx) => {
     const updatedOrder = await tx.order.update({
       where: { id: orderId },
       data: {
@@ -1133,7 +1142,12 @@ export async function attachStripePaymentSessionToOrder(
         sellerGrossAmount: input.sellerGrossAmount,
         sellerNetExpectedAmount: input.sellerNetExpectedAmount,
       },
-      ...ORDER_WITH_ITEMS_QUERY,
+      select: {
+        id: true,
+        paymentProvider: true,
+        totalAmount: true,
+        currency: true,
+      },
     });
 
     await upsertPaymentAttemptForOrder(tx, {
@@ -1154,24 +1168,14 @@ export async function attachStripePaymentSessionToOrder(
       failedAt: null,
       expiredAt: null,
     });
-
-    const refreshedOrder = await loadOrderWithItems(tx, orderId);
-
-    if (!refreshedOrder) {
-      throw new Error("Failed to load order after attaching payment session");
-    }
-
-    return refreshedOrder;
   });
-
-  return serializeOrderWithItems(order);
 }
 
 export async function markOrderPaidByPaymentSession(
   paymentSessionId: string,
   paymentIntentId?: string | null
 ): Promise<{ order: SerializedOrder; changed: boolean } | null> {
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const existing = await tx.order.findUnique({
       where: { paymentSessionId },
       select: {
@@ -1186,6 +1190,7 @@ export async function markOrderPaidByPaymentSession(
       return null;
     }
 
+    const paidAt = new Date();
     const updated = await tx.order.updateMany({
       where: {
         id: existing.id,
@@ -1195,7 +1200,7 @@ export async function markOrderPaidByPaymentSession(
         status: ORDER_STATUS_PAID,
         paymentStatus: ORDER_PAYMENT_STATUS_PAID,
         paymentIntentId: paymentIntentId || null,
-        paidAt: new Date(),
+        paidAt,
         paymentFailedAt: null,
         paymentFailureReason: null,
       },
@@ -1213,22 +1218,25 @@ export async function markOrderPaidByPaymentSession(
       metadata: {
         source: "webhook",
       },
-      paidAt: new Date(),
+      paidAt,
       failedAt: null,
       expiredAt: null,
     });
 
-    const order = await loadOrderWithItems(tx, existing.id);
-
-    if (!order) {
-      throw new Error("Failed to load paid order");
-    }
-
     return {
-      order: serializeOrderWithItems(order),
+      orderId: existing.id,
       changed: updated.count > 0,
     };
   });
+
+  if (!result) {
+    return null;
+  }
+
+  return {
+    order: await requireSerializedOrder(result.orderId, "Failed to load paid order"),
+    changed: result.changed,
+  };
 }
 
 export async function cancelOpenOrderPayment(
@@ -1238,7 +1246,7 @@ export async function cancelOpenOrderPayment(
     reason: string;
   }
 ): Promise<{ order: SerializedOrder; changed: boolean } | null> {
-  return prisma.$transaction(async (tx) => {
+  const result = await prisma.$transaction(async (tx) => {
     const currentOrder = await tx.order.findUnique({
       where: { id: orderId },
       select: {
@@ -1255,6 +1263,7 @@ export async function cancelOpenOrderPayment(
       return null;
     }
 
+    const failureTimestamp = new Date();
     const updated = await tx.order.updateMany({
       where: {
         id: orderId,
@@ -1263,12 +1272,10 @@ export async function cancelOpenOrderPayment(
       data: {
         status: ORDER_STATUS_CANCELLED,
         paymentStatus: input.paymentStatus,
-        paymentFailedAt: new Date(),
+        paymentFailedAt: failureTimestamp,
         paymentFailureReason: input.reason,
       },
     });
-
-    const failureTimestamp = new Date();
 
     await upsertPaymentAttemptForOrder(tx, {
       orderId: currentOrder.id,
@@ -1293,32 +1300,29 @@ export async function cancelOpenOrderPayment(
           : null,
     });
 
-    const order = await loadOrderWithItems(tx, orderId);
-
-    if (!order) {
-      return null;
-    }
-
     if (updated.count === 0) {
       return {
-        order: serializeOrderWithItems(order),
+        orderId,
         changed: false,
       };
     }
 
     await restoreOrderInventory(tx, orderId);
 
-    const refreshedOrder = await loadOrderWithItems(tx, orderId);
-
-    if (!refreshedOrder) {
-      throw new Error("Failed to load cancelled order");
-    }
-
     return {
-      order: serializeOrderWithItems(refreshedOrder),
+      orderId,
       changed: true,
     };
   });
+
+  if (!result) {
+    return null;
+  }
+
+  return {
+    order: await requireSerializedOrder(result.orderId, "Failed to load cancelled order"),
+    changed: result.changed,
+  };
 }
 
 export async function cancelOpenOrderPaymentBySession(
