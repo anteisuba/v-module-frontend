@@ -137,7 +137,7 @@
 
 ## 权限注意事项
 
-- `middleware.ts` 保护所有 `/admin/*`，但登录、注册、忘记密码、重置密码例外
+- `proxy.ts` 保护所有 `/admin/*`，但登录、注册、忘记密码、重置密码例外
 - 公开博客点赞支持匿名场景
 - 公开博客评论支持匿名提交，但新评论默认进入 `PENDING` 审核；`GET /api/blog/posts/[id]/comments` 只返回 `APPROVED` 评论
 - `GET /api/blog/comments` 与 `PUT/DELETE /api/blog/comments/[id]` 仅面向当前卖家自己的评论审核后台

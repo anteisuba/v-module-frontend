@@ -52,7 +52,7 @@
 - 后台首页入口：`app/admin/dashboard/page.tsx`
 - CMS 编辑器入口：`app/admin/cms/page.tsx`
 - 订单 API 入口：`app/api/shop/orders/route.ts`
-- 会话守卫入口：`middleware.ts`
+- 会话守卫入口：`proxy.ts`
 
 ## 当前边界提醒
 

@@ -135,7 +135,7 @@
 
 ## 権限メモ
 
-- `middleware.ts` は `/admin/*` を保護し、ログイン系だけ例外
+- `proxy.ts` は `/admin/*` を保護し、ログイン系だけ例外
 - ブログのコメントといいねは匿名利用を許容
 - `GET /api/blog/comments` と `PUT/DELETE /api/blog/comments/[id]` は売り手自身の審査画面向け
 - `GET/PATCH/DELETE /api/media-assets` と `POST /api/media-assets/replace` は管理画面のメディアライブラリ専用

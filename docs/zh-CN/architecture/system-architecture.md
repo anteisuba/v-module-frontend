@@ -50,7 +50,7 @@
 ### 后台内容管理
 
 1. 访问 `/admin/*`
-2. `middleware.ts` 校验 `iron-session`
+2. `proxy.ts` 校验 `iron-session`
 3. 页面通过 `lib/api` 调用对应 API 路由
 4. API 路由落到 `domain/*` 或直接用 Prisma 查询
 5. 草稿与发布状态写回 `Page` / 内容表

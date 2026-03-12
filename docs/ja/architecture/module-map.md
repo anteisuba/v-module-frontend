@@ -52,7 +52,7 @@
 - 管理画面入口: `app/admin/dashboard/page.tsx`
 - CMS 入口: `app/admin/cms/page.tsx`
 - 注文 API 入口: `app/api/shop/orders/route.ts`
-- セッションガード入口: `middleware.ts`
+- セッションガード入口: `proxy.ts`
 
 ## 境界上の注意
 

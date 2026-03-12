@@ -24,7 +24,7 @@
 - CMS：[`../../../app/admin/cms/page.tsx`](../../../app/admin/cms/page.tsx)
 - 卖家订单 API：[`../../../app/api/shop/orders/route.ts`](../../../app/api/shop/orders/route.ts)
 - 公开结账 API：[`../../../app/api/shop/checkout/route.ts`](../../../app/api/shop/checkout/route.ts)
-- 会话守卫：[`../../../middleware.ts`](../../../middleware.ts)
+- 会话守卫：[`../../../proxy.ts`](../../../proxy.ts)
 
 ## 关键数据流
 
@@ -38,7 +38,7 @@
 ### 后台编辑和发布
 
 1. 访问 `/admin/*`
-2. `middleware.ts` 检查 `iron-session`
+2. `proxy.ts` 检查 `iron-session`
 3. 前端通过 `lib/api` 调用 `app/api/*`
 4. API 写回 `Page.draftConfig` 或其它内容表
 5. 发布时把 `draftConfig` 复制到 `publishedConfig`
@@ -59,7 +59,7 @@
 
 ## 需要优先核对的文件
 
-- [`../../../middleware.ts`](../../../middleware.ts)
+- [`../../../proxy.ts`](../../../proxy.ts)
 - [`../../../lib/session/userSession.ts`](../../../lib/session/userSession.ts)
 - [`../../../domain/page-config/types.ts`](../../../domain/page-config/types.ts)
 - [`../../../lib/validation/pageConfigSchema.ts`](../../../lib/validation/pageConfigSchema.ts)

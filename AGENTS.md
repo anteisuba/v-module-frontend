@@ -25,14 +25,14 @@
 - CMS：[`app/admin/cms/page.tsx`](./app/admin/cms/page.tsx)
 - 卖家订单 API：[`app/api/shop/orders/route.ts`](./app/api/shop/orders/route.ts)
 - 公开结账 API：[`app/api/shop/checkout/route.ts`](./app/api/shop/checkout/route.ts)
-- 会话守卫：[`middleware.ts`](./middleware.ts)
+- 会话守卫：[`proxy.ts`](./proxy.ts)
 
 危险区域：
 
-- 认证和会话：[`lib/session/AGENTS.md`](./lib/session/AGENTS.md)
-- 页面配置：[`domain/page-config/AGENTS.md`](./domain/page-config/AGENTS.md)
-- 订单和商店 API：[`app/api/shop/AGENTS.md`](./app/api/shop/AGENTS.md)
-- 数据模型和迁移：[`prisma/AGENTS.md`](./prisma/AGENTS.md)
+- 认证和会话：[`lib/session/CLAUDE.md`](./lib/session/CLAUDE.md)
+- 页面配置：[`domain/page-config/CLAUDE.md`](./domain/page-config/CLAUDE.md)
+- 订单和商店 API：[`app/api/shop/CLAUDE.md`](./app/api/shop/CLAUDE.md)
+- 数据模型和迁移：[`prisma/CLAUDE.md`](./prisma/CLAUDE.md)
 
 优先阅读：
 
@@ -44,8 +44,8 @@
 
 ## Rules
 
-- 不要把根文档写成知识堆。短入口放在这里，长解释放到 `docs/` 或局部 `AGENTS.md`
-- 改认证逻辑时，同时检查 `middleware.ts`、`lib/session/`、相关 API 路由和登录后的跳转行为
+- 不要把根文档写成知识堆。短入口放在这里，长解释放到 `docs/` 或局部 `CLAUDE.md`
+- 改认证逻辑时，同时检查 `proxy.ts`、`lib/session/`、相关 API 路由和登录后的跳转行为
 - 改页面配置时，同时检查类型、Zod 校验、CMS 编辑器、渲染器和现状文档
 - 改商店 / 订单时，先分清“卖家后台管理”与“访客公开下单”两种语义；不要再把公开结账写回 `/api/shop/orders`
 - 改 Prisma 时，只新增 migration，不手改旧 migration；`Decimal`、`Date`、`Json` 在 API 返回时都要显式处理
@@ -56,7 +56,7 @@
 
 ### 页面和 UI 改动
 
-1. 先读 [`docs/zh-CN/agent/repo-map.md`](./docs/zh-CN/agent/repo-map.md) 和相关局部 `AGENTS.md`
+1. 先读 [`docs/zh-CN/agent/repo-map.md`](./docs/zh-CN/agent/repo-map.md) 和相关局部 `CLAUDE.md`
 2. 确认改动落在 `app/`、`features/`、`components/` 还是 `domain/page-config/`
 3. 如果改到 section 或公开页行为，同步检查配置类型、编辑器和渲染器
 4. 运行 `pnpm check`
@@ -65,12 +65,12 @@
 
 1. 同时看 route handler 和对应 `domain/*` 服务
 2. 明确权限边界、输入校验和返回序列化
-3. 如果触及订单或会话，优先看对应局部 `AGENTS.md`
+3. 如果触及订单或会话，优先看对应局部 `CLAUDE.md`
 4. 运行 `pnpm check`
 
 ### Prisma 改动
 
-1. 先看 [`prisma/AGENTS.md`](./prisma/AGENTS.md)
+1. 先看 [`prisma/CLAUDE.md`](./prisma/CLAUDE.md)
 2. 修改 `schema.prisma` 后新增 migration，不覆写历史 migration
 3. 检查 `seed.ts`、依赖该模型的 route handler 和文档是否需要同步
 4. 对 `Decimal`、`Json`、关系字段的序列化做一次人工核对

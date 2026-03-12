@@ -62,7 +62,7 @@
 
 ## 運用上の注意
 
-- `middleware.ts` は将来的に `proxy` へ移行が必要
+- リクエスト境界は `proxy.ts` を使う。Next.js 16 では `middleware.ts` と併存させない
 - build 中に Prisma Client 生成が走る
 - 本番では HTTPS の `NEXT_PUBLIC_BASE_URL` を使う
 - アップロード、パスワードリセット、メール送信はそれぞれ個別に設定確認が必要

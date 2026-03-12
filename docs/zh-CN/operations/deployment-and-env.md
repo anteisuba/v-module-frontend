@@ -75,7 +75,7 @@
 
 ## 部署注意事项
 
-- 当前仍使用 `middleware.ts`，后续需要迁移到 `proxy`
+- 当前使用 `proxy.ts` 作为请求拦截入口；Next.js 16 下不要和 `middleware.ts` 并存
 - 构建过程会执行 Prisma Client 生成
 - 生产应启用 HTTPS 的 `NEXT_PUBLIC_BASE_URL`
 - 上传、密码重置、订单通知邮件投递需要分别核对存储和邮件配置

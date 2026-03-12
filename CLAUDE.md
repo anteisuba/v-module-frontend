@@ -25,7 +25,7 @@
 - CMS：[`app/admin/cms/page.tsx`](./app/admin/cms/page.tsx)
 - 卖家订单 API：[`app/api/shop/orders/route.ts`](./app/api/shop/orders/route.ts)
 - 公开结账 API：[`app/api/shop/checkout/route.ts`](./app/api/shop/checkout/route.ts)
-- 会话守卫：[`middleware.ts`](./middleware.ts)
+- 会话守卫：[`proxy.ts`](./proxy.ts)
 
 危险区域：
 
@@ -45,7 +45,7 @@
 ## Rules
 
 - 不要把根文档写成知识堆。短入口放在这里，长解释放到 `docs/` 或局部 `CLAUDE.md`
-- 改认证逻辑时，同时检查 `middleware.ts`、`lib/session/`、相关 API 路由和登录后的跳转行为
+- 改认证逻辑时，同时检查 `proxy.ts`、`lib/session/`、相关 API 路由和登录后的跳转行为
 - 改页面配置时，同时检查类型、Zod 校验、CMS 编辑器、渲染器和现状文档
 - 改商店 / 订单时，先分清“卖家后台管理”与“访客公开下单”两种语义；不要再把公开结账写回 `/api/shop/orders`
 - 改 Prisma 时，只新增 migration，不手改旧 migration；`Decimal`、`Date`、`Json` 在 API 返回时都要显式处理

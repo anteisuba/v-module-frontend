@@ -50,7 +50,7 @@
 ### 管理画面
 
 1. `/admin/*` にアクセス
-2. `middleware.ts` が `iron-session` を検証
+2. `proxy.ts` が `iron-session` を検証
 3. ページが `lib/api` 経由で route handler を呼ぶ
 4. route handler が `domain/*` または Prisma で処理
 5. `Page` や各コンテンツ表に保存

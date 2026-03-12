@@ -38,7 +38,7 @@
 ## 修改上传、环境变量或会话
 
 1. 上传链路先看 `app/api/page/me/upload/route.ts` 和 `lib/env.ts`
-2. 会话链路先看 [`../../../lib/session/CLAUDE.md`](../../../lib/session/CLAUDE.md) 和 `middleware.ts`
+2. 会话链路先看 [`../../../lib/session/CLAUDE.md`](../../../lib/session/CLAUDE.md) 和 `proxy.ts`
 3. 任何环境变量或存储策略变化，都要确认开发环境与部署环境是否行为一致
 4. 运行 `pnpm check`
 
