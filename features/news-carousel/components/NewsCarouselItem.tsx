@@ -19,14 +19,14 @@ export default function NewsCarouselItem({ item }: Props) {
   const objectPosition = item.objectPosition || "center";
 
   const content = (
-    <div className="relative w-full h-full group overflow-hidden rounded-lg">
+    <div className="group relative h-full w-full overflow-hidden rounded-[1.4rem] border border-white/10 bg-black/16">
       {isExternal ? (
         // 外部 URL 使用普通的 img 标签
         // eslint-disable-next-line @next/next/no-img-element
         <img
           src={item.src}
           alt={item.alt || item.id}
-          className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+          className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
           style={{
             width: "100%",
             height: "100%",
@@ -40,14 +40,21 @@ export default function NewsCarouselItem({ item }: Props) {
           alt={item.alt || item.id}
           fill
           sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-cover transition-transform duration-300 group-hover:scale-105"
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
           style={{
             objectPosition: objectPosition,
           }}
         />
       )}
-      {/* Hover 遮罩层 */}
-      <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-300" />
+      <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/8 to-transparent" />
+      <div className="absolute inset-x-0 bottom-0 p-5 text-white">
+        <div className="text-[10px] uppercase tracking-[0.24em] text-white/52">
+          News
+        </div>
+        <div className="mt-2 font-serif text-[1.35rem] font-light tracking-[0.03em] text-white">
+          {item.alt || "Feature"}
+        </div>
+      </div>
     </div>
   );
 
@@ -66,4 +73,3 @@ export default function NewsCarouselItem({ item }: Props) {
 
   return <div className="w-full h-full">{content}</div>;
 }
-

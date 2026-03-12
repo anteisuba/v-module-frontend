@@ -32,6 +32,7 @@ export { default as ConfirmDialog } from "./ConfirmDialog";
 export { default as FormField } from "./FormField";
 export { default as Button } from "./Button";
 export { default as Input } from "./Input";
+export { default as EditorialAuthLayout } from "./EditorialAuthLayout";
 export { default as ColorPicker } from "./ColorPicker";
 export { default as MediaLibraryBrowser } from "./MediaLibraryBrowser";
 export { default as MediaPickerDialog } from "./MediaPickerDialog";

@@ -119,54 +119,57 @@ function NewsListContent() {
   return (
     <main
       data-testid="public-news-list"
-      className="relative min-h-screen text-black"
-      style={backgroundStyle}
+      className="editorial-shell relative min-h-screen"
     >
-      {/* 右上角菜单按钮 */}
-      <div className="fixed top-6 right-6 z-50 flex items-center gap-4 text-white">
+      <div className="absolute inset-0" style={backgroundStyle} />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,8,6,0.18),rgba(8,8,6,0.6)_56%,rgba(8,8,6,0.82))]" />
+
+      <div className="fixed right-6 top-6 z-50 flex items-center gap-4 text-white">
         <button
-          className="text-2xl opacity-90 hover:opacity-100 transition drop-shadow-lg"
+          className="editorial-button min-h-10 border-white/14 bg-black/28 px-4 py-2 text-[10px] text-white backdrop-blur-md hover:bg-black/40"
           type="button"
           aria-label="menu"
           onClick={menu.toggleMenu}
         >
-          ☰
+          Menu
         </button>
       </div>
 
-      {/* 菜单 */}
       <HeroMenu open={menu.open} onClose={menu.closeMenu} />
 
-      <div className="mx-auto max-w-4xl px-4 py-16">
-        {/* 标题 */}
-        <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-4xl font-bold tracking-wider">NEWS</h1>
+      <div className="editorial-container pt-20 sm:pt-24">
+        <div className="mb-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+          <div className="reveal max-w-3xl">
+            <div className="editorial-kicker text-white/54">Public dispatches</div>
+            <div className="line-wipe mt-5 max-w-sm bg-white/16" />
+            <h1 className="mt-8 font-serif text-[clamp(3.2rem,7vw,6.8rem)] font-light leading-[0.92] tracking-[0.03em] text-white">
+              News
+            </h1>
+          </div>
           {backUrl ? (
             <Link
               href={backUrl}
-              className="rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600"
+              className="editorial-button min-h-11 border-white/14 bg-black/26 px-4 py-2.5 text-[11px] text-white backdrop-blur-md hover:bg-black/40"
             >
-              BACK
+              Back
             </Link>
           ) : null}
         </div>
 
-
-        {/* 错误提示 */}
         {error && (
-          <div className="mb-4 rounded-lg bg-red-500/20 p-4 text-red-300">
+          <div className="mb-4 rounded-[1.2rem] border border-red-400/24 bg-red-500/10 p-4 text-sm text-red-100">
             {error}
           </div>
         )}
 
-        {/* 加载中 */}
         {loading && (
-          <div className="py-12 text-center text-black/60">加载中...</div>
+          <div className="py-12 text-center text-white/56">加载中...</div>
         )}
 
-        {/* 文章列表 */}
         {!loading && articles.length === 0 && (
-          <div className="py-12 text-center text-black/60">暂无文章</div>
+          <div className="reveal editorial-panel px-6 py-16 text-center text-white/56">
+            暂无文章
+          </div>
         )}
 
         {!loading && articles.length > 0 && (
@@ -176,9 +179,9 @@ function NewsListContent() {
                 key={article.id}
                 href={`/news/${article.id}`}
                 data-testid={`public-news-article-${article.id}`}
-                className="block rounded-lg border border-black/10 bg-black/5 p-4 transition-colors hover:bg-black/10"
+                className="reveal block rounded-[1.6rem] border border-white/10 bg-[color:color-mix(in_srgb,var(--editorial-surface-strong)_92%,transparent)] p-5 backdrop-blur-xl transition hover:bg-[color:color-mix(in_srgb,var(--editorial-surface-strong)_98%,transparent)]"
               >
-                <div className="mb-2 flex items-center gap-3 text-sm text-black/60">
+                <div className="mb-3 flex items-center gap-3 text-[11px] uppercase tracking-[0.18em] text-white/44">
                   <span>
                     {new Date(article.createdAt).toLocaleDateString("ja-JP", {
                       year: "numeric",
@@ -189,31 +192,32 @@ function NewsListContent() {
                   <span className="font-medium">{article.category}</span>
                   {article.tag && <span>{article.tag}</span>}
                 </div>
-                <h2 className="text-lg font-medium text-black">{article.title}</h2>
+                <h2 className="font-serif text-[1.8rem] font-light leading-[1.02] tracking-[0.03em] text-white">
+                  {article.title}
+                </h2>
               </Link>
             ))}
           </div>
         )}
 
-        {/* 分页 */}
         {totalPages > 1 && (
           <div className="mt-8 flex items-center justify-center gap-4">
             <button
               type="button"
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="rounded border border-black/20 bg-black/5 px-4 py-2 text-sm text-black transition-colors hover:bg-black/10 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="editorial-button min-h-11 border-white/14 bg-black/26 px-4 py-2.5 text-[11px] text-white backdrop-blur-md disabled:opacity-40"
             >
               前へ
             </button>
-            <span className="text-sm text-black/60">
+            <span className="text-[11px] uppercase tracking-[0.18em] text-white/44">
               {currentPage} / {totalPages}
             </span>
             <button
               type="button"
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="rounded border border-black/20 bg-black/5 px-4 py-2 text-sm text-black transition-colors hover:bg-black/10 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="editorial-button min-h-11 border-white/14 bg-black/26 px-4 py-2.5 text-[11px] text-white backdrop-blur-md disabled:opacity-40"
             >
               次へ
             </button>

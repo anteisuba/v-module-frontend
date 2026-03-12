@@ -51,8 +51,8 @@ export default function LanguageSelector({
 
   const buttonClass =
     variant === "dark"
-      ? "flex items-center gap-2 rounded-lg border border-white/20 bg-white/10 px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-white/20 cursor-pointer focus:outline-none focus:ring-2 focus:ring-white/20 focus:ring-offset-2"
-      : "flex items-center gap-2 rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black/20 focus:ring-offset-2 border border-black/20 bg-white/70 text-black hover:bg-white/80 active:bg-white/90 px-3 py-1.5 text-xs cursor-pointer";
+      ? "editorial-button min-h-10 border-white/15 bg-black/30 px-4 py-2 text-[10px] text-white backdrop-blur-md hover:bg-black/45"
+      : "editorial-button editorial-button--secondary min-h-10 px-4 py-2 text-[10px]";
 
   const menuPositionClass =
     menuPosition === "top"
@@ -61,20 +61,20 @@ export default function LanguageSelector({
 
   const menuClass =
     variant === "dark"
-      ? `${menuPositionClass} z-[100] min-w-[120px] rounded-lg border border-white/20 bg-black/60 backdrop-blur-xl shadow-lg overflow-hidden`
-      : `${menuPositionClass} z-[100] min-w-[120px] rounded-lg border border-black/20 bg-white/90 backdrop-blur-xl shadow-lg overflow-hidden`;
+      ? `${menuPositionClass} z-[100] min-w-[132px] overflow-hidden rounded-[1.2rem] border border-white/12 bg-black/68 backdrop-blur-xl shadow-[0_24px_80px_rgba(0,0,0,0.28)]`
+      : `${menuPositionClass} z-[100] min-w-[132px] overflow-hidden rounded-[1.2rem] border border-[color:color-mix(in_srgb,var(--editorial-border)_86%,transparent)] bg-[color:color-mix(in_srgb,var(--editorial-surface-strong)_96%,transparent)] backdrop-blur-xl shadow-[0_20px_70px_rgba(0,0,0,0.12)]`;
 
   const itemClass = (loc: Locale) =>
     variant === "dark"
-      ? `w-full px-3 py-2 text-left text-xs transition-colors ${
+      ? `w-full px-4 py-3 text-left text-[11px] uppercase tracking-[0.16em] transition-colors ${
           locale === loc
-            ? "bg-white/20 text-white"
-            : "text-white/80 hover:bg-white/10"
+            ? "bg-white/12 text-white"
+            : "text-white/76 hover:bg-white/8"
         }`
-      : `w-full px-3 py-2 text-left text-xs transition-colors ${
+      : `w-full px-4 py-3 text-left text-[11px] uppercase tracking-[0.16em] transition-colors ${
           locale === loc
-            ? "bg-black text-white"
-            : "text-black hover:bg-black/10"
+            ? "bg-[color:var(--editorial-accent)] text-[color:var(--editorial-accent-foreground)]"
+            : "text-[color:var(--editorial-text)] hover:bg-[color:color-mix(in_srgb,var(--editorial-text)_6%,transparent)]"
         }`;
 
   return (
@@ -84,9 +84,11 @@ export default function LanguageSelector({
         onClick={() => setIsOpen(!isOpen)}
         className={buttonClass}
         aria-label="Select language"
+        aria-expanded={isOpen}
       >
+        <span className="opacity-72">Lang</span>
         <span>{localeNames[locale]}</span>
-        <span className="text-[10px]">▼</span>
+        <span className="text-[9px]">{isOpen ? "▲" : "▼"}</span>
       </button>
 
       {isOpen && (
@@ -106,4 +108,3 @@ export default function LanguageSelector({
     </div>
   );
 }
-

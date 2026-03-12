@@ -37,30 +37,33 @@ export default function PublicShopCatalog({
   const { t, locale } = useI18n();
 
   return (
-    <main
-      data-testid="public-shop-catalog"
-      className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(191,219,254,0.5),_rgba(255,255,255,1)_36%),linear-gradient(180deg,_#f8fafc_0%,_#ffffff_54%,_#fff7ed_100%)] text-slate-950"
-    >
-      <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-10 sm:px-6 lg:px-8">
-        <header className="flex flex-col gap-5 rounded-[32px] border border-black/10 bg-white/80 p-6 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur xl:flex-row xl:items-end xl:justify-between">
-          <div className="max-w-3xl">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-              {t("publicEntry.shop.eyebrow")}
-            </div>
-            <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
+    <main data-testid="public-shop-catalog" className="editorial-shell editorial-shell--light">
+      <div className="editorial-container flex flex-col gap-10 py-10 sm:py-14">
+        <header className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.5fr)]">
+          <div className="reveal max-w-4xl">
+            <div className="editorial-kicker">{t("publicEntry.shop.eyebrow")}</div>
+            <div className="line-wipe mt-5 max-w-sm" />
+            <h1 className="editorial-hero-title mt-8 text-[color:var(--editorial-text)]">
               {t("publicEntry.shop.title")}
             </h1>
-            <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base">
+            <p className="editorial-subtitle mt-6">
               {t("publicEntry.shop.description")}
             </p>
           </div>
-          <div className="flex flex-col items-start gap-3 xl:items-end">
-            <div className="rounded-full border border-black/10 bg-slate-950 px-4 py-2 text-sm font-medium text-white">
-              {products.length} {t("publicEntry.shop.countSuffix")}
+
+          <div className="reveal editorial-panel flex flex-col justify-between gap-6 p-6 sm:p-8">
+            <div>
+              <div className="editorial-kicker">Market</div>
+              <div className="mt-5 editorial-stat">
+                <div className="editorial-stat__label">
+                  {t("publicEntry.shop.countSuffix")}
+                </div>
+                <div className="editorial-stat__value">{products.length}</div>
+              </div>
             </div>
             <Link
               href="/admin"
-              className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-50"
+              className="editorial-button editorial-button--primary min-h-11 px-4 py-2.5 text-[11px]"
             >
               {t("publicEntry.common.openAdmin")}
             </Link>
@@ -68,11 +71,11 @@ export default function PublicShopCatalog({
         </header>
 
         {products.length === 0 ? (
-          <section className="rounded-[32px] border border-dashed border-black/15 bg-white/70 px-6 py-16 text-center shadow-sm">
-            <h2 className="text-2xl font-semibold text-slate-900">
+          <section className="reveal editorial-panel border-dashed px-6 py-16 text-center">
+            <h2 className="font-serif text-3xl font-light text-[color:var(--editorial-text)]">
               {t("publicEntry.shop.emptyTitle")}
             </h2>
-            <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-600">
+            <p className="editorial-copy mx-auto mt-4">
               {t("publicEntry.shop.emptyDescription")}
             </p>
           </section>
@@ -90,11 +93,11 @@ export default function PublicShopCatalog({
                 <article
                   key={product.id}
                   data-testid={`public-shop-catalog-product-${product.id}`}
-                  className="overflow-hidden rounded-[28px] border border-black/10 bg-white/85 shadow-[0_20px_60px_rgba(15,23,42,0.06)]"
+                  className="reveal overflow-hidden rounded-[1.9rem] border border-[color:color-mix(in_srgb,var(--editorial-border)_86%,transparent)] bg-[color:color-mix(in_srgb,var(--editorial-surface-strong)_94%,transparent)] shadow-[0_24px_80px_rgba(0,0,0,0.12)]"
                 >
                   <Link
                     href={productHref}
-                    className="relative block h-64 bg-slate-100"
+                    className="relative block h-72 bg-[color:color-mix(in_srgb,var(--editorial-text)_5%,transparent)]"
                   >
                     {primaryImage ? (
                       isExternalUrl(primaryImage) ? (
@@ -114,47 +117,47 @@ export default function PublicShopCatalog({
                         />
                       )
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(135deg,_#dbeafe,_#fde68a)] text-sm font-medium uppercase tracking-[0.2em] text-slate-500">
+                      <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(135deg,rgba(201,169,110,0.14),rgba(26,26,24,0.06))] text-[11px] uppercase tracking-[0.24em] text-[color:var(--editorial-muted)]">
                         SHOP
                       </div>
                     )}
                   </Link>
 
-                  <div className="flex flex-col gap-5 p-5">
+                  <div className="flex flex-col gap-5 p-6">
                     <div>
                       <div className="flex items-start justify-between gap-4">
                         <div>
-                          <div className="text-xs uppercase tracking-[0.18em] text-slate-400">
+                          <div className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
                             {t("publicEntry.common.creatorLabel")}
                           </div>
-                          <div className="mt-1 text-sm font-medium text-slate-700">
+                          <div className="mt-2 text-sm text-[color:var(--editorial-text)]">
                             {product.userDisplayName || (sellerSlug ? `@${sellerSlug}` : t("publicEntry.common.unknownCreator"))}
                           </div>
                         </div>
-                        <div className="rounded-full bg-slate-950 px-3 py-1 text-sm font-medium text-white">
+                        <div className="editorial-pill bg-[color:var(--editorial-accent)] text-[color:var(--editorial-accent-foreground)]">
                           {formatPrice(product.price, locale)}
                         </div>
                       </div>
 
                       <Link href={productHref} className="mt-4 block">
-                        <h2 className="text-xl font-semibold tracking-tight text-slate-950 transition-colors hover:text-slate-700">
+                        <h2 className="font-serif text-[1.9rem] font-light leading-[1.02] tracking-[0.03em] text-[color:var(--editorial-text)] transition-colors hover:text-[color:color-mix(in_srgb,var(--editorial-text)_82%,transparent)]">
                           {product.name}
                         </h2>
                       </Link>
 
                       {product.description ? (
-                        <p className="mt-3 line-clamp-3 text-sm leading-7 text-slate-600">
+                        <p className="mt-4 line-clamp-3 text-sm leading-8 text-[color:color-mix(in_srgb,var(--editorial-text)_76%,transparent)]">
                           {product.description}
                         </p>
                       ) : null}
                     </div>
 
-                    <div className="flex items-center justify-between border-t border-black/8 pt-4 text-sm">
+                    <div className="flex items-center justify-between border-t border-[color:color-mix(in_srgb,var(--editorial-border)_82%,transparent)] pt-4 text-sm">
                       <span
                         className={
                           product.stock === 0
-                            ? "font-medium text-red-600"
-                            : "text-slate-500"
+                            ? "font-medium text-red-700"
+                            : "text-[color:var(--editorial-muted)]"
                         }
                       >
                         {product.stock === 0
@@ -171,14 +174,14 @@ export default function PublicShopCatalog({
                     <div className="flex flex-wrap gap-3">
                       <Link
                         href={productHref}
-                        className="rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-800"
+                        className="editorial-button editorial-button--primary min-h-11 px-4 py-2.5 text-[11px]"
                       >
                         {t("publicEntry.shop.viewProduct")}
                       </Link>
                       {sellerSlug ? (
                         <Link
                           href={shopHref}
-                          className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-50"
+                          className="editorial-button editorial-button--secondary min-h-11 px-4 py-2.5 text-[11px]"
                         >
                           {t("publicEntry.shop.visitShop")}
                         </Link>

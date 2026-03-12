@@ -47,7 +47,7 @@ export function AdminEditorCard({
   return (
     <div
       className={joinClasses(
-        "rounded-[28px] border border-black/10 bg-white/45 shadow-sm backdrop-blur-xl",
+        "editorial-panel border-[color:var(--editorial-border)] bg-[color:var(--editorial-surface-strong)] shadow-[0_24px_72px_rgba(17,12,6,0.12)] backdrop-blur-xl",
         className
       )}
     >
@@ -76,17 +76,19 @@ export function AdminEditorTabs({
               data-testid={`admin-tab-${tab.id}`}
               data-state={isActive ? "active" : "inactive"}
               className={joinClasses(
-                "rounded-[22px] border px-4 py-4 text-left transition-colors",
+                "rounded-[22px] border px-4 py-4 text-left transition-colors duration-300",
                 isActive
-                  ? "border-black bg-black text-white shadow-sm"
-                  : "border-black/10 bg-white/70 text-black hover:bg-white"
+                  ? "border-[color:var(--editorial-accent)] bg-[color:var(--editorial-accent)] text-[color:var(--editorial-accent-foreground)] shadow-sm"
+                  : "border-[color:var(--editorial-border)] bg-[color:color-mix(in_srgb,var(--editorial-surface)_82%,transparent)] text-[color:var(--editorial-text)] hover:bg-[color:color-mix(in_srgb,var(--editorial-text)_5%,transparent)]"
               )}
             >
-              <div className="text-sm font-semibold">{tab.title}</div>
+              <div className="font-serif text-lg leading-none">{tab.title}</div>
               <div
                 className={joinClasses(
-                  "mt-1 text-xs",
-                  isActive ? "text-white/75" : "text-black/55"
+                  "mt-2 text-[11px] uppercase tracking-[0.18em]",
+                  isActive
+                    ? "text-[color:color-mix(in_srgb,var(--editorial-accent-foreground)_72%,transparent)]"
+                    : "text-[color:var(--editorial-muted)]"
                 )}
               >
                 {tab.description}
@@ -122,20 +124,20 @@ export function AdminEditorAccordion({
                 aria-expanded={isOpen}
                 aria-controls={`editor-panel-${panel.id}`}
               >
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-black/10 bg-white/75 text-[11px] font-semibold text-black/60">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-[color:var(--editorial-border)] bg-[color:color-mix(in_srgb,var(--editorial-surface)_92%,transparent)] text-[11px] uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
                   {String(index + 1).padStart(2, "0")}
                 </div>
                 <div className="min-w-0 flex-1">
-                  <h2 className="text-sm font-semibold text-black">
+                  <h2 className="font-serif text-xl leading-none text-[color:var(--editorial-text)]">
                     {panel.title}
                   </h2>
                   {panel.description ? (
-                    <p className="mt-1 text-xs text-black/55">
+                    <p className="mt-2 text-[11px] uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
                       {panel.description}
                     </p>
                   ) : null}
                 </div>
-                <span className="pt-1 text-lg leading-none text-black/55">
+                <span className="pt-1 text-lg leading-none text-[color:var(--editorial-muted)]">
                   {isOpen ? "-" : "+"}
                 </span>
               </button>
@@ -152,7 +154,7 @@ export function AdminEditorAccordion({
                 id={`editor-panel-${panel.id}`}
                 data-testid={`admin-panel-body-${panel.id}`}
                 className={joinClasses(
-                  "border-t border-black/10 px-3 pb-3 pt-3 sm:px-4 sm:pb-4",
+                  "border-t border-[color:var(--editorial-border)] px-3 pb-3 pt-3 sm:px-4 sm:pb-4",
                   panel.bodyClassName
                 )}
               >

@@ -19,20 +19,21 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     const errorId = `${inputId}-error`;
     const helpId = `${inputId}-help`;
 
-    const baseInputClasses = "w-full rounded-lg border bg-white px-3 py-2 text-xs text-black placeholder:text-black/30 transition-colors focus:outline-none focus:ring-2 focus:ring-black/20 focus:ring-offset-1";
+    const baseInputClasses =
+      "editorial-input text-sm leading-relaxed";
     const borderClasses = error
-      ? "border-red-500 focus:border-red-500"
-      : "border-black/10 focus:border-black/30";
+      ? "!border-red-500"
+      : "";
 
     return (
-      <div className="space-y-1.5">
+      <div className="space-y-2">
         {label && (
           <label
             htmlFor={inputId}
-            className="block text-xs font-medium text-black"
+            className="block text-[11px] uppercase tracking-[0.22em] text-[color:var(--editorial-muted)]"
           >
             {label}
-            {props.required && <span className="text-red-500 ml-1">*</span>}
+            {props.required && <span className="ml-1 text-red-500">*</span>}
           </label>
         )}
 
@@ -55,7 +56,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         {helpText && !error && (
           <p
             id={helpId}
-            className="text-[10px] text-black/50"
+            className="text-[11px] leading-5 text-[color:var(--editorial-muted)]"
           >
             {helpText}
           </p>
@@ -64,7 +65,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         {error && (
           <p
             id={errorId}
-            className="text-xs text-red-600 flex items-center gap-1"
+            className="flex items-center gap-1 text-xs text-red-600"
             role="alert"
           >
             <span>⚠</span>

@@ -35,30 +35,33 @@ export default function PublicBlogFeed({ posts }: PublicBlogFeedProps) {
   const { t, locale } = useI18n();
 
   return (
-    <main
-      data-testid="public-blog-feed"
-      className="min-h-screen bg-[radial-gradient(circle_at_top,_rgba(251,207,232,0.55),_rgba(255,255,255,1)_38%),linear-gradient(180deg,_#fff8f1_0%,_#ffffff_58%,_#f8fafc_100%)] text-slate-950"
-    >
-      <div className="mx-auto flex max-w-6xl flex-col gap-10 px-4 py-10 sm:px-6 lg:px-8">
-        <header className="flex flex-col gap-5 rounded-[32px] border border-black/10 bg-white/80 p-6 shadow-[0_18px_60px_rgba(15,23,42,0.08)] backdrop-blur xl:flex-row xl:items-end xl:justify-between">
-          <div className="max-w-3xl">
-            <div className="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">
-              {t("publicEntry.blog.eyebrow")}
-            </div>
-            <h1 className="mt-3 text-4xl font-semibold tracking-tight text-slate-950 sm:text-5xl">
+    <main data-testid="public-blog-feed" className="editorial-shell editorial-shell--light">
+      <div className="editorial-container flex flex-col gap-10 py-10 sm:py-14">
+        <header className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.5fr)]">
+          <div className="reveal max-w-4xl">
+            <div className="editorial-kicker">{t("publicEntry.blog.eyebrow")}</div>
+            <div className="line-wipe mt-5 max-w-sm" />
+            <h1 className="editorial-hero-title mt-8 text-[color:var(--editorial-text)]">
               {t("publicEntry.blog.title")}
             </h1>
-            <p className="mt-3 text-sm leading-6 text-slate-600 sm:text-base">
+            <p className="editorial-subtitle mt-6">
               {t("publicEntry.blog.description")}
             </p>
           </div>
-          <div className="flex flex-col items-start gap-3 xl:items-end">
-            <div className="rounded-full border border-black/10 bg-slate-950 px-4 py-2 text-sm font-medium text-white">
-              {posts.length} {t("publicEntry.blog.countSuffix")}
+
+          <div className="reveal editorial-panel flex flex-col justify-between gap-6 p-6 sm:p-8">
+            <div>
+              <div className="editorial-kicker">Archive</div>
+              <div className="mt-5 editorial-stat">
+                <div className="editorial-stat__label">
+                  {t("publicEntry.blog.countSuffix")}
+                </div>
+                <div className="editorial-stat__value">{posts.length}</div>
+              </div>
             </div>
             <Link
               href="/admin"
-              className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-50"
+              className="editorial-button editorial-button--primary min-h-11 px-4 py-2.5 text-[11px]"
             >
               {t("publicEntry.common.openAdmin")}
             </Link>
@@ -66,11 +69,11 @@ export default function PublicBlogFeed({ posts }: PublicBlogFeedProps) {
         </header>
 
         {posts.length === 0 ? (
-          <section className="rounded-[32px] border border-dashed border-black/15 bg-white/70 px-6 py-16 text-center shadow-sm">
-            <h2 className="text-2xl font-semibold text-slate-900">
+          <section className="reveal editorial-panel border-dashed px-6 py-16 text-center">
+            <h2 className="font-serif text-3xl font-light text-[color:var(--editorial-text)]">
               {t("publicEntry.blog.emptyTitle")}
             </h2>
-            <p className="mx-auto mt-3 max-w-xl text-sm leading-6 text-slate-600">
+            <p className="editorial-copy mx-auto mt-4">
               {t("publicEntry.blog.emptyDescription")}
             </p>
           </section>
@@ -87,11 +90,11 @@ export default function PublicBlogFeed({ posts }: PublicBlogFeedProps) {
                 <article
                   key={post.id}
                   data-testid={`public-blog-feed-post-${post.id}`}
-                  className="grid gap-0 overflow-hidden rounded-[32px] border border-black/10 bg-white/85 shadow-[0_20px_60px_rgba(15,23,42,0.06)] md:grid-cols-[280px_minmax(0,1fr)]"
+                  className="reveal grid gap-0 overflow-hidden rounded-[2rem] border border-[color:color-mix(in_srgb,var(--editorial-border)_86%,transparent)] bg-[color:color-mix(in_srgb,var(--editorial-surface-strong)_94%,transparent)] shadow-[0_24px_80px_rgba(0,0,0,0.12)] md:grid-cols-[300px_minmax(0,1fr)]"
                 >
                   <Link
                     href={postHref}
-                    className="relative block min-h-[220px] bg-slate-100"
+                    className="relative block min-h-[260px] bg-[color:color-mix(in_srgb,var(--editorial-text)_5%,transparent)]"
                   >
                     {post.coverImage ? (
                       isExternalUrl(post.coverImage) ? (
@@ -111,48 +114,48 @@ export default function PublicBlogFeed({ posts }: PublicBlogFeedProps) {
                         />
                       )
                     ) : (
-                      <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(135deg,_#f8d7da,_#fef3c7)] text-sm font-medium uppercase tracking-[0.2em] text-slate-500">
+                      <div className="flex h-full w-full items-center justify-center bg-[linear-gradient(135deg,rgba(201,169,110,0.14),rgba(26,26,24,0.06))] text-[11px] uppercase tracking-[0.24em] text-[color:var(--editorial-muted)]">
                         BLOG
                       </div>
                     )}
                   </Link>
 
-                  <div className="flex flex-col justify-between p-6">
+                  <div className="flex flex-col justify-between gap-8 p-6 sm:p-8">
                     <div>
-                      <div className="flex flex-wrap items-center gap-3 text-xs font-medium uppercase tracking-[0.16em] text-slate-500">
+                      <div className="text-[11px] uppercase tracking-[0.2em] text-[color:var(--editorial-muted)]">
                         <span>{formatDate(post.publishedAt || post.createdAt, locale)}</span>
-                        {authorSlug ? <span>@{authorSlug}</span> : null}
+                        {authorSlug ? <span className="ml-3">@{authorSlug}</span> : null}
                       </div>
                       <Link href={postHref} className="mt-3 block">
-                        <h2 className="text-2xl font-semibold tracking-tight text-slate-950 transition-colors hover:text-slate-700">
+                        <h2 className="font-serif text-[2rem] font-light leading-[1.02] tracking-[0.03em] text-[color:var(--editorial-text)] transition-colors hover:text-[color:color-mix(in_srgb,var(--editorial-text)_82%,transparent)]">
                           {post.title}
                         </h2>
                       </Link>
-                      <p className="mt-4 line-clamp-4 text-sm leading-7 text-slate-600">
+                      <p className="mt-5 line-clamp-4 text-sm leading-8 text-[color:color-mix(in_srgb,var(--editorial-text)_76%,transparent)]">
                         {post.content}
                       </p>
                     </div>
 
-                    <div className="mt-6 flex flex-col gap-4 border-t border-black/8 pt-5 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-4 border-t border-[color:color-mix(in_srgb,var(--editorial-border)_82%,transparent)] pt-5 sm:flex-row sm:items-center sm:justify-between">
                       <div className="min-w-0">
-                        <div className="text-xs uppercase tracking-[0.18em] text-slate-400">
+                        <div className="text-[11px] uppercase tracking-[0.18em] text-[color:var(--editorial-muted)]">
                           {t("publicEntry.common.creatorLabel")}
                         </div>
-                        <div className="mt-1 text-sm font-medium text-slate-800">
+                        <div className="mt-2 text-sm text-[color:var(--editorial-text)]">
                           {post.userDisplayName || (authorSlug ? `@${authorSlug}` : t("publicEntry.common.unknownCreator"))}
                         </div>
                       </div>
                       <div className="flex flex-wrap gap-3">
                         <Link
                           href={postHref}
-                          className="rounded-full bg-slate-950 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-slate-800"
+                          className="editorial-button editorial-button--primary min-h-11 px-4 py-2.5 text-[11px]"
                         >
                           {t("publicEntry.blog.read")}
                         </Link>
                         {authorSlug ? (
                           <Link
                             href={authorHref}
-                            className="rounded-full border border-black/10 bg-white px-4 py-2 text-sm font-medium text-slate-900 transition-colors hover:bg-slate-50"
+                            className="editorial-button editorial-button--secondary min-h-11 px-4 py-2.5 text-[11px]"
                           >
                             {t("publicEntry.common.visitCreator")}
                           </Link>

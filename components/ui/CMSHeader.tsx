@@ -28,26 +28,30 @@ export default function CMSHeader({
 }: CMSHeaderProps) {
   const { t } = useI18n();
   return (
-    <div className="mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-      <div>
-        <h1 className="text-xl font-semibold text-black">{title || t("cms.title")}</h1>
-        <p className="mt-1 text-xs text-black/70">{description || t("cms.description")}</p>
+    <div className="mb-8 flex flex-col gap-5 border-b border-[color:color-mix(in_srgb,var(--editorial-border)_82%,transparent)] pb-6 sm:flex-row sm:items-end sm:justify-between">
+      <div className="max-w-2xl">
+        <div className="editorial-kicker">Content System</div>
+        <div className="line-wipe mt-4 max-w-xs" />
+        <h1 className="editorial-title mt-6 text-[color:var(--editorial-text)]">
+          {title || t("cms.title")}
+        </h1>
+        <p className="editorial-copy mt-3">
+          {description || t("cms.description")}
+        </p>
       </div>
 
-      <div className="flex flex-wrap items-center gap-2">
-        {/* 预览按钮 */}
+      <div className="flex flex-wrap items-center gap-3">
         {userSlug && (
           <a
             href={`/u/${userSlug}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black/20 focus:ring-offset-2 border border-black/20 bg-white/70 text-black hover:bg-white/80 active:bg-white/90 px-3 py-1.5 text-xs cursor-pointer"
+            className="editorial-button editorial-button--secondary min-h-11 px-4 py-2.5 text-[11px]"
           >
             {t("cms.openPage")}
           </a>
         )}
 
-        {/* 保存草稿按钮 */}
         {onSaveDraft && (
           <Button
             variant="secondary"
@@ -61,7 +65,6 @@ export default function CMSHeader({
           </Button>
         )}
 
-        {/* 发布按钮 */}
         {onPublish && (
           <Button
             variant="primary"
@@ -78,4 +81,3 @@ export default function CMSHeader({
     </div>
   );
 }
-

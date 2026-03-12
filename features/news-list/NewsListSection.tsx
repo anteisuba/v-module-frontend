@@ -47,21 +47,26 @@ export default async function NewsListSection({ slug, limit = 3, background }: N
     : { backgroundColor: "#000000" };
 
   return (
-    <section className="text-black py-16 px-6" style={backgroundStyle}>
-      <div className="max-w-4xl mx-auto">
-        {/* 标题 */}
-        <h2 className="text-4xl font-bold tracking-wider mb-8 text-center">NEWS</h2>
+    <section className="editorial-shell relative py-16" style={backgroundStyle}>
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,8,6,0.24),rgba(8,8,6,0.64)_56%,rgba(8,8,6,0.82))]" />
+      <div className="editorial-container">
+        <div className="reveal max-w-3xl">
+          <div className="editorial-kicker text-white/54">Latest dispatches</div>
+          <div className="line-wipe mt-5 max-w-sm bg-white/16" />
+          <h2 className="mt-8 font-serif text-[clamp(2.8rem,6vw,5rem)] font-light leading-[0.94] tracking-[0.03em] text-white">
+            News
+          </h2>
+        </div>
 
-        {/* 文章列表 */}
         {articles.length > 0 ? (
-          <div className="space-y-4 mb-8">
+          <div className="mt-10 space-y-4">
             {articles.map((article) => (
               <Link
                 key={article.id}
                 href={`/news/${article.id}${slug ? `?from=/u/${slug}` : ""}`}
-                className="block rounded-lg border border-black/10 bg-black/5 p-4 transition-colors hover:bg-black/10"
+                className="reveal block rounded-[1.6rem] border border-white/10 bg-[color:color-mix(in_srgb,var(--editorial-surface-strong)_92%,transparent)] p-5 backdrop-blur-xl transition hover:bg-[color:color-mix(in_srgb,var(--editorial-surface-strong)_98%,transparent)]"
               >
-                <div className="mb-2 flex items-center gap-3 text-sm text-black/60">
+                <div className="mb-3 flex items-center gap-3 text-[11px] uppercase tracking-[0.18em] text-white/44">
                   <span>
                     {new Date(article.createdAt).toLocaleDateString("ja-JP", {
                       year: "numeric",
@@ -72,27 +77,27 @@ export default async function NewsListSection({ slug, limit = 3, background }: N
                   <span className="font-medium">{article.category}</span>
                   {article.tag && <span>{article.tag}</span>}
                 </div>
-                <h3 className="text-lg font-medium text-black">{article.title}</h3>
+                <h3 className="font-serif text-[1.8rem] font-light leading-[1.02] tracking-[0.03em] text-white">
+                  {article.title}
+                </h3>
               </Link>
             ))}
           </div>
         ) : (
-          <div className="mb-8 text-center text-black/60">
+          <div className="mt-10 text-center text-white/56">
             <p>暂无新闻文章</p>
           </div>
         )}
 
-        {/* MORE 按钮 */}
-        <div className="text-center">
+        <div className="mt-10 text-center">
           <Link
             href={newsHref}
-            className="inline-block rounded border border-black px-6 py-2 text-sm font-medium text-black transition-colors hover:bg-black/10"
+            className="editorial-button min-h-11 border-white/14 bg-black/26 px-5 py-2.5 text-[11px] text-white backdrop-blur-md hover:bg-black/40"
           >
-            MORE
+            More
           </Link>
         </div>
       </div>
     </section>
   );
 }
-

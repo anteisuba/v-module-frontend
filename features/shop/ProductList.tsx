@@ -41,11 +41,10 @@ function ProductCard({ product, userSlug, formatPrice }: {
     <Link
       href={`/u/${userSlug}/shop/${product.id}`}
       data-testid={`public-user-shop-product-${product.id}`}
-      className="group rounded-lg overflow-hidden border border-black/10 bg-white hover:shadow-lg transition-shadow"
+      className="group reveal overflow-hidden rounded-[1.8rem] border border-white/10 bg-[color:color-mix(in_srgb,var(--editorial-surface-strong)_92%,transparent)] backdrop-blur-xl shadow-[0_24px_80px_rgba(0,0,0,0.22)] transition-transform hover:-translate-y-1"
     >
       {imageSrc && !imageError ? (
-        <div className="relative w-full h-48 overflow-hidden">
-          {/* 骨架屏：图片加载前显示 */}
+        <div className="relative h-64 w-full overflow-hidden">
           {!imageLoaded && (
             <div className="absolute inset-0 z-10">
               <Skeleton
@@ -61,7 +60,7 @@ function ProductCard({ product, userSlug, formatPrice }: {
             <img
               src={imageSrc}
               alt={product.name}
-              className={`h-full w-full object-cover group-hover:scale-105 transition-transform duration-300 ${
+              className={`h-full w-full object-cover transition-transform duration-500 group-hover:scale-105 ${
                 imageLoaded ? "opacity-100" : "opacity-0"
               }`}
               onLoad={() => setImageLoaded(true)}
@@ -75,7 +74,7 @@ function ProductCard({ product, userSlug, formatPrice }: {
               src={imageSrc}
               alt={product.name}
               fill
-              className={`object-cover group-hover:scale-105 transition-transform duration-300 ${
+              className={`object-cover transition-transform duration-500 group-hover:scale-105 ${
                 imageLoaded ? "opacity-100" : "opacity-0"
               }`}
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
@@ -88,25 +87,26 @@ function ProductCard({ product, userSlug, formatPrice }: {
           )}
         </div>
       ) : (
-        <div className="w-full h-48 bg-gray-200 flex items-center justify-center">
-          <span className="text-gray-400">No Image</span>
+        <div className="flex h-64 w-full items-center justify-center bg-[linear-gradient(135deg,rgba(201,169,110,0.16),rgba(20,20,16,0.08))]">
+          <span className="text-[11px] uppercase tracking-[0.24em] text-white/48">No Image</span>
         </div>
       )}
-      <div className="p-4">
-        <h3 className="text-lg font-semibold mb-2 line-clamp-2 group-hover:text-black/80">
+      <div className="p-6">
+        <div className="editorial-kicker text-white/44">Product</div>
+        <h3 className="mt-3 line-clamp-2 font-serif text-[1.9rem] font-light leading-[1.02] tracking-[0.03em] text-white">
           {product.name}
         </h3>
         {product.description && (
-          <p className="text-sm text-black/60 line-clamp-2 mb-3">
+          <p className="mt-4 line-clamp-2 text-sm leading-8 text-white/68">
             {product.description}
           </p>
         )}
-        <div className="flex items-center justify-between">
-          <span className="text-lg font-bold text-black">
+        <div className="mt-6 flex items-center justify-between border-t border-white/10 pt-4">
+          <span className="font-serif text-[1.8rem] font-light text-white">
             {formatPrice(product.price)}
           </span>
           {product.stock === 0 && (
-            <span className="text-xs text-red-600 font-semibold">缺货</span>
+            <span className="text-[11px] uppercase tracking-[0.18em] text-red-300">缺货</span>
           )}
         </div>
       </div>
@@ -128,41 +128,48 @@ export default function ProductList({ products, userSlug, backgroundStyle }: Pro
   return (
     <main
       data-testid="public-user-shop-list"
-      className="relative min-h-screen text-black"
-      style={backgroundStyle || defaultBackgroundStyle}
+      className="editorial-shell relative min-h-screen"
     >
-      {/* 右上角菜单按钮 */}
-      <div className="fixed top-6 right-6 z-50 flex items-center gap-4 text-white">
+      <div
+        className="absolute inset-0"
+        style={backgroundStyle || defaultBackgroundStyle}
+      />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,8,6,0.18),rgba(8,8,6,0.6)_56%,rgba(8,8,6,0.82))]" />
+
+      <div className="fixed right-6 top-6 z-50 flex items-center gap-4 text-white">
         <button
-          className="text-2xl opacity-90 hover:opacity-100 transition drop-shadow-lg"
+          className="editorial-button min-h-10 border-white/14 bg-black/28 px-4 py-2 text-[10px] text-white backdrop-blur-md hover:bg-black/40"
           type="button"
           aria-label="menu"
           onClick={menu.toggleMenu}
         >
-          ☰
+          Menu
         </button>
       </div>
 
-      {/* 菜单 */}
       <HeroMenu open={menu.open} onClose={menu.closeMenu} />
 
-      <div className="mx-auto max-w-6xl px-4 py-16">
-        {/* 标题和返回按钮 */}
-        <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-4xl font-bold tracking-wider">SHOP</h1>
+      <div className="editorial-container pt-20 sm:pt-24">
+        <div className="mb-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+          <div className="reveal max-w-3xl">
+            <div className="editorial-kicker text-white/54">Creator shop</div>
+            <div className="line-wipe mt-5 max-w-sm bg-white/16" />
+            <h1 className="mt-8 font-serif text-[clamp(3.2rem,7vw,6.8rem)] font-light leading-[0.92] tracking-[0.03em] text-white">
+              Shop
+            </h1>
+          </div>
           <Link
             href={`/u/${userSlug}`}
-            className="rounded-lg bg-blue-500 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-blue-600"
+            className="editorial-button min-h-11 border-white/14 bg-black/26 px-4 py-2.5 text-[11px] text-white backdrop-blur-md hover:bg-black/40"
           >
-            BACK
+            Back
           </Link>
         </div>
 
-        {/* 内容区域 */}
         {products.length === 0 ? (
-          <div className="py-12 text-center">
-            <p className="text-black/60 mb-4">暂无已发布的商品</p>
-            <p className="text-sm text-black/40">
+          <div className="reveal editorial-panel px-6 py-16 text-center">
+            <p className="font-serif text-3xl font-light text-white">暂无已发布的商品</p>
+            <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-white/56">
               提示：请确保商品状态设置为“已发布”
             </p>
           </div>

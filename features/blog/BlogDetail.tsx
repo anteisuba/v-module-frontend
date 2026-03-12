@@ -143,57 +143,64 @@ export default function BlogDetail({
     backgroundColor: "#000000",
   };
 
+  const contentHtml = post.content
+    .replace(/\n/g, "<br />")
+    .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
+    .replace(/\*(.*?)\*/g, "<em>$1</em>")
+    .replace(
+      /\[([^\]]+)\]\(([^)]+)\)/g,
+      '<a href="$2" target="_blank" rel="noopener noreferrer" class="editorial-link">$1</a>'
+    );
+
+  const backgroundOverlayClass =
+    backgroundType === "image"
+      ? "bg-[linear-gradient(180deg,rgba(8,8,6,0.28),rgba(8,8,6,0.52)_42%,rgba(8,8,6,0.82))]"
+      : "bg-[linear-gradient(180deg,rgba(8,8,6,0.14),rgba(8,8,6,0.46)_46%,rgba(8,8,6,0.78))]";
+
   return (
     <article
       data-testid="public-user-blog-detail"
-      className="relative min-h-screen w-full overflow-hidden text-black py-16 px-6"
-      style={backgroundStyle || defaultBackgroundStyle}
+      className="editorial-shell relative min-h-screen"
     >
-      {/* 右上角菜单按钮 */}
-      <div className="fixed top-6 right-6 z-50 flex items-center gap-4 text-white">
+      <div
+        className="absolute inset-0"
+        style={backgroundStyle || defaultBackgroundStyle}
+      />
+      <div className={`absolute inset-0 ${backgroundOverlayClass}`} />
+
+      <div className="fixed right-6 top-6 z-50 flex items-center gap-4 text-white">
         <button
-          className="text-2xl opacity-90 hover:opacity-100 transition drop-shadow-lg"
+          className="editorial-button min-h-10 border-white/14 bg-black/28 px-4 py-2 text-[10px] text-white backdrop-blur-md hover:bg-black/40"
           type="button"
           aria-label="menu"
           onClick={menu.toggleMenu}
         >
-          ☰
+          Menu
         </button>
       </div>
 
-      {/* 菜单 */}
       <HeroMenu open={menu.open} onClose={menu.closeMenu} />
 
-      {/* 背景遮罩层（仅在图片背景时显示） */}
-      {backgroundType === "image" && (
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-white/70" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/15" />
-        </div>
-      )}
-
-      <div className="relative z-10 mx-auto max-w-5xl px-4 py-8">
-        {/* 头部 */}
-        <div className="mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-semibold text-white">BLOG</h1>
-            <p className="mt-1 text-xs text-white/70">博客详情</p>
+      <div className="editorial-container pt-20 sm:pt-24">
+        <div className="mb-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+          <div className="reveal max-w-3xl">
+            <div className="editorial-kicker text-white/54">Creator journal</div>
+            <div className="line-wipe mt-5 max-w-sm bg-white/16" />
+            <h1 className="mt-8 font-serif text-[clamp(3.2rem,7vw,6.8rem)] font-light leading-[0.92] tracking-[0.03em] text-white">
+              Blog
+            </h1>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <Link
-              href={`/u/${userSlug}/blog`}
-              className="cursor-pointer rounded-lg border border-white/20 bg-white/10 backdrop-blur-sm px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-white/20"
-            >
-              BACK
-            </Link>
-          </div>
+          <Link
+            href={`/u/${userSlug}/blog`}
+            className="editorial-button min-h-11 border-white/14 bg-black/26 px-4 py-2.5 text-[11px] text-white backdrop-blur-md hover:bg-black/40"
+          >
+            Back
+          </Link>
         </div>
 
-        {/* 主要内容卡片 */}
-        <div className="mb-6 rounded-xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl">
-          {/* 封面图 */}
+        <div className="reveal editorial-panel mb-6 p-6 sm:p-8">
           {post.coverImage && (
-            <div className="relative w-full h-96 mb-6 rounded-lg overflow-hidden border border-black/10">
+            <div className="relative mb-8 h-96 w-full overflow-hidden rounded-[1.7rem] border border-white/10">
               {isExternalUrl(post.coverImage) ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img
@@ -214,16 +221,14 @@ export default function BlogDetail({
             </div>
           )}
 
-          {/* 标题 */}
           <h2
             data-testid="public-user-blog-detail-title"
-            className="mb-4 text-lg font-semibold text-black"
+            className="font-serif text-[clamp(2.4rem,4vw,4.4rem)] font-light leading-[0.96] tracking-[0.03em] text-white"
           >
             {post.title}
           </h2>
 
-          {/* 日期 */}
-          <div className="mb-4 flex items-center gap-3 text-xs text-black/60">
+          <div className="mt-5 flex items-center gap-3 text-[11px] uppercase tracking-[0.18em] text-white/44">
             <span>
               {post.publishedAt
                 ? formatDate(post.publishedAt)
@@ -231,23 +236,15 @@ export default function BlogDetail({
             </span>
           </div>
 
-          {/* 内容 */}
-          <div className="mb-4">
+          <div className="mt-8">
             <div
-              className="whitespace-pre-wrap text-sm text-black/90 leading-relaxed"
-              dangerouslySetInnerHTML={{
-                __html: post.content
-                  .replace(/\n/g, "<br />")
-                  .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>")
-                  .replace(/\*(.*?)\*/g, "<em>$1</em>")
-                  .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:underline">$1</a>'),
-              }}
+              className="editorial-richtext"
+              dangerouslySetInnerHTML={{ __html: contentHtml }}
             />
           </div>
 
-          {/* 视频 */}
           {post.videoUrl && (
-            <div className="mb-6 aspect-video rounded-lg overflow-hidden border border-black/10">
+            <div className="mt-8 aspect-video overflow-hidden rounded-[1.7rem] border border-white/10">
               <VideoPlayer
                 item={{
                   id: `blog-video-${post.id}`,
@@ -261,18 +258,17 @@ export default function BlogDetail({
             </div>
           )}
 
-          {/* 外部链接 */}
           {post.externalLinks && post.externalLinks.length > 0 && (
-            <div className="border-t border-black/10 pt-4">
-              <h3 className="mb-2 text-xs font-medium text-black/70">相关链接</h3>
-              <ul className="space-y-1">
+            <div className="mt-8 border-t border-white/10 pt-5">
+              <h3 className="text-[11px] uppercase tracking-[0.18em] text-white/42">相关链接</h3>
+              <ul className="mt-4 space-y-2">
                 {post.externalLinks.map((link, index) => (
                   <li key={index}>
                     <a
                       href={link.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-xs text-blue-600 hover:underline"
+                      className="editorial-link text-sm"
                     >
                       {link.label || link.url}
                     </a>
@@ -282,55 +278,54 @@ export default function BlogDetail({
             </div>
           )}
 
-          {/* 操作按钮 - 仿 Twitter 样式 */}
-          <div className="flex items-center justify-between border-t border-black/10 pt-4 mt-4 px-2 select-none relative">
-            {/* 评论 */}
-            <div 
-              className="flex items-center group cursor-pointer text-black/60 hover:text-blue-500 transition-colors"
+          <div className="relative mt-8 flex items-center justify-between border-t border-white/10 px-2 pt-5 select-none">
+            <button
+              type="button"
+              className="flex items-center gap-2 text-sm text-white/56 transition-colors hover:text-white"
               onClick={() => document.getElementById('comments')?.scrollIntoView({ behavior: 'smooth' })}
             >
-              <div className="p-2 rounded-full group-hover:bg-blue-500/10 transition-colors relative -left-2">
+              <div className="relative -left-2 rounded-full p-2 transition-colors hover:bg-white/8">
                 <FaRegComment className="w-5 h-5" />
               </div>
-              <span className="text-sm -ml-0.5">{commentCount > 0 ? commentCount : ""}</span>
-            </div>
+              <span className="-ml-0.5">{commentCount > 0 ? commentCount : ""}</span>
+            </button>
 
-            {/* 点赞 */}
             <button
+              type="button"
               onClick={handleLike}
-              className={`flex items-center group transition-colors ${
-                isLiked ? "text-pink-600" : "text-black/60 hover:text-pink-600"
+              className={`flex items-center transition-colors ${
+                isLiked ? "text-[color:var(--theme-primary)]" : "text-white/56 hover:text-[color:var(--theme-primary)]"
               }`}
             >
-              <div className="p-2 rounded-full group-hover:bg-pink-600/10 transition-colors relative -left-2">
+              <div className="relative -left-2 rounded-full p-2 transition-colors hover:bg-white/8">
                 {isLiked ? (
                   <FaHeart className="w-5 h-5" />
                 ) : (
                   <FaRegHeart className="w-5 h-5" />
                 )}
               </div>
-              <span className="text-sm -ml-0.5">{likeCount > 0 ? likeCount : ""}</span>
+              <span className="-ml-0.5 text-sm">{likeCount > 0 ? likeCount : ""}</span>
             </button>
             
-            {/* 分享 */}
             <div className="relative">
-              <div 
-                className="flex items-center group cursor-pointer text-black/60 hover:text-blue-500 transition-colors"
+              <button
+                type="button"
+                className="flex items-center text-white/56 transition-colors hover:text-white"
                 onClick={() => setShowShareMenu(!showShareMenu)}
               >
-                 <div className="p-2 rounded-full group-hover:bg-blue-500/10 transition-colors relative -left-2">
+                <div className="relative -left-2 rounded-full p-2 transition-colors hover:bg-white/8">
                   <FiShare className="w-5 h-5" />
                 </div>
-              </div>
+              </button>
 
-              {/* 分享菜单 (Popover) */}
               {showShareMenu && (
-                <div className="absolute bottom-full right-0 mb-2 w-40 bg-white rounded-xl shadow-xl border border-black/10 overflow-hidden z-50 animate-in fade-in zoom-in-95 duration-200">
+                <div className="absolute bottom-full right-0 z-50 mb-2 w-44 overflow-hidden rounded-[1.2rem] border border-white/10 bg-[color:color-mix(in_srgb,var(--editorial-surface-strong)_98%,transparent)] shadow-[0_20px_70px_rgba(0,0,0,0.24)]">
                   <button
+                    type="button"
                     onClick={handleCopyLink}
-                    className="w-full flex items-center gap-3 px-4 py-3 hover:bg-black/5 transition-colors text-sm font-medium text-black"
+                    className="flex w-full items-center gap-3 px-4 py-3 text-sm text-white transition-colors hover:bg-white/6"
                   >
-                    {copied ? <FiCheck className="w-4 h-4 text-green-500" /> : <FiLink className="w-4 h-4" />}
+                    {copied ? <FiCheck className="h-4 w-4 text-[color:var(--theme-primary)]" /> : <FiLink className="h-4 w-4" />}
                     <span>{copied ? "已复制" : "复制链接"}</span>
                   </button>
                 </div>
@@ -339,14 +334,15 @@ export default function BlogDetail({
           </div>
         </div>
 
-        {/* 评论区域 */}
-        <div id="comments" className="mb-6 rounded-xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl">
-          <h3 className="text-lg font-semibold mb-4 text-black">评论 ({commentCount})</h3>
+        <div id="comments" className="reveal editorial-panel mb-6 p-6 sm:p-8">
+          <h3 className="font-serif text-[2rem] font-light text-white">
+            评论 ({commentCount})
+          </h3>
 
-          {/* 评论表单 */}
-          <form onSubmit={handleSubmitComment} className="mb-6 space-y-3">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <form onSubmit={handleSubmitComment} className="mb-6 mt-6 space-y-4">
+            <div className="grid grid-cols-1 gap-3 md:grid-cols-2">
               <Input
+                label="姓名"
                 value={commentForm.userName}
                 onChange={(e) =>
                   setCommentForm({ ...commentForm, userName: e.target.value })
@@ -356,6 +352,7 @@ export default function BlogDetail({
                 disabled={submittingComment}
               />
               <Input
+                label="邮箱"
                 type="email"
                 value={commentForm.userEmail}
                 onChange={(e) =>
@@ -374,9 +371,9 @@ export default function BlogDetail({
               required
               rows={4}
               disabled={submittingComment}
-              className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-xs text-black placeholder:text-black/30 transition-colors focus:outline-none focus:ring-2 focus:ring-black/20 focus:ring-offset-1 resize-y"
+              className="editorial-textarea resize-y text-sm leading-7"
             />
-            <p className="text-xs text-black/50">
+            <p className="text-xs text-white/44">
               评论提交后需审核，通过后才会公开显示。
             </p>
             <div className="flex justify-end">
@@ -395,34 +392,34 @@ export default function BlogDetail({
           {/* 评论列表 */}
           <div className="space-y-4">
             {comments.length === 0 ? (
-              <div className="py-8 text-center text-sm text-black/50">
+              <div className="py-8 text-center text-sm text-white/44">
                 暂无评论，快来发表第一条评论吧！
               </div>
             ) : (
               comments.map((comment) => (
                 <div
                   key={comment.id}
-                  className="border-b border-black/10 pb-4 last:border-b-0"
+                  className="border-b border-white/10 pb-4 last:border-b-0"
                 >
-                  <div className="flex items-start justify-between mb-2">
+                  <div className="mb-2 flex items-start justify-between">
                     <div className="flex items-center gap-2">
-                      <span className="font-semibold text-sm text-black">
+                      <span className="text-sm font-medium text-white">
                         {comment.user?.displayName || comment.userName}
                       </span>
                       {comment.user && (
                         <Link
                           href={`/u/${comment.user.slug}`}
-                          className="text-xs text-blue-600 hover:underline"
+                          className="editorial-link text-xs"
                         >
                           @{comment.user.slug}
                         </Link>
                       )}
                     </div>
-                    <span className="text-xs text-black/50">
+                    <span className="text-xs text-white/40">
                       {formatDate(comment.createdAt)}
                     </span>
                   </div>
-                  <p className="text-sm text-black/80 whitespace-pre-wrap">
+                  <p className="whitespace-pre-wrap text-sm leading-7 text-white/72">
                     {comment.content}
                   </p>
                 </div>
@@ -431,11 +428,10 @@ export default function BlogDetail({
           </div>
         </div>
 
-        {/* 导航按钮 */}
         <div className="flex gap-2">
           <Link
             href={`/u/${userSlug}/blog`}
-            className="cursor-pointer rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black transition-colors duration-200 hover:bg-white/80"
+            className="editorial-button min-h-11 border-white/14 bg-black/26 px-4 py-2.5 text-[11px] text-white backdrop-blur-md hover:bg-black/40"
           >
             一覧に戻る
           </Link>

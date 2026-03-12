@@ -126,18 +126,29 @@ export default function HeroSection({
           showSocialLinks={showSocialLinks}
         />
 
-        {/* Title 和 Subtitle - 菜单打开时隐藏 */}
         {title && (
-          <div 
+          <div
             className={[
-              "absolute top-20 left-0 right-0 z-[5] text-center transition-opacity duration-300",
-              menu.open ? "opacity-0 pointer-events-none" : "opacity-100"
+              "absolute inset-x-0 bottom-32 z-[5] transition-opacity duration-300",
+              menu.open ? "pointer-events-none opacity-0" : "opacity-100",
             ].join(" ")}
           >
-            <h1 className="text-4xl font-bold text-white drop-shadow-lg">{title}</h1>
-            {subtitle && (
-              <p className="mt-2 text-xl text-white/80 drop-shadow-md">{subtitle}</p>
-            )}
+            <div className="mx-auto max-w-6xl px-6">
+              <div className="max-w-3xl">
+                <div className="text-[10px] uppercase tracking-[0.32em] text-white/52">
+                  Editorial landing
+                </div>
+                <div className="mt-5 h-px w-28 bg-white/18" />
+                <h1 className="mt-8 font-serif text-[clamp(3.4rem,8vw,7.5rem)] font-light leading-[0.92] tracking-[0.03em] text-white drop-shadow-[0_20px_60px_rgba(0,0,0,0.32)]">
+                  {title}
+                </h1>
+                {subtitle ? (
+                  <p className="mt-6 max-w-2xl text-base leading-8 text-white/78 drop-shadow-[0_10px_30px_rgba(0,0,0,0.2)] sm:text-lg">
+                    {subtitle}
+                  </p>
+                ) : null}
+              </div>
+            </div>
           </div>
         )}
 

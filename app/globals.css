@@ -1,51 +1,488 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  
-  /* 主题色 - 品牌增强 */
-  --theme-primary: #000000; /* 默认黑色 */
-  --theme-primary-foreground: #ffffff;
-  --theme-primary-hover: #1a1a1a;
-  --theme-primary-active: #333333;
+  --color-bg: #0d0d0b;
+  --color-surface: #141410;
+  --color-surface-strong: rgba(20, 20, 16, 0.86);
+  --color-border: #2a2a26;
+  --color-text: #e8e4d9;
+  --color-muted: #8d8778;
+  --color-accent: #c9a96e;
+  --color-accent-foreground: #120f08;
+
+  --color-bg-light: #f5f2ec;
+  --color-surface-light: rgba(255, 252, 246, 0.88);
+  --color-surface-light-strong: rgba(255, 252, 246, 0.96);
+  --color-border-light: #ddd9d0;
+  --color-text-light: #1a1a18;
+  --color-muted-light: #8a8578;
+  --color-accent-light: #9b7a3d;
+  --color-accent-light-foreground: #f7f2e8;
+
+  --editorial-bg: var(--color-bg);
+  --editorial-surface: var(--color-surface);
+  --editorial-surface-strong: var(--color-surface-strong);
+  --editorial-border: var(--color-border);
+  --editorial-text: var(--color-text);
+  --editorial-muted: var(--color-muted);
+  --editorial-accent: var(--theme-primary, var(--color-accent));
+  --editorial-accent-foreground: var(
+    --theme-primary-foreground,
+    var(--color-accent-foreground)
+  );
+
+  --background: var(--editorial-bg);
+  --foreground: var(--editorial-text);
+
+  --font-body: var(--font-jost);
+  --font-display: var(--font-cormorant);
+  --font-code: var(--font-geist-mono);
+
+  --text-hero: clamp(3.5rem, 8vw, 8.5rem);
+  --text-title: clamp(2.4rem, 4.2vw, 4.8rem);
+  --text-section: clamp(1.4rem, 2vw, 2rem);
+  --text-body: 1rem;
+  --text-caption: 0.76rem;
+
+  --tracking-hero: 0.02em;
+  --tracking-label: 0.22em;
+
+  --space-section: clamp(6rem, 12vw, 14rem);
+  --space-block: clamp(2rem, 4vw, 5rem);
+  --space-gap: clamp(1rem, 2vw, 2rem);
+  --max-prose: 42rem;
+  --max-layout: 88rem;
+
+  --theme-primary: #c9a96e;
+  --theme-primary-foreground: #120f08;
+  --theme-primary-hover: #d5bb89;
+  --theme-primary-active: #b89453;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-  
-  /* 主题色 - 用于 Tailwind 类如 bg-primary, text-primary 等 */
-  --color-primary: var(--theme-primary);
-  --color-primary-foreground: var(--theme-primary-foreground);
+  --color-primary: var(--editorial-accent);
+  --color-primary-foreground: var(--editorial-accent-foreground);
+  --font-sans: var(--font-body);
+  --font-serif: var(--font-display);
+  --font-mono: var(--font-code);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  border-color: color-mix(in srgb, var(--editorial-border) 76%, transparent);
+}
+
+html {
+  background:
+    radial-gradient(circle at top, rgba(201, 169, 110, 0.18), transparent 35%),
+    linear-gradient(180deg, #11110d 0%, var(--editorial-bg) 60%, #080806 100%);
+  color: var(--editorial-text);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  min-height: 100vh;
+  background: transparent;
+  color: var(--editorial-text);
+  font-family: var(--font-body), "Helvetica Neue", sans-serif;
+  font-weight: 300;
+  line-height: 1.7;
+  letter-spacing: 0.01em;
+  text-rendering: optimizeLegibility;
 }
 
-/* 移除 Next.js portal 元素的定位样式 */
+body::selection {
+  background: color-mix(in srgb, var(--editorial-accent) 28%, transparent);
+}
+
+a,
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+a {
+  transition:
+    color 220ms ease,
+    opacity 220ms ease;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+.editorial-display {
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 300;
+  letter-spacing: 0.02em;
+  line-height: 0.95;
+}
+
+button {
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: not-allowed;
+}
+
 nextjs-portal {
   left: unset !important;
   top: unset !important;
 }
 
-/* Skeleton 骨架屏闪烁动画 */
+.editorial-shell {
+  position: relative;
+  min-height: 100vh;
+  overflow: hidden;
+  color: var(--editorial-text);
+  background:
+    radial-gradient(circle at 14% 20%, rgba(201, 169, 110, 0.18), transparent 28%),
+    radial-gradient(circle at 88% 10%, rgba(255, 255, 255, 0.06), transparent 22%),
+    linear-gradient(180deg, #14130f 0%, var(--editorial-bg) 45%, #080806 100%);
+}
+
+.editorial-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.02), transparent 14%),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.015), transparent 16%, transparent 84%, rgba(255, 255, 255, 0.015));
+  pointer-events: none;
+}
+
+.editorial-shell--light {
+  --editorial-bg: var(--color-bg-light);
+  --editorial-surface: var(--color-surface-light);
+  --editorial-surface-strong: var(--color-surface-light-strong);
+  --editorial-border: var(--color-border-light);
+  --editorial-text: var(--color-text-light);
+  --editorial-muted: var(--color-muted-light);
+  --editorial-accent: var(--theme-primary, var(--color-accent-light));
+  --editorial-accent-foreground: var(
+    --theme-primary-foreground,
+    var(--color-accent-light-foreground)
+  );
+  color: var(--editorial-text);
+  background:
+    radial-gradient(circle at 10% 12%, rgba(155, 122, 61, 0.14), transparent 28%),
+    radial-gradient(circle at 88% 15%, rgba(26, 26, 24, 0.05), transparent 24%),
+    linear-gradient(180deg, #fbf7f0 0%, var(--editorial-bg) 54%, #ece7dd 100%);
+}
+
+.editorial-shell--light::before {
+  background:
+    linear-gradient(180deg, rgba(255, 255, 255, 0.55), transparent 18%),
+    linear-gradient(90deg, rgba(26, 26, 24, 0.03), transparent 16%, transparent 84%, rgba(26, 26, 24, 0.03));
+}
+
+.editorial-container {
+  position: relative;
+  z-index: 1;
+  width: min(calc(100% - 2rem), var(--max-layout));
+  margin-inline: auto;
+  padding-block: clamp(1.5rem, 4vw, 3rem);
+}
+
+.editorial-section {
+  margin-top: var(--space-section);
+}
+
+.editorial-panel,
+.editorial-card {
+  border: 1px solid color-mix(in srgb, var(--editorial-border) 88%, transparent);
+  background: color-mix(in srgb, var(--editorial-surface-strong) 88%, transparent);
+  backdrop-filter: blur(22px);
+  box-shadow: 0 32px 100px rgba(0, 0, 0, 0.18);
+}
+
+.editorial-panel {
+  border-radius: 2rem;
+}
+
+.editorial-card {
+  border-radius: 1.5rem;
+}
+
+.editorial-kicker {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--editorial-muted);
+}
+
+.editorial-title {
+  font-size: var(--text-title);
+  letter-spacing: var(--tracking-hero);
+}
+
+.editorial-hero-title {
+  font-size: var(--text-hero);
+  letter-spacing: var(--tracking-hero);
+}
+
+.editorial-subtitle {
+  max-width: 38rem;
+  color: color-mix(in srgb, var(--editorial-text) 86%, transparent);
+  font-size: 1rem;
+  line-height: 1.9;
+}
+
+.editorial-copy {
+  max-width: var(--max-prose);
+  color: color-mix(in srgb, var(--editorial-text) 84%, transparent);
+  font-size: 0.98rem;
+  line-height: 1.9;
+}
+
+.editorial-microcopy {
+  font-size: 0.76rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--editorial-muted);
+}
+
+.editorial-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.5rem 0.9rem;
+  border: 1px solid color-mix(in srgb, var(--editorial-border) 84%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--editorial-surface) 84%, transparent);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: var(--editorial-muted);
+}
+
+.editorial-link {
+  color: var(--editorial-accent);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--editorial-accent) 44%, transparent);
+  text-underline-offset: 0.2em;
+}
+
+.editorial-link:hover {
+  color: color-mix(in srgb, var(--editorial-accent) 82%, #efe3c8);
+}
+
+.editorial-stat {
+  display: grid;
+  gap: 0.55rem;
+  padding: 1.35rem 1.5rem;
+  border: 1px solid color-mix(in srgb, var(--editorial-border) 74%, transparent);
+  border-radius: 1.35rem;
+  background: color-mix(in srgb, var(--editorial-surface) 86%, transparent);
+}
+
+.editorial-stat__label {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: var(--tracking-label);
+  color: var(--editorial-muted);
+}
+
+.editorial-stat__value {
+  font-family: var(--font-display), Georgia, serif;
+  font-size: clamp(1.7rem, 2vw, 2.4rem);
+  line-height: 1;
+}
+
+.editorial-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  min-height: 2.85rem;
+  padding: 0.7rem 1.45rem;
+  border: 1px solid color-mix(in srgb, var(--editorial-border) 86%, transparent);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--editorial-text);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  font-size: 0.72rem;
+  transition:
+    transform 220ms ease,
+    color 220ms ease,
+    background-color 220ms ease,
+    border-color 220ms ease,
+    opacity 220ms ease;
+}
+
+.editorial-button:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.editorial-button:focus-visible,
+.editorial-input:focus-visible,
+.editorial-select:focus-visible,
+.editorial-textarea:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--editorial-accent) 60%, transparent);
+  outline-offset: 2px;
+}
+
+.editorial-button--primary {
+  border-color: color-mix(in srgb, var(--editorial-accent) 78%, transparent);
+  background: var(--editorial-accent);
+  color: var(--editorial-accent-foreground);
+}
+
+.editorial-button--primary:hover:not(:disabled),
+.btn-themed:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--editorial-accent) 88%, #efe3c8);
+}
+
+.editorial-button--secondary {
+  background: color-mix(in srgb, var(--editorial-surface) 84%, transparent);
+}
+
+.editorial-button--secondary:hover:not(:disabled),
+.editorial-button--ghost:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--editorial-text) 7%, transparent);
+}
+
+.editorial-button--danger {
+  border-color: color-mix(in srgb, #9a4b3d 64%, transparent);
+  color: #9a4b3d;
+  background: color-mix(in srgb, #9a4b3d 10%, transparent);
+}
+
+.editorial-button--danger:hover:not(:disabled) {
+  background: color-mix(in srgb, #9a4b3d 16%, transparent);
+}
+
+.editorial-button--text {
+  border-color: transparent;
+  min-height: auto;
+  padding-inline: 0;
+  color: var(--editorial-muted);
+}
+
+.editorial-input,
+.editorial-select,
+.editorial-textarea {
+  width: 100%;
+  border: 1px solid color-mix(in srgb, var(--editorial-border) 86%, transparent);
+  border-radius: 1.25rem;
+  background: color-mix(in srgb, var(--editorial-surface) 88%, transparent);
+  color: var(--editorial-text);
+  padding: 0.9rem 1rem;
+  transition:
+    border-color 220ms ease,
+    background-color 220ms ease;
+}
+
+.editorial-input::placeholder,
+.editorial-textarea::placeholder {
+  color: color-mix(in srgb, var(--editorial-muted) 72%, transparent);
+}
+
+.editorial-input:hover,
+.editorial-select:hover,
+.editorial-textarea:hover {
+  border-color: color-mix(in srgb, var(--editorial-accent) 42%, var(--editorial-border));
+}
+
+.editorial-divider {
+  height: 1px;
+  background: color-mix(in srgb, var(--editorial-border) 86%, transparent);
+}
+
+.editorial-richtext {
+  color: color-mix(in srgb, var(--editorial-text) 88%, transparent);
+  font-size: 0.98rem;
+  line-height: 1.95;
+}
+
+.editorial-richtext a {
+  color: var(--editorial-accent);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--editorial-accent) 42%, transparent);
+  text-underline-offset: 0.22em;
+}
+
+.editorial-richtext strong {
+  font-weight: 500;
+  color: var(--editorial-text);
+}
+
+.editorial-richtext em {
+  font-style: italic;
+}
+
+.editorial-richtext > * + * {
+  margin-top: 1rem;
+}
+
+.line-wipe {
+  width: 0;
+  height: 1px;
+  background: color-mix(in srgb, var(--editorial-border) 86%, transparent);
+  transition: width 1.2s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.line-wipe.in-view {
+  width: 100%;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(2.5rem);
+  transition:
+    opacity 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.reveal:nth-child(1) {
+  transition-delay: 0s;
+}
+
+.reveal:nth-child(2) {
+  transition-delay: 0.12s;
+}
+
+.reveal:nth-child(3) {
+  transition-delay: 0.24s;
+}
+
+.reveal:nth-child(4) {
+  transition-delay: 0.36s;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .reveal,
+  .line-wipe,
+  .editorial-button {
+    transition: none !important;
+  }
+
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+
+  .line-wipe {
+    width: 100%;
+  }
+}
+
 @keyframes skeleton-shimmer {
   0% {
     background-position: -200% 0;
   }
+
   100% {
     background-position: 200% 0;
   }
@@ -54,23 +491,20 @@ nextjs-portal {
 .skeleton-shimmer {
   background: linear-gradient(
     90deg,
-    rgba(0, 0, 0, 0.06) 0%,
-    rgba(0, 0, 0, 0.1) 20%,
-    rgba(0, 0, 0, 0.15) 40%,
-    rgba(0, 0, 0, 0.1) 60%,
-    rgba(0, 0, 0, 0.06) 80%,
-    rgba(0, 0, 0, 0.06) 100%
+    color-mix(in srgb, var(--editorial-surface) 88%, transparent) 0%,
+    color-mix(in srgb, var(--editorial-accent) 10%, var(--editorial-surface)) 30%,
+    color-mix(in srgb, var(--editorial-surface) 88%, transparent) 100%
   );
-  background-size: 200% 100%;
+  background-size: 220% 100%;
   animation: skeleton-shimmer 1.5s ease-in-out infinite;
 }
 
-/* Toast 弹入动画 */
 @keyframes toast-in {
   0% {
     opacity: 0;
     transform: translateX(100%);
   }
+
   100% {
     opacity: 1;
     transform: translateX(0);
@@ -81,22 +515,12 @@ nextjs-portal {
   animation: toast-in 0.3s ease-out forwards;
 }
 
-/* 主题色按钮 - 使用 CSS 变量实现动态品牌色 */
 .btn-themed {
-  background-color: var(--theme-primary);
+  border-color: color-mix(in srgb, var(--theme-primary) 78%, transparent);
+  background: var(--theme-primary);
   color: var(--theme-primary-foreground);
-  transition: background-color 0.2s ease;
 }
 
-.btn-themed:hover:not(:disabled) {
-  background-color: var(--theme-primary-hover);
-}
-
-.btn-themed:active:not(:disabled) {
-  background-color: var(--theme-primary-active);
-}
-
-/* 主题色链接 - 用于文本链接高亮 */
 .text-themed {
   color: var(--theme-primary);
 }
@@ -105,16 +529,14 @@ nextjs-portal {
   opacity: 0.8;
 }
 
-/* 主题色边框 */
 .border-themed {
   border-color: var(--theme-primary);
 }
 
-/* 主题色背景 */
 .bg-themed {
   background-color: var(--theme-primary);
 }
 
 .bg-themed-light {
-  background-color: color-mix(in srgb, var(--theme-primary) 10%, transparent);
+  background-color: color-mix(in srgb, var(--theme-primary) 12%, transparent);
 }

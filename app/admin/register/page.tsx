@@ -5,7 +5,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { BackButton } from "@/components/ui";
+import {
+  BackButton,
+  Button,
+  EditorialAuthLayout,
+  Input,
+} from "@/components/ui";
 import { userApi } from "@/lib/api";
 import { ApiError, NetworkError } from "@/lib/api/errors";
 
@@ -32,8 +37,6 @@ export default function RegisterPage() {
         displayName,
         slug,
       });
-
-      // 注册成功，跳转到登录页
       router.push("/admin?registered=true");
     } catch (err) {
       if (err instanceof ApiError) {
@@ -49,129 +52,99 @@ export default function RegisterPage() {
   }
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden">
+    <>
       <BackButton href="/admin" label="返回登录" />
-      
-      {/* 背景图 */}
-      <div className="absolute inset-0">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url(/login/login-b.jpeg)" }}
-        />
-        <div className="absolute inset-0 bg-white/70" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/15" />
-      </div>
-
-      {/* 前景内容 */}
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-5xl flex-col px-6">
-        <header className="pt-10 text-center">
-          <div className="mx-auto inline-flex items-center gap-3">
-            <div className="text-5xl font-black tracking-tight">ZUTOMAYO</div>
-            <span className="inline-flex items-center bg-black px-3 py-1 text-sm font-bold tracking-[0.2em] text-white">
-              REGISTER
-            </span>
-          </div>
-          <div className="mt-3 text-xs tracking-[0.25em] text-black/70">
-            创建账号
-          </div>
-        </header>
-
-        <div className="flex flex-1 items-center justify-center py-10">
-          <div className="w-full max-w-xl rounded-2xl border border-black/10 bg-white/55 backdrop-blur-xl px-10 py-10 shadow-2xl">
-            <div className="text-[11px] tracking-[0.35em] text-black/60">
-              REGISTER
+      <EditorialAuthLayout
+        eyebrow="Creator access"
+        title="Open a quieter publishing desk."
+        description="Create the account that will own your public page, editorial content, and storefront settings."
+        stats={[
+          { label: "Page", value: "/u/slug" },
+          { label: "Publishing", value: "News / Blog" },
+          { label: "Commerce", value: "Shop / Orders" },
+          { label: "Payouts", value: "Stripe Connect" },
+        ]}
+        panel={
+          <div className="space-y-8">
+            <div>
+              <div className="editorial-kicker">Register</div>
+              <h2 className="mt-4 text-[2.2rem] font-light text-[color:var(--editorial-text)]">
+                创建账号
+              </h2>
+              <p className="editorial-copy mt-4">
+                注册后即可创建你的个人页面。
+              </p>
             </div>
-            <h1 className="mt-2 text-2xl font-semibold tracking-tight text-black">
-              创建账号
-            </h1>
-            <p className="mt-2 text-sm text-black/60">
-              注册后即可创建你的个人页面
-            </p>
 
-            <form onSubmit={onSubmit} className="mt-7 space-y-4">
-              <div>
-                <label className="text-xs text-black/70">邮箱 *</label>
-                <input
-                  className="mt-2 w-full rounded-xl border border-black/10 bg-white/70 px-4 py-3 text-sm text-black placeholder:text-black/30 outline-none focus:border-black/30"
-                  placeholder="email@example.com"
-                  type="email"
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={loading}
-                  required
-                />
-              </div>
+            <form onSubmit={onSubmit} className="space-y-5">
+              <Input
+                label="邮箱"
+                placeholder="email@example.com"
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={loading}
+                required
+              />
 
-              <div>
-                <label className="text-xs text-black/70">密码 *</label>
-                <input
-                  className="mt-2 w-full rounded-xl border border-black/10 bg-white/70 px-4 py-3 text-sm text-black placeholder:text-black/30 outline-none focus:border-black/30"
-                  placeholder="至少 6 位"
-                  type="password"
-                  autoComplete="new-password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={loading}
-                  required
-                  minLength={6}
-                />
-              </div>
+              <Input
+                label="密码"
+                placeholder="至少 6 位"
+                type="password"
+                autoComplete="new-password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                disabled={loading}
+                required
+                minLength={6}
+              />
 
-              <div>
-                <label className="text-xs text-black/70">显示名称（可选）</label>
-                <input
-                  className="mt-2 w-full rounded-xl border border-black/10 bg-white/70 px-4 py-3 text-sm text-black placeholder:text-black/30 outline-none focus:border-black/30"
-                  placeholder="比如: fulina"
-                  type="text"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  disabled={loading}
-                />
-              </div>
+              <Input
+                label="显示名称（可选）"
+                placeholder="比如: fulina"
+                type="text"
+                value={displayName}
+                onChange={(e) => setDisplayName(e.target.value)}
+                disabled={loading}
+              />
 
-              <div>
-                <label className="text-xs text-black/70">
-                  用户名（URL，可选）
-                </label>
-                <input
-                  className="mt-2 w-full rounded-xl border border-black/10 bg-white/70 px-4 py-3 text-sm text-black placeholder:text-black/30 outline-none focus:border-black/30"
-                  placeholder="不填则从邮箱生成"
-                  type="text"
-                  value={slug}
-                  onChange={(e) => setSlug(e.target.value)}
-                  disabled={loading}
-                />
-                <p className="mt-1 text-xs text-black/50">
-                  用于 /u/[你的用户名] 页面 URL
-                </p>
-              </div>
+              <Input
+                label="用户名（URL，可选）"
+                placeholder="不填则从邮箱生成"
+                type="text"
+                value={slug}
+                onChange={(e) => setSlug(e.target.value)}
+                disabled={loading}
+                helpText="用于 /u/[你的用户名] 页面 URL。"
+              />
 
-              {error && (
-                <div className="text-center text-xs text-red-600/80">
+              {error ? (
+                <div className="rounded-[1.2rem] border border-red-500/25 bg-red-500/8 px-4 py-3 text-sm text-red-700">
                   {error}
                 </div>
-              )}
+              ) : null}
 
-              <button
+              <Button
                 type="submit"
-                className="mt-2 w-full rounded-xl bg-black py-3 text-sm font-medium text-white hover:bg-black/90 disabled:opacity-60"
+                size="lg"
+                loading={loading}
+                className="w-full"
                 disabled={loading}
               >
                 {loading ? "注册中..." : "注册"}
-              </button>
+              </Button>
 
-              <div className="pt-2 text-center text-xs text-black/55">
+              <div className="border-t border-[color:color-mix(in_srgb,var(--editorial-border)_80%,transparent)] pt-5 text-[11px] uppercase tracking-[0.16em] text-[color:var(--editorial-muted)]">
                 已有账号？{" "}
-                <Link className="hover:text-black" href="/admin">
+                <Link className="editorial-link" href="/admin">
                   去登录
                 </Link>
               </div>
             </form>
           </div>
-        </div>
-      </div>
-    </main>
+        }
+      />
+    </>
   );
 }
-

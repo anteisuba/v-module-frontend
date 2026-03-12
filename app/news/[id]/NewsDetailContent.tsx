@@ -195,33 +195,32 @@ export function NewsDetailContent({
   };
 
   if (loading) {
-    // 简单的加载提示，不显示复杂背景
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
-        <p className="text-black/60">{t("common.loading")}</p>
-      </div>
+      <main className="editorial-shell flex min-h-screen items-center justify-center">
+        <div className="editorial-panel px-8 py-6 text-sm text-white/56">
+          {t("common.loading")}
+        </div>
+      </main>
     );
   }
 
   if (error && !article) {
     return (
-      <main className="relative min-h-screen w-full overflow-hidden">
-        {/* 背景图 */}
+      <main className="editorial-shell relative min-h-screen overflow-hidden">
         <div className="absolute inset-0">
           <div
             className="absolute inset-0 bg-cover bg-center"
             style={{ backgroundImage: "url(/login/login-c.jpeg)" }}
           />
-          <div className="absolute inset-0 bg-white/70" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/15" />
+          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,8,6,0.26),rgba(8,8,6,0.62)_56%,rgba(8,8,6,0.84))]" />
         </div>
-        <div className="relative z-10 mx-auto max-w-5xl px-4 py-16">
-          <div className="mb-4 rounded-lg border border-red-500/30 bg-red-50 px-3 py-2 text-xs text-red-700">
+        <div className="editorial-container pt-24">
+          <div className="mb-4 rounded-[1.2rem] border border-red-400/24 bg-red-500/10 px-4 py-3 text-sm text-red-100">
             {error}
           </div>
           <Link
             href={getBackUrl()}
-            className="inline-block rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black transition-colors duration-200 hover:bg-white/80"
+            className="editorial-button min-h-11 border-white/14 bg-black/26 px-4 py-2.5 text-[11px] text-white backdrop-blur-md hover:bg-black/40"
           >
             返回列表
           </Link>
@@ -275,87 +274,84 @@ export function NewsDetailContent({
     ? article.backgroundType
     : pageConfig?.newsBackground?.type || "color";
 
+  const backgroundOverlayClass =
+    currentBackgroundType === "image"
+      ? "bg-[linear-gradient(180deg,rgba(8,8,6,0.28),rgba(8,8,6,0.52)_42%,rgba(8,8,6,0.82))]"
+      : "bg-[linear-gradient(180deg,rgba(8,8,6,0.16),rgba(8,8,6,0.48)_46%,rgba(8,8,6,0.78))]";
+
   return (
     <main
       data-testid="public-news-detail"
-      className="relative min-h-screen w-full overflow-hidden"
-      style={pageBackgroundStyle}
+      className="editorial-shell relative min-h-screen overflow-hidden"
     >
-      {/* 右上角菜单按钮 */}
-      <div className="fixed top-6 right-6 z-50 flex items-center gap-4 text-white">
+      <div className="absolute inset-0" style={pageBackgroundStyle} />
+      <div className={`absolute inset-0 ${backgroundOverlayClass}`} />
+
+      <div className="fixed right-6 top-6 z-50 flex items-center gap-4 text-white">
         <button
-          className="text-2xl opacity-90 hover:opacity-100 transition drop-shadow-lg"
+          className="editorial-button min-h-10 border-white/14 bg-black/28 px-4 py-2 text-[10px] text-white backdrop-blur-md hover:bg-black/40"
           type="button"
           aria-label="menu"
           onClick={menu.toggleMenu}
         >
-          ☰
+          Menu
         </button>
       </div>
 
-      {/* 菜单 */}
       <HeroMenu open={menu.open} onClose={menu.closeMenu} />
 
-      {/* 背景遮罩层（仅在图片背景时显示） */}
-      {currentBackgroundType === "image" && (
-        <div className="absolute inset-0">
-          <div className="absolute inset-0 bg-white/70" />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/15" />
-        </div>
-      )}
-
-      <div className="relative z-10 mx-auto max-w-5xl px-4 py-8">
-        {/* 头部 */}
-        <div className="mb-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-xl font-semibold text-black">NEWS</h1>
-            <p className="mt-1 text-xs text-black/70">新闻详情</p>
+      <div className="editorial-container pt-20 sm:pt-24">
+        <div className="mb-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">
+          <div className="reveal max-w-3xl">
+            <div className="editorial-kicker text-white/54">Public dispatches</div>
+            <div className="line-wipe mt-5 max-w-sm bg-white/16" />
+            <h1 className="mt-8 font-serif text-[clamp(3.2rem,7vw,6.8rem)] font-light leading-[0.92] tracking-[0.03em] text-white">
+              News
+            </h1>
           </div>
           <div className="flex flex-wrap items-center gap-2">
             {isAuthor && !isEditing && (
               <button
                 type="button"
                 onClick={() => setIsEditing(true)}
-                className="cursor-pointer rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black transition-colors duration-200 hover:bg-white/80"
+                className="editorial-button min-h-11 border-white/14 bg-black/26 px-4 py-2.5 text-[11px] text-white backdrop-blur-md hover:bg-black/40"
               >
                 编辑
               </button>
             )}
             <Link
               href={getBackUrl()}
-              className="cursor-pointer rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black transition-colors duration-200 hover:bg-white/80"
+              className="editorial-button min-h-11 border-white/14 bg-black/26 px-4 py-2.5 text-[11px] text-white backdrop-blur-md hover:bg-black/40"
             >
-              BACK
+              Back
             </Link>
           </div>
         </div>
 
-        {/* 错误提示 */}
         {error && (
-          <div className="mb-4 rounded-lg border border-red-500/30 bg-red-50 px-3 py-2 text-xs text-red-700">
+          <div className="mb-4 rounded-[1.2rem] border border-red-400/24 bg-red-500/10 px-4 py-3 text-sm text-red-100">
             {error}
           </div>
         )}
 
-        {/* 编辑模式 */}
         {isEditing && isAuthor ? (
-          <div className="mb-6 rounded-xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl">
+          <div className="reveal editorial-panel mb-6 p-6 sm:p-8">
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-black mb-1.5">
+                <label className="mb-2 block text-[11px] uppercase tracking-[0.18em] text-white/44">
                   标题 *
                 </label>
                 <input
                   type="text"
                   value={formData.title}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
+                  className="editorial-input text-sm"
                   disabled={saving}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-black mb-1.5">
+                <label className="mb-2 block text-[11px] uppercase tracking-[0.18em] text-white/44">
                   内容 *
                 </label>
                 <textarea
@@ -364,14 +360,14 @@ export function NewsDetailContent({
                     setFormData({ ...formData, content: e.target.value })
                   }
                   rows={15}
-                  className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
+                  className="editorial-textarea text-sm leading-7"
                   disabled={saving}
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-medium text-black mb-1.5">
+                  <label className="mb-2 block text-[11px] uppercase tracking-[0.18em] text-white/44">
                     分类
                   </label>
                   <select
@@ -379,7 +375,7 @@ export function NewsDetailContent({
                     onChange={(e) =>
                       setFormData({ ...formData, category: e.target.value })
                     }
-                    className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
+                    className="editorial-select text-sm"
                     disabled={saving}
                   >
                     <option value="MEDIA">MEDIA</option>
@@ -390,7 +386,7 @@ export function NewsDetailContent({
                 </div>
 
                 <div>
-                  <label className="block text-xs font-medium text-black mb-1.5">
+                  <label className="mb-2 block text-[11px] uppercase tracking-[0.18em] text-white/44">
                     标签
                   </label>
                   <input
@@ -399,14 +395,14 @@ export function NewsDetailContent({
                     onChange={(e) =>
                       setFormData({ ...formData, tag: e.target.value })
                     }
-                    className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
+                    className="editorial-input text-sm"
                     disabled={saving}
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-black mb-1.5">
+                <label className="mb-2 block text-[11px] uppercase tracking-[0.18em] text-white/44">
                   分享链接
                 </label>
                 <input
@@ -415,13 +411,13 @@ export function NewsDetailContent({
                   onChange={(e) =>
                     setFormData({ ...formData, shareUrl: e.target.value })
                   }
-                  className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black"
+                  className="editorial-input text-sm"
                   disabled={saving}
                 />
               </div>
 
               <div>
-                <label className="block text-xs font-medium text-black mb-1.5">
+                <label className="mb-2 block text-[11px] uppercase tracking-[0.18em] text-white/44">
                   分享渠道
                 </label>
                 <div className="flex gap-3">
@@ -444,7 +440,7 @@ export function NewsDetailContent({
                         disabled={saving}
                         className="toggle toggle-sm"
                       />
-                      <span className="text-xs text-black/70">
+                      <span className="text-xs text-white/62">
                         {ch.platform === "twitter" ? "Twitter/X" : ch.platform === "facebook" ? "Facebook" : "LINE"}
                       </span>
                     </label>
@@ -454,7 +450,7 @@ export function NewsDetailContent({
 
               {/* 背景设置（控制详情页背景） */}
               <div>
-                <label className="block text-xs font-medium text-black mb-1.5">
+                <label className="mb-2 block text-[11px] uppercase tracking-[0.18em] text-white/44">
                   背景设置（控制此详情页背景）
                 </label>
                 <div className="space-y-2">
@@ -464,10 +460,10 @@ export function NewsDetailContent({
                       onClick={() =>
                         setFormData({ ...formData, backgroundType: "color" })
                       }
-                      className={`rounded px-3 py-1.5 text-xs transition-colors ${
+                      className={`editorial-button min-h-10 px-4 py-2 text-[10px] ${
                         formData.backgroundType === "color"
-                          ? "bg-black text-white"
-                          : "bg-white/70 text-black hover:bg-white/90"
+                          ? "editorial-button--primary"
+                          : "border-white/14 bg-black/24 text-white hover:bg-black/36"
                       }`}
                       disabled={saving}
                     >
@@ -478,10 +474,10 @@ export function NewsDetailContent({
                       onClick={() =>
                         setFormData({ ...formData, backgroundType: "image" })
                       }
-                      className={`rounded px-3 py-1.5 text-xs transition-colors ${
+                      className={`editorial-button min-h-10 px-4 py-2 text-[10px] ${
                         formData.backgroundType === "image"
-                          ? "bg-black text-white"
-                          : "bg-white/70 text-black hover:bg-white/90"
+                          ? "editorial-button--primary"
+                          : "border-white/14 bg-black/24 text-white hover:bg-black/36"
                       }`}
                       disabled={saving}
                     >
@@ -497,11 +493,11 @@ export function NewsDetailContent({
                         onChange={(e) =>
                           setFormData({ ...formData, backgroundValue: e.target.value })
                         }
-                        className="h-8 w-full rounded border border-black/10"
+                        className="h-10 w-full rounded-[1rem] border border-white/10 bg-black/10"
                         disabled={saving}
                       />
                       <div
-                        className="mt-2 h-16 w-full rounded border border-black/10"
+                        className="mt-2 h-16 w-full rounded-[1rem] border border-white/10"
                         style={{ backgroundColor: formData.backgroundValue }}
                       />
                     </div>
@@ -514,10 +510,10 @@ export function NewsDetailContent({
                           setFormData({ ...formData, backgroundValue: e.target.value })
                         }
                         placeholder="/path/to/image.jpg 或 https://example.com/image.jpg"
-                        className="w-full rounded border border-black/10 bg-white px-3 py-1.5 text-xs text-black mb-2"
+                        className="editorial-input mb-2 text-sm"
                         disabled={saving}
                       />
-                      <div className="mt-2 h-32 w-full rounded border border-black/10 overflow-hidden bg-black/5 relative">
+                      <div className="relative mt-2 h-32 w-full overflow-hidden rounded-[1rem] border border-white/10 bg-black/10">
                         {formData.backgroundValue ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
@@ -528,7 +524,7 @@ export function NewsDetailContent({
                           />
                         ) : (
                           <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="text-xs text-black/50">暂无图片</div>
+                            <div className="text-xs text-white/40">暂无图片</div>
                           </div>
                         )}
                       </div>
@@ -548,7 +544,7 @@ export function NewsDetailContent({
                     disabled={saving}
                     className="toggle toggle-sm"
                   />
-                  <span className="text-xs text-black/70">已发布</span>
+                  <span className="text-xs text-white/62">已发布</span>
                 </label>
               </div>
 
@@ -557,7 +553,7 @@ export function NewsDetailContent({
                   type="button"
                   onClick={handleSave}
                   disabled={saving}
-                  className="cursor-pointer rounded-lg bg-black px-3 py-1.5 text-xs font-medium text-white transition-colors duration-200 hover:bg-black/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="editorial-button editorial-button--primary min-h-11 px-4 py-2.5 text-[11px] disabled:opacity-40"
                 >
                   {saving ? "保存中..." : "保存"}
                 </button>
@@ -570,7 +566,7 @@ export function NewsDetailContent({
                     }
                   }}
                   disabled={saving}
-                  className="cursor-pointer rounded-lg border border-black/10 bg-white/70 px-3 py-1.5 text-xs font-medium text-black transition-colors duration-200 hover:bg-white/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="editorial-button min-h-11 border-white/14 bg-black/26 px-4 py-2.5 text-[11px] text-white backdrop-blur-md disabled:opacity-40"
                 >
                   取消
                 </button>
@@ -578,17 +574,17 @@ export function NewsDetailContent({
             </div>
           </div>
         ) : (
-          <div className="mb-6 rounded-xl border border-black/10 bg-white/55 p-5 backdrop-blur-xl">
+          <div className="reveal editorial-panel mb-6 p-6 sm:p-8">
             {/* 文章标题 */}
             <h2
               data-testid="public-news-detail-title"
-              className="mb-4 text-lg font-semibold text-black"
+              className="font-serif text-[clamp(2.4rem,4vw,4.4rem)] font-light leading-[0.96] tracking-[0.03em] text-white"
             >
               {article.title}
             </h2>
 
             {/* 元信息 */}
-            <div className="mb-4 flex items-center gap-3 text-xs text-black/60">
+            <div className="mt-5 flex items-center gap-3 text-[11px] uppercase tracking-[0.18em] text-white/44">
               <span>
                 {new Date(article.createdAt).toLocaleDateString("ja-JP", {
                   year: "numeric",
@@ -602,7 +598,7 @@ export function NewsDetailContent({
 
             {/* 分享按钮 */}
             {shareChannels.some((ch) => ch.enabled) && (
-              <div className="mb-4 flex gap-2 border-t border-black/10 pt-4">
+              <div className="mb-4 mt-8 flex gap-2 border-t border-white/10 pt-4">
                 {shareChannels
                   .filter((ch) => ch.enabled)
                   .map((ch) => (
@@ -610,7 +606,7 @@ export function NewsDetailContent({
                       key={ch.platform}
                       type="button"
                       onClick={() => handleShare(ch.platform)}
-                      className="cursor-pointer rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black transition-colors duration-200 hover:bg-white/80"
+                      className="editorial-button min-h-11 border-white/14 bg-black/26 px-4 py-2.5 text-[11px] text-white backdrop-blur-md hover:bg-black/40"
                     >
                       {ch.platform === "twitter"
                         ? "ポスト"
@@ -623,20 +619,20 @@ export function NewsDetailContent({
             )}
 
             {/* 文章内容 */}
-            <div className="mb-4">
-              <div className="whitespace-pre-wrap text-sm text-black/90 leading-relaxed">
+            <div className="mt-6">
+              <div className="whitespace-pre-wrap text-sm leading-8 text-white/72">
                 {article.content}
               </div>
             </div>
 
             {/* 分享链接 */}
             {article.shareUrl && (
-              <div className="mb-4">
+              <div className="mb-4 mt-6">
                 <a
                   href={article.shareUrl}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="text-xs text-blue-600 hover:text-blue-700 underline"
+                  className="editorial-link text-sm"
                 >
                   {article.shareUrl}
                 </a>
@@ -644,17 +640,17 @@ export function NewsDetailContent({
             )}
 
             {/* 导航按钮 */}
-            <div className="flex gap-2 border-t border-black/10 pt-4">
+            <div className="mt-8 flex gap-2 border-t border-white/10 pt-4">
               <button
                 type="button"
                 onClick={() => router.back()}
-                className="cursor-pointer rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black transition-colors duration-200 hover:bg-white/80"
+                className="editorial-button min-h-11 border-white/14 bg-black/26 px-4 py-2.5 text-[11px] text-white backdrop-blur-md hover:bg-black/40"
               >
                 前へ
               </button>
               <Link
                 href={getBackUrl()}
-                className="cursor-pointer rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black transition-colors duration-200 hover:bg-white/80"
+                className="editorial-button min-h-11 border-white/14 bg-black/26 px-4 py-2.5 text-[11px] text-white backdrop-blur-md hover:bg-black/40"
               >
                 一覧に戻る
               </Link>

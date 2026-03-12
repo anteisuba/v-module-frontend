@@ -75,7 +75,7 @@ export default function BackButton({
       return (
         <Link
           href={href}
-          className={`${baseClasses} text-sm text-black/70 hover:text-black transition underline ${className}`}
+          className={`${baseClasses} editorial-link text-[11px] uppercase tracking-[0.18em] ${className}`}
         >
           ← {label}
         </Link>
@@ -84,21 +84,17 @@ export default function BackButton({
     return (
       <button
         onClick={handleClick}
-        className={`${baseClasses} text-sm text-black/70 hover:text-black transition underline ${className}`}
+        className={`${baseClasses} editorial-link text-[11px] uppercase tracking-[0.18em] ${className}`}
       >
         ← {label}
       </button>
     );
   }
 
-  // 按钮样式（默认）
   const buttonClasses = `
     ${baseClasses}
-    rounded-xl border border-black/10 bg-white/70 backdrop-blur-sm
-    px-4 py-2 text-sm font-medium text-black
-    hover:bg-white/80 hover:border-black/20
-    transition-all duration-200
-    shadow-sm hover:shadow-md
+    editorial-button editorial-button--secondary
+    min-h-10 px-4 py-2 text-[10px] shadow-sm
     ${className}
   `
     .trim()

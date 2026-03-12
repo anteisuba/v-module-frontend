@@ -46,40 +46,42 @@ export default function ProductDetail({
   const currentImageIsExternal = currentImage ? isExternalUrl(currentImage) : false;
 
   return (
-    <div
+    <main
       data-testid="public-user-shop-detail"
-      className="relative min-h-screen text-black py-16 px-6"
-      style={backgroundStyle}
+      className="editorial-shell relative min-h-screen"
     >
-      {/* 右上角菜单按钮 */}
-      <div className="fixed top-6 right-6 z-50 flex items-center gap-4 text-white">
+      <div
+        className="absolute inset-0"
+        style={backgroundStyle || { backgroundColor: "#000000" }}
+      />
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,8,6,0.18),rgba(8,8,6,0.64)_56%,rgba(8,8,6,0.84))]" />
+
+      <div className="fixed right-6 top-6 z-50 flex items-center gap-4 text-white">
         <button
-          className="text-2xl opacity-90 hover:opacity-100 transition drop-shadow-lg"
+          className="editorial-button min-h-10 border-white/14 bg-black/28 px-4 py-2 text-[10px] text-white backdrop-blur-md hover:bg-black/40"
           type="button"
           aria-label="menu"
           onClick={menu.toggleMenu}
         >
-          ☰
+          Menu
         </button>
       </div>
 
-      {/* 菜单 */}
       <HeroMenu open={menu.open} onClose={menu.closeMenu} />
-      <div className="max-w-6xl mx-auto">
-        {/* 返回链接 */}
+
+      <div className="editorial-container pt-20 sm:pt-24">
         <Link
           href={`/u/${userSlug}/shop`}
-          className="inline-block mb-6 text-sm text-black/60 hover:text-black transition-colors"
+          className="editorial-link text-[11px] uppercase tracking-[0.18em]"
         >
           ← 返回商店
         </Link>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {/* 图片轮播 */}
+        <div className="mt-8 grid gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(22rem,0.85fr)]">
           <div>
             {product.images && product.images.length > 0 ? (
               <>
-                <div className="relative w-full aspect-square mb-4 rounded-lg overflow-hidden">
+                <div className="relative mb-4 aspect-square w-full overflow-hidden rounded-[2rem] border border-white/10 bg-black/20">
                   {currentImageIsExternal ? (
                     // eslint-disable-next-line @next/next/no-img-element
                     <img
@@ -103,11 +105,12 @@ export default function ProductDetail({
                     {product.images.map((img, index) => (
                       <button
                         key={index}
+                        type="button"
                         onClick={() => setCurrentImageIndex(index)}
-                        className={`relative aspect-square rounded-lg overflow-hidden border-2 transition-colors ${
+                        className={`relative aspect-square overflow-hidden rounded-[1.1rem] border transition-colors ${
                           currentImageIndex === index
-                            ? "border-black"
-                            : "border-transparent hover:border-black/30"
+                            ? "border-[color:var(--theme-primary)]"
+                            : "border-white/10 hover:border-white/28"
                         }`}
                       >
                         {isExternalUrl(img) ? (
@@ -132,50 +135,54 @@ export default function ProductDetail({
                 )}
               </>
             ) : (
-              <div className="w-full aspect-square bg-gray-200 rounded-lg flex items-center justify-center">
-                <span className="text-gray-400">No Image</span>
+              <div className="flex aspect-square w-full items-center justify-center rounded-[2rem] border border-white/10 bg-[linear-gradient(135deg,rgba(201,169,110,0.16),rgba(20,20,16,0.08))]">
+                <span className="text-[11px] uppercase tracking-[0.24em] text-white/48">No Image</span>
               </div>
             )}
           </div>
 
-          {/* 商品信息 */}
-          <div>
+          <div className="reveal editorial-panel p-6 sm:p-8">
+            <div className="editorial-kicker text-white/54">Product</div>
             <h1
               data-testid="public-user-shop-detail-title"
-              className="text-4xl font-bold mb-4"
+              className="mt-5 font-serif text-[clamp(2.8rem,4.5vw,4.8rem)] font-light leading-[0.94] tracking-[0.03em] text-white"
             >
               {product.name}
             </h1>
-            <div className="text-3xl font-bold mb-6">{formatPrice(product.price)}</div>
+            <div className="mt-5 font-serif text-[2.4rem] font-light text-[color:var(--theme-primary)]">
+              {formatPrice(product.price)}
+            </div>
 
             {product.description && (
-              <div className="mb-6">
-                <h2 className="text-lg font-semibold mb-2">商品描述</h2>
-                <p className="text-black/70 whitespace-pre-wrap">{product.description}</p>
+              <div className="mt-8">
+                <h2 className="text-[11px] uppercase tracking-[0.2em] text-white/46">商品描述</h2>
+                <p className="mt-4 whitespace-pre-wrap text-sm leading-8 text-white/72">
+                  {product.description}
+                </p>
               </div>
             )}
 
-            {/* 库存状态 */}
-            <div className="mb-6">
+            <div className="mt-8 border-t border-white/10 pt-5">
               {product.stock === 0 ? (
-                <span className="text-red-600 font-semibold">缺货</span>
+                <span className="text-[11px] uppercase tracking-[0.18em] text-red-300">缺货</span>
               ) : (
-                <span className="text-black/60">库存: {product.stock}</span>
+                <span className="text-[11px] uppercase tracking-[0.18em] text-white/48">
+                  库存: {product.stock}
+                </span>
               )}
             </div>
 
-            {/* 购买按钮 */}
             <button
               onClick={handleBuyNow}
               disabled={product.stock === 0}
               data-testid="public-shop-buy-now"
-              className="w-full rounded-xl bg-black px-6 py-4 text-lg font-medium text-white hover:bg-black/90 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors"
+              className="editorial-button editorial-button--primary mt-8 w-full min-h-14 px-6 py-4 text-[11px] disabled:opacity-45"
             >
               {product.stock === 0 ? "缺货" : "立即购买"}
             </button>
           </div>
         </div>
       </div>
-    </div>
+    </main>
   );
 }

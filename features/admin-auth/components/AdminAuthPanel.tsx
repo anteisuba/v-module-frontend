@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { Button, Input } from "@/components/ui";
 import { userApi } from "@/lib/api";
 import { ApiError, NetworkError } from "@/lib/api/errors";
 import { useUser } from "@/lib/context/UserContext";
@@ -12,18 +13,12 @@ export default function AdminAuthPanel() {
   const router = useRouter();
   const { refreshUser } = useUser();
   const { t } = useI18n();
-  const [enter, setEnter] = useState(false);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-
-  useEffect(() => {
-    const t = setTimeout(() => setEnter(true), 200); // 背景先出现，200ms 后卡片入场
-    return () => clearTimeout(t);
-  }, []);
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -54,86 +49,61 @@ export default function AdminAuthPanel() {
   }
 
   return (
-    <div
-      className={[
-        "w-full max-w-xl rounded-2xl border border-black/10",
-        "bg-white/55 backdrop-blur-xl shadow-2xl",
-        "px-10 py-10",
-        "transition-all duration-500 ease-out",
-        enter ? "opacity-100 translate-y-0" : "opacity-0 translate-y-3",
-      ].join(" ")}
-    >
-      <div className="text-[11px] tracking-[0.35em] text-black/60">{t("auth.login.title").toUpperCase()}</div>
-      <h1 className="mt-2 text-2xl font-semibold tracking-tight text-black">
-        {t("auth.login.title")}
-      </h1>
-      <p className="mt-2 text-sm text-black/60">
-        {t("auth.login.description") || "登录后可编辑你的个人页面内容。"}
-      </p>
+    <div className="space-y-8">
+      <div>
+        <div className="editorial-kicker">{t("auth.login.title").toUpperCase()}</div>
+        <h2 className="mt-4 text-[2.2rem] font-light tracking-[0.02em] text-[color:var(--editorial-text)]">
+          {t("auth.login.title")}
+        </h2>
+        <p className="editorial-copy mt-4">
+          {t("auth.login.description") || "登录后可编辑你的个人页面内容。"}
+        </p>
+      </div>
 
-      <form onSubmit={onSubmit} className="mt-7 space-y-4">
-        <div>
-          <label className="text-xs text-black/70">{t("auth.login.email")}</label>
-          <input
-            className="
-              mt-2 w-full rounded-xl
-              border border-black/10
-              bg-white/70
-              px-4 py-3
-              text-sm text-black
-              placeholder:text-black/30
-              outline-none
-              focus:border-black/30
-            "
-            placeholder="email@example.com"
-            type="email"
-            autoComplete="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            disabled={loading}
-          />
-        </div>
+      <form onSubmit={onSubmit} className="space-y-5">
+        <Input
+          label={t("auth.login.email")}
+          placeholder="email@example.com"
+          type="email"
+          autoComplete="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          disabled={loading}
+        />
 
-        <div>
-          <label className="text-xs text-black/70">{t("auth.login.password")}</label>
-          <input
-            className="
-              mt-2 w-full rounded-xl
-              border border-black/10
-              bg-white/70
-              px-4 py-3
-              text-sm text-black
-              placeholder:text-black/30
-              outline-none
-              focus:border-black/30
-            "
-            placeholder="••••••••"
-            type="password"
-            autoComplete="current-password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={loading}
-          />
-        </div>
+        <Input
+          label={t("auth.login.password")}
+          placeholder="••••••••"
+          type="password"
+          autoComplete="current-password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          disabled={loading}
+        />
 
-        {error && (
-          <div className="text-center text-xs text-red-600/80">{error}</div>
-        )}
+        {error ? (
+          <div className="rounded-[1.2rem] border border-red-500/25 bg-red-500/8 px-4 py-3 text-sm text-red-700">
+            {error}
+          </div>
+        ) : null}
 
-        <button
+        <Button
           type="submit"
-          className="mt-2 w-full rounded-xl bg-black py-3 text-sm font-medium text-white hover:bg-black/90 disabled:opacity-60"
+          size="lg"
+          loading={loading}
+          className="w-full"
           disabled={loading}
         >
-          {loading ? t("auth.login.submitting") || "登录中..." : t("auth.login.submit")}
-        </button>
+          {loading
+            ? t("auth.login.submitting") || "登录中..."
+            : t("auth.login.submit")}
+        </Button>
 
-        <div className="pt-2 text-center text-xs text-black/55">
-          <Link className="hover:text-black" href="/admin/forgot-password">
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-[color:color-mix(in_srgb,var(--editorial-border)_80%,transparent)] pt-5 text-[11px] uppercase tracking-[0.16em] text-[color:var(--editorial-muted)]">
+          <Link className="editorial-link" href="/admin/forgot-password">
             {t("auth.login.forgotPassword")}
           </Link>
-          <span className="px-2 text-black/25">/</span>
-          <Link className="hover:text-black" href="/admin/register">
+          <Link className="editorial-link" href="/admin/register">
             {t("auth.login.register")}
           </Link>
         </div>

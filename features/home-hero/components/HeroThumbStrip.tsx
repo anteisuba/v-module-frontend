@@ -32,7 +32,7 @@ export default function HeroThumbStrip({
 
   return (
     <div className="absolute bottom-10 left-0 right-0 z-40">
-      <div className="mx-auto w-full max-w-5xl px-6">
+      <div className="mx-auto w-full max-w-6xl px-6">
         <div className="flex items-end justify-center gap-4">
           {visible.map((i) => {
             const active = i === currentIndex;
@@ -45,12 +45,12 @@ export default function HeroThumbStrip({
                 type="button"
                 onClick={() => onPick(i)}
                 className={[
-                  "relative overflow-hidden rounded-md",
-                  "h-16 w-28 sm:h-20 sm:w-36",
-                  "border transition",
+                  "relative overflow-hidden rounded-[1.1rem]",
+                  "h-[4.5rem] w-28 sm:h-24 sm:w-40",
+                  "border bg-black/18 backdrop-blur-sm transition duration-300",
                   active
-                    ? "border-white/80 opacity-100"
-                    : "border-white/20 opacity-70 hover:opacity-100",
+                    ? "translate-y-0 border-[color:var(--theme-primary)] opacity-100 shadow-[0_20px_50px_rgba(0,0,0,0.24)]"
+                    : "translate-y-2 border-white/16 opacity-72 hover:translate-y-0 hover:opacity-100",
                 ].join(" ")}
                 aria-label={`Go to slide ${i + 1}`}
               >
@@ -79,14 +79,15 @@ export default function HeroThumbStrip({
           })}
         </div>
 
-        {/* 小圆点（可选，但很像官网） */}
-        <div className="mt-4 flex justify-center gap-2">
+        <div className="mt-5 flex justify-center gap-2">
           {slides.map((_, i) => (
             <span
               key={i}
               className={[
-                "h-1.5 w-1.5 rounded-full transition",
-                i === currentIndex ? "bg-white/90" : "bg-white/30",
+                "rounded-full transition",
+                i === currentIndex
+                  ? "h-1.5 w-8 bg-[color:var(--theme-primary)]"
+                  : "h-1.5 w-1.5 bg-white/28",
               ].join(" ")}
             />
           ))}

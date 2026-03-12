@@ -118,45 +118,43 @@ export default function HeroMenu({ open, onClose }: Props) {
       ].join(" ")}
       aria-hidden={!open}
     >
-      {/* 背景遮罩（点击关闭） */}
       <button
         type="button"
         aria-label="Close menu overlay"
         onClick={onClose}
-        className={["absolute inset-0", "bg-black/60", "backdrop-blur-sm"].join(
-          " "
-        )}
+        className="absolute inset-0 bg-black/72 backdrop-blur-sm"
       />
 
-      {/* 右侧面板：从右滑入 */}
       <aside
         className={[
-          "absolute right-0 top-0 h-full w-[86vw] max-w-md",
-          "bg-black/35 backdrop-blur-xl",
-          "border-l border-white/10",
+          "absolute right-0 top-0 h-full w-[88vw] max-w-lg",
+          "border-l border-white/10 bg-[linear-gradient(180deg,rgba(10,10,8,0.94),rgba(18,18,14,0.98))] backdrop-blur-2xl",
           "transition-transform duration-300 ease-out",
           open ? "translate-x-0" : "translate-x-full",
         ].join(" ")}
         role="dialog"
         aria-modal="true"
       >
-        {/* 顶部：关闭按钮 */}
-        <div className="flex items-center justify-end p-6">
-          <button
-            type="button"
-            aria-label="Close menu"
-            onClick={onClose}
-            className="text-white/80 hover:text-white transition"
-          >
-            ✕
-          </button>
-        </div>
+        <nav className="flex h-full flex-col px-8 pb-8 pt-8 sm:px-10">
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="text-[10px] uppercase tracking-[0.3em] text-white/45">
+                Navigation
+              </div>
+              <div className="mt-4 h-px w-24 bg-white/12" />
+            </div>
+            <button
+              type="button"
+              aria-label="Close menu"
+              onClick={onClose}
+              className="editorial-button min-h-10 border-white/12 bg-white/6 px-4 py-2 text-[10px] text-white hover:bg-white/10"
+            >
+              Close
+            </button>
+          </div>
 
-        {/* 菜单项：逐行出现 */}
-        <nav className="px-10 pt-6">
-          <ul className="space-y-6">
+          <ul className="mt-12 space-y-5">
             {ITEMS.map((item, i) => {
-              // 根据不同的链接类型使用动态 href
               let href = item.href;
               if (item.key === "news") {
                 href = getNewsHref();
@@ -165,15 +163,13 @@ export default function HeroMenu({ open, onClose }: Props) {
               } else if (item.key === "shop") {
                 href = getShopHref();
               }
-              
+
               return (
                 <li
                   key={item.key}
                   className={[
                     "transition-all duration-500 ease-out",
-                    open
-                      ? "opacity-100 translate-y-0"
-                      : "opacity-0 translate-y-3",
+                    open ? "translate-y-0 opacity-100" : "translate-y-3 opacity-0",
                   ].join(" ")}
                   style={{
                     transitionDelay: open ? `${120 + i * 70}ms` : "0ms",
@@ -182,36 +178,33 @@ export default function HeroMenu({ open, onClose }: Props) {
                   <Link
                     href={href}
                     onClick={handleLinkClick}
-                    className="text-white text-2xl tracking-[0.2em] opacity-90 hover:opacity-100 transition"
+                    className="group flex items-end justify-between gap-4 border-b border-white/8 pb-4"
                   >
-                    {t(`heroMenu.${item.key}`)}
+                    <span className="font-serif text-[clamp(1.9rem,4vw,3rem)] font-light tracking-[0.04em] text-white/88 transition group-hover:text-white">
+                      {t(`heroMenu.${item.key}`)}
+                    </span>
+                    <span className="text-[10px] uppercase tracking-[0.28em] text-white/32 transition group-hover:text-white/56">
+                      {String(i + 1).padStart(2, "0")}
+                    </span>
                   </Link>
                 </li>
               );
             })}
           </ul>
 
-          {/* 底部的小字（像官网那种气质） */}
           <div
             className={[
-              "mt-14 text-white/60 text-xs tracking-[0.25em]",
-              "transition-all duration-500",
-              open ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2",
+              "mt-auto transition-all duration-500",
+              open ? "translate-y-0 opacity-100" : "translate-y-2 opacity-0",
             ].join(" ")}
             style={{ transitionDelay: open ? "520ms" : "0ms" }}
           >
-            © VTUBER-SITE
-          </div>
-
-          {/* 语言选择器 */}
-          <div
-            className={[
-              "mt-6 transition-all duration-500",
-              open ? "opacity-100 translate-y-0" : "opacity-0 translate-y-2",
-            ].join(" ")}
-            style={{ transitionDelay: open ? "590ms" : "0ms" }}
-          >
-            <LanguageSelector variant="dark" menuPosition="bottom" />
+            <div className="text-[10px] uppercase tracking-[0.28em] text-white/38">
+              Multi-tenant editorial network
+            </div>
+            <div className="mt-6">
+              <LanguageSelector variant="dark" menuPosition="bottom" />
+            </div>
           </div>
         </nav>
       </aside>

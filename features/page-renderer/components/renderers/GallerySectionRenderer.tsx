@@ -29,21 +29,27 @@ export default function GallerySectionRenderer({
     <section
       data-section-id={id}
       data-section-type="gallery"
-      className={`py-16 px-6 max-w-7xl mx-auto`}
+      className="px-5 py-6 sm:px-6 sm:py-7"
     >
       <div className={`grid ${columnsClass} ${gapClass}`}>
         {props.items.map((item) => {
           const content = (
-            <div className="relative group">
+            <div className="group relative overflow-hidden rounded-[1.35rem] border border-white/10 bg-black/12">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={item.src}
                 alt={item.alt || item.caption || "Gallery image"}
-                className="w-full h-full object-cover rounded-lg"
+                className="h-full min-h-[18rem] w-full object-cover transition duration-500 group-hover:scale-[1.03]"
               />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
               {item.caption && (
-                <div className="absolute bottom-0 left-0 right-0 p-4 bg-black/60 text-white rounded-b-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                  {item.caption}
+                <div className="absolute inset-x-0 bottom-0 p-5 text-white opacity-0 transition duration-300 group-hover:opacity-100">
+                  <div className="text-[10px] uppercase tracking-[0.24em] text-white/56">
+                    Gallery
+                  </div>
+                  <div className="mt-2 font-serif text-xl font-light tracking-[0.03em]">
+                    {item.caption}
+                  </div>
                 </div>
               )}
             </div>
@@ -69,4 +75,3 @@ export default function GallerySectionRenderer({
     </section>
   );
 }
-

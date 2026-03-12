@@ -28,10 +28,10 @@ export default function NewsCarouselDots({
             type="button"
             onClick={() => onDotClick(startIndex)}
             className={[
-              "h-2 w-2 rounded-full transition-all", // 10px × 10px (h-2.5 = 10px, w-2.5 = 10px)
+              "rounded-full transition-all",
               isActive
-                ? "bg-white/90 scale-110"
-                : "bg-white/30 hover:bg-white/50",
+                ? "h-1.5 w-8 bg-[color:var(--theme-primary)]"
+                : "h-1.5 w-1.5 bg-white/28 hover:bg-white/46",
             ].join(" ")}
             aria-label={`Go to start index ${startIndex + 1}`}
           />

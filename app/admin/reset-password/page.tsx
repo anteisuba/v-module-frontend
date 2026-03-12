@@ -5,7 +5,12 @@
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import { BackButton } from "@/components/ui";
+import {
+  BackButton,
+  Button,
+  EditorialAuthLayout,
+  Input,
+} from "@/components/ui";
 import { userApi } from "@/lib/api";
 import { ApiError, NetworkError } from "@/lib/api/errors";
 
@@ -63,118 +68,98 @@ function ResetPasswordForm() {
   }
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden">
+    <>
       <BackButton href="/admin" label="返回登录" />
-
-      {/* 背景图 */}
-      <div className="absolute inset-0">
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: "url(/login/login-b.jpeg)" }}
-        />
-        <div className="absolute inset-0 bg-white/70" />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/15" />
-      </div>
-
-      {/* 前景内容 */}
-      <div className="relative z-10 mx-auto flex min-h-screen max-w-5xl flex-col px-6">
-        <header className="pt-10 text-center">
-          <div className="mx-auto inline-flex items-center gap-3">
-            <div className="text-5xl font-black tracking-tight">ZUTOMAYO</div>
-            <span className="inline-flex items-center bg-black px-3 py-1 text-sm font-bold tracking-[0.2em] text-white">
-              RESET PASSWORD
-            </span>
-          </div>
-          <div className="mt-3 text-xs tracking-[0.25em] text-black/70">
-            重置密码
-          </div>
-        </header>
-
-        <div className="flex flex-1 items-center justify-center py-10">
-          <div className="w-full max-w-xl rounded-2xl border border-black/10 bg-white/55 backdrop-blur-xl px-10 py-10 shadow-2xl">
-            <div className="text-[11px] tracking-[0.35em] text-black/60">
-              RESET PASSWORD
+      <EditorialAuthLayout
+        eyebrow="Password reset"
+        title="Set the next key for the console."
+        description="Choose a new password and return to the admin flow with a cleaner handoff."
+        stats={[
+          { label: "Minimum", value: "6 characters" },
+          { label: "Return", value: "Admin sign-in" },
+        ]}
+        panel={
+          <div className="space-y-8">
+            <div>
+              <div className="editorial-kicker">Reset Password</div>
+              <h2 className="mt-4 text-[2.2rem] font-light text-[color:var(--editorial-text)]">
+                设置新密码
+              </h2>
+              <p className="editorial-copy mt-4">请输入您的新密码。</p>
             </div>
-            <h1 className="mt-2 text-2xl font-semibold tracking-tight text-black">
-              设置新密码
-            </h1>
-            <p className="mt-2 text-sm text-black/60">
-              请输入您的新密码
-            </p>
 
             {success ? (
-              <div className="mt-7 rounded-xl border border-emerald-500/30 bg-emerald-50 px-4 py-3 text-sm text-emerald-700">
-                密码重置成功！正在跳转到登录页面...
+              <div className="rounded-[1.4rem] border border-emerald-500/24 bg-emerald-500/8 px-5 py-4 text-sm leading-7 text-emerald-800">
+                密码重置成功，正在跳转到登录页面。
               </div>
             ) : (
-              <form onSubmit={onSubmit} className="mt-7 space-y-4">
-                <div>
-                  <label className="text-xs text-black/70">新密码</label>
-                  <input
-                    className="mt-2 w-full rounded-xl border border-black/10 bg-white/70 px-4 py-3 text-sm text-black placeholder:text-black/30 outline-none focus:border-black/30"
-                    placeholder="至少 6 位"
-                    type="password"
-                    autoComplete="new-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    disabled={loading}
-                    required
-                    minLength={6}
-                  />
-                </div>
+              <form onSubmit={onSubmit} className="space-y-5">
+                <Input
+                  label="新密码"
+                  placeholder="至少 6 位"
+                  type="password"
+                  autoComplete="new-password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={loading}
+                  required
+                  minLength={6}
+                />
 
-                <div>
-                  <label className="text-xs text-black/70">确认密码</label>
-                  <input
-                    className="mt-2 w-full rounded-xl border border-black/10 bg-white/70 px-4 py-3 text-sm text-black placeholder:text-black/30 outline-none focus:border-black/30"
-                    placeholder="再次输入新密码"
-                    type="password"
-                    autoComplete="new-password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    disabled={loading}
-                    required
-                    minLength={6}
-                  />
-                </div>
+                <Input
+                  label="确认密码"
+                  placeholder="再次输入新密码"
+                  type="password"
+                  autoComplete="new-password"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  disabled={loading}
+                  required
+                  minLength={6}
+                />
 
-                {error && (
-                  <div className="text-center text-xs text-red-600/80">
+                {error ? (
+                  <div className="rounded-[1.2rem] border border-red-500/25 bg-red-500/8 px-4 py-3 text-sm text-red-700">
                     {error}
                   </div>
-                )}
+                ) : null}
 
-                <button
+                <Button
                   type="submit"
-                  className="mt-2 w-full rounded-xl bg-black py-3 text-sm font-medium text-white hover:bg-black/90 disabled:opacity-60"
+                  size="lg"
+                  loading={loading}
+                  className="w-full"
                   disabled={loading || !token}
                 >
                   {loading ? "重置中..." : "重置密码"}
-                </button>
+                </Button>
               </form>
             )}
 
-            <div className="mt-6 pt-4 text-center text-xs text-black/55 border-t border-black/10">
-              <Link className="hover:text-black" href="/admin">
+            <div className="border-t border-[color:color-mix(in_srgb,var(--editorial-border)_80%,transparent)] pt-5 text-[11px] uppercase tracking-[0.16em] text-[color:var(--editorial-muted)]">
+              <Link className="editorial-link" href="/admin">
                 返回登录
               </Link>
             </div>
           </div>
-        </div>
-      </div>
-    </main>
+        }
+      />
+    </>
   );
 }
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={
-      <main className="relative min-h-screen w-full overflow-hidden flex items-center justify-center">
-        <div className="text-lg text-black">加载中...</div>
-      </main>
-    }>
+    <Suspense
+      fallback={
+        <main className="editorial-shell editorial-shell--light flex min-h-screen items-center justify-center">
+          <div className="editorial-panel px-8 py-6 text-sm text-[color:var(--editorial-muted)]">
+            加载中...
+          </div>
+        </main>
+      }
+    >
       <ResetPasswordForm />
     </Suspense>
   );
 }
-

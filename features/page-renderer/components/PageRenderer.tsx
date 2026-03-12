@@ -39,69 +39,63 @@ export default function PageRenderer({ config }: { config: PageConfig }) {
 
   return (
     <main
-      className="min-h-screen"
+      className="editorial-shell min-h-screen"
       style={backgroundStyle}
       data-testid="public-page-renderer"
     >
-      {/* Bento Grid 容器：移动端单列，桌面端 4 列 */}
-      <div className="grid grid-cols-1 gap-4 p-4 md:grid-cols-4 auto-rows-min">
-        {sortedSections.map((section) => {
-          const renderedSection = renderSection(section, config);
+      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08),rgba(8,8,6,0.38)_52%,rgba(8,8,6,0.6))]" />
+      <div className="editorial-container">
+        <div className="grid auto-rows-min grid-cols-1 gap-5 md:grid-cols-4">
+          {sortedSections.map((section) => {
+            const renderedSection = renderSection(section, config);
 
-          if (renderedSection == null) {
-            return null;
-          }
+            if (renderedSection == null) {
+              return null;
+            }
 
-          // 获取列跨度，默认为 4 (全宽)
-          const colSpan = section.layout?.colSpan || 4;
-          const colSpanClass = colSpanClasses[colSpan];
-          
-          // Hero section 特殊处理：始终全宽，不应用 Bento 卡片样式
-          if (section.type === "hero") {
+            const colSpan = section.layout?.colSpan || 4;
+            const colSpanClass = colSpanClasses[colSpan];
+
+            if (section.type === "hero") {
+              return (
+                <div key={section.id} className="col-span-1 md:col-span-4">
+                  {renderedSection}
+                </div>
+              );
+            }
+
+            if (section.type === "video") {
+              return (
+                <div
+                  key={section.id}
+                  className={`reveal col-span-1 ${colSpanClass} editorial-card overflow-hidden`}
+                >
+                  <Suspense
+                    fallback={
+                      <div className="flex aspect-[16/9] items-center justify-center text-sm text-[color:var(--editorial-muted)]">
+                        Loading video...
+                      </div>
+                    }
+                  >
+                    {renderedSection}
+                  </Suspense>
+                </div>
+              );
+            }
+
             return (
               <div
                 key={section.id}
-                className="col-span-1 md:col-span-4"
+                className={`reveal col-span-1 ${colSpanClass} editorial-card overflow-hidden`}
               >
                 {renderedSection}
               </div>
             );
-          }
-          
-          // 为 Video section 单独设置 Suspense 边界
-          if (section.type === "video") {
-            return (
-              <div
-                key={section.id}
-                className={`col-span-1 ${colSpanClass} rounded-3xl bg-white/60 backdrop-blur-md overflow-hidden border border-white/20 shadow-sm transition-all hover:shadow-md`}
-              >
-                <Suspense
-                  fallback={
-                    <div className="flex items-center justify-center w-full aspect-[16/9] bg-black/5">
-                      <div className="text-sm text-black/50">Loading video...</div>
-                    </div>
-                  }
-                >
-                  {renderedSection}
-                </Suspense>
-              </div>
-            );
-          }
-          
-          // 其他 sections：应用 Bento 卡片样式
-          return (
-            <div
-              key={section.id}
-              className={`col-span-1 ${colSpanClass} rounded-3xl bg-white/60 backdrop-blur-md overflow-hidden border border-white/20 shadow-sm transition-all hover:shadow-md`}
-            >
-              {renderedSection}
-            </div>
-          );
-        })}
+          })}
+        </div>
       </div>
     </main>
   );
 }
-
 
 
