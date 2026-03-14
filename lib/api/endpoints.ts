@@ -916,10 +916,18 @@ export const shopApi = {
   async getPaymentReconciliationReport(params?: {
     start?: string;
     end?: string;
+    paymentRoutingMode?: "PLATFORM" | "STRIPE_CONNECT_DESTINATION";
+    connectedAccountId?: string;
   }): Promise<PaymentReconciliationReport> {
     const searchParams = new URLSearchParams();
     if (params?.start) searchParams.set("start", params.start);
     if (params?.end) searchParams.set("end", params.end);
+    if (params?.paymentRoutingMode) {
+      searchParams.set("paymentRoutingMode", params.paymentRoutingMode);
+    }
+    if (params?.connectedAccountId?.trim()) {
+      searchParams.set("connectedAccountId", params.connectedAccountId.trim());
+    }
     const query = searchParams.toString();
 
     return apiClient.get(
@@ -933,10 +941,18 @@ export const shopApi = {
   async exportPaymentEventsCsv(params?: {
     start?: string;
     end?: string;
+    paymentRoutingMode?: "PLATFORM" | "STRIPE_CONNECT_DESTINATION";
+    connectedAccountId?: string;
   }): Promise<Blob> {
     const searchParams = new URLSearchParams();
     if (params?.start) searchParams.set("start", params.start);
     if (params?.end) searchParams.set("end", params.end);
+    if (params?.paymentRoutingMode) {
+      searchParams.set("paymentRoutingMode", params.paymentRoutingMode);
+    }
+    if (params?.connectedAccountId?.trim()) {
+      searchParams.set("connectedAccountId", params.connectedAccountId.trim());
+    }
     searchParams.set("export", "events");
 
     const response = await fetch(
@@ -973,10 +989,18 @@ export const shopApi = {
   async exportPaymentAnomaliesCsv(params?: {
     start?: string;
     end?: string;
+    paymentRoutingMode?: "PLATFORM" | "STRIPE_CONNECT_DESTINATION";
+    connectedAccountId?: string;
   }): Promise<Blob> {
     const searchParams = new URLSearchParams();
     if (params?.start) searchParams.set("start", params.start);
     if (params?.end) searchParams.set("end", params.end);
+    if (params?.paymentRoutingMode) {
+      searchParams.set("paymentRoutingMode", params.paymentRoutingMode);
+    }
+    if (params?.connectedAccountId?.trim()) {
+      searchParams.set("connectedAccountId", params.connectedAccountId.trim());
+    }
     searchParams.set("export", "anomalies");
 
     const response = await fetch(

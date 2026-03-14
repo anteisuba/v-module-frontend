@@ -15,7 +15,7 @@
 
 ## Current behavior
 
-- `GET /api/shop/orders` is seller-only, filters by the logged-in user's `userId`, and now supports `status` / `query` filtering plus `export=csv`
+- `GET /api/shop/orders` is seller-only, filters by the logged-in user's `userId`, and supports `status` / `query` filtering plus `export=csv`; exported CSV now includes Stripe Connect routing snapshot fields such as `paymentRoutingMode`, `connectedAccountId`, charge / transfer IDs, and fee / seller net amounts
 - `GET /api/shop/orders/[id]` supports seller session lookup and public buyer lookup via `buyerEmail`
 - `POST /api/shop/checkout` is the public visitor checkout entry, derives the seller from published products, reserves stock, and creates a Stripe Checkout Session
 - `POST /api/payments/stripe/webhook` confirms Stripe payment outcomes and updates order/payment state

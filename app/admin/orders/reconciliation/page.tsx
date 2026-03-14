@@ -7,6 +7,7 @@ import type {
   PaymentReconciliationAnomaly,
   PaymentReconciliationEvent,
   PaymentReconciliationReport,
+  PaymentRoutingMode,
 } from "@/domain/shop";
 import {
   BackButton,
@@ -43,6 +44,8 @@ function downloadBlob(blob: Blob, filename: string) {
   window.URL.revokeObjectURL(url);
 }
 
+type PaymentRoutingModeFilter = PaymentRoutingMode | "ALL";
+
 export default function OrdersReconciliationPage() {
   const router = useRouter();
   const { user, loading: userLoading } = useUser();
@@ -57,6 +60,9 @@ export default function OrdersReconciliationPage() {
   const [exportingAnomalies, setExportingAnomalies] = useState(false);
   const [startDate, setStartDate] = useState(getDefaultStartDate());
   const [endDate, setEndDate] = useState(getDefaultEndDate());
+  const [routingModeFilter, setRoutingModeFilter] =
+    useState<PaymentRoutingModeFilter>("ALL");
+  const [connectedAccountFilter, setConnectedAccountFilter] = useState("");
 
   const loadReport = useCallback(async () => {
     try {
@@ -69,6 +75,9 @@ export default function OrdersReconciliationPage() {
       const nextReport = await shopApi.getPaymentReconciliationReport({
         start: startDate,
         end: endDate,
+        paymentRoutingMode:
+          routingModeFilter === "ALL" ? undefined : routingModeFilter,
+        connectedAccountId: connectedAccountFilter.trim() || undefined,
       });
       setReport(nextReport);
     } catch (err) {
@@ -77,18 +86,26 @@ export default function OrdersReconciliationPage() {
       setLoading(false);
       setRefreshing(false);
     }
-  }, [endDate, handleError, report, startDate]);
+  }, [
+    connectedAccountFilter,
+    endDate,
+    handleError,
+    report,
+    routingModeFilter,
+    startDate,
+  ]);
 
   useEffect(() => {
     if (!userLoading && !user) {
       router.push("/admin");
-      return;
     }
+  }, [router, user, userLoading]);
 
-    if (!userLoading && user) {
+  useEffect(() => {
+    if (!userLoading && user && !report) {
       void loadReport();
     }
-  }, [loadReport, router, user, userLoading]);
+  }, [loadReport, report, user, userLoading]);
 
   function formatDate(dateString: string) {
     return new Date(dateString).toLocaleString("zh-CN", {
@@ -187,12 +204,21 @@ export default function OrdersReconciliationPage() {
     ];
   }, [report]);
 
+  const activeRoutingLabel =
+    routingModeFilter === "ALL"
+      ? "全部路由"
+      : getRoutingLabel(routingModeFilter);
+  const activeAccountLabel = connectedAccountFilter.trim() || "全部账户";
+
   async function handleExportEvents() {
     try {
       setExportingEvents(true);
       const blob = await shopApi.exportPaymentEventsCsv({
         start: startDate,
         end: endDate,
+        paymentRoutingMode:
+          routingModeFilter === "ALL" ? undefined : routingModeFilter,
+        connectedAccountId: connectedAccountFilter.trim() || undefined,
       });
       downloadBlob(
         blob,
@@ -212,6 +238,9 @@ export default function OrdersReconciliationPage() {
       const blob = await shopApi.exportPaymentAnomaliesCsv({
         start: startDate,
         end: endDate,
+        paymentRoutingMode:
+          routingModeFilter === "ALL" ? undefined : routingModeFilter,
+        connectedAccountId: connectedAccountFilter.trim() || undefined,
       });
       downloadBlob(
         blob,
@@ -223,6 +252,11 @@ export default function OrdersReconciliationPage() {
     } finally {
       setExportingAnomalies(false);
     }
+  }
+
+  function resetFilters() {
+    setRoutingModeFilter("ALL");
+    setConnectedAccountFilter("");
   }
 
   if (userLoading || loading) {
@@ -300,7 +334,7 @@ export default function OrdersReconciliationPage() {
         </div>
 
         <div className="mb-6 rounded-2xl border border-black/10 bg-white/55 p-4 backdrop-blur-xl">
-          <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] md:items-end">
+          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_220px_minmax(0,1fr)_auto_auto] xl:items-end">
             <div>
               <label className="mb-2 block text-xs font-medium text-black/70">
                 开始日期
@@ -321,19 +355,60 @@ export default function OrdersReconciliationPage() {
                 onChange={(event) => setEndDate(event.target.value)}
               />
             </div>
+            <div>
+              <label className="mb-2 block text-xs font-medium text-black/70">
+                Routing mode
+              </label>
+              <select
+                value={routingModeFilter}
+                onChange={(event) =>
+                  setRoutingModeFilter(
+                    event.target.value as PaymentRoutingModeFilter
+                  )
+                }
+                className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black"
+              >
+                <option value="ALL">全部路由</option>
+                <option value="STRIPE_CONNECT_DESTINATION">Connect 路由</option>
+                <option value="PLATFORM">平台 fallback</option>
+              </select>
+            </div>
+            <div>
+              <label className="mb-2 block text-xs font-medium text-black/70">
+                Connected account
+              </label>
+              <Input
+                value={connectedAccountFilter}
+                onChange={(event) => setConnectedAccountFilter(event.target.value)}
+                placeholder="acct_123..."
+              />
+            </div>
+            <div className="flex justify-end xl:justify-start">
+              <Button
+                variant="secondary"
+                onClick={resetFilters}
+                disabled={refreshing || exportingEvents || exportingAnomalies}
+              >
+                清空筛选
+              </Button>
+            </div>
             <div className="flex justify-end">
               <Button
                 variant="primary"
                 onClick={() => void loadReport()}
                 disabled={refreshing || exportingEvents || exportingAnomalies}
               >
-                应用时间窗口
+                应用筛选
               </Button>
             </div>
           </div>
           <div className="mt-3 text-xs text-black/50">
             当前窗口 {formatDate(report.summary.windowStart)} 至{" "}
             {formatDate(report.summary.windowEnd)}
+            {" / "}
+            {activeRoutingLabel}
+            {" / "}
+            {activeAccountLabel}
           </div>
         </div>
 

@@ -61,6 +61,12 @@ export {
 } from "./notifications";
 
 export {
+  hasStripeFinanceAlertDestinations,
+  sendStripeFinanceAnomalyAlerts,
+  type StripeFinanceAlertResult,
+} from "./finance-alerts";
+
+export {
   createStripeCheckout,
   confirmStripeCheckoutSessionForOrder,
   handleStripeCheckoutPaid,
@@ -89,6 +95,7 @@ export {
   type PaymentReconciliationOrderRecord,
   type PaymentReconciliationRefundRecord,
   type PaymentReconciliationReport,
+  type PaymentRoutingMode,
   type PaymentReconciliationSummary,
 } from "./reconciliation";
 
@@ -101,10 +108,12 @@ export {
   syncStripeSettlementLedger,
   updatePaymentSettlementEntries,
   type PaymentSettlementAnomaly,
+  type PaymentSettlementEntryGroup,
   type PaymentSettlementEntryRecord,
   type PaymentSettlementLedgerSyncResult,
   type PaymentSettlementPayoutBaseRecord,
   type PaymentSettlementPayoutRecord,
+  type PaymentSettlementPayoutStatusGroupKey,
   type PaymentSettlementReport,
   type PaymentSettlementSummary,
   type PaymentSettlementSyncResult,

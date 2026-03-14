@@ -189,6 +189,22 @@ describe("buildPaymentSettlementReportFromData", () => {
     expect(report.summary.paidOutNetAmount).toBe(9640);
     expect(report.summary.unmatchedEntryCount).toBe(1);
     expect(report.payouts[0]?.linkedEntryCount).toBe(1);
+    expect(report.entryGroups.map((group) => group.key)).toEqual([
+      "NOT_IN_PAYOUT",
+      "PAID",
+    ]);
+    expect(report.entryGroups[0]).toMatchObject({
+      key: "NOT_IN_PAYOUT",
+      entryCount: 2,
+      unreconciledEntryCount: 2,
+      netAmount: -2300,
+    });
+    expect(report.entryGroups[1]).toMatchObject({
+      key: "PAID",
+      entryCount: 1,
+      unreconciledEntryCount: 1,
+      netAmount: 9640,
+    });
     expect(report.anomalies.map((item) => item.code)).toEqual(
       expect.arrayContaining([
         "STRIPE_ENTRY_UNMATCHED",

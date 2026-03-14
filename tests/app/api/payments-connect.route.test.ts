@@ -222,4 +222,27 @@ describe("payments connect routes", () => {
       error: "No Stripe payout account found",
     });
   });
+
+  it("surfaces Stripe validation errors as 400 responses", async () => {
+    getServerSessionMock.mockResolvedValue({ user: { id: "seller-1" } });
+    const stripeError = Object.assign(
+      new Error("You cannot create Express accounts for this platform"),
+      {
+        type: "StripeInvalidRequestError",
+        statusCode: 400,
+      }
+    );
+    createStripePayoutOnboardingLinkMock.mockRejectedValue(stripeError);
+
+    const response = await createOnboardingLink(
+      new Request("http://localhost/api/payments/connect/accounts/onboarding-link", {
+        method: "POST",
+      })
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "You cannot create Express accounts for this platform",
+    });
+  });
 });

@@ -51,8 +51,22 @@ describe("news article admin routes", () => {
   it("creates published news articles with a publish timestamp", async () => {
     newsArticleCreateMock.mockResolvedValue({
       id: "article-1",
+      userId: "seller-1",
       title: "Event notice",
+      content: "Doors open at 19:00",
+      category: "event",
+      tag: null,
+      shareUrl: null,
+      shareChannels: null,
+      backgroundType: "image",
+      backgroundValue: "/uploads/event.jpg",
       published: true,
+      createdAt: new Date("2026-03-10T00:00:00.000Z"),
+      updatedAt: new Date("2026-03-10T00:00:00.000Z"),
+      publishedAt: new Date("2026-03-10T00:00:00.000Z"),
+      user: {
+        slug: "seller",
+      },
     });
 
     const response = await createArticle(
@@ -84,6 +98,7 @@ describe("news article admin routes", () => {
     expect(payload.article).toMatchObject({
       id: "article-1",
       published: true,
+      userSlug: "seller",
     });
   });
 
@@ -109,6 +124,7 @@ describe("news article admin routes", () => {
 
     expect(response.status).toBe(403);
     expect(payload.error).toBe("Forbidden");
+    expect(payload.code).toBe("FORBIDDEN");
     expect(newsArticleUpdateMock).not.toHaveBeenCalled();
   });
 
@@ -121,8 +137,22 @@ describe("news article admin routes", () => {
     });
     newsArticleUpdateMock.mockResolvedValue({
       id: "article-1",
+      userId: "seller-1",
       title: "Updated title",
+      content: "Doors open at 19:00",
+      category: "event",
+      tag: null,
+      shareUrl: null,
+      shareChannels: null,
+      backgroundType: "color",
+      backgroundValue: "#000000",
       published: true,
+      createdAt: new Date("2026-03-10T00:00:00.000Z"),
+      updatedAt: new Date("2026-03-11T00:00:00.000Z"),
+      publishedAt: new Date("2026-03-11T00:00:00.000Z"),
+      user: {
+        slug: "seller",
+      },
     });
 
     const response = await updateArticle(
@@ -155,6 +185,20 @@ describe("news article admin routes", () => {
     expect(payload.article).toMatchObject({
       id: "article-1",
       published: true,
+      userSlug: "seller",
     });
+  });
+
+  it("rejects invalid list query parameters", async () => {
+    const { GET: listArticles } = await import("@/app/api/news/articles/route");
+
+    const response = await listArticles(
+      new Request("http://localhost/api/news/articles?page=0")
+    );
+    const payload = await response.json();
+
+    expect(response.status).toBe(400);
+    expect(payload.error).toBe("Invalid query parameters");
+    expect(payload.code).toBe("INVALID_NEWS_ARTICLE_QUERY");
   });
 });

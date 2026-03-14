@@ -42,6 +42,7 @@ const envSchema = z.object({
   SMTP_USER: z.string().optional(),
   SMTP_PASSWORD: z.string().optional(),
   SMTP_FROM: z.string().email().optional().or(z.literal("")),
+  FINANCE_ALERT_SLACK_WEBHOOK_URL: z.string().url().optional().or(z.literal("")),
 
   // Stripe Checkout（公开支付）
   STRIPE_SECRET_KEY: z.string().optional(),
@@ -91,6 +92,8 @@ function validateEnv() {
     SMTP_USER: process.env.SMTP_USER,
     SMTP_PASSWORD: process.env.SMTP_PASSWORD,
     SMTP_FROM: process.env.SMTP_FROM,
+    FINANCE_ALERT_SLACK_WEBHOOK_URL:
+      process.env.FINANCE_ALERT_SLACK_WEBHOOK_URL,
     STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET,
     STRIPE_CONNECT_WEBHOOK_SECRET: process.env.STRIPE_CONNECT_WEBHOOK_SECRET,

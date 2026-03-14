@@ -1,7 +1,7 @@
 # デプロイと環境変数
 
 - 简体中文: [部署与环境变量](../../zh-CN/operations/deployment-and-env.md)
-- 最終更新: 2026-03-07
+- 最終更新: 2026-03-14
 
 ## 目的
 
@@ -45,6 +45,11 @@
 - `RESEND_API_KEY`
 - `RESEND_FROM`
 - または SMTP 一式
+- 財務異常メールアラートは上記メール設定を再利用し、対象売り手のメールアドレスへ送信する
+
+### 運用アラート
+
+- `FINANCE_ALERT_SLACK_WEBHOOK_URL`（任意）
 
 ### ストレージ
 
@@ -66,3 +71,4 @@
 - build 中に Prisma Client 生成が走る
 - 本番では HTTPS の `NEXT_PUBLIC_BASE_URL` を使う
 - アップロード、パスワードリセット、メール送信はそれぞれ個別に設定確認が必要
+- 支払い照合 / 精算異常をチーム向け Slack にも流したい場合は `FINANCE_ALERT_SLACK_WEBHOOK_URL` を設定する。未設定でも売り手メールアラートは動作する

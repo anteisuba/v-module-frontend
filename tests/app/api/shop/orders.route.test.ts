@@ -25,6 +25,14 @@ import { GET } from "@/app/api/shop/orders/route";
 const orderRecord = {
   id: "order-1",
   userId: "seller-1",
+  payoutAccountId: "payout-1",
+  paymentRoutingMode: "STRIPE_CONNECT_DESTINATION",
+  connectedAccountId: "acct_connect_123",
+  externalChargeId: "ch_test_123",
+  externalTransferId: "tr_test_123",
+  platformFeeAmount: new Prisma.Decimal("12.00"),
+  sellerGrossAmount: new Prisma.Decimal("120.00"),
+  sellerNetExpectedAmount: new Prisma.Decimal("108.00"),
   buyerEmail: "buyer@example.com",
   buyerName: "Alice",
   totalAmount: new Prisma.Decimal("120.00"),
@@ -133,10 +141,14 @@ describe("GET /api/shop/orders", () => {
     expect(response.headers.get("content-type")).toContain("text/csv");
     expect(response.headers.get("content-disposition")).toContain("orders-");
     expect(body).toContain(
-      "orderId,buyerEmail,buyerName,status,paymentProvider,paymentStatus,totalAmount"
+      "orderId,buyerEmail,buyerName,status,paymentProvider,paymentStatus,paymentRoutingMode,payoutAccountId,connectedAccountId,externalChargeId,externalTransferId,totalAmount,platformFeeAmount,sellerGrossAmount,sellerNetExpectedAmount"
     );
     expect(body).toContain("order-1");
     expect(body).toContain("buyer@example.com");
+    expect(body).toContain("STRIPE_CONNECT_DESTINATION");
+    expect(body).toContain("acct_connect_123");
+    expect(body).toContain("ch_test_123");
+    expect(body).toContain("tr_test_123");
     expect(body).toContain("Album x 1");
     expect(countMock).not.toHaveBeenCalled();
   });

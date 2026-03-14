@@ -1,5 +1,7 @@
 # v-module-frontend
 
+[![CI](https://github.com/anteisuba/v-module-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/anteisuba/v-module-frontend/actions/workflows/ci.yml)
+
 `v-module-frontend` 是一个面向 VTuber / 创作者的多用户站点系统，基于 Next.js App Router 提供公开主页、后台 CMS、新闻、博客、商店和订单基础链路。
 
 ## 技术栈与前提
@@ -21,9 +23,9 @@
 
 ## 当前状态快照
 
-- 2026-03-07 基线：`pnpm build` 通过，`pnpm check` 通过，`pnpm lint` 失败（`62 errors / 93 warnings`）
-- 已覆盖链路：认证、公开页配置、新闻、博客、商品、订单基础流程、媒体上传、后台媒体库与基础资源选择器
-- 主要缺口：多支付/退款对账、媒体库选择器覆盖剩余编辑器、自动化测试扩面
+- 2026-03-14 基线：`pnpm build`、`pnpm check`、`pnpm test`、`pnpm lint` 通过；GitHub Actions 已接入 PR / push 持续集成，README 已展示 CI badge
+- 已覆盖链路：认证、公开页配置、新闻、博客、评论审核、商品、订单、媒体上传 / 媒体库、Stripe Checkout / Webhook / Connect / 对账 / 结算
+- 主要缺口：Stripe Connect 运维闭环增强，以及更细粒度的 CI / flaky 治理
 
 ## 文档入口
 

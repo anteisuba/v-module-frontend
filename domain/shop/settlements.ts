@@ -131,6 +131,25 @@ export interface PaymentSettlementPayoutRecord
   unreconciledEntryCount: number;
 }
 
+export type PaymentSettlementPayoutStatusGroupKey =
+  | "NOT_IN_PAYOUT"
+  | "PENDING"
+  | "IN_TRANSIT"
+  | "PAID"
+  | "FAILED"
+  | "CANCELED"
+  | "OTHER";
+
+export interface PaymentSettlementEntryGroup {
+  key: PaymentSettlementPayoutStatusGroupKey;
+  title: string;
+  payoutStatus: string | null;
+  entryCount: number;
+  unreconciledEntryCount: number;
+  netAmount: number;
+  entries: PaymentSettlementEntryRecord[];
+}
+
 export interface PaymentSettlementAnomaly {
   id: string;
   code: string;
@@ -166,6 +185,7 @@ export interface PaymentSettlementReport {
   summary: PaymentSettlementSummary;
   payouts: PaymentSettlementPayoutRecord[];
   entries: PaymentSettlementEntryRecord[];
+  entryGroups: PaymentSettlementEntryGroup[];
   anomalies: PaymentSettlementAnomaly[];
 }
 
@@ -513,6 +533,96 @@ function buildSettlementAnomalies(
   });
 }
 
+function getPayoutStatusGroupKey(
+  entry: PaymentSettlementEntryRecord
+): PaymentSettlementPayoutStatusGroupKey {
+  if (!entry.payoutId || !entry.payoutStatus) {
+    return "NOT_IN_PAYOUT";
+  }
+
+  switch (entry.payoutStatus) {
+    case "pending":
+      return "PENDING";
+    case "in_transit":
+      return "IN_TRANSIT";
+    case "paid":
+      return "PAID";
+    case "failed":
+      return "FAILED";
+    case "canceled":
+      return "CANCELED";
+    default:
+      return "OTHER";
+  }
+}
+
+function getPayoutStatusGroupTitle(
+  key: PaymentSettlementPayoutStatusGroupKey
+) {
+  switch (key) {
+    case "NOT_IN_PAYOUT":
+      return "待进入 payout";
+    case "PENDING":
+      return "Payout 待处理";
+    case "IN_TRANSIT":
+      return "Payout 处理中";
+    case "PAID":
+      return "Payout 已到账";
+    case "FAILED":
+      return "Payout 失败";
+    case "CANCELED":
+      return "Payout 已取消";
+    default:
+      return "其他 payout 状态";
+  }
+}
+
+function buildEntryGroups(entries: PaymentSettlementEntryRecord[]) {
+  const groupOrder: PaymentSettlementPayoutStatusGroupKey[] = [
+    "NOT_IN_PAYOUT",
+    "PENDING",
+    "IN_TRANSIT",
+    "PAID",
+    "FAILED",
+    "CANCELED",
+    "OTHER",
+  ];
+
+  const groups = new Map<
+    PaymentSettlementPayoutStatusGroupKey,
+    PaymentSettlementEntryGroup
+  >();
+
+  for (const entry of entries) {
+    const key = getPayoutStatusGroupKey(entry);
+    const current =
+      groups.get(key) ||
+      ({
+        key,
+        title: getPayoutStatusGroupTitle(key),
+        payoutStatus: entry.payoutStatus,
+        entryCount: 0,
+        unreconciledEntryCount: 0,
+        netAmount: 0,
+        entries: [],
+      } satisfies PaymentSettlementEntryGroup);
+
+    current.entryCount += 1;
+    current.netAmount += entry.net;
+    if (
+      entry.reconciliationStatus === SETTLEMENT_RECONCILIATION_STATUS_OPEN
+    ) {
+      current.unreconciledEntryCount += 1;
+    }
+    current.entries.push(entry);
+    groups.set(key, current);
+  }
+
+  return groupOrder
+    .map((key) => groups.get(key))
+    .filter((group): group is PaymentSettlementEntryGroup => Boolean(group));
+}
+
 export function buildPaymentSettlementReportFromData(
   input: {
     entries: PaymentSettlementEntryRecord[];
@@ -535,6 +645,8 @@ export function buildPaymentSettlementReportFromData(
     );
   const entryLimit = params?.entryLimit == null ? 100 : Math.max(0, params.entryLimit);
   const payoutRecords = buildPayoutRecords(input.payouts, input.entries, start, end);
+  const limitedEntries = visibleEntries.slice(0, entryLimit);
+  const entryGroups = buildEntryGroups(limitedEntries);
   const anomalies = buildSettlementAnomalies(
     visibleEntries,
     input.localPayments.filter((payment) => inWindow(payment.paidAt, start, end)),
@@ -584,7 +696,8 @@ export function buildPaymentSettlementReportFromData(
       lastSyncedAt,
     },
     payouts: payoutRecords,
-    entries: visibleEntries.slice(0, entryLimit),
+    entries: limitedEntries,
+    entryGroups,
     anomalies,
   };
 }

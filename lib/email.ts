@@ -8,6 +8,23 @@ export interface EmailMessageInput {
   text: string;
 }
 
+export function hasEmailDeliveryConfigured() {
+  if (process.env.RESEND_API_KEY) {
+    return true;
+  }
+
+  if (
+    process.env.SMTP_HOST &&
+    process.env.SMTP_PORT &&
+    process.env.SMTP_USER &&
+    process.env.SMTP_PASSWORD
+  ) {
+    return true;
+  }
+
+  return process.env.NODE_ENV === "development";
+}
+
 function normalizeRecipients(to: string | string[]) {
   return Array.isArray(to) ? to : [to];
 }

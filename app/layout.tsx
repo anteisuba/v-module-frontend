@@ -1,9 +1,16 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { Cormorant_Garamond, Geist_Mono, Jost } from "next/font/google";
 import { UserProvider } from "@/lib/context/UserProviderWrapper";
 import { InspectorWrapper } from "@/lib/context/InspectorWrapper";
 import { ToastProvider } from "@/lib/context/ToastContext";
 import { I18nProvider } from "@/lib/i18n/context";
+import {
+  defaultLocale,
+  localeCookieName,
+  localeHtmlLang,
+  parseLocale,
+} from "@/i18n/config";
 import ErrorFilter from "@/components/ErrorFilter";
 import RevealObserver from "@/components/ui/RevealObserver";
 import { ErrorBoundary } from "@/components/ui";
@@ -35,13 +42,17 @@ export const metadata: Metadata = {
   ),
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const initialLocale =
+    parseLocale(cookieStore.get(localeCookieName)?.value) ?? defaultLocale;
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={localeHtmlLang[initialLocale]} suppressHydrationWarning>
       <body
         className={`${bodyFont.variable} ${displayFont.variable} ${geistMono.variable} antialiased`}
       >
@@ -51,7 +62,9 @@ export default function RootLayout({
           <InspectorWrapper>
             <ToastProvider>
               <UserProvider>
-                <I18nProvider>{children}</I18nProvider>
+                <I18nProvider initialLocale={initialLocale}>
+                  {children}
+                </I18nProvider>
               </UserProvider>
             </ToastProvider>
           </InspectorWrapper>

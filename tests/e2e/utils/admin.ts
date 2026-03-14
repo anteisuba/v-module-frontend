@@ -1,6 +1,7 @@
 import type { BrowserContext, Page, Route } from "@playwright/test";
 import type { PageConfig } from "../../../domain/page-config/types";
 import type { SerializedOrder } from "../../../domain/shop";
+import { localeCookieName } from "../../../i18n/config";
 import type { MediaAssetSummary } from "../../../lib/api/types";
 import type { NewsArticle } from "../../../lib/api/types";
 import type {
@@ -17,6 +18,13 @@ const ADMIN_BYPASS_COOKIE = {
   path: "/",
 };
 
+const LOCALE_COOKIE = {
+  name: localeCookieName,
+  value: "zh",
+  domain: "127.0.0.1",
+  path: "/",
+};
+
 const PUBLIC_PAGE_STATE_COOKIE = "vtuber_e2e_public_page_state";
 
 function serializeCookieValue(value: unknown) {
@@ -27,10 +35,10 @@ export async function bootstrapAdminE2E(
   context: BrowserContext,
   page: Page
 ) {
-  await context.addCookies([ADMIN_BYPASS_COOKIE]);
-  await page.addInitScript(() => {
-    window.localStorage.setItem("locale", "zh");
-  });
+  await context.addCookies([ADMIN_BYPASS_COOKIE, LOCALE_COOKIE]);
+  await page.addInitScript((locale) => {
+    window.localStorage.setItem("locale", locale);
+  }, LOCALE_COOKIE.value);
 }
 
 export async function fulfillJson(

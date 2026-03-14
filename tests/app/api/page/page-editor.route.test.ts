@@ -1,4 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  createLegacyPageConfigFixture,
+} from "@/tests/helpers/page-config";
+import { createServerSession } from "@/tests/helpers/session";
 
 const {
   getServerSessionMock,
@@ -37,66 +41,24 @@ vi.mock("@/lib/prisma", () => ({
 import { GET, PUT } from "@/app/api/page/me/route";
 import { POST } from "@/app/api/page/me/publish/route";
 
-function createDraftConfig(overrides?: Record<string, unknown>) {
-  return {
-    background: {
-      type: "color",
-      value: "#112233",
-    },
-    sections: [
-      {
-        id: "hero-1",
-        type: "hero",
-        enabled: true,
-        order: 0,
-        props: {
-          slides: [],
-          title: "Hello",
-        },
-      },
-      {
-        id: "links-1",
-        type: "links",
-        enabled: true,
-        order: 1,
-        props: {
-          items: [
-            {
-              id: "link-1",
-              label: "X",
-              href: "https://example.com",
-            },
-          ],
-        },
-      },
-    ],
-    socialLinks: [],
-    ...overrides,
-  };
-}
-
 describe("page editor routes", () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    getServerSessionMock.mockResolvedValue({
-      user: {
-        id: "user-1",
-      },
-    });
+    getServerSessionMock.mockResolvedValue(createServerSession());
     userFindUniqueMock.mockResolvedValue({
       id: "user-1",
       slug: "creator",
     });
     ensureUserPageMock.mockResolvedValue({
       id: "page-1",
-      draftConfig: createDraftConfig(),
+      draftConfig: createLegacyPageConfigFixture(),
       publishedConfig: null,
     });
   });
 
   it("returns the normalized draft config for the current seller", async () => {
     pageFindUniqueMock.mockResolvedValue({
-      draftConfig: createDraftConfig(),
+      draftConfig: createLegacyPageConfigFixture(),
       themeColor: "#445566",
       fontFamily: "Noto Sans JP",
     });
@@ -124,7 +86,7 @@ describe("page editor routes", () => {
 
   it("saves a normalized draft config with theme settings", async () => {
     pageUpdateMock.mockResolvedValue({
-      draftConfig: createDraftConfig(),
+      draftConfig: createLegacyPageConfigFixture(),
       themeColor: "#998877",
       fontFamily: "Zen Maru Gothic",
     });
@@ -133,7 +95,7 @@ describe("page editor routes", () => {
       new Request("http://localhost/api/page/me", {
         method: "PUT",
         body: JSON.stringify({
-          draftConfig: createDraftConfig(),
+          draftConfig: createLegacyPageConfigFixture(),
           themeColor: "#998877",
           fontFamily: "Zen Maru Gothic",
         }),
@@ -168,7 +130,7 @@ describe("page editor routes", () => {
       new Request("http://localhost/api/page/me", {
         method: "PUT",
         body: JSON.stringify({
-          draftConfig: createDraftConfig({
+          draftConfig: createLegacyPageConfigFixture({
             background: {
               type: "color",
               value: "#123",
@@ -187,10 +149,10 @@ describe("page editor routes", () => {
 
   it("publishes the normalized draft config", async () => {
     pageFindUniqueMock.mockResolvedValue({
-      draftConfig: createDraftConfig(),
+      draftConfig: createLegacyPageConfigFixture(),
     });
     pageUpdateMock.mockResolvedValue({
-      publishedConfig: createDraftConfig(),
+      publishedConfig: createLegacyPageConfigFixture(),
     });
 
     const response = await POST(
@@ -220,7 +182,7 @@ describe("page editor routes", () => {
 
   it("blocks publishing when the stored draft config is invalid", async () => {
     pageFindUniqueMock.mockResolvedValue({
-      draftConfig: createDraftConfig({
+      draftConfig: createLegacyPageConfigFixture({
         background: {
           type: "color",
           value: "#123",
@@ -237,6 +199,47 @@ describe("page editor routes", () => {
 
     expect(response.status).toBe(400);
     expect(payload.error).toBe("Draft config is invalid");
+    expect(pageUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects unauthenticated reads", async () => {
+    getServerSessionMock.mockResolvedValue(null);
+
+    const response = await GET();
+
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toEqual({ error: "Unauthorized" });
+    expect(pageFindUniqueMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects unauthenticated draft updates", async () => {
+    getServerSessionMock.mockResolvedValue(null);
+
+    const response = await PUT(
+      new Request("http://localhost/api/page/me", {
+        method: "PUT",
+        body: JSON.stringify({
+          draftConfig: createLegacyPageConfigFixture(),
+        }),
+      })
+    );
+
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toEqual({ error: "Unauthorized" });
+    expect(pageUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects unauthenticated publish requests", async () => {
+    getServerSessionMock.mockResolvedValue(null);
+
+    const response = await POST(
+      new Request("http://localhost/api/page/me/publish", {
+        method: "POST",
+      })
+    );
+
+    expect(response.status).toBe(401);
+    await expect(response.json()).resolves.toEqual({ error: "Unauthorized" });
     expect(pageUpdateMock).not.toHaveBeenCalled();
   });
 });

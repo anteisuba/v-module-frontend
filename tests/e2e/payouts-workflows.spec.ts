@@ -61,7 +61,34 @@ test("syncs payout account state when returning from Stripe onboarding", async (
   await page.goto("/admin/settings/payouts?connect=return");
 
   await expect(page.getByTestId("admin-payout-settings-page")).toBeVisible();
+  await expect(page.getByTestId("payout-guide")).toBeVisible();
+  await expect(page.getByTestId("payout-progress")).toBeVisible();
+  await expect(page.getByTestId("payout-progress-count")).toHaveText("4 / 4");
   await expect.poll(() => syncCalls).toBe(1);
   await expect(page.getByText("已从 Stripe 返回，当前状态已重新同步。")).toBeVisible();
   await expect(page.getByTestId("payout-status-badge")).toHaveText("已启用");
+});
+
+test("shows onboarding progress hints for pending payout accounts", async ({
+  page,
+}) => {
+  await page.route("**/api/payments/connect/accounts/me", async (route) => {
+    await fulfillJson(route, {
+      account: createPayoutAccountSummary({
+        status: "PENDING",
+        chargesEnabled: false,
+        payoutsEnabled: false,
+        onboardingCompletedAt: null,
+        requirementsCurrentlyDue: ["individual.verification.document"],
+      }),
+    });
+  });
+
+  await page.goto("/admin/settings/payouts");
+
+  await expect(page.getByTestId("payout-progress")).toBeVisible();
+  await expect(page.getByTestId("payout-progress-count")).toHaveText("2 / 4");
+  await expect(page.getByTestId("payout-progress-summary")).toContainText(
+    "onboarding 还没完全走完"
+  );
 });

@@ -1,7 +1,7 @@
 # バックログ
 
 - 简体中文: [后续待办](../../zh-CN/overview/backlog.md)
-- 最終更新: 2026-03-11
+- 最終更新: 2026-03-14
 
 ## 目的
 
@@ -32,8 +32,8 @@
 
 ## P1: 工学安定性と Stripe 運用閉ループ
 
-- 既存の Playwright シナリオを継続実行へ正式に組み込む。現在 `11` 個の Chromium シナリオは安定通過しており、次は CI、複数ブラウザ、失敗成果物 / retry 戦略の固定化
-- Stripe Connect を正式路線として継続し、routing / account 軸のフィルタ、エクスポート、アラート、売り手向け説明を補強する
+- 既存の Playwright シナリオを継続実行へ正式に組み込む。GitHub Actions で PR / push 時に `check / test / build / lint` を回し、`11` 個の e2e spec を Chromium / Firefox / WebKit 行列で実行し、失敗時は Playwright 成果物をアップロードするようになった。README badge と高リスク経路の一段目テスト拡張も完了し、次は flaky 分析と残る高リスク経路の補測を優先する
+- Stripe Connect を正式路線として継続し、照合ページの routing / account 軸フィルタ、精算照合ページの payout 状態グルーピング、異常メール / Slack アラート、注文 CSV の Connect 項目出力、payout settings の説明文追加、onboarding 進捗表示は完了済みとして、次は異常状態の案内を補強する
 - `scripts/run-node-tool.mjs`、`scripts/run-prisma-generate.mjs`、preload 互換層を維持し、Next / Playwright / Prisma のツールノイズを主経路へ戻さない
 
 ## TODO: 決済拡張

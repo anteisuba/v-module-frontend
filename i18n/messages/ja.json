@@ -83,11 +83,83 @@
         "backToDashboard": "編集ディレクトリに戻る",
         "emptyState": "まだ Stripe の受取口座が作成されていません。オンボーディングを開始すると、Stripe が基本情報、決済権限、銀行口座設定を案内します。",
         "sections": {
+          "guide": "利用ガイド",
+          "progress": "Onboarding 進捗",
           "account": "アカウント概要",
           "nextSteps": "次のステップと注意点",
           "currentlyDue": "現在不足している情報",
           "pastDue": "期限超過の不足情報",
           "eventuallyDue": "今後必要になる可能性がある情報"
+        },
+        "guide": {
+          "overview": "このページが管理するのは販売者の Stripe Connect 受取口座であり、アプリ内残高ではありません。購入後の資金は Stripe が connected account に計上し、その後 payout の周期で連携済み銀行口座へ送金します。",
+          "flowTitle": "推奨フロー",
+          "flowSteps": {
+            "start": "初回は「Stripe 受取設定を開始」を押し、本人情報、事業情報、銀行口座設定を完了してください。",
+            "sync": "Stripe から戻ったら「Stripe 状態を同期」を一度実行し、この画面の capabilities と requirements を最新の判断基準にしてください。",
+            "manage": "日常的な payout 確認、銀行口座更新、追加情報提出は Stripe Express Dashboard を優先して使います。"
+          },
+          "statusTitle": "ステータス説明",
+          "statusHelp": {
+            "NOT_STARTED": "まだ口座作成や onboarding が始まっておらず、販売者専用の Stripe 受取経路は使われません。",
+            "PENDING": "口座は作成済みですが、追加情報や機能有効化の待ちが残っています。",
+            "RESTRICTED": "期限超過や制限項目があり、決済または入金に影響する可能性があるため優先対応が必要です。",
+            "ACTIVE": "決済と入金の両方が有効で、通常どおり受注し Stripe payout を待てる状態です。",
+            "DISCONNECTED": "口座が切断または削除されており、販売者専用の受取を再開するには再連携が必要です。"
+          }
+        },
+        "progress": {
+          "completed": "完了済みステップ",
+          "recommendedAction": "推奨アクション",
+          "counts": {
+            "currentlyDue": "現在不足",
+            "pastDue": "期限超過",
+            "eventuallyDue": "後続で必要"
+          },
+          "state": {
+            "complete": "完了",
+            "current": "進行中",
+            "todo": "未着手",
+            "attention": "要対応"
+          },
+          "summary": {
+            "notStarted": "まだ販売者用の受取口座が作成されていません。まず Stripe onboarding を開始して、販売者専用の受取経路を有効にしてください。",
+            "disconnected": "この受取口座は切断されています。再連携しない限り、Stripe は販売者口座での受取と payout を継続できません。",
+            "pastDue": "Stripe に期限超過の不足情報があります。制限項目を解消してから再同期し、能力状態を確認してください。",
+            "details": "onboarding はまだ完了していません。Stripe が求める情報と銀行口座設定を完了してから、この画面で再同期してください。",
+            "review": "基本情報の提出は完了しており、現在は Stripe による決済機能の有効化待ちが主な段階です。反映後に一度同期してください。",
+            "payouts": "決済機能は有効ですが、payout 機能はまだ完全には反映されていません。Stripe の反映を待ち、戻ったら同期してください。",
+            "active": "Stripe Connect onboarding は完了し、販売者専用の受取と payout が利用可能です。"
+          },
+          "steps": {
+            "account": {
+              "label": "販売者受取口座を作成",
+              "todo": "まず Stripe onboarding を開始すると、この販売者用 connected account が作成されます。",
+              "done": "販売者の Stripe Connect 口座は作成済みで、追加情報提出や状態確認へ進めます。",
+              "attention": "既存の受取口座は切断済みのため、再連携が必要です。"
+            },
+            "details": {
+              "label": "基本情報と銀行口座を提出",
+              "todo": "受取口座作成後に、Stripe で本人確認、事業情報、銀行口座情報を登録します。",
+              "current": "まだ Stripe の現在要件を満たしていません。情報を補完してから再同期してください。",
+              "done": "基本情報と onboarding の主要フォーム提出は完了しており、次は機能反映の確認が中心です。",
+              "attention": "期限超過または制限対象の情報があり、先に解消する必要があります。"
+            },
+            "charges": {
+              "label": "決済機能を有効化",
+              "todo": "情報提出が完了すると、Stripe がこの口座の決済機能有効化を進めます。",
+              "current": "Stripe が審査中、または追加情報待ちのため、決済機能はまだ完全には有効化されていません。",
+              "done": "この販売者口座ではすでに決済を受け付けられ、Connect 経路で注文資金が入ります。",
+              "attention": "上の制限項目が決済機能に影響しているため、先に制限解除が必要です。"
+            },
+            "payouts": {
+              "label": "入金機能を有効化",
+              "todo": "決済機能が有効になった後に、Stripe が銀行口座への payout も順次開放します。",
+              "current": "payout 機能はまだ反映待ちです。可打款表示になるまで同期を続けてください。",
+              "done": "payout 機能が有効で、Stripe がスケジュールに沿って銀行口座へ送金します。",
+              "attention": "現在の制限が payout に影響しているため、先に制限を解消してください。"
+            }
+          }
         },
         "actions": {
           "startOnboarding": "Stripe 受取設定を開始",

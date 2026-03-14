@@ -1,4 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import {
+  createStripeCheckoutSessionEvent,
+  createStripeDisputeEvent,
+} from "@/tests/helpers/stripe";
 
 const {
   constructEventMock,
@@ -45,17 +49,7 @@ describe("POST /api/payments/stripe/webhook", () => {
   });
 
   it("marks a paid checkout session as paid", async () => {
-    constructEventMock.mockReturnValue({
-      type: "checkout.session.completed",
-      data: {
-        object: {
-          object: "checkout.session",
-          id: "cs_test_123",
-          payment_status: "paid",
-          payment_intent: "pi_123",
-        },
-      },
-    });
+    constructEventMock.mockReturnValue(createStripeCheckoutSessionEvent());
 
     const response = await POST(
       new Request("http://localhost/api/payments/stripe/webhook", {
@@ -76,17 +70,14 @@ describe("POST /api/payments/stripe/webhook", () => {
   });
 
   it("releases inventory when a checkout session expires", async () => {
-    constructEventMock.mockReturnValue({
-      type: "checkout.session.expired",
-      data: {
-        object: {
-          object: "checkout.session",
+    constructEventMock.mockReturnValue(
+      createStripeCheckoutSessionEvent({
+        type: "checkout.session.expired",
+        session: {
           id: "cs_test_expired",
-          payment_status: "unpaid",
-          payment_intent: null,
         },
-      },
-    });
+      })
+    );
 
     const response = await POST(
       new Request("http://localhost/api/payments/stripe/webhook", {
@@ -108,20 +99,7 @@ describe("POST /api/payments/stripe/webhook", () => {
   });
 
   it("records dispute events without treating them as checkout sessions", async () => {
-    constructEventMock.mockReturnValue({
-      type: "charge.dispute.created",
-      data: {
-        object: {
-          object: "dispute",
-          id: "du_test_123",
-          amount: 5000,
-          currency: "jpy",
-          status: "needs_response",
-          reason: "fraudulent",
-          charge: "ch_test_123",
-        },
-      },
-    });
+    constructEventMock.mockReturnValue(createStripeDisputeEvent());
 
     const response = await POST(
       new Request("http://localhost/api/payments/stripe/webhook", {
@@ -140,5 +118,75 @@ describe("POST /api/payments/stripe/webhook", () => {
       })
     );
     expect(handleStripeCheckoutPaidMock).not.toHaveBeenCalled();
+  });
+
+  it("confirms async payment success with the paid handler", async () => {
+    constructEventMock.mockReturnValue(
+      createStripeCheckoutSessionEvent({
+        type: "checkout.session.async_payment_succeeded",
+        session: {
+          id: "cs_async_paid",
+        },
+      })
+    );
+
+    const response = await POST(
+      new Request("http://localhost/api/payments/stripe/webhook", {
+        method: "POST",
+        headers: {
+          "stripe-signature": "sig_test",
+        },
+        body: "payload",
+      })
+    );
+
+    expect(response.status).toBe(200);
+    expect(handleStripeCheckoutPaidMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "cs_async_paid",
+      })
+    );
+  });
+
+  it("records async payment failure with the failed handler", async () => {
+    constructEventMock.mockReturnValue(
+      createStripeCheckoutSessionEvent({
+        type: "checkout.session.async_payment_failed",
+        session: {
+          id: "cs_async_failed",
+        },
+      })
+    );
+
+    const response = await POST(
+      new Request("http://localhost/api/payments/stripe/webhook", {
+        method: "POST",
+        headers: {
+          "stripe-signature": "sig_test",
+        },
+        body: "payload",
+      })
+    );
+
+    expect(response.status).toBe(200);
+    expect(handleStripeCheckoutFailedMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        id: "cs_async_failed",
+      })
+    );
+  });
+
+  it("returns 400 when the Stripe signature is missing", async () => {
+    const response = await POST(
+      new Request("http://localhost/api/payments/stripe/webhook", {
+        method: "POST",
+        body: "payload",
+      })
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "Missing Stripe signature",
+    });
   });
 });

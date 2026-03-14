@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createLegacyPageConfigFixture } from "@/tests/helpers/page-config";
 
 const { findUniqueMock } = vi.hoisted(() => ({
   findUniqueMock: vi.fn(),
@@ -35,39 +36,12 @@ describe("GET /api/page/[slug]", () => {
       slug: "alice",
       displayName: "Alice",
       page: {
-        publishedConfig: {
+        publishedConfig: createLegacyPageConfigFixture({
           background: {
             type: "color",
             value: "#123456",
           },
-          sections: [
-            {
-              id: "hero-1",
-              type: "hero",
-              enabled: true,
-              order: 0,
-              props: {
-                slides: [],
-                title: "Hello",
-              },
-            },
-            {
-              id: "links-1",
-              type: "links",
-              enabled: true,
-              order: 1,
-              props: {
-                items: [
-                  {
-                    id: "link-1",
-                    label: "X",
-                    href: "https://example.com",
-                  },
-                ],
-              },
-            },
-          ],
-        },
+        }),
       },
     });
 

@@ -18,12 +18,33 @@ export async function GET(request: Request) {
   const start = searchParams.get("start");
   const end = searchParams.get("end");
   const exportType = searchParams.get("export");
+  const rawPaymentRoutingMode = searchParams.get("paymentRoutingMode");
+  const connectedAccountId =
+    searchParams.get("connectedAccountId")?.trim() || undefined;
+
+  if (
+    rawPaymentRoutingMode &&
+    !["PLATFORM", "STRIPE_CONNECT_DESTINATION"].includes(rawPaymentRoutingMode)
+  ) {
+    return NextResponse.json(
+      {
+        error: "Invalid payment routing mode",
+      },
+      { status: 400 }
+    );
+  }
+
+  const paymentRoutingMode = rawPaymentRoutingMode
+    ? (rawPaymentRoutingMode as "PLATFORM" | "STRIPE_CONNECT_DESTINATION")
+    : undefined;
 
   try {
     const report = await getPaymentReconciliationReport(session.user.id, {
       start,
       end,
       eventLimit: exportType ? Number.MAX_SAFE_INTEGER : 50,
+      ...(paymentRoutingMode ? { paymentRoutingMode } : {}),
+      ...(connectedAccountId ? { connectedAccountId } : {}),
     });
 
     if (exportType === "events") {

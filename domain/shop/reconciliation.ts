@@ -1,6 +1,10 @@
 import { prisma } from "@/lib/prisma";
 import { ORDER_PAYMENT_PROVIDER_STRIPE } from "./services";
 
+export type PaymentRoutingMode =
+  | "PLATFORM"
+  | "STRIPE_CONNECT_DESTINATION";
+
 export interface PaymentReconciliationAttemptRecord {
   id: string;
   provider: string;
@@ -56,7 +60,7 @@ export interface PaymentReconciliationDisputeRecord {
 export interface PaymentReconciliationOrderRecord {
   id: string;
   payoutAccountId?: string | null;
-  paymentRoutingMode?: "PLATFORM" | "STRIPE_CONNECT_DESTINATION";
+  paymentRoutingMode?: PaymentRoutingMode;
   connectedAccountId?: string | null;
   externalChargeId?: string | null;
   externalTransferId?: string | null;
@@ -110,7 +114,7 @@ export interface PaymentReconciliationEvent {
   createdAt: string;
   orderStatus: string;
   paymentStatus: string | null;
-  paymentRoutingMode?: "PLATFORM" | "STRIPE_CONNECT_DESTINATION";
+  paymentRoutingMode?: PaymentRoutingMode;
   connectedAccountId?: string | null;
   paymentSessionId: string | null;
   paymentIntentId: string | null;
@@ -131,7 +135,7 @@ export interface PaymentReconciliationAnomaly {
   suggestedAction: string;
   orderStatus: string;
   paymentStatus: string | null;
-  paymentRoutingMode?: "PLATFORM" | "STRIPE_CONNECT_DESTINATION";
+  paymentRoutingMode?: PaymentRoutingMode;
   connectedAccountId?: string | null;
   paymentSessionId: string | null;
   paymentIntentId: string | null;
@@ -142,6 +146,11 @@ export interface PaymentReconciliationReport {
   summary: PaymentReconciliationSummary;
   events: PaymentReconciliationEvent[];
   anomalies: PaymentReconciliationAnomaly[];
+}
+
+interface PaymentReconciliationFilters {
+  paymentRoutingMode?: PaymentRoutingMode | null;
+  connectedAccountId?: string | null;
 }
 
 function parseBoundaryDate(
@@ -215,6 +224,54 @@ function getPendingRefundAmount(order: PaymentReconciliationOrderRecord) {
   return order.refunds
     .filter((refund) => refund.status === "PENDING")
     .reduce((sum, refund) => sum + refund.amount, 0);
+}
+
+function normalizeConnectedAccountId(value?: string | null) {
+  const trimmed = value?.trim();
+  return trimmed ? trimmed : null;
+}
+
+function matchesConnectedAccountId(
+  order: PaymentReconciliationOrderRecord,
+  connectedAccountId: string
+) {
+  if (order.connectedAccountId === connectedAccountId) {
+    return true;
+  }
+
+  return (
+    order.paymentAttempts.some(
+      (attempt) => attempt.connectedAccountId === connectedAccountId
+    ) ||
+    order.refunds.some((refund) => refund.connectedAccountId === connectedAccountId) ||
+    order.disputes.some(
+      (dispute) => dispute.connectedAccountId === connectedAccountId
+    )
+  );
+}
+
+function filterOrdersForReconciliation(
+  orders: PaymentReconciliationOrderRecord[],
+  input?: PaymentReconciliationFilters
+) {
+  const connectedAccountId = normalizeConnectedAccountId(
+    input?.connectedAccountId
+  );
+
+  return orders.filter((order) => {
+    if (
+      input?.paymentRoutingMode &&
+      order.paymentRoutingMode !== input.paymentRoutingMode
+    ) {
+      return false;
+    }
+
+    if (connectedAccountId && !matchesConnectedAccountId(order, connectedAccountId)) {
+      return false;
+    }
+
+    return true;
+  });
 }
 
 function buildEvents(
@@ -522,11 +579,14 @@ export function buildPaymentReconciliationReportFromOrders(
     start?: string | null;
     end?: string | null;
     eventLimit?: number | null;
+    paymentRoutingMode?: PaymentRoutingMode | null;
+    connectedAccountId?: string | null;
   }
 ): PaymentReconciliationReport {
   const { start, end } = resolveWindow(input);
-  const events = buildEvents(orders, start, end);
-  const anomalies = buildAnomalies(orders);
+  const filteredOrders = filterOrdersForReconciliation(orders, input);
+  const events = buildEvents(filteredOrders, start, end);
+  const anomalies = buildAnomalies(filteredOrders);
   const eventLimit =
     input?.eventLimit == null ? 50 : Math.max(0, input.eventLimit);
   const visibleEvents = events.slice(0, eventLimit);
@@ -542,8 +602,8 @@ export function buildPaymentReconciliationReportFromOrders(
     summary: {
       windowStart: start.toISOString(),
       windowEnd: end.toISOString(),
-      stripeOrderCount: orders.length,
-      paidOrderCount: orders.filter((order) =>
+      stripeOrderCount: filteredOrders.length,
+      paidOrderCount: filteredOrders.filter((order) =>
         ["PAID", "PARTIALLY_REFUNDED", "REFUNDED"].includes(
           order.paymentStatus || ""
         )
@@ -559,11 +619,13 @@ export function buildPaymentReconciliationReportFromOrders(
       netCollectedAmount:
         successfulPaymentsInWindow.reduce((sum, event) => sum + event.amount, 0) -
         successfulRefundsInWindow.reduce((sum, event) => sum + event.amount, 0),
-      openOrderCount: orders.filter((order) => order.paymentStatus === "OPEN").length,
-      failedOrderCount: orders.filter((order) =>
+      openOrderCount: filteredOrders.filter(
+        (order) => order.paymentStatus === "OPEN"
+      ).length,
+      failedOrderCount: filteredOrders.filter((order) =>
         ["FAILED", "EXPIRED"].includes(order.paymentStatus || "")
       ).length,
-      pendingRefundCount: orders.reduce(
+      pendingRefundCount: filteredOrders.reduce(
         (sum, order) =>
           sum +
           order.refunds.filter((refund) => refund.status === "PENDING").length,
@@ -745,12 +807,52 @@ export async function getPaymentReconciliationReport(
     start?: string | null;
     end?: string | null;
     eventLimit?: number | null;
+    paymentRoutingMode?: PaymentRoutingMode | null;
+    connectedAccountId?: string | null;
   }
 ) {
+  const connectedAccountId = normalizeConnectedAccountId(
+    input?.connectedAccountId
+  );
   const orders = await prisma.order.findMany({
     where: {
       userId,
       paymentProvider: ORDER_PAYMENT_PROVIDER_STRIPE,
+      ...(input?.paymentRoutingMode
+        ? {
+            paymentRoutingMode: input.paymentRoutingMode,
+          }
+        : {}),
+      ...(connectedAccountId
+        ? {
+            OR: [
+              {
+                connectedAccountId,
+              },
+              {
+                paymentAttempts: {
+                  some: {
+                    connectedAccountId,
+                  },
+                },
+              },
+              {
+                refunds: {
+                  some: {
+                    connectedAccountId,
+                  },
+                },
+              },
+              {
+                disputes: {
+                  some: {
+                    connectedAccountId,
+                  },
+                },
+              },
+            ],
+          }
+        : {}),
     },
     orderBy: {
       updatedAt: "desc",
@@ -848,7 +950,10 @@ export async function getPaymentReconciliationReport(
 
   return buildPaymentReconciliationReportFromOrders(
     serializeOrdersForReconciliation(orders),
-    input
+    {
+      ...input,
+      connectedAccountId,
+    }
   );
 }
 

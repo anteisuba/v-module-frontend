@@ -1,57 +1,41 @@
-// app/api/news/articles/[id]/route.ts
-
 import { NextResponse } from "next/server";
-import { Prisma } from "@prisma/client";
+import {
+  ApiRouteError,
+  createApiErrorResponse,
+  readJsonBody,
+} from "@/lib/api/server";
+import {
+  deleteNewsArticle,
+  getNewsArticleById,
+  updateNewsArticle,
+  updateNewsArticleInputSchema,
+} from "@/domain/news";
 import { getServerSession } from "@/lib/session/userSession";
-import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
-
-function asOptionalString(value: unknown) {
-  return typeof value === "string" ? value : null;
-}
-
-function asOptionalBoolean(value: unknown) {
-  return typeof value === "boolean" ? value : null;
-}
 
 // GET: 获取单篇文章
 export async function GET(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = await params;
-
-  const article = await prisma.newsArticle.findUnique({
-    where: { id },
-    include: {
-      user: {
-        select: {
-          slug: true,
-        },
-      },
-    },
-  });
-
-  if (!article) {
-    return NextResponse.json({ error: "Article not found" }, { status: 404 });
-  }
-
-  // 如果文章未发布，需要验证权限
-  if (!article.published) {
+  try {
+    const { id } = await params;
     const session = await getServerSession();
-    if (!session?.user?.id || session.user.id !== article.userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-  }
+    const article = await getNewsArticleById({
+      id,
+      viewerUserId: session?.user?.id ?? null,
+    });
 
-  const { user, ...articleData } = article;
-  return NextResponse.json({
-    article: {
-      ...articleData,
-      userSlug: user?.slug || null,
-    },
-  });
+    return NextResponse.json({ article });
+  } catch (error) {
+    return createApiErrorResponse(error, {
+      code: "NEWS_ARTICLE_FETCH_FAILED",
+      message: "Failed to fetch news article",
+      status: 500,
+      logMessage: `Failed to fetch news article ${request.url}`,
+    });
+  }
 }
 
 // PUT: 更新文章
@@ -59,79 +43,33 @@ export async function PUT(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const userId = session.user.id;
-  const { id } = await params;
-
-  // 检查文章是否存在且属于当前用户
-  const existing = await prisma.newsArticle.findUnique({
-    where: { id },
-  });
-
-  if (!existing) {
-    return NextResponse.json({ error: "Article not found" }, { status: 404 });
-  }
-
-  if (existing.userId !== userId) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
-  let body: Record<string, unknown>;
   try {
-    body = await request.json();
-  } catch {
-    return NextResponse.json(
-      { error: "Invalid JSON in request body" },
-      { status: 400 }
-    );
-  }
+    const session = await getServerSession();
 
-  const {
-    title,
-    content,
-    category,
-    tag,
-    shareUrl,
-    shareChannels,
-    published,
-    backgroundType,
-    backgroundValue,
-  } = body;
-
-  const updateData: Prisma.NewsArticleUpdateInput = {};
-  if (title !== undefined) updateData.title = asOptionalString(title) || "";
-  if (content !== undefined) updateData.content = asOptionalString(content) || "";
-  if (category !== undefined) updateData.category = asOptionalString(category) || "";
-  if (tag !== undefined) updateData.tag = asOptionalString(tag);
-  if (shareUrl !== undefined) updateData.shareUrl = asOptionalString(shareUrl);
-  if (shareChannels !== undefined) {
-    updateData.shareChannels =
-      shareChannels === null ? Prisma.JsonNull : (shareChannels as Prisma.InputJsonValue);
-  }
-  if (backgroundType !== undefined) {
-    updateData.backgroundType = asOptionalString(backgroundType) || "color";
-  }
-  if (backgroundValue !== undefined) {
-    updateData.backgroundValue = asOptionalString(backgroundValue) || "#000000";
-  }
-  const nextPublished = asOptionalBoolean(published);
-  if (nextPublished !== null) {
-    updateData.published = nextPublished;
-    if (nextPublished && !existing.publishedAt) {
-      updateData.publishedAt = new Date();
+    if (!session?.user?.id) {
+      throw new ApiRouteError("UNAUTHORIZED", "Unauthorized", 401);
     }
+
+    const { id } = await params;
+    const input = await readJsonBody(request, updateNewsArticleInputSchema, {
+      code: "INVALID_NEWS_ARTICLE_INPUT",
+      message: "Invalid news article payload",
+    });
+    const article = await updateNewsArticle({
+      id,
+      userId: session.user.id,
+      input,
+    });
+
+    return NextResponse.json({ article });
+  } catch (error) {
+    return createApiErrorResponse(error, {
+      code: "NEWS_ARTICLE_UPDATE_FAILED",
+      message: "Failed to update news article",
+      status: 500,
+      logMessage: "Failed to update news article",
+    });
   }
-
-  const article = await prisma.newsArticle.update({
-    where: { id },
-    data: updateData,
-  });
-
-  return NextResponse.json({ article });
 }
 
 // DELETE: 删除文章
@@ -139,30 +77,26 @@ export async function DELETE(
   _request: Request,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await getServerSession();
-  if (!session?.user?.id) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  try {
+    const session = await getServerSession();
+
+    if (!session?.user?.id) {
+      throw new ApiRouteError("UNAUTHORIZED", "Unauthorized", 401);
+    }
+
+    const { id } = await params;
+    await deleteNewsArticle({
+      id,
+      userId: session.user.id,
+    });
+
+    return NextResponse.json({ ok: true });
+  } catch (error) {
+    return createApiErrorResponse(error, {
+      code: "NEWS_ARTICLE_DELETE_FAILED",
+      message: "Failed to delete news article",
+      status: 500,
+      logMessage: "Failed to delete news article",
+    });
   }
-
-  const userId = session.user.id;
-  const { id } = await params;
-
-  // 检查文章是否存在且属于当前用户
-  const existing = await prisma.newsArticle.findUnique({
-    where: { id },
-  });
-
-  if (!existing) {
-    return NextResponse.json({ error: "Article not found" }, { status: 404 });
-  }
-
-  if (existing.userId !== userId) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
-  await prisma.newsArticle.delete({
-    where: { id },
-  });
-
-  return NextResponse.json({ ok: true });
 }

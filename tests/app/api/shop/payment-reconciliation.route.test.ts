@@ -64,6 +64,36 @@ describe("GET /api/shop/payments/reconciliation", () => {
     expect(payload.summary.anomalyCount).toBe(1);
   });
 
+  it("passes routing mode and connected account filters to the report builder", async () => {
+    getServerSessionMock.mockResolvedValue({
+      user: {
+        id: "seller-1",
+      },
+    });
+    getPaymentReconciliationReportMock.mockResolvedValue({
+      summary: {
+        anomalyCount: 0,
+      },
+      events: [],
+      anomalies: [],
+    });
+
+    const response = await GET(
+      new Request(
+        "http://localhost/api/shop/payments/reconciliation?paymentRoutingMode=STRIPE_CONNECT_DESTINATION&connectedAccountId=%20acct_test_123%20"
+      )
+    );
+
+    expect(response.status).toBe(200);
+    expect(getPaymentReconciliationReportMock).toHaveBeenCalledWith("seller-1", {
+      start: null,
+      end: null,
+      eventLimit: 50,
+      paymentRoutingMode: "STRIPE_CONNECT_DESTINATION",
+      connectedAccountId: "acct_test_123",
+    });
+  });
+
   it("returns events CSV when export=events is requested", async () => {
     getServerSessionMock.mockResolvedValue({
       user: {
@@ -87,5 +117,25 @@ describe("GET /api/shop/payments/reconciliation", () => {
     expect(response.status).toBe(200);
     await expect(response.text()).resolves.toBe("events:2");
     expect(response.headers.get("Content-Type")).toContain("text/csv");
+  });
+
+  it("returns 400 for unsupported routing mode filters", async () => {
+    getServerSessionMock.mockResolvedValue({
+      user: {
+        id: "seller-1",
+      },
+    });
+
+    const response = await GET(
+      new Request(
+        "http://localhost/api/shop/payments/reconciliation?paymentRoutingMode=INVALID_MODE"
+      )
+    );
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: "Invalid payment routing mode",
+    });
+    expect(getPaymentReconciliationReportMock).not.toHaveBeenCalled();
   });
 });

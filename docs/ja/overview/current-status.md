@@ -1,7 +1,7 @@
 # 現状
 
 - 简体中文: [当前状态](../../zh-CN/overview/current-status.md)
-- 最終更新: 2026-03-11
+- 最終更新: 2026-03-14
 
 ## 目的
 
@@ -34,10 +34,11 @@
 
 - `pnpm build`: 成功。`middleware -> proxy`、`prisma.config.ts` 移行とローカル build warning は解消済みで、現在は標準 build 出力
 - `pnpm check`: 成功
-- `pnpm test`: 成功。現在は `27` ファイル `81` テスト
-- `pnpm test:e2e`: 成功。現在は `11` 個の Chromium シナリオ
+- `pnpm test`: 成功。現在は `30` ファイル `102` テスト
+- `pnpm test:e2e`: 現在は `11` 個の e2e spec があり、Chromium / Firefox / WebKit の 3 ブラウザ行列で実行する構成
 - `pnpm lint`: 成功。現在は `0 errors / 0 warnings`
-- 自動テストファイル: `Vitest + Playwright` の spec があり、かつ実行済みで認証、ページ設定、メディアライブラリ、公開コンテンツ、Shop 注文、Stripe Checkout / Webhook / Connect / 照合 / 精算、payout onboarding などをカバー
+- GitHub Actions: PR / push 向け CI を追加し、`pnpm check`、`pnpm test`、`pnpm build`、`pnpm lint` と Playwright の Chromium / Firefox / WebKit 行列を実行。e2e 失敗時は `playwright-report` と `test-results` をアップロード
+- 自動テストファイル: `Vitest + Playwright` の spec があり、かつ実行済みで認証、権限境界、ページ設定編集と公開レンダリング経路、メディアライブラリ、公開コンテンツ、Shop 注文、Stripe Checkout / Webhook / Connect / 照合 / 精算、payout onboarding などをカバー
 - Prisma migration ディレクトリ数: 現在 `13`
 
 ## 実装済み
@@ -54,10 +55,12 @@
 - 返金と dispute: `OrderPaymentAttempt`、`OrderRefund`、`OrderDispute` を保持し、管理画面で返金実行と dispute タイムライン表示が可能
 - Stripe Checkout / Webhook: 公開注文で Checkout Session を生成し、支払い成功・失敗・期限切れ・dispute を注文へ反映
 - 支払い照合: 管理画面に Stripe 照合ページがあり、イベント / 異常の確認と CSV エクスポートが可能
-- 精算照合: Stripe `balance transactions` / `payouts` を同期し、精算状況を確認して一括で reconciliation 状態を更新可能
-- Stripe Connect: 売り手収益口座モデル、onboarding / dashboard link / account sync API、`/admin/settings/payouts` 画面、destination charge と `PLATFORM` fallback がある
-- Connect 運用可視性: 注文詳細、照合、精算ページで `paymentRoutingMode`、connected account、charge / transfer、platform fee、seller net のスナップショットを表示
+- 精算照合: Stripe `balance transactions` / `payouts` を同期し、payout 状態ごとに流水をまとめて確認しながら一括で reconciliation 状態を更新可能
+- Stripe Connect: 売り手収益口座モデル、onboarding / dashboard link / account sync API、`/admin/settings/payouts` 画面、destination charge と `PLATFORM` fallback があり、payout settings 画面には資金フロー、推奨操作順、ステータス説明、onboarding 進捗表示も追加済み
+- Connect 運用可視性: 注文詳細、注文 CSV、照合、精算ページで `paymentRoutingMode`、connected account、charge / transfer、platform fee、seller net のスナップショットを表示または出力でき、照合ページでは `routing mode` / `connected account` フィルタも利用可能
 - 内部定期同期: 売り手単位で Stripe の精算・payout・dispute を同期する内部 cron API がある
+- 財務異常アラート: 内部 `stripe-finance-sync` は支払い照合 / 精算異常を検出した際に、売り手メールと任意の Slack webhook へ通知できる
+- テスト fixture 基線: ページ設定、セッション、Stripe event の共有 helper を追加し、高リスク API / レンダリング検証の重複 mock を減らした
 - 注文通知: 支払い確定後の購入者 / 売り手向けメール、注文状態変更メールに対応
 - メディアライブラリ: 統一メディア画面、使用箇所フィルタ、参照追跡、ライブラリ内置換、タグ一括更新に対応
 - メディアアップロード: ローカル / R2 分岐、`MediaAsset` 記録
@@ -66,8 +69,8 @@
 ## 部分実装 / ギャップ
 
 - 正式な決済ルートは現在も Stripe 単一チャネルで、PayPal / ローカル決済は後回し
-- Stripe Connect の主経路は動くが、より細かい運用フィルタ、アラート、ブラウザ回帰は今後も強化余地がある
-- 工学基線は「build / check / test / lint / e2e」まで安定したが、Playwright はまだローカル単一 worker・単一ブラウザ寄りで、CI / 多ブラウザ回帰までは未到達
+- Stripe Connect の主経路は動くが、異常状態の案内は今後も強化余地がある
+- 工学基線は「build / check / test / lint / e2e」まで安定し、GitHub Actions + Chromium / Firefox / WebKit の継続実行も入った。残る主要ギャップはより細かい flaky 分析と Stripe Connect 運用閉ループの強化
 
 ## 未実装
 
@@ -80,4 +83,4 @@
 
 ## 結論
 
-このプロジェクトはすでに「公開ページ + CMS + コンテンツ + Shop 注文 + Stripe 決済運用」が成立している段階です。次の優先順位は新機能追加よりも、Playwright の継続実行、Stripe Connect 運用の磨き込み、より広い回帰カバレッジです。
+このプロジェクトはすでに「公開ページ + CMS + コンテンツ + Shop 注文 + Stripe 決済運用」が成立している段階です。次の優先順位は新機能追加よりも、Stripe Connect 運用の磨き込みと、より細かい flaky 治理です。

@@ -24,7 +24,7 @@
     "db:migrate:prisma-dev": "prisma migrate dev",
     "db:studio": "prisma studio",
     "clear-rate-limit": "tsx scripts/clear-rate-limit.ts",
-    "playwright:install": "playwright install chromium"
+    "playwright:install": "playwright install chromium firefox webkit"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.957.0",

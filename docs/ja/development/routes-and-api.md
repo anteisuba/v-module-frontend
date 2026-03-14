@@ -1,7 +1,7 @@
 # ルートと API
 
 - 简体中文: [路由与 API](../../zh-CN/development/routes-and-api.md)
-- 最終更新: 2026-03-11
+- 最終更新: 2026-03-14
 
 ## 目的
 
@@ -140,10 +140,11 @@
 - `GET /api/blog/comments` と `PUT/DELETE /api/blog/comments/[id]` は売り手自身の審査画面向け
 - `GET/PATCH/DELETE /api/media-assets` と `POST /api/media-assets/replace` は管理画面のメディアライブラリ専用
 - `POST /api/shop/checkout` は匿名訪問者向けの公開チェックアウト入口で、注文確保、在庫減算、Stripe Checkout Session 作成を行う
+- `GET /api/shop/orders` は売り手管理画面専用で、`status`、`query`、`export=csv` を受け取り、CSV には `paymentRoutingMode`、connected account、charge / transfer、platform fee、seller net の Connect スナップショットも含まれる
 - `POST /api/shop/orders/[id]/confirm` は公開注文成功ページから `session_id` を使って支払い確定を補うための API
 - `GET /api/shop/orders/[id]` は売り手セッションでも、`buyerEmail` を明示した公開参照でも利用できる
 - `PUT /api/shop/orders/[id]` と `POST /api/shop/orders/[id]/refunds` は売り手管理用。Stripe 未決済注文を手動で `PAID` にはできない
 - `POST /api/payments/stripe/webhook` は Checkout 成功、非同期成功 / 失敗、期限切れ、dispute を処理する
 - `POST /api/payments/stripe/connect/webhook` と `/api/payments/connect/accounts/*` は売り手の Stripe Connect 口座同期 / onboarding 用
-- `GET /api/shop/payments/reconciliation` と `GET/POST/PATCH /api/shop/payments/settlements` は支払い運用向けで、`paymentRoutingMode`、connected account、charge / transfer、platform fee、seller net のスナップショットを返す
-- `POST /api/internal/cron/stripe-finance-sync` は内部同期用で、公開 API として扱わない
+- `GET /api/shop/payments/reconciliation` と `GET/POST/PATCH /api/shop/payments/settlements` は支払い運用向けで、照合 API は `start`、`end`、`paymentRoutingMode`、`connectedAccountId`、`export=events|anomalies` を受け取り、`paymentRoutingMode`、connected account、charge / transfer、platform fee、seller net のスナップショットを返す
+- `POST /api/internal/cron/stripe-finance-sync` は内部同期用で、公開 API として扱わない。メール設定と `FINANCE_ALERT_SLACK_WEBHOOK_URL` がある場合、支払い照合 / 精算異常を検出したときに通知を送る

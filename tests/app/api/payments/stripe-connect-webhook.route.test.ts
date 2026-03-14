@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createStripeConnectAccountEvent } from "@/tests/helpers/stripe";
 
 const {
   constructEventMock,
@@ -37,24 +38,7 @@ describe("POST /api/payments/stripe/connect/webhook", () => {
   });
 
   it("syncs seller payout state on account.updated", async () => {
-    constructEventMock.mockReturnValue({
-      type: "account.updated",
-      data: {
-        object: {
-          object: "account",
-          id: "acct_test_123",
-          charges_enabled: true,
-          payouts_enabled: true,
-          details_submitted: true,
-          requirements: {
-            currently_due: [],
-            eventually_due: [],
-            past_due: [],
-            disabled_reason: null,
-          },
-        },
-      },
-    });
+    constructEventMock.mockReturnValue(createStripeConnectAccountEvent());
 
     const response = await POST(
       new Request("http://localhost/api/payments/stripe/connect/webhook", {
@@ -76,16 +60,11 @@ describe("POST /api/payments/stripe/connect/webhook", () => {
   });
 
   it("refreshes bank summary on external account updates", async () => {
-    constructEventMock.mockReturnValue({
-      type: "account.external_account.updated",
-      account: "acct_test_456",
-      data: {
-        object: {
-          object: "bank_account",
-          id: "ba_test_123",
-        },
-      },
-    });
+    constructEventMock.mockReturnValue(
+      createStripeConnectAccountEvent({
+        type: "account.external_account.updated",
+      })
+    );
 
     const response = await POST(
       new Request("http://localhost/api/payments/stripe/connect/webhook", {
@@ -115,5 +94,30 @@ describe("POST /api/payments/stripe/connect/webhook", () => {
     await expect(response.json()).resolves.toEqual({
       error: "Missing Stripe signature",
     });
+  });
+
+  it("ignores unrelated connect events without syncing payout accounts", async () => {
+    constructEventMock.mockReturnValue({
+      type: "account.application.authorized",
+      data: {
+        object: {
+          object: "application",
+          id: "ca_test_123",
+        },
+      },
+    });
+
+    const response = await POST(
+      new Request("http://localhost/api/payments/stripe/connect/webhook", {
+        method: "POST",
+        headers: {
+          "stripe-signature": "sig_test",
+        },
+        body: "payload",
+      })
+    );
+
+    expect(response.status).toBe(200);
+    expect(syncStripePayoutAccountByConnectedAccountIdMock).not.toHaveBeenCalled();
   });
 });

@@ -2,6 +2,10 @@ import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import {
   ORDER_PAYMENT_PROVIDER_STRIPE,
+  getPaymentReconciliationReport,
+  getPaymentSettlementReport,
+  hasStripeFinanceAlertDestinations,
+  sendStripeFinanceAnomalyAlerts,
   syncStripeDisputesForUser,
   syncStripeSettlementLedger,
 } from "@/domain/shop";
@@ -51,6 +55,23 @@ async function handle(request: Request) {
             userId: true,
           },
         });
+    const sellerProfiles = await prisma.user.findMany({
+      where: {
+        id: {
+          in: sellers.map((seller) => seller.userId),
+        },
+      },
+      select: {
+        id: true,
+        email: true,
+        displayName: true,
+        slug: true,
+      },
+    });
+    const sellerProfileMap = new Map(
+      sellerProfiles.map((seller) => [seller.id, seller])
+    );
+    const shouldSendAlerts = hasStripeFinanceAlertDestinations();
 
     let syncedEntries = 0;
     let syncedPayouts = 0;
@@ -64,6 +85,22 @@ async function handle(request: Request) {
       userId: string;
       settlements: Awaited<ReturnType<typeof syncStripeSettlementLedger>>;
       disputes: Awaited<ReturnType<typeof syncStripeDisputesForUser>>;
+      alerts?: {
+        paymentAnomalyCount: number;
+        settlementAnomalyCount: number;
+      };
+    }> = [];
+    const sellersForAlerts: Array<{
+      userId: string;
+      email: string | null;
+      displayName: string | null;
+      slug: string | null;
+      paymentAnomalies: Awaited<
+        ReturnType<typeof getPaymentReconciliationReport>
+      >["anomalies"];
+      settlementAnomalies: Awaited<
+        ReturnType<typeof getPaymentSettlementReport>
+      >["anomalies"];
     }> = [];
 
     for (const seller of sellers) {
@@ -75,11 +112,47 @@ async function handle(request: Request) {
         start,
         end,
       });
+      let paymentAnomalyCount = 0;
+      let settlementAnomalyCount = 0;
+
+      if (shouldSendAlerts) {
+        const [paymentReport, settlementReport] = await Promise.all([
+          getPaymentReconciliationReport(seller.userId, {
+            start,
+            end,
+            eventLimit: 20,
+          }),
+          getPaymentSettlementReport(seller.userId, {
+            start,
+            end,
+            entryLimit: 20,
+          }),
+        ]);
+        paymentAnomalyCount = paymentReport.anomalies.length;
+        settlementAnomalyCount = settlementReport.anomalies.length;
+
+        sellersForAlerts.push({
+          userId: seller.userId,
+          email: sellerProfileMap.get(seller.userId)?.email || null,
+          displayName: sellerProfileMap.get(seller.userId)?.displayName || null,
+          slug: sellerProfileMap.get(seller.userId)?.slug || null,
+          paymentAnomalies: paymentReport.anomalies,
+          settlementAnomalies: settlementReport.anomalies,
+        });
+      }
 
       users.push({
         userId: seller.userId,
         settlements,
         disputes,
+        ...(shouldSendAlerts
+          ? {
+              alerts: {
+                paymentAnomalyCount,
+                settlementAnomalyCount,
+              },
+            }
+          : {}),
       });
 
       syncedEntries += settlements.syncedEntries;
@@ -90,6 +163,25 @@ async function handle(request: Request) {
       syncedDisputes += disputes.syncedDisputes;
       matchedDisputeOrders += disputes.matchedDisputeOrders;
       unmatchedDisputes += disputes.unmatchedDisputes;
+    }
+    const alerts = shouldSendAlerts
+      ? await sendStripeFinanceAnomalyAlerts({
+          start,
+          end,
+          sellers: sellersForAlerts,
+        })
+      : {
+          enabled: false,
+          alertedUserCount: 0,
+          paymentAnomalyCount: 0,
+          settlementAnomalyCount: 0,
+          sellerEmailsSent: 0,
+          slackSent: false,
+          errors: [],
+        };
+
+    if (alerts.errors.length > 0) {
+      console.error("Stripe finance alerts completed with errors:", alerts.errors);
     }
 
     return NextResponse.json({
@@ -109,6 +201,7 @@ async function handle(request: Request) {
         matchedDisputeOrders,
         unmatchedDisputes,
       },
+      alerts,
       users,
     });
   } catch (error) {

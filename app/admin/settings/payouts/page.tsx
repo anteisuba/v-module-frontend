@@ -20,6 +20,38 @@ type ActionState =
   | "sync"
   | "dashboard";
 
+type TranslationFn = (key: string) => string;
+type PayoutProgressStepState = "complete" | "current" | "todo" | "attention";
+
+interface PayoutProgressStep {
+  key: string;
+  label: string;
+  description: string;
+  state: PayoutProgressStepState;
+}
+
+interface PayoutOnboardingProgress {
+  completedCount: number;
+  totalSteps: number;
+  progressValue: number;
+  summary: string;
+  recommendedAction: string;
+  counts: {
+    currentlyDue: number;
+    pastDue: number;
+    eventuallyDue: number;
+  };
+  steps: PayoutProgressStep[];
+}
+
+const PAYOUT_STATUS_ORDER = [
+  "NOT_STARTED",
+  "PENDING",
+  "RESTRICTED",
+  "ACTIVE",
+  "DISCONNECTED",
+] as const;
+
 function formatDate(value: string | null) {
   if (!value) {
     return "—";
@@ -32,6 +64,191 @@ function formatDate(value: string | null) {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function getPayoutStatusTone(status: string | null | undefined) {
+  switch (status) {
+    case "ACTIVE":
+      return "bg-emerald-100 text-emerald-700";
+    case "RESTRICTED":
+      return "bg-rose-100 text-rose-700";
+    case "PENDING":
+      return "bg-amber-100 text-amber-700";
+    case "DISCONNECTED":
+      return "bg-slate-200 text-slate-700";
+    default:
+      return "bg-white/70 text-black/70";
+  }
+}
+
+function getPayoutStatusProgressTone(status: string | null | undefined) {
+  switch (status) {
+    case "ACTIVE":
+      return "bg-emerald-500";
+    case "RESTRICTED":
+      return "bg-rose-500";
+    case "PENDING":
+      return "bg-amber-500";
+    case "DISCONNECTED":
+      return "bg-slate-500";
+    default:
+      return "bg-black/65";
+  }
+}
+
+function getPayoutProgressStepTone(state: PayoutProgressStepState) {
+  switch (state) {
+    case "complete":
+      return {
+        chip: "bg-emerald-100 text-emerald-700 border-emerald-200",
+        marker: "bg-emerald-600 text-white border-emerald-600",
+      };
+    case "current":
+      return {
+        chip: "bg-amber-100 text-amber-700 border-amber-200",
+        marker: "bg-amber-500 text-white border-amber-500",
+      };
+    case "attention":
+      return {
+        chip: "bg-rose-100 text-rose-700 border-rose-200",
+        marker: "bg-rose-600 text-white border-rose-600",
+      };
+    default:
+      return {
+        chip: "bg-white/70 text-black/60 border-black/10",
+        marker: "bg-white text-black/55 border-black/10",
+      };
+  }
+}
+
+function buildPayoutOnboardingProgress(
+  account: SellerPayoutAccountSummary | null,
+  t: TranslationFn
+): PayoutOnboardingProgress {
+  const hasAccount = Boolean(account);
+  const isDisconnected = account?.status === "DISCONNECTED";
+  const currentlyDueCount = account?.requirementsCurrentlyDue.length ?? 0;
+  const pastDueCount = account?.requirementsPastDue.length ?? 0;
+  const eventuallyDueCount = account?.requirementsEventuallyDue.length ?? 0;
+  const detailsReady = Boolean(
+    account?.detailsSubmitted || account?.onboardingCompletedAt
+  );
+  const chargesReady = Boolean(account?.chargesEnabled);
+  const payoutsReady = Boolean(account?.payoutsEnabled);
+  const totalSteps = 4;
+  const completedCount = [
+    hasAccount,
+    detailsReady,
+    chargesReady,
+    payoutsReady,
+  ].filter(Boolean).length;
+
+  let summary = t("admin.payouts.progress.summary.notStarted");
+  let recommendedAction = t("admin.payouts.actions.startOnboarding");
+
+  if (isDisconnected) {
+    summary = t("admin.payouts.progress.summary.disconnected");
+    recommendedAction = t("admin.payouts.actions.startOnboarding");
+  } else if (pastDueCount > 0) {
+    summary = t("admin.payouts.progress.summary.pastDue");
+    recommendedAction = t("admin.payouts.actions.continueOnboarding");
+  } else if (!hasAccount) {
+    summary = t("admin.payouts.progress.summary.notStarted");
+    recommendedAction = t("admin.payouts.actions.startOnboarding");
+  } else if (!detailsReady || currentlyDueCount > 0) {
+    summary = t("admin.payouts.progress.summary.details");
+    recommendedAction = t("admin.payouts.actions.continueOnboarding");
+  } else if (!chargesReady) {
+    summary = t("admin.payouts.progress.summary.review");
+    recommendedAction = t("admin.payouts.actions.sync");
+  } else if (!payoutsReady) {
+    summary = t("admin.payouts.progress.summary.payouts");
+    recommendedAction = t("admin.payouts.actions.sync");
+  } else {
+    summary = t("admin.payouts.progress.summary.active");
+    recommendedAction = t("admin.payouts.actions.openDashboard");
+  }
+
+  const steps: PayoutProgressStep[] = [
+    {
+      key: "account",
+      label: t("admin.payouts.progress.steps.account.label"),
+      description: isDisconnected
+        ? t("admin.payouts.progress.steps.account.attention")
+        : hasAccount
+          ? t("admin.payouts.progress.steps.account.done")
+          : t("admin.payouts.progress.steps.account.todo"),
+      state: isDisconnected ? "attention" : hasAccount ? "complete" : "current",
+    },
+    {
+      key: "details",
+      label: t("admin.payouts.progress.steps.details.label"),
+      description: !hasAccount || isDisconnected
+        ? t("admin.payouts.progress.steps.details.todo")
+        : pastDueCount > 0
+          ? t("admin.payouts.progress.steps.details.attention")
+          : detailsReady && currentlyDueCount === 0
+            ? t("admin.payouts.progress.steps.details.done")
+            : t("admin.payouts.progress.steps.details.current"),
+      state: !hasAccount || isDisconnected
+        ? "todo"
+        : pastDueCount > 0
+          ? "attention"
+          : detailsReady && currentlyDueCount === 0
+            ? "complete"
+            : "current",
+    },
+    {
+      key: "charges",
+      label: t("admin.payouts.progress.steps.charges.label"),
+      description: !hasAccount || isDisconnected || !detailsReady
+        ? t("admin.payouts.progress.steps.charges.todo")
+        : pastDueCount > 0
+          ? t("admin.payouts.progress.steps.charges.attention")
+          : chargesReady
+            ? t("admin.payouts.progress.steps.charges.done")
+            : t("admin.payouts.progress.steps.charges.current"),
+      state: !hasAccount || isDisconnected || !detailsReady
+        ? "todo"
+        : pastDueCount > 0
+          ? "attention"
+          : chargesReady
+            ? "complete"
+            : "current",
+    },
+    {
+      key: "payouts",
+      label: t("admin.payouts.progress.steps.payouts.label"),
+      description: !hasAccount || isDisconnected || !chargesReady
+        ? t("admin.payouts.progress.steps.payouts.todo")
+        : pastDueCount > 0
+          ? t("admin.payouts.progress.steps.payouts.attention")
+          : payoutsReady
+            ? t("admin.payouts.progress.steps.payouts.done")
+            : t("admin.payouts.progress.steps.payouts.current"),
+      state: !hasAccount || isDisconnected || !chargesReady
+        ? "todo"
+        : pastDueCount > 0
+          ? "attention"
+          : payoutsReady
+            ? "complete"
+            : "current",
+    },
+  ];
+
+  return {
+    completedCount,
+    totalSteps,
+    progressValue: Math.round((completedCount / totalSteps) * 100),
+    summary,
+    recommendedAction,
+    counts: {
+      currentlyDue: currentlyDueCount,
+      pastDue: pastDueCount,
+      eventuallyDue: eventuallyDueCount,
+    },
+    steps,
+  };
 }
 
 function AdminPayoutSettingsPageContent() {
@@ -90,20 +307,14 @@ function AdminPayoutSettingsPageContent() {
     };
   }, [router, searchParams, t]);
 
-  const statusTone = useMemo(() => {
-    switch (account?.status) {
-      case "ACTIVE":
-        return "bg-emerald-100 text-emerald-700";
-      case "RESTRICTED":
-        return "bg-rose-100 text-rose-700";
-      case "PENDING":
-        return "bg-amber-100 text-amber-700";
-      case "DISCONNECTED":
-        return "bg-slate-200 text-slate-700";
-      default:
-        return "bg-white/70 text-black/70";
-    }
-  }, [account?.status]);
+  const statusTone = useMemo(
+    () => getPayoutStatusTone(account?.status),
+    [account?.status]
+  );
+  const onboardingProgress = useMemo(
+    () => buildPayoutOnboardingProgress(account, t),
+    [account, t]
+  );
 
   async function handleStartOrContinueOnboarding() {
     try {
@@ -256,6 +467,178 @@ function AdminPayoutSettingsPageContent() {
             />
           </div>
         ) : null}
+
+        <section
+          data-testid="payout-guide"
+          className="mb-5 rounded-[28px] border border-black/10 bg-white/72 p-6 shadow-[0_28px_90px_rgba(0,0,0,0.08)] backdrop-blur-xl"
+        >
+          <div className="flex flex-col gap-5 xl:grid xl:grid-cols-[0.95fr_1.05fr_1fr]">
+            <div>
+              <h2 className="text-lg font-semibold">
+                {t("admin.payouts.sections.guide")}
+              </h2>
+              <p className="mt-3 text-sm leading-6 text-black/65">
+                {t("admin.payouts.guide.overview")}
+              </p>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold text-black/85">
+                {t("admin.payouts.guide.flowTitle")}
+              </h3>
+              <ol className="mt-3 space-y-3 text-sm leading-6 text-black/65">
+                {[
+                  t("admin.payouts.guide.flowSteps.start"),
+                  t("admin.payouts.guide.flowSteps.sync"),
+                  t("admin.payouts.guide.flowSteps.manage"),
+                ].map((step, index) => (
+                  <li key={step} className="flex gap-3">
+                    <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border border-black/10 bg-stone-100 text-xs font-semibold text-black/70">
+                      {index + 1}
+                    </span>
+                    <span>{step}</span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold text-black/85">
+                {t("admin.payouts.guide.statusTitle")}
+              </h3>
+              <ul className="mt-3 space-y-2 text-sm leading-6 text-black/65">
+                {PAYOUT_STATUS_ORDER.map((status) => (
+                  <li
+                    key={status}
+                    className="rounded-2xl border border-black/10 bg-stone-50/70 px-4 py-3"
+                  >
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span
+                        className={`rounded-full px-3 py-1 text-[11px] font-medium ${getPayoutStatusTone(
+                          status
+                        )}`}
+                      >
+                        {t(`admin.payouts.status.${status}`)}
+                      </span>
+                      <span>{t(`admin.payouts.guide.statusHelp.${status}`)}</span>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section
+          data-testid="payout-progress"
+          className="mb-5 rounded-[28px] border border-black/10 bg-white/72 p-6 shadow-[0_28px_90px_rgba(0,0,0,0.08)] backdrop-blur-xl"
+        >
+          <div className="flex flex-col gap-6">
+            <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
+              <div className="max-w-2xl">
+                <h2 className="text-lg font-semibold">
+                  {t("admin.payouts.sections.progress")}
+                </h2>
+                <div className="mt-4 flex items-end gap-3">
+                  <span
+                    data-testid="payout-progress-count"
+                    className="text-3xl font-semibold tracking-tight"
+                  >
+                    {`${onboardingProgress.completedCount} / ${onboardingProgress.totalSteps}`}
+                  </span>
+                  <span className="pb-1 text-xs uppercase tracking-[0.26em] text-black/40">
+                    {t("admin.payouts.progress.completed")}
+                  </span>
+                </div>
+                <div className="mt-4 h-2 overflow-hidden rounded-full bg-black/10">
+                  <div
+                    className={`h-full rounded-full transition-[width] duration-300 ${getPayoutStatusProgressTone(
+                      account?.status
+                    )}`}
+                    style={{ width: `${onboardingProgress.progressValue}%` }}
+                  />
+                </div>
+                <p
+                  data-testid="payout-progress-summary"
+                  className="mt-4 text-sm leading-6 text-black/70"
+                >
+                  {onboardingProgress.summary}
+                </p>
+                <p className="mt-2 text-xs uppercase tracking-[0.24em] text-black/45">
+                  {t("admin.payouts.progress.recommendedAction")}
+                </p>
+                <p className="mt-1 text-sm text-black/70">
+                  {onboardingProgress.recommendedAction}
+                </p>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-3">
+                {[
+                  {
+                    label: t("admin.payouts.progress.counts.currentlyDue"),
+                    value: onboardingProgress.counts.currentlyDue,
+                  },
+                  {
+                    label: t("admin.payouts.progress.counts.pastDue"),
+                    value: onboardingProgress.counts.pastDue,
+                  },
+                  {
+                    label: t("admin.payouts.progress.counts.eventuallyDue"),
+                    value: onboardingProgress.counts.eventuallyDue,
+                  },
+                ].map((item) => (
+                  <div
+                    key={item.label}
+                    className="min-w-[132px] rounded-3xl border border-black/10 bg-stone-50/75 p-4"
+                  >
+                    <div className="text-[11px] uppercase tracking-[0.24em] text-black/40">
+                      {item.label}
+                    </div>
+                    <div className="mt-2 text-2xl font-semibold tracking-tight">
+                      {item.value}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <ol className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+              {onboardingProgress.steps.map((step, index) => {
+                const tone = getPayoutProgressStepTone(step.state);
+
+                return (
+                  <li
+                    key={step.key}
+                    className="rounded-3xl border border-black/10 bg-stone-50/75 p-4"
+                  >
+                    <div className="flex items-start gap-3">
+                      <span
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full border text-xs font-semibold ${tone.marker}`}
+                      >
+                        {index + 1}
+                      </span>
+                      <div className="min-w-0">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="text-sm font-semibold text-black/85">
+                            {step.label}
+                          </span>
+                          <span
+                            className={`rounded-full border px-2 py-0.5 text-[11px] font-medium ${tone.chip}`}
+                          >
+                            {t(`admin.payouts.progress.state.${step.state}`)}
+                          </span>
+                        </div>
+                        <p className="mt-2 text-sm leading-6 text-black/65">
+                          {step.description}
+                        </p>
+                      </div>
+                    </div>
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
+        </section>
 
         <div className="grid gap-5 lg:grid-cols-[1.3fr_0.7fr]">
           <section className="rounded-[28px] border border-black/10 bg-white/72 p-6 shadow-[0_28px_90px_rgba(0,0,0,0.08)] backdrop-blur-xl">

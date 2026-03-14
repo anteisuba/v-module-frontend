@@ -2,8 +2,22 @@
 
 "use client";
 
-import { createContext, useContext, useState, type ReactNode } from "react";
-import { locales, defaultLocale, type Locale } from "@/i18n/config";
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useSyncExternalStore,
+  type ReactNode,
+} from "react";
+import {
+  defaultLocale,
+  localeCookieMaxAge,
+  localeCookieName,
+  localeHtmlLang,
+  localeStorageKey,
+  parseLocale,
+  type Locale,
+} from "@/i18n/config";
 import zhMessages from "@/i18n/messages/zh.json";
 import jaMessages from "@/i18n/messages/ja.json";
 import enMessages from "@/i18n/messages/en.json";
@@ -15,6 +29,7 @@ const messages: Record<Locale, Messages> = {
   ja: jaMessages,
   en: enMessages,
 };
+const localeChangeEventName = "vtuber:locale-change";
 
 interface I18nContextType {
   locale: Locale;
@@ -24,15 +39,74 @@ interface I18nContextType {
 
 const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
-function getInitialLocale(): Locale {
-  if (typeof window === "undefined") {
-    return defaultLocale;
+function getCookieLocale(): Locale | null {
+  if (typeof document === "undefined") {
+    return null;
   }
 
-  const savedLocale = window.localStorage.getItem("locale");
-  return savedLocale && locales.includes(savedLocale as Locale)
-    ? (savedLocale as Locale)
-    : defaultLocale;
+  const cookieValue = document.cookie
+    .split("; ")
+    .find((entry) => entry.startsWith(`${localeCookieName}=`))
+    ?.split("=")[1];
+
+  return parseLocale(cookieValue ? decodeURIComponent(cookieValue) : null);
+}
+
+function getStoredLocale(): Locale | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  return parseLocale(window.localStorage.getItem(localeStorageKey));
+}
+
+function syncDocumentLocale(locale: Locale) {
+  if (typeof document !== "undefined") {
+    document.documentElement.lang = localeHtmlLang[locale];
+  }
+}
+
+function persistLocale(locale: Locale) {
+  if (typeof document !== "undefined") {
+    const secure = window.location.protocol === "https:" ? "; Secure" : "";
+    document.cookie = `${localeCookieName}=${encodeURIComponent(locale)}; Path=/; Max-Age=${localeCookieMaxAge}; SameSite=Lax${secure}`;
+  }
+
+  if (typeof window !== "undefined") {
+    window.localStorage.setItem(localeStorageKey, locale);
+  }
+}
+
+function readPreferredLocale(fallback: Locale): Locale {
+  return getCookieLocale() ?? getStoredLocale() ?? fallback;
+}
+
+function isLocalePersisted(locale: Locale) {
+  return getCookieLocale() === locale && getStoredLocale() === locale;
+}
+
+function subscribeToLocale(onStoreChange: () => void) {
+  if (typeof window === "undefined") {
+    return () => {};
+  }
+
+  const handleStoreChange = () => {
+    onStoreChange();
+  };
+
+  window.addEventListener("storage", handleStoreChange);
+  window.addEventListener(localeChangeEventName, handleStoreChange);
+
+  return () => {
+    window.removeEventListener("storage", handleStoreChange);
+    window.removeEventListener(localeChangeEventName, handleStoreChange);
+  };
+}
+
+function notifyLocaleChange() {
+  if (typeof window !== "undefined") {
+    window.dispatchEvent(new Event(localeChangeEventName));
+  }
 }
 
 function readMessageValue(
@@ -52,12 +126,31 @@ function readMessageValue(
   return typeof value === "string" ? value : null;
 }
 
-export function I18nProvider({ children }: { children: ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(getInitialLocale);
+export function I18nProvider({
+  children,
+  initialLocale = defaultLocale,
+}: {
+  children: ReactNode;
+  initialLocale?: Locale;
+}) {
+  const locale = useSyncExternalStore(
+    subscribeToLocale,
+    () => readPreferredLocale(initialLocale),
+    () => initialLocale
+  );
+
+  useEffect(() => {
+    syncDocumentLocale(locale);
+
+    // Keep cookie + localStorage aligned, including migration from legacy localStorage-only preference.
+    if (!isLocalePersisted(locale)) {
+      persistLocale(locale);
+    }
+  }, [locale]);
 
   const setLocale = (newLocale: Locale) => {
-    setLocaleState(newLocale);
-    localStorage.setItem("locale", newLocale);
+    persistLocale(newLocale);
+    notifyLocaleChange();
   };
 
   const t = (key: string): string => {

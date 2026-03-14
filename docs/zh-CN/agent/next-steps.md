@@ -1,6 +1,6 @@
 # 后续建议摘要
 
-- 最后更新：2026-03-11
+- 最后更新：2026-03-14
 - 角色：AI / 代理视角的优先级摘要，不是 canonical backlog
 - canonical backlog：[`../overview/backlog.md`](../overview/backlog.md)
 
@@ -10,8 +10,8 @@
 
 ## P1
 
-- 把现有 Playwright 场景纳入持续执行，优先做 CI 接入、多浏览器矩阵和失败产物沉淀
-- 把 Stripe Connect 作为当前正式路线继续补运维闭环，优先做 routing / account 维度筛选、告警和卖家后台说明
+- Playwright 的 CI 接入、多浏览器矩阵、README badge 和一轮高风险测试扩面已落地；测试侧下一步优先做 flaky 治理和剩余高风险链路补测
+- 把 Stripe Connect 作为当前正式路线继续补运维闭环，routing / account 维度筛选、结算分组、异常告警、订单 CSV Connect 字段导出、payout settings 说明和 onboarding 进度提示已落地；下一步优先做异常状态引导
 - 升级 Next / Browserslist / Playwright 时复核当前 `scripts/` 兼容层，能删除就删除，不长期堆兼容脚本
 
 ## P2

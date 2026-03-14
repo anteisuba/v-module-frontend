@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import type {
+  PaymentSettlementEntryGroup,
   PaymentSettlementEntryRecord,
   PaymentSettlementPayoutRecord,
   PaymentSettlementReport,
@@ -198,6 +199,19 @@ export default function SettlementReconciliationPage() {
     return "bg-amber-100 text-amber-700";
   }
 
+  function getEntryGroupStyle(key: PaymentSettlementEntryGroup["key"]) {
+    if (key === "PAID") {
+      return "bg-emerald-100 text-emerald-700";
+    }
+    if (key === "FAILED" || key === "CANCELED") {
+      return "bg-red-100 text-red-700";
+    }
+    if (key === "NOT_IN_PAYOUT") {
+      return "bg-slate-200 text-slate-700";
+    }
+    return "bg-amber-100 text-amber-700";
+  }
+
   function getRoutingLabel(mode: string | null) {
     return mode === "STRIPE_CONNECT_DESTINATION"
       ? "Connect 路由"
@@ -347,7 +361,7 @@ export default function SettlementReconciliationPage() {
             <div className="mb-4 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
               <div>
                 <h2 className="text-lg font-semibold text-black">结算流水</h2>
-                <p className="mt-1 text-sm text-black/55">按选中的流水批量标记为已核销、忽略，或恢复为待处理。</p>
+                <p className="mt-1 text-sm text-black/55">按 payout 状态分组查看流水，并对选中的项目批量标记为已核销、忽略，或恢复为待处理。</p>
               </div>
               <div className="flex flex-wrap gap-2">
                 <Button variant="secondary" onClick={() => toggleAll(report.entries)} disabled={report.entries.length === 0 || updating}>
@@ -382,59 +396,91 @@ export default function SettlementReconciliationPage() {
                   当前时间窗口没有结算流水。
                 </div>
               ) : (
-                report.entries.map((entry) => (
-                  <div key={entry.id} className="rounded-xl border border-black/10 bg-white/70 p-4">
-                    <div className="flex gap-4">
-                      <label className="pt-1">
-                        <input type="checkbox" checked={selectedIds.includes(entry.id)} onChange={() => toggleEntry(entry.id)} className="h-4 w-4 rounded border-black/20" />
-                      </label>
-                      <div className="min-w-0 flex-1">
+                report.entryGroups.map((group) => (
+                  <div key={group.key} className="rounded-2xl border border-black/10 bg-white/50 p-4">
+                    <div className="mb-4 flex flex-col gap-3 border-b border-black/10 pb-4 lg:flex-row lg:items-start lg:justify-between">
+                      <div>
                         <div className="flex flex-wrap items-center gap-2">
-                          <span className="rounded-full bg-black/5 px-2 py-0.5 text-[10px] font-medium text-black/70">{entry.externalSourceType || entry.type}</span>
-                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getSettlementStatusStyle(entry.status)}`}>{entry.status.toUpperCase()}</span>
-                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getWriteOffStyle(entry.reconciliationStatus)}`}>{entry.reconciliationStatus}</span>
-                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getRoutingStyle(entry.paymentRoutingMode ?? null)}`}>{getRoutingLabel(entry.paymentRoutingMode ?? null)}</span>
+                          <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getEntryGroupStyle(group.key)}`}>
+                            {group.title}
+                          </span>
+                          <span className="text-xs text-black/45">{group.entryCount} 条流水</span>
+                          <span className="text-xs text-black/45">未核销 {group.unreconciledEntryCount} 条</span>
                         </div>
-                        <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
-                          <div>
-                            <div className="text-sm font-semibold text-black">
-                              {formatPrice(entry.net, entry.currency)} 净额 / 手续费 {formatPrice(entry.fee, entry.currency)}
-                            </div>
-                            <div className="mt-1 text-xs text-black/55">
-                              订单 {entry.orderId ? entry.orderId.slice(0, 8).toUpperCase() : "未匹配"} / {entry.buyerName || entry.buyerEmail || entry.description || "无买家信息"}
-                            </div>
-                            <div className="mt-1 text-xs text-black/45 break-all">
-                              {entry.externalSourceId || entry.externalBalanceTransactionId}
-                            </div>
-                            <div className="mt-1 text-xs text-black/45 break-all">
-                              {entry.connectedAccountId
-                                ? `Connected ${entry.connectedAccountId}`
-                                : entry.stripeAccountId
-                                  ? `Stripe Account ${entry.stripeAccountId}`
-                                  : "当前未关联 connected account"}
-                            </div>
-                            {(entry.platformFeeAmount != null ||
-                              entry.sellerNetExpectedAmount != null) ? (
-                              <div className="mt-1 text-xs text-black/45">
-                                平台手续费 {formatPrice(entry.platformFeeAmount || 0, entry.currency)}
-                                {" / "}
-                                卖家预估净额 {formatPrice(entry.sellerNetExpectedAmount || 0, entry.currency)}
-                              </div>
-                            ) : null}
-                          </div>
-                          <div className="text-right text-xs text-black/50">
-                            <div>发生时间 {formatDate(entry.occurredAt)}</div>
-                            <div>可结算 {formatDate(entry.availableOn)}</div>
-                            <div>到账 payout {entry.payoutExternalId || "待进入 payout"}</div>
-                            {entry.accountScope ? (
-                              <div>Scope {entry.accountScope}</div>
-                            ) : null}
-                          </div>
+                        <div className="mt-2 text-sm text-black/60">
+                          本组净额 {formatPrice(group.netAmount)}
+                          {group.payoutStatus ? ` / payout status ${group.payoutStatus}` : " / 尚未进入 payout"}
                         </div>
-                        {entry.reconciliationNote ? (
-                          <div className="mt-2 text-xs text-black/55">备注：{entry.reconciliationNote}</div>
-                        ) : null}
                       </div>
+                      <div className="flex flex-wrap gap-2">
+                        <Button
+                          variant="secondary"
+                          onClick={() => toggleAll(group.entries)}
+                          disabled={group.entries.length === 0 || updating}
+                        >
+                          {group.entries.every((entry) => selectedIds.includes(entry.id))
+                            ? "取消全选本组"
+                            : "全选本组"}
+                        </Button>
+                      </div>
+                    </div>
+                    <div className="space-y-3">
+                      {group.entries.map((entry) => (
+                        <div key={entry.id} className="rounded-xl border border-black/10 bg-white/70 p-4">
+                          <div className="flex gap-4">
+                            <label className="pt-1">
+                              <input type="checkbox" checked={selectedIds.includes(entry.id)} onChange={() => toggleEntry(entry.id)} className="h-4 w-4 rounded border-black/20" />
+                            </label>
+                            <div className="min-w-0 flex-1">
+                              <div className="flex flex-wrap items-center gap-2">
+                                <span className="rounded-full bg-black/5 px-2 py-0.5 text-[10px] font-medium text-black/70">{entry.externalSourceType || entry.type}</span>
+                                <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getSettlementStatusStyle(entry.status)}`}>{entry.status.toUpperCase()}</span>
+                                <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getWriteOffStyle(entry.reconciliationStatus)}`}>{entry.reconciliationStatus}</span>
+                                <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getRoutingStyle(entry.paymentRoutingMode ?? null)}`}>{getRoutingLabel(entry.paymentRoutingMode ?? null)}</span>
+                              </div>
+                              <div className="mt-2 flex flex-wrap items-center justify-between gap-3">
+                                <div>
+                                  <div className="text-sm font-semibold text-black">
+                                    {formatPrice(entry.net, entry.currency)} 净额 / 手续费 {formatPrice(entry.fee, entry.currency)}
+                                  </div>
+                                  <div className="mt-1 text-xs text-black/55">
+                                    订单 {entry.orderId ? entry.orderId.slice(0, 8).toUpperCase() : "未匹配"} / {entry.buyerName || entry.buyerEmail || entry.description || "无买家信息"}
+                                  </div>
+                                  <div className="mt-1 text-xs text-black/45 break-all">
+                                    {entry.externalSourceId || entry.externalBalanceTransactionId}
+                                  </div>
+                                  <div className="mt-1 text-xs text-black/45 break-all">
+                                    {entry.connectedAccountId
+                                      ? `Connected ${entry.connectedAccountId}`
+                                      : entry.stripeAccountId
+                                        ? `Stripe Account ${entry.stripeAccountId}`
+                                        : "当前未关联 connected account"}
+                                  </div>
+                                  {(entry.platformFeeAmount != null ||
+                                    entry.sellerNetExpectedAmount != null) ? (
+                                    <div className="mt-1 text-xs text-black/45">
+                                      平台手续费 {formatPrice(entry.platformFeeAmount || 0, entry.currency)}
+                                      {" / "}
+                                      卖家预估净额 {formatPrice(entry.sellerNetExpectedAmount || 0, entry.currency)}
+                                    </div>
+                                  ) : null}
+                                </div>
+                                <div className="text-right text-xs text-black/50">
+                                  <div>发生时间 {formatDate(entry.occurredAt)}</div>
+                                  <div>可结算 {formatDate(entry.availableOn)}</div>
+                                  <div>到账 payout {entry.payoutExternalId || "待进入 payout"}</div>
+                                  {entry.accountScope ? (
+                                    <div>Scope {entry.accountScope}</div>
+                                  ) : null}
+                                </div>
+                              </div>
+                              {entry.reconciliationNote ? (
+                                <div className="mt-2 text-xs text-black/55">备注：{entry.reconciliationNote}</div>
+                              ) : null}
+                            </div>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 ))

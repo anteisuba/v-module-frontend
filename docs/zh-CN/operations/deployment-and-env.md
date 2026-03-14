@@ -50,6 +50,11 @@
   - `SMTP_USER`
   - `SMTP_PASSWORD`
   - `SMTP_FROM`
+- 财务异常邮件告警会复用以上邮件配置，直接发给对应卖家邮箱
+
+### 运维告警
+
+- `FINANCE_ALERT_SLACK_WEBHOOK_URL`（可选）
 
 ### 存储相关
 
@@ -80,3 +85,4 @@
 - 生产应启用 HTTPS 的 `NEXT_PUBLIC_BASE_URL`
 - 上传、密码重置、订单通知邮件投递需要分别核对存储和邮件配置
 - 部署 Stripe Checkout 时，需要保证 `NEXT_PUBLIC_BASE_URL` 指向公网 HTTPS 地址，并在 Stripe 后台配置 `POST /api/payments/stripe/webhook` 对应的 Webhook
+- 如果需要把支付对账 / 结算异常汇总推送到团队频道，请配置 `FINANCE_ALERT_SLACK_WEBHOOK_URL`；未配置时仍会尝试向卖家邮箱发告警
