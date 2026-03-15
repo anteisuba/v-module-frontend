@@ -114,7 +114,17 @@ test("saves a CMS draft and publishes the updated page", async ({ page }) => {
 
   await page.goto("/admin/cms");
 
-  const titleInput = page.getByLabel(/标题（Title）/);
+  await page.getByTestId("admin-tab-content").click();
+  await expect(page.getByTestId("admin-tab-content")).toHaveAttribute(
+    "data-state",
+    "active"
+  );
+  await expect(page.getByTestId("admin-panel-toggle-hero")).toHaveAttribute(
+    "data-state",
+    "open"
+  );
+
+  const titleInput = page.getByTestId("cms-hero-title-input");
   await expect(titleInput).toBeVisible();
   await titleInput.fill("直播预告");
 

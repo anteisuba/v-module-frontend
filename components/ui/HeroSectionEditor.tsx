@@ -670,6 +670,7 @@ export default function HeroSectionEditor({
       {/* Title 和 Subtitle 编辑 */}
       <div className="mb-4 space-y-3 rounded-lg border border-black/10 bg-white/70 p-3">
         <Input
+          data-testid="cms-hero-title-input"
           label={t("heroEditor.titleSubtitle.title")}
           type="text"
           value={heroSection?.props.title || ""}
@@ -696,6 +697,7 @@ export default function HeroSectionEditor({
           helpText={t("heroEditor.titleSubtitle.titleHelp") || "显示在 Hero 区域顶部的标题"}
         />
         <Input
+          data-testid="cms-hero-subtitle-input"
           label={t("heroEditor.titleSubtitle.subtitle")}
           type="text"
           value={heroSection?.props.subtitle || ""}

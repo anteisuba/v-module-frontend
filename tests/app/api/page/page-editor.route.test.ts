@@ -57,10 +57,13 @@ describe("page editor routes", () => {
   });
 
   it("returns the normalized draft config for the current seller", async () => {
+    const updatedAt = new Date("2026-03-10T12:00:00.000Z");
     pageFindUniqueMock.mockResolvedValue({
       draftConfig: createLegacyPageConfigFixture(),
+      publishedConfig: null,
       themeColor: "#445566",
       fontFamily: "Noto Sans JP",
+      updatedAt,
     });
 
     const response = await GET();
@@ -70,6 +73,11 @@ describe("page editor routes", () => {
     expect(payload).toMatchObject({
       themeColor: "#445566",
       fontFamily: "Noto Sans JP",
+      pageStatus: {
+        isPublished: false,
+        hasUnpublishedChanges: true,
+        updatedAt: updatedAt.toISOString(),
+      },
       draftConfig: {
         background: {
           type: "color",
