@@ -156,11 +156,19 @@ function useBgSettings() {
   const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem(BG_STORAGE_KEY);
-      if (stored) setBgRaw(JSON.parse(stored));
-    } catch { /* ignore */ }
-    setHydrated(true);
+    const frame = window.requestAnimationFrame(() => {
+      try {
+        const stored = localStorage.getItem(BG_STORAGE_KEY);
+        if (stored) {
+          setBgRaw(JSON.parse(stored));
+        }
+      } catch {
+        // ignore invalid local storage values
+      }
+      setHydrated(true);
+    });
+
+    return () => window.cancelAnimationFrame(frame);
   }, []);
 
   const setBg = useCallback((next: BgSettings | ((prev: BgSettings) => BgSettings)) => {
@@ -428,8 +436,6 @@ export default function DashboardPage() {
   const [statsLoading, setStatsLoading] = useState(true);
 
   const fetchStats = useCallback(async () => {
-    setStatsLoading(true);
-
     // 并行请求所有数据
     const [pageResult, blogPublished, blogDrafts, shopPublished, shopDrafts, ordersAll, ordersPending, commentsResult] =
       await Promise.allSettled([
@@ -443,7 +449,7 @@ export default function DashboardPage() {
         blogApi.getModerationComments({ limit: 1 }),
       ]);
 
-    setData({
+    return {
       page:
         pageResult.status === "fulfilled"
           ? {
@@ -486,15 +492,30 @@ export default function DashboardPage() {
               pending: commentsResult.value.summary.pending,
             }
           : null,
-    });
-
-    setStatsLoading(false);
+    } satisfies DashboardData;
   }, []);
 
   useEffect(() => {
-    if (!userLoading && user) {
-      fetchStats();
+    if (userLoading || !user) {
+      return;
     }
+
+    let cancelled = false;
+
+    async function loadStats() {
+      const nextData = await fetchStats();
+      if (cancelled) {
+        return;
+      }
+      setData(nextData);
+      setStatsLoading(false);
+    }
+
+    void loadStats();
+
+    return () => {
+      cancelled = true;
+    };
   }, [userLoading, user, fetchStats]);
 
   if (userLoading) {

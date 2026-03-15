@@ -29,13 +29,11 @@ export default function LanguageSelector({
   // Auto-detect best direction based on viewport space
   const computeDirection = useCallback(() => {
     if (menuPosition !== "auto") {
-      setResolvedDirection(menuPosition);
-      return;
+      return menuPosition;
     }
 
     if (!buttonRef.current) {
-      setResolvedDirection("bottom");
-      return;
+      return "bottom";
     }
 
     const rect = buttonRef.current.getBoundingClientRect();
@@ -44,19 +42,13 @@ export default function LanguageSelector({
     const spaceAbove = rect.top;
 
     if (spaceBelow >= menuHeight) {
-      setResolvedDirection("bottom");
-    } else if (spaceAbove >= menuHeight) {
-      setResolvedDirection("top");
-    } else {
-      setResolvedDirection(spaceBelow >= spaceAbove ? "bottom" : "top");
+      return "bottom";
     }
+    if (spaceAbove >= menuHeight) {
+      return "top";
+    }
+    return spaceBelow >= spaceAbove ? "bottom" : "top";
   }, [menuPosition]);
-
-  useEffect(() => {
-    if (isOpen) {
-      computeDirection();
-    }
-  }, [isOpen, computeDirection]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -79,6 +71,13 @@ export default function LanguageSelector({
     setIsOpen(false);
   };
 
+  const handleToggle = useCallback(() => {
+    if (!isOpen) {
+      setResolvedDirection(computeDirection());
+    }
+    setIsOpen((prev) => !prev);
+  }, [computeDirection, isOpen]);
+
   const containerClass =
     position === "bottom-right"
       ? "fixed bottom-6 right-6 z-[100]"
@@ -89,10 +88,12 @@ export default function LanguageSelector({
       ? "editorial-button min-h-10 border-white/15 bg-black/30 px-4 py-2 text-[10px] text-white backdrop-blur-md hover:bg-black/45"
       : "editorial-button editorial-button--secondary min-h-10 px-4 py-2 text-[10px]";
 
+  const effectiveDirection = menuPosition === "auto" ? resolvedDirection : menuPosition;
+
   const menuPositionClass =
-    resolvedDirection === "top"
+    effectiveDirection === "top"
       ? "absolute bottom-full left-0 mb-2"
-      : resolvedDirection === "right"
+      : effectiveDirection === "right"
         ? "absolute left-full top-0 ml-2"
         : "absolute top-full left-0 mt-2";
 
@@ -119,7 +120,7 @@ export default function LanguageSelector({
       <button
         ref={buttonRef}
         type="button"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={handleToggle}
         className={buttonClass}
         aria-label="Select language"
         aria-expanded={isOpen}
