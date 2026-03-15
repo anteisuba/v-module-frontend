@@ -4,6 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { useI18n } from "@/lib/i18n/context";
 import { isExternalUrl } from "@/lib/utils/isExternalUrl";
+import FloatingMenu from "@/features/home-hero/components/FloatingMenu";
 
 interface PublicBlogPost {
   id: string;
@@ -36,6 +37,7 @@ export default function PublicBlogFeed({ posts }: PublicBlogFeedProps) {
 
   return (
     <main data-testid="public-blog-feed" className="editorial-shell editorial-shell--light">
+      <FloatingMenu />
       <div className="editorial-container flex flex-col gap-10 py-10 sm:py-14">
         <header className="grid gap-6 xl:grid-cols-[minmax(0,1.2fr)_minmax(18rem,0.5fr)]">
           <div className="reveal max-w-4xl">

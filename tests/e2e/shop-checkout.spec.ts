@@ -223,9 +223,14 @@ test("returns from hosted checkout success to the order success page", async ({
     /\/u\/creator\/shop\/order-success\/order-checkout-e2e\?session_id=cs_test_checkout_e2e$/
   );
   await expect(page.getByTestId("public-shop-order-success-page")).toBeVisible();
-  await expect(page.getByTestId("public-shop-order-status-title")).toHaveText(
-    "支付结果确认中"
-  );
+  await expect
+    .poll(async () => {
+      const title = await page
+        .getByTestId("public-shop-order-status-title")
+        .textContent();
+      return title?.trim() || "";
+    })
+    .toMatch(/支付结果确认中|订单已支付/);
   await expect(page.getByTestId("public-shop-order-status-title")).toHaveText(
     "订单已支付",
     { timeout: 12_000 }

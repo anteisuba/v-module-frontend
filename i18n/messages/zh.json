@@ -11,7 +11,8 @@
       "copyright": "© vtuber-site"
     },
     "dashboard": {
-      "title": "编辑目录",
+      "title": "控制台",
+      "eyebrow": "后台总览",
       "welcome": "欢迎，{name}",
       "user": "用户",
       "selectPage": "选择要编辑的页面",
@@ -21,35 +22,71 @@
       "pages": {
         "cms": {
           "label": "首页",
-          "description": "编辑个人首页（Hero Section、Logo、社交链接等）"
+          "description": "编辑个人首页（Hero、Logo、社交链接等）"
         },
         "blog": {
-          "label": "BLOG 页面",
-          "description": "编辑博客文章"
+          "label": "博客",
+          "description": "创建和管理博客文章"
         },
         "shop": {
-          "label": "SHOP 页面",
+          "label": "商店",
           "description": "管理商品目录、库存和上架状态"
         },
         "orders": {
-          "label": "订单管理",
+          "label": "订单",
           "description": "查看买家订单并推进处理状态"
         },
         "comments": {
-          "label": "评论审核",
+          "label": "评论",
           "description": "审核博客评论并管理公开展示"
         },
-          "media": {
-            "label": "媒体库",
-            "description": "查看已上传素材，并复用到背景、博客和商品编辑中"
-          },
-          "payouts": {
-            "label": "收款设置",
-            "description": "绑定 Stripe 收款账户，并查看当前可收款 / 可打款状态"
-          }
+        "media": {
+          "label": "媒体库",
+          "description": "查看已上传素材，并复用到各编辑器中"
         },
-        "comingSoon": "待开发"
+        "payouts": {
+          "label": "收款设置",
+          "description": "绑定 Stripe 收款账户并查看收款状态"
+        }
       },
+      "status": {
+        "published": "已发布",
+        "unpublished": "有未发布更改",
+        "draft": "草稿"
+      },
+      "stats": {
+        "sections": "区块",
+        "published": "已发布",
+        "drafts": "草稿",
+        "pending": "待处理",
+        "totalOrders": "总计",
+        "totalComments": "总计",
+        "pendingReview": "待审核"
+      },
+      "actions": {
+        "editPage": "编辑页面",
+        "preview": "预览",
+        "manageBlog": "管理博客",
+        "viewBlog": "查看博客",
+        "manageShop": "管理商店",
+        "viewShop": "查看商店",
+        "viewOrders": "查看订单",
+        "moderate": "审核",
+        "openMedia": "打开媒体库",
+        "payoutSettings": "设置"
+      },
+      "bgController": {
+        "label": "背景",
+        "title": "背景",
+        "colorLabel": "颜色",
+        "image": "图片",
+        "addImage": "点击上传图片",
+        "replace": "替换",
+        "remove": "移除",
+        "reset": "恢复默认"
+      },
+      "comingSoon": "待开发"
+    },
       "editorScaffold": {
       "tabs": {
         "layout": {

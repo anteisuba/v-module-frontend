@@ -9,8 +9,7 @@ import { newsArticleApi, pageApi } from "@/lib/api";
 import { ApiError, NetworkError } from "@/lib/api/errors";
 import { useUser } from "@/lib/context/UserContext";
 import { useI18n } from "@/lib/i18n/context";
-import { useHeroMenu } from "@/features/home-hero/hooks/useHeroMenu";
-import HeroMenu from "@/features/home-hero/components/HeroMenu";
+import FloatingMenu from "@/features/home-hero/components/FloatingMenu";
 import type { NewsArticle } from "@/lib/api/types";
 import type { PageConfig } from "@/domain/page-config/types";
 
@@ -23,7 +22,6 @@ export function NewsDetailContent({
   const searchParams = useSearchParams();
   const { user } = useUser();
   const { t } = useI18n();
-  const menu = useHeroMenu();
   const [article, setArticle] = useState<NewsArticle | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -287,18 +285,7 @@ export function NewsDetailContent({
       <div className="absolute inset-0" style={pageBackgroundStyle} />
       <div className={`absolute inset-0 ${backgroundOverlayClass}`} />
 
-      <div className="fixed right-6 top-6 z-50 flex items-center gap-4 text-white">
-        <button
-          className="editorial-button min-h-10 border-white/14 bg-black/28 px-4 py-2 text-[10px] text-white backdrop-blur-md hover:bg-black/40"
-          type="button"
-          aria-label="menu"
-          onClick={menu.toggleMenu}
-        >
-          Menu
-        </button>
-      </div>
-
-      <HeroMenu open={menu.open} onClose={menu.closeMenu} />
+      <FloatingMenu />
 
       <div className="editorial-container pt-20 sm:pt-24">
         <div className="mb-8 grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">

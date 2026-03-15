@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS "NewsArticle" (
     "tag" TEXT,
     "shareUrl" TEXT,
     "shareChannels" JSONB,
+    "backgroundType" TEXT DEFAULT 'color',
+    "backgroundValue" TEXT DEFAULT '#000000',
     "published" BOOLEAN NOT NULL DEFAULT false,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -36,4 +38,3 @@ BEGIN
         FOREIGN KEY ("userId") REFERENCES "User"("id") ON DELETE CASCADE ON UPDATE CASCADE;
     END IF;
 END $$;
-

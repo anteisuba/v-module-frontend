@@ -5,7 +5,6 @@ import type { SocialLinkItem } from "@/domain/page-config/types";
 import { renderIcon } from "@/lib/utils/iconRenderer";
 
 type Props = {
-  onMenuClick?: () => void;
   logo?: { src?: string; alt?: string; opacity?: number };
   socialLinks?: SocialLinkItem[];
   showLogo?: boolean;
@@ -14,9 +13,8 @@ type Props = {
 
 const isExternalUrl = (url: string) => url.startsWith("http://") || url.startsWith("https://");
 
-export default function HeroHeader({ 
-  onMenuClick, 
-  logo, 
+export default function HeroHeader({
+  logo,
   socialLinks,
   showLogo = true,
   showSocialLinks = true,
@@ -72,7 +70,7 @@ export default function HeroHeader({
         </div>
       )}
 
-      <div className="absolute top-6 right-6 z-50 flex items-center gap-4 text-white">
+      <div className="absolute top-6 right-30 flex items-center gap-4 text-white">
         {showSocialLinks &&
           enabledLinks.map((link) => (
             <a
@@ -86,15 +84,6 @@ export default function HeroHeader({
               {renderIcon(link.icon, link.name, "h-[18px] w-[18px]")}
             </a>
           ))}
-
-        <button
-          className="editorial-button min-h-10 border-white/14 bg-black/28 px-4 py-2 text-[10px] text-white backdrop-blur-md hover:bg-black/40"
-          type="button"
-          aria-label="menu"
-          onClick={onMenuClick}
-        >
-          Menu
-        </button>
       </div>
     </>
   );

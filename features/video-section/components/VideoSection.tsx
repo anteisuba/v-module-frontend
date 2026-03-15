@@ -17,6 +17,7 @@ export default function VideoSection({ props }: VideoSectionPropsInternal) {
   }
   
   // 布局配置
+  const paddingX = layout?.paddingX ?? 24;
   const paddingY = layout?.paddingY ?? 64;
   const backgroundColor = layout?.backgroundColor || "#000000";
   const backgroundOpacity = layout?.backgroundOpacity ?? 1;
@@ -87,7 +88,7 @@ export default function VideoSection({ props }: VideoSectionPropsInternal) {
         backgroundColor: backgroundColorWithOpacity,
       }}
     >
-      <div className="mx-auto px-6" style={maxWidthStyle}>
+      <div className="mx-auto" style={{ ...maxWidthStyle, paddingLeft: `${paddingX}px`, paddingRight: `${paddingX}px` }}>
         {columns === 1 ? (
           // 单视频布局
           <div className={aspectRatioClass || "aspect-[16/9]"}>

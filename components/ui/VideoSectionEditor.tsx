@@ -321,6 +321,41 @@ export default function VideoSectionEditor({
                 disabled={disabled}
               />
             </div>
+            {/* 左右内边距 */}
+            <div>
+              <label className="block text-xs text-black/70 mb-2">
+                {t("videoSectionEditor.layout.paddingX") || "左右内边距"}: {videoSection.props.layout?.paddingX ?? 24}px
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="200"
+                value={videoSection.props.layout?.paddingX ?? 24}
+                onChange={(e) => {
+                  const videoSection = ensureVideoSection();
+                  if (!videoSection || videoSection.type !== "video") return;
+                  onConfigChange({
+                    ...config,
+                    sections: config.sections.map((s) =>
+                      s.id === videoSection.id && s.type === "video"
+                        ? {
+                            ...s,
+                            props: {
+                              ...s.props,
+                              layout: {
+                                ...s.props.layout,
+                                paddingX: parseInt(e.target.value),
+                              },
+                            },
+                          }
+                        : s
+                    ),
+                  });
+                }}
+                className="w-full"
+                disabled={disabled}
+              />
+            </div>
             {/* 背景颜色 */}
             <div>
               <label className="block text-xs text-black/70 mb-2">

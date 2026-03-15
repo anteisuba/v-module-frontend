@@ -35,8 +35,9 @@ export default function EditorialAuthLayout({
       <div className="editorial-container flex min-h-screen flex-col">
         <div className="flex justify-end">{topRight}</div>
 
-        <div className="grid flex-1 items-start gap-10 pb-8 pt-6 lg:grid-cols-[minmax(0,1.08fr)_minmax(24rem,0.82fr)] lg:gap-16 lg:py-12">
-          <section className="reveal max-w-2xl pt-6 lg:pt-20">
+        <div className="grid flex-1 items-start gap-6 pb-8 pt-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(24rem,0.82fr)] lg:gap-16 lg:py-12">
+          {/* Login panel first on mobile (order-1 → visually first), intro second */}
+          <section className="reveal order-2 max-w-2xl pt-0 lg:order-1 lg:pt-20">
             <div className="editorial-kicker">{eyebrow}</div>
             <div className="line-wipe mt-6 max-w-sm" />
             <h1 className="editorial-hero-title mt-8 text-[color:var(--editorial-text)]">
@@ -56,7 +57,7 @@ export default function EditorialAuthLayout({
             ) : null}
           </section>
 
-          <section className="reveal lg:pt-10">
+          <section className="reveal order-1 lg:order-2 lg:pt-10">
             <div className="editorial-panel p-6 sm:p-8 lg:p-10">{panel}</div>
           </section>
         </div>

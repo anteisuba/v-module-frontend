@@ -110,7 +110,7 @@ export default function HeroMenu({ open, onClose }: Props) {
   return (
     <div
       className={[
-        "fixed inset-0 z-[80]",
+        "fixed inset-0 z-[9995]",
         "transition-opacity duration-300",
         open
           ? "opacity-100 pointer-events-auto"
@@ -180,7 +180,7 @@ export default function HeroMenu({ open, onClose }: Props) {
                     onClick={handleLinkClick}
                     className="group flex items-end justify-between gap-4 border-b border-white/8 pb-4"
                   >
-                    <span className="font-serif text-[clamp(1.9rem,4vw,3rem)] font-light tracking-[0.04em] text-white/88 transition group-hover:text-white">
+                    <span className="font-serif text-[clamp(1.3rem,2.8vw,1.8rem)] font-light tracking-[0.04em] text-white/88 transition group-hover:text-white">
                       {t(`heroMenu.${item.key}`)}
                     </span>
                     <span className="text-[10px] uppercase tracking-[0.28em] text-white/32 transition group-hover:text-white/56">
@@ -203,7 +203,7 @@ export default function HeroMenu({ open, onClose }: Props) {
               Multi-tenant editorial network
             </div>
             <div className="mt-6">
-              <LanguageSelector variant="dark" menuPosition="bottom" />
+              <LanguageSelector variant="dark" menuPosition="top" />
             </div>
           </div>
         </nav>

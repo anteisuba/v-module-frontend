@@ -4,24 +4,59 @@
 
 import { useI18n } from "@/lib/i18n/context";
 import { locales, localeNames, type Locale } from "@/i18n/config";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 
 interface LanguageSelectorProps {
   position?: "bottom-right" | "inline";
   className?: string;
   variant?: "light" | "dark";
-  menuPosition?: "top" | "bottom";
+  /** Menu expand direction. "auto" measures viewport space and picks the best direction. */
+  menuPosition?: "top" | "bottom" | "right" | "auto";
 }
 
 export default function LanguageSelector({
   position = "inline",
   className = "",
   variant = "light",
-  menuPosition = "top",
+  menuPosition = "auto",
 }: LanguageSelectorProps) {
   const { locale, setLocale } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
+  const [resolvedDirection, setResolvedDirection] = useState<"top" | "bottom" | "right">("bottom");
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null);
+
+  // Auto-detect best direction based on viewport space
+  const computeDirection = useCallback(() => {
+    if (menuPosition !== "auto") {
+      setResolvedDirection(menuPosition);
+      return;
+    }
+
+    if (!buttonRef.current) {
+      setResolvedDirection("bottom");
+      return;
+    }
+
+    const rect = buttonRef.current.getBoundingClientRect();
+    const menuHeight = 160; // ~3 items × 48px + border/padding
+    const spaceBelow = window.innerHeight - rect.bottom;
+    const spaceAbove = rect.top;
+
+    if (spaceBelow >= menuHeight) {
+      setResolvedDirection("bottom");
+    } else if (spaceAbove >= menuHeight) {
+      setResolvedDirection("top");
+    } else {
+      setResolvedDirection(spaceBelow >= spaceAbove ? "bottom" : "top");
+    }
+  }, [menuPosition]);
+
+  useEffect(() => {
+    if (isOpen) {
+      computeDirection();
+    }
+  }, [isOpen, computeDirection]);
 
   useEffect(() => {
     function handleClickOutside(event: MouseEvent) {
@@ -55,9 +90,11 @@ export default function LanguageSelector({
       : "editorial-button editorial-button--secondary min-h-10 px-4 py-2 text-[10px]";
 
   const menuPositionClass =
-    menuPosition === "top"
+    resolvedDirection === "top"
       ? "absolute bottom-full left-0 mb-2"
-      : "absolute top-full left-0 mt-2";
+      : resolvedDirection === "right"
+        ? "absolute left-full top-0 ml-2"
+        : "absolute top-full left-0 mt-2";
 
   const menuClass =
     variant === "dark"
@@ -80,6 +117,7 @@ export default function LanguageSelector({
   return (
     <div className={`relative ${containerClass} ${className}`} ref={dropdownRef}>
       <button
+        ref={buttonRef}
         type="button"
         onClick={() => setIsOpen(!isOpen)}
         className={buttonClass}
@@ -92,11 +130,13 @@ export default function LanguageSelector({
       </button>
 
       {isOpen && (
-        <div className={menuClass}>
+        <div className={menuClass} role="listbox" aria-label="Language options">
           {locales.map((loc) => (
             <button
               key={loc}
               type="button"
+              role="option"
+              aria-selected={locale === loc}
               onClick={() => handleLanguageChange(loc)}
               className={itemClass(loc)}
             >

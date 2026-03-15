@@ -22,6 +22,7 @@ import {
   AdminEditorCard,
   AdminEditorTabs,
 } from "@/components/ui";
+import { SectionLayoutControl } from "@/components/ui/SectionLayoutControl";
 import { pageApi } from "@/lib/api";
 import { useUser } from "@/lib/context/UserContext";
 import { useToast } from "@/hooks/useToast";
@@ -35,9 +36,9 @@ import type { AdminEditorPanelItem, AdminEditorTabOption } from "@/components/ui
 type CMSTabId = "page" | "content";
 
 const CMS_PANEL_TO_TAB: Record<string, CMSTabId> = {
-  hero: "page",
   background: "page",
   theme: "page",
+  hero: "content",
   video: "content",
   news: "content",
   articles: "content",
@@ -69,8 +70,8 @@ function CMSPageContent() {
   const [openPanelByTab, setOpenPanelByTab] = useState<
     Record<CMSTabId, string | null>
   >({
-    page: "hero",
-    content: "video",
+    page: "background",
+    content: "hero",
   });
   const requestedTab = searchParams.get("tab");
   const requestedPanel = searchParams.get("panel");
@@ -172,23 +173,6 @@ function CMSPageContent() {
 
   const pagePanels: AdminEditorPanelItem[] = [
     {
-      id: "hero",
-      title: t("heroEditor.title"),
-      description: t("cms.panels.hero.description"),
-      content: (
-        <HeroSectionEditor
-          config={config}
-          onConfigChange={setConfig}
-          disabled={saving || publishing}
-          onUploadImage={(file, options) => pageApi.uploadImage(file, options)}
-          uploadingIndex={uploadingIndex}
-          onToast={showToast}
-          onError={handleError}
-          focusTarget={focusTarget}
-        />
-      ),
-    },
-    {
       id: "background",
       title: t("pageBackgroundEditor.title"),
       description: t("cms.panels.background.description"),
@@ -251,7 +235,43 @@ function CMSPageContent() {
     },
   ];
 
+  // 获取 hero section 的 colSpan
+  const heroSection = config.sections.find((s) => s.type === "hero");
+  const heroColSpan = (heroSection?.layout?.colSpan as 1 | 2 | 3 | 4) || 4;
+
   const contentPanels: AdminEditorPanelItem[] = [
+    {
+      id: "hero",
+      title: t("heroEditor.title"),
+      description: t("cms.panels.hero.description"),
+      content: (
+        <div className="space-y-4">
+          <SectionLayoutControl
+            value={heroColSpan}
+            onChange={(colSpan) => {
+              setConfig({
+                ...config,
+                sections: config.sections.map((s) =>
+                  s.type === "hero"
+                    ? { ...s, layout: { ...s.layout, colSpan } }
+                    : s
+                ),
+              });
+            }}
+          />
+          <HeroSectionEditor
+            config={config}
+            onConfigChange={setConfig}
+            disabled={saving || publishing}
+            onUploadImage={(file, options) => pageApi.uploadImage(file, options)}
+            uploadingIndex={uploadingIndex}
+            onToast={showToast}
+            onError={handleError}
+            focusTarget={focusTarget}
+          />
+        </div>
+      ),
+    },
     {
       id: "video",
       title: t("videoSectionEditor.title"),
@@ -333,9 +353,9 @@ function CMSPageContent() {
       <div className="relative z-10 mx-auto max-w-6xl px-4 py-8">
         {/* 返回按钮和语言切换器 */}
         <div className="mb-4 flex items-center justify-between">
-          <BackButton 
-            href="/admin/dashboard" 
-            label={t("common.back")} 
+          <BackButton
+            href="/admin/dashboard"
+            label={t("common.back")}
             className="!relative !top-0 !left-0"
           />
           <LanguageSelector position="inline" menuPosition="bottom" />

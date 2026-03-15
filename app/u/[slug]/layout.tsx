@@ -3,6 +3,7 @@
 
 import { prisma } from "@/lib/prisma";
 import { getE2EPublicPageState } from "@/lib/e2e/publicPageState";
+import FloatingMenu from "@/features/home-hero/components/FloatingMenu";
 
 interface UserLayoutProps {
   children: React.ReactNode;
@@ -80,6 +81,7 @@ export default async function UserLayout({
 
   return (
     <div style={themeStyles} className="min-h-screen">
+      <FloatingMenu />
       {children}
     </div>
   );

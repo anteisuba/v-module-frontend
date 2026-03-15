@@ -1,0 +1,3 @@
+ALTER TABLE "NewsArticle"
+ADD COLUMN IF NOT EXISTS "backgroundType" TEXT DEFAULT 'color',
+ADD COLUMN IF NOT EXISTS "backgroundValue" TEXT DEFAULT '#000000';

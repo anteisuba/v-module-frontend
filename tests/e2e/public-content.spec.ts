@@ -11,6 +11,16 @@ import {
   setPublicSiteState,
 } from "./utils/admin";
 
+async function getDirectBackgroundImage(page: import("@playwright/test").Page, testId: string) {
+  return page.getByTestId(testId).evaluate((element) => {
+    const layer = element.firstElementChild;
+    if (!(layer instanceof HTMLElement)) {
+      return "";
+    }
+    return getComputedStyle(layer).backgroundImage;
+  });
+}
+
 test.beforeEach(async ({ context, page }) => {
   await bootstrapAdminE2E(context, page);
   await mockCurrentUser(page);
@@ -75,11 +85,7 @@ test("renders public blog entry and creator detail pages", async ({
     page.getByTestId("public-user-blog-post-post-e2e-1")
   ).toContainText("Spring live behind the scenes");
   await expect
-    .poll(() =>
-      page
-        .getByTestId("public-user-blog-list")
-        .evaluate((element) => getComputedStyle(element).backgroundImage)
-    )
+    .poll(() => getDirectBackgroundImage(page, "public-user-blog-list"))
     .toContain("/uploads/blog-list-bg.jpg");
 
   await page
@@ -95,11 +101,7 @@ test("renders public blog entry and creator detail pages", async ({
   );
   await expect(page.getByText("The encore section was perfect.")).toBeVisible();
   await expect
-    .poll(() =>
-      page
-        .getByTestId("public-user-blog-detail")
-        .evaluate((element) => getComputedStyle(element).backgroundImage)
-    )
+    .poll(() => getDirectBackgroundImage(page, "public-user-blog-detail"))
     .toContain("/uploads/blog-detail-bg.jpg");
 });
 
@@ -161,11 +163,7 @@ test("renders public news entry and detail pages", async ({ page }) => {
     "Tour final guest revealed"
   );
   await expect
-    .poll(() =>
-      page
-        .getByTestId("public-news-list")
-        .evaluate((element) => getComputedStyle(element).backgroundImage)
-    )
+    .poll(() => getDirectBackgroundImage(page, "public-news-list"))
     .toContain("/uploads/news-list-bg.jpg");
 
   await page.goto("/news/article-e2e-1?from=%2Fu%2Fcreator");
@@ -177,11 +175,7 @@ test("renders public news entry and detail pages", async ({ page }) => {
   );
   await expect(page.getByText("The final encore guest will join")).toBeVisible();
   await expect
-    .poll(() =>
-      page
-        .getByTestId("public-news-detail")
-        .evaluate((element) => getComputedStyle(element).backgroundImage)
-    )
+    .poll(() => getDirectBackgroundImage(page, "public-news-detail"))
     .toContain("/uploads/news-detail-bg.jpg");
 });
 
@@ -231,11 +225,7 @@ test("renders public shop entry and creator detail pages", async ({
     page.getByTestId("public-user-shop-product-product-e2e-1")
   ).toContainText("Anniversary acrylic stand");
   await expect
-    .poll(() =>
-      page
-        .getByTestId("public-user-shop-list")
-        .evaluate((element) => getComputedStyle(element).backgroundImage)
-    )
+    .poll(() => getDirectBackgroundImage(page, "public-user-shop-list"))
     .toContain("/uploads/shop-list-bg.jpg");
 
   await page.getByTestId("public-user-shop-product-product-e2e-1").click();
@@ -249,10 +239,6 @@ test("renders public shop entry and creator detail pages", async ({
     page.getByText("A two-piece acrylic stand with the spring costume art.")
   ).toBeVisible();
   await expect
-    .poll(() =>
-      page
-        .getByTestId("public-user-shop-detail")
-        .evaluate((element) => getComputedStyle(element).backgroundImage)
-    )
+    .poll(() => getDirectBackgroundImage(page, "public-user-shop-detail"))
     .toContain("/uploads/shop-detail-bg.jpg");
 });

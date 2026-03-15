@@ -11,7 +11,8 @@
       "copyright": "© vtuber-site"
     },
     "dashboard": {
-      "title": "Edit Directory",
+      "title": "Dashboard",
+      "eyebrow": "Admin Overview",
       "welcome": "Welcome, {name}",
       "user": "User",
       "selectPage": "Select page to edit",
@@ -24,11 +25,11 @@
           "description": "Edit personal homepage (Hero Section, Logo, social links, etc.)"
         },
         "blog": {
-          "label": "BLOG Page",
-          "description": "Edit blog articles"
+          "label": "Blog",
+          "description": "Create and manage blog articles"
         },
         "shop": {
-          "label": "SHOP Page",
+          "label": "Shop",
           "description": "Manage catalog items, stock, and publish status"
         },
         "orders": {
@@ -36,20 +37,56 @@
           "description": "Review buyer orders and advance fulfillment status"
         },
         "comments": {
-          "label": "Comment Moderation",
+          "label": "Comments",
           "description": "Review blog comments before they appear publicly"
         },
-          "media": {
-            "label": "Media Library",
-            "description": "Browse uploaded assets and reuse them across backgrounds, blog, and shop editors"
-          },
-          "payouts": {
-            "label": "Payout Settings",
-            "description": "Connect a Stripe payout account and review whether this seller can charge and receive payouts"
-          }
+        "media": {
+          "label": "Media Library",
+          "description": "Browse uploaded assets and reuse them across editors"
         },
-        "comingSoon": "Coming soon"
+        "payouts": {
+          "label": "Payout Settings",
+          "description": "Connect Stripe payout account and review payment status"
+        }
       },
+      "status": {
+        "published": "Published",
+        "unpublished": "Unpublished changes",
+        "draft": "Draft"
+      },
+      "stats": {
+        "sections": "Sections",
+        "published": "Published",
+        "drafts": "Drafts",
+        "pending": "Pending",
+        "totalOrders": "Total",
+        "totalComments": "Total",
+        "pendingReview": "Pending review"
+      },
+      "actions": {
+        "editPage": "Edit Page",
+        "preview": "Preview",
+        "manageBlog": "Manage Blog",
+        "viewBlog": "View Blog",
+        "manageShop": "Manage Shop",
+        "viewShop": "View Shop",
+        "viewOrders": "View Orders",
+        "moderate": "Moderate",
+        "openMedia": "Open Media",
+        "payoutSettings": "Settings"
+      },
+      "bgController": {
+        "label": "Background",
+        "title": "Background",
+        "colorLabel": "Color",
+        "image": "Image",
+        "addImage": "Click to upload image",
+        "replace": "Replace",
+        "remove": "Remove",
+        "reset": "Reset to default"
+      },
+      "comingSoon": "Coming soon"
+    },
       "editorScaffold": {
       "tabs": {
         "layout": {

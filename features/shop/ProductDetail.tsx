@@ -6,8 +6,6 @@ import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { useHeroMenu } from "@/features/home-hero/hooks/useHeroMenu";
-import HeroMenu from "@/features/home-hero/components/HeroMenu";
 import { isExternalUrl } from "@/lib/utils/isExternalUrl";
 
 interface Product {
@@ -31,7 +29,6 @@ export default function ProductDetail({
   backgroundStyle,
 }: ProductDetailProps) {
   const router = useRouter();
-  const menu = useHeroMenu();
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
   function formatPrice(price: number) {
@@ -55,19 +52,6 @@ export default function ProductDetail({
         style={backgroundStyle || { backgroundColor: "#000000" }}
       />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,8,6,0.18),rgba(8,8,6,0.64)_56%,rgba(8,8,6,0.84))]" />
-
-      <div className="fixed right-6 top-6 z-50 flex items-center gap-4 text-white">
-        <button
-          className="editorial-button min-h-10 border-white/14 bg-black/28 px-4 py-2 text-[10px] text-white backdrop-blur-md hover:bg-black/40"
-          type="button"
-          aria-label="menu"
-          onClick={menu.toggleMenu}
-        >
-          Menu
-        </button>
-      </div>
-
-      <HeroMenu open={menu.open} onClose={menu.closeMenu} />
 
       <div className="editorial-container pt-20 sm:pt-24">
         <Link

@@ -17,6 +17,7 @@ type Props = {
   }>;
   layout?: {
     paddingY?: number; // 上下内边距（px）
+    paddingX?: number; // 左右内边距（px）
     backgroundColor?: string; // 背景颜色
     backgroundOpacity?: number; // 背景透明度（0-1）
     maxWidth?: string; // 最大宽度，如 "7xl", "6xl", "full" 等
@@ -84,6 +85,7 @@ export default function NewsCarousel({ items, layout }: Props) {
     : 0;
   const translateXPx = startIndex * (itemWidthPx + gapPx);
 
+  const paddingX = layout?.paddingX ?? 24; // 默认 px-6 = 24px
   const paddingY = layout?.paddingY ?? 64; // 默认 py-16 = 64px
   const backgroundColor = layout?.backgroundColor || "#000000";
   const backgroundOpacity = layout?.backgroundOpacity ?? 1;
@@ -127,7 +129,7 @@ export default function NewsCarousel({ items, layout }: Props) {
         backgroundColor: backgroundColorWithOpacity,
       }}
     >
-      <div className="mx-auto px-6" style={maxWidthStyle}>
+      <div className="mx-auto" style={{ ...maxWidthStyle, paddingLeft: `${paddingX}px`, paddingRight: `${paddingX}px` }}>
         {/* 轮播容器 - 使用 flexbox 和 transform 实现滑动动画 */}
         <div ref={containerRef} className="relative overflow-hidden">
           <div

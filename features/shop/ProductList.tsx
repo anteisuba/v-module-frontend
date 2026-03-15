@@ -5,8 +5,6 @@
 import { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import { useHeroMenu } from "@/features/home-hero/hooks/useHeroMenu";
-import HeroMenu from "@/features/home-hero/components/HeroMenu";
 import { Skeleton } from "@/components/ui";
 import { isExternalUrl } from "@/lib/utils/isExternalUrl";
 
@@ -115,8 +113,6 @@ function ProductCard({ product, userSlug, formatPrice }: {
 }
 
 export default function ProductList({ products, userSlug, backgroundStyle }: ProductListProps) {
-  const menu = useHeroMenu();
-
   function formatPrice(price: number) {
     return `¥${price.toFixed(2)}`;
   }
@@ -135,19 +131,6 @@ export default function ProductList({ products, userSlug, backgroundStyle }: Pro
         style={backgroundStyle || defaultBackgroundStyle}
       />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,8,6,0.18),rgba(8,8,6,0.6)_56%,rgba(8,8,6,0.82))]" />
-
-      <div className="fixed right-6 top-6 z-50 flex items-center gap-4 text-white">
-        <button
-          className="editorial-button min-h-10 border-white/14 bg-black/28 px-4 py-2 text-[10px] text-white backdrop-blur-md hover:bg-black/40"
-          type="button"
-          aria-label="menu"
-          onClick={menu.toggleMenu}
-        >
-          Menu
-        </button>
-      </div>
-
-      <HeroMenu open={menu.open} onClose={menu.closeMenu} />
 
       <div className="editorial-container pt-20 sm:pt-24">
         <div className="mb-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">

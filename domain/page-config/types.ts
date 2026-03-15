@@ -53,6 +53,7 @@ export type NewsSectionProps = {
   // 布局配置
   layout?: {
     paddingY?: number; // 上下内边距（px），默认 64 (py-16)
+    paddingX?: number; // 左右内边距（px），默认 24 (px-6)
     backgroundColor?: string; // 背景颜色，默认 "black"
     backgroundOpacity?: number; // 背景透明度（0-1），默认 1
     maxWidth?: string; // 最大宽度，默认 "7xl"
@@ -70,6 +71,7 @@ export type VideoSectionProps = {
   // 布局配置（参考 NewsSectionProps）
   layout?: {
     paddingY?: number; // 上下内边距（px），默认 64
+    paddingX?: number; // 左右内边距（px），默认 24 (px-6)
     backgroundColor?: string; // 背景颜色，默认 "black"
     backgroundOpacity?: number; // 背景透明度（0-1），默认 1
     maxWidth?: string; // 最大宽度，默认 "7xl"

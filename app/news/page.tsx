@@ -11,8 +11,7 @@ import { useI18n } from "@/lib/i18n/context";
 import PageLoading from "@/components/ui/PageLoading";
 import Alert from "@/components/ui/Alert";
 import LoadingState from "@/components/ui/LoadingState";
-import { useHeroMenu } from "@/features/home-hero/hooks/useHeroMenu";
-import HeroMenu from "@/features/home-hero/components/HeroMenu";
+import FloatingMenu from "@/features/home-hero/components/FloatingMenu";
 import type { NewsArticle } from "@/lib/api/types";
 import type { PageConfig } from "@/domain/page-config/types";
 import { resolveBackgroundStyle } from "@/domain/page-config/constants";
@@ -20,7 +19,6 @@ import { resolveBackgroundStyle } from "@/domain/page-config/constants";
 function NewsListContent() {
   const searchParams = useSearchParams();
   const { t } = useI18n();
-  const menu = useHeroMenu();
   const [articles, setArticles] = useState<NewsArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
@@ -113,18 +111,7 @@ function NewsListContent() {
       <div className="absolute inset-0" style={backgroundStyle} />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,8,6,0.18),rgba(8,8,6,0.6)_56%,rgba(8,8,6,0.82))]" />
 
-      <div className="fixed right-6 top-6 z-50 flex items-center gap-4 text-white">
-        <button
-          className="editorial-button min-h-10 border-white/14 bg-black/28 px-4 py-2 text-[10px] text-white backdrop-blur-md hover:bg-black/40"
-          type="button"
-          aria-label="menu"
-          onClick={menu.toggleMenu}
-        >
-          Menu
-        </button>
-      </div>
-
-      <HeroMenu open={menu.open} onClose={menu.closeMenu} />
+      <FloatingMenu />
 
       <div className="editorial-container pt-20 sm:pt-24">
         <div className="mb-10 grid gap-6 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end">

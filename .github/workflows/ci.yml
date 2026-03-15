@@ -13,7 +13,7 @@ permissions:
 
 env:
   DATABASE_URL: postgresql://postgres:postgres@127.0.0.1:5432/vtuber
-  SESSION_PASSWORD: 12345678901234567890123456789012
+  SESSION_PASSWORD: ci-session-password-0123456789abcdef
   NEXT_PUBLIC_BASE_URL: http://127.0.0.1:3000
   NEXT_TELEMETRY_DISABLED: "1"
 

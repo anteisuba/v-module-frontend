@@ -6,8 +6,6 @@ import HeroHeader from "./HeroHeader";
 import { useHeroSlides } from "../hooks/useHeroSlides";
 import { useStickyProgress } from "@/lib/hooks/useStickyProgress";
 import HeroThumbStrip from "./HeroThumbStrip";
-import HeroMenu from "./HeroMenu";
-import { useHeroMenu } from "../hooks/useHeroMenu";
 import type { HeroSlide } from "../types";
 
 import type { SocialLinkItem } from "@/domain/page-config/types";
@@ -42,8 +40,6 @@ export default function HeroSection({
     transitionDuration?: number;
   };
 }) {
-  const menu = useHeroMenu();
-
   const HERO_SCROLL_HEIGHT_VH = layout?.heightVh ?? 150;
   const HERO_IMAGE_HEIGHT_VH = layout?.heightVh ?? 150;
   const backgroundColor = layout?.backgroundColor || "#000000";
@@ -118,8 +114,7 @@ export default function HeroSection({
           />
         )}
 
-        <HeroHeader 
-          onMenuClick={menu.toggleMenu}
+        <HeroHeader
           logo={logo}
           socialLinks={socialLinks}
           showLogo={showLogo}
@@ -130,7 +125,7 @@ export default function HeroSection({
           <div
             className={[
               "absolute inset-x-0 bottom-32 z-[5] transition-opacity duration-300",
-              menu.open ? "pointer-events-none opacity-0" : "opacity-100",
+              "opacity-100",
             ].join(" ")}
           >
             <div className="mx-auto max-w-6xl px-6">
@@ -160,7 +155,6 @@ export default function HeroSection({
             onPick={(i) => goTo(i)}
           />
         ) : null}
-        <HeroMenu open={menu.open} onClose={menu.closeMenu} />
       </div>
     </section>
   );

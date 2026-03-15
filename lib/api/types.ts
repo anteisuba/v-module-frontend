@@ -54,6 +54,11 @@ export interface PageDraftConfigResponse {
   draftConfig: PageConfig;
   themeColor?: string;
   fontFamily?: string;
+  pageStatus?: {
+    isPublished: boolean;
+    hasUnpublishedChanges: boolean;
+    updatedAt: string;
+  };
 }
 
 export interface PagePublishResponse {

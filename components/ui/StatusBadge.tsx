@@ -3,7 +3,7 @@
 
 "use client";
 
-type StatusTone = "success" | "warning" | "danger" | "info" | "neutral" | "muted";
+export type StatusTone = "success" | "warning" | "danger" | "info" | "neutral" | "muted";
 
 /**
  * 状态色调映射表：所有颜色使用 color-mix + editorial 变量，自适应深色/浅色主题

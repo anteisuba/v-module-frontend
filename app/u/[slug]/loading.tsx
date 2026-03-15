@@ -1,11 +1,14 @@
 // app/u/[slug]/loading.tsx
 
-"use client";
-
-import PageLoading from "@/components/ui/PageLoading";
-import { useI18n } from "@/lib/i18n/context";
-
 export default function UserPageLoading() {
-  const { t } = useI18n();
-  return <PageLoading message={t("common.loadingPage")} />;
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black">
+      <div className="text-center">
+        <div className="mb-4 flex justify-center">
+          <div className="h-12 w-12 animate-spin rounded-full border-4 border-white/20 border-t-white" />
+        </div>
+        <p className="text-white/80">Loading...</p>
+      </div>
+    </div>
+  );
 }

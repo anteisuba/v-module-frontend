@@ -18,13 +18,15 @@ export async function GET() {
 
   const userId = session.user.id;
 
-  // 2. 获取用户的草稿配置和主题设置
+  // 2. 获取用户的草稿配置、发布配置和主题设置
   const page = await prisma.page.findUnique({
     where: { userId },
-    select: { 
+    select: {
       draftConfig: true,
+      publishedConfig: true,
       themeColor: true,
       fontFamily: true,
+      updatedAt: true,
     },
   });
 
@@ -32,10 +34,20 @@ export async function GET() {
     return NextResponse.json({ error: "Page not found" }, { status: 404 });
   }
 
+  // 判断发布状态：比较草稿和已发布配置
+  const draftJson = JSON.stringify(page.draftConfig);
+  const publishedJson = JSON.stringify(page.publishedConfig);
+  const hasUnpublishedChanges = draftJson !== publishedJson;
+
   return NextResponse.json({
     draftConfig: normalizePageConfig(page.draftConfig),
     themeColor: page.themeColor,
     fontFamily: page.fontFamily,
+    pageStatus: {
+      isPublished: !!page.publishedConfig,
+      hasUnpublishedChanges,
+      updatedAt: page.updatedAt.toISOString(),
+    },
   });
 }
 

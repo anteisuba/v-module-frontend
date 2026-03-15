@@ -11,7 +11,8 @@
       "copyright": "© vtuber-site"
     },
     "dashboard": {
-      "title": "編集ディレクトリ",
+      "title": "ダッシュボード",
+      "eyebrow": "管理概要",
       "welcome": "ようこそ、{name}",
       "user": "ユーザー",
       "selectPage": "編集するページを選択",
@@ -21,35 +22,71 @@
       "pages": {
         "cms": {
           "label": "ホームページ",
-          "description": "個人ホームページを編集（Hero Section、Logo、ソーシャルリンクなど）"
+          "description": "個人ホームページを編集（Hero、Logo、ソーシャルリンクなど）"
         },
         "blog": {
-          "label": "BLOG ページ",
-          "description": "ブログ記事を編集"
+          "label": "ブログ",
+          "description": "ブログ記事の作成と管理"
         },
         "shop": {
-          "label": "SHOP ページ",
+          "label": "ショップ",
           "description": "商品一覧、在庫、公開状態を管理"
         },
         "orders": {
-          "label": "注文管理",
+          "label": "注文",
           "description": "購入注文を確認し、処理ステータスを更新"
         },
         "comments": {
-          "label": "コメント審査",
+          "label": "コメント",
           "description": "ブログコメントを審査し、公開表示を管理"
         },
-          "media": {
-            "label": "メディアライブラリ",
-            "description": "アップロード済み素材を確認し、背景・ブログ・商品編集へ再利用"
-          },
-          "payouts": {
-            "label": "受取設定",
-            "description": "Stripe の受取口座を接続し、この販売者が決済・入金可能か確認"
-          }
+        "media": {
+          "label": "メディアライブラリ",
+          "description": "アップロード済み素材を確認し、各エディタで再利用"
         },
-        "comingSoon": "開発中"
+        "payouts": {
+          "label": "受取設定",
+          "description": "Stripe 受取口座を接続し、決済状態を確認"
+        }
       },
+      "status": {
+        "published": "公開済み",
+        "unpublished": "未公開の変更あり",
+        "draft": "下書き"
+      },
+      "stats": {
+        "sections": "セクション",
+        "published": "公開済み",
+        "drafts": "下書き",
+        "pending": "保留中",
+        "totalOrders": "合計",
+        "totalComments": "合計",
+        "pendingReview": "審査待ち"
+      },
+      "actions": {
+        "editPage": "ページ編集",
+        "preview": "プレビュー",
+        "manageBlog": "ブログ管理",
+        "viewBlog": "ブログを見る",
+        "manageShop": "ショップ管理",
+        "viewShop": "ショップを見る",
+        "viewOrders": "注文を見る",
+        "moderate": "審査する",
+        "openMedia": "メディアを開く",
+        "payoutSettings": "設定"
+      },
+      "bgController": {
+        "label": "背景",
+        "title": "背景",
+        "colorLabel": "カラー",
+        "image": "画像",
+        "addImage": "クリックして画像をアップロード",
+        "replace": "置換",
+        "remove": "削除",
+        "reset": "デフォルトに戻す"
+      },
+      "comingSoon": "開発中"
+    },
       "editorScaffold": {
       "tabs": {
         "layout": {
