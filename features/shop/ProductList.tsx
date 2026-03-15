@@ -106,7 +106,7 @@ function ProductCard({ product, userSlug, formatPrice }: {
             {formatPrice(product.price)}
           </span>
           {product.stock === 0 && (
-            <span className="text-[11px] uppercase tracking-[0.18em] text-red-300">缺货</span>
+            <span className="text-[11px] uppercase tracking-[0.18em] text-[color:#9a4b3d]">缺货</span>
           )}
         </div>
       </div>

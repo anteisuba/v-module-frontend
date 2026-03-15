@@ -22,7 +22,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     const baseInputClasses =
       "editorial-input text-sm leading-relaxed";
     const borderClasses = error
-      ? "!border-red-500"
+      ? "!border-[#9a4b3d]"
       : "";
 
     return (
@@ -33,7 +33,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
             className="block text-[11px] uppercase tracking-[0.22em] text-[color:var(--editorial-muted)]"
           >
             {label}
-            {props.required && <span className="ml-1 text-red-500">*</span>}
+            {props.required && <span className="ml-1 text-[color:#9a4b3d]">*</span>}
           </label>
         )}
 
@@ -65,7 +65,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
         {error && (
           <p
             id={errorId}
-            className="flex items-center gap-1 text-xs text-red-600"
+            className="flex items-center gap-1 text-xs text-[color:#9a4b3d]"
             role="alert"
           >
             <span>⚠</span>

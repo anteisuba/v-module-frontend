@@ -164,7 +164,7 @@ export default function ProductDetail({
 
             <div className="mt-8 border-t border-white/10 pt-5">
               {product.stock === 0 ? (
-                <span className="text-[11px] uppercase tracking-[0.18em] text-red-300">缺货</span>
+                <span className="text-[11px] uppercase tracking-[0.18em] text-[color:#9a4b3d]">缺货</span>
               ) : (
                 <span className="text-[11px] uppercase tracking-[0.18em] text-white/48">
                   库存: {product.stock}

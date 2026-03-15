@@ -12,6 +12,7 @@ import {
   Alert,
   LoadingState,
   MediaPickerDialog,
+  getToneStyle,
 } from "@/components/ui";
 import { pageApi } from "@/lib/api";
 import { useToast } from "@/hooks/useToast";
@@ -291,7 +292,8 @@ export default function ProductEditor({
                   <button
                     type="button"
                     onClick={() => removeImage(index)}
-                    className="absolute top-1 right-1 bg-red-500 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-1 right-1 text-white rounded-full w-5 h-5 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity hover:opacity-80"
+                    style={{ background: "#9a4b3d" }}
                     disabled={saving}
                   >
                     ×
@@ -398,11 +400,11 @@ export default function ProductEditor({
                     </p>
                   </div>
                   <span
-                    className={`px-2 py-1 rounded text-xs ${
-                      order.status === "PAID"
-                        ? "bg-emerald-100 text-emerald-700"
-                        : "bg-gray-100 text-gray-700"
-                    }`}
+                    className="px-2 py-1 rounded text-xs"
+                    style={(() => {
+                      const tone = getToneStyle(order.status === "PAID" ? "success" : "neutral");
+                      return { background: tone.bg, color: tone.text };
+                    })()}
                   >
                     {order.status}
                   </span>

@@ -173,7 +173,8 @@ export default function BlogEditor({
                 <button
                   type="button"
                   onClick={() => setCoverImage(null)}
-                  className="absolute top-2 right-2 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs hover:bg-red-600 transition-colors"
+                  className="absolute top-2 right-2 text-white rounded-full w-6 h-6 flex items-center justify-center text-xs transition-colors hover:opacity-80"
+                  style={{ background: "#9a4b3d" }}
                   disabled={saving}
                 >
                   ×

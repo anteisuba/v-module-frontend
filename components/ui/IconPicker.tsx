@@ -523,7 +523,7 @@ export function IconPicker({ value, onChange, disabled = false }: IconPickerProp
             type="button"
             onClick={() => onChange("")}
             disabled={disabled}
-            className="text-sm text-red-600 hover:text-red-700 disabled:opacity-50"
+            className="text-sm text-[color:#9a4b3d] hover:opacity-80 disabled:opacity-50"
           >
             清除
           </button>

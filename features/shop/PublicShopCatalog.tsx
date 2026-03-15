@@ -156,7 +156,7 @@ export default function PublicShopCatalog({
                       <span
                         className={
                           product.stock === 0
-                            ? "font-medium text-red-700"
+                            ? "font-medium text-[color:#9a4b3d]"
                             : "text-[color:var(--editorial-muted)]"
                         }
                       >
@@ -165,7 +165,7 @@ export default function PublicShopCatalog({
                           : `${t("publicEntry.shop.inStock")} ${product.stock}`}
                       </span>
                       {sellerSlug ? (
-                        <span className="text-xs uppercase tracking-[0.16em] text-slate-400">
+                        <span className="text-xs uppercase tracking-[0.16em] text-[color:var(--editorial-muted)]">
                           @{sellerSlug}
                         </span>
                       ) : null}

@@ -14,6 +14,7 @@ import Button from "./Button";
 import ConfirmDialog from "./ConfirmDialog";
 import LoadingState from "./LoadingState";
 import MediaPickerDialog from "./MediaPickerDialog";
+import { getToneStyle } from "./StatusBadge";
 import { getMediaAssetReferenceTarget } from "@/domain/media/reference-targets";
 import {
   MEDIA_ASSET_USAGE_CONTEXTS,
@@ -401,7 +402,7 @@ export default function MediaLibraryBrowser({
               )}
             </div>
             {hasInUseSelection ? (
-              <div className="text-[11px] text-amber-700">
+              <div className="text-[11px] text-[color:#b8863a]">
                 {t("mediaLibrary.deleteSelectionWarning")}
               </div>
             ) : null}
@@ -637,12 +638,11 @@ export default function MediaLibraryBrowser({
 
                     <div className="flex flex-wrap gap-1">
                       <span
-                        className={joinClasses(
-                          "rounded-full px-2 py-1 text-[10px]",
-                          asset.isInUse
-                            ? "bg-amber-100 text-amber-700"
-                            : "bg-emerald-100 text-emerald-700"
-                        )}
+                        className="rounded-full px-2 py-1 text-[10px]"
+                        style={(() => {
+                          const tone = getToneStyle(asset.isInUse ? "warning" : "success");
+                          return { background: tone.bg, color: tone.text };
+                        })()}
                       >
                         {asset.isInUse
                           ? t("mediaLibrary.inUse").replace(
@@ -668,7 +668,14 @@ export default function MediaLibraryBrowser({
                     </div>
 
                     {asset.isInUse ? (
-                      <div className="space-y-1 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-[11px] text-amber-800">
+                      <div
+                        className="space-y-1 rounded-lg border px-3 py-2 text-[11px]"
+                        style={{
+                          borderColor: "color-mix(in srgb, #b8863a 40%, transparent)",
+                          background: "color-mix(in srgb, #b8863a 10%, var(--editorial-surface))",
+                          color: "#b8863a",
+                        }}
+                      >
                         {visibleReferences.map((reference, index) => {
                           const target = getMediaAssetReferenceTarget(reference);
 
@@ -684,7 +691,11 @@ export default function MediaLibraryBrowser({
                                 <Link
                                   href={target.href}
                                   data-testid={`media-asset-go-to-replace-${asset.id}-${index}`}
-                                  className="shrink-0 rounded-md border border-amber-300 bg-white px-2 py-1 text-[10px] font-medium text-amber-800 transition-colors hover:bg-amber-100"
+                                  className="shrink-0 rounded-md border bg-white px-2 py-1 text-[10px] font-medium transition-colors hover:opacity-80"
+                                  style={{
+                                    borderColor: "color-mix(in srgb, #b8863a 40%, transparent)",
+                                    color: "#b8863a",
+                                  }}
                                 >
                                   {t("mediaLibrary.goToReplace")}
                                 </Link>
@@ -693,7 +704,7 @@ export default function MediaLibraryBrowser({
                           );
                         })}
                         {asset.referenceCount > visibleReferences.length ? (
-                          <div className="text-amber-700/80">
+                          <div className="text-[color:#b8863a]" style={{ opacity: 0.8 }}>
                             {t("mediaLibrary.moreReferences").replace(
                               "{count}",
                               String(asset.referenceCount - visibleReferences.length)

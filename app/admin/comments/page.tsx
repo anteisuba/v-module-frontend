@@ -357,7 +357,7 @@ export default function CommentsPage() {
                         {getStatusLabel(comment.status)}
                       </StatusBadge>
                       {comment.user ? (
-                        <span className="text-xs text-blue-600">
+                        <span className="text-xs text-[color:var(--editorial-accent)]">
                           @{comment.user.slug}
                         </span>
                       ) : null}
@@ -371,7 +371,7 @@ export default function CommentsPage() {
                           <Link
                             href={`/u/${user.slug}/blog/${comment.blogPost.id}`}
                             target="_blank"
-                            className="text-blue-600 hover:underline"
+                            className="text-[color:var(--editorial-accent)] hover:underline"
                           >
                             {comment.blogPost.title}
                           </Link>

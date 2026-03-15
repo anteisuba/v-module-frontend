@@ -215,7 +215,7 @@ export function NewsDetailContent({
           <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,8,6,0.26),rgba(8,8,6,0.62)_56%,rgba(8,8,6,0.84))]" />
         </div>
         <div className="editorial-container pt-24">
-          <div className="mb-4 rounded-[1.2rem] border border-red-400/24 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+          <div className="mb-4 rounded-[1.2rem] border px-4 py-3 text-sm" style={{ borderColor: "color-mix(in srgb, #9a4b3d 24%, transparent)", background: "color-mix(in srgb, #9a4b3d 10%, transparent)", color: "color-mix(in srgb, #9a4b3d 40%, #e8e4d9)" }}>
             {error}
           </div>
           <Link
@@ -329,7 +329,7 @@ export function NewsDetailContent({
         </div>
 
         {error && (
-          <div className="mb-4 rounded-[1.2rem] border border-red-400/24 bg-red-500/10 px-4 py-3 text-sm text-red-100">
+          <div className="mb-4 rounded-[1.2rem] border px-4 py-3 text-sm" style={{ borderColor: "color-mix(in srgb, #9a4b3d 24%, transparent)", background: "color-mix(in srgb, #9a4b3d 10%, transparent)", color: "color-mix(in srgb, #9a4b3d 40%, #e8e4d9)" }}>
             {error}
           </div>
         )}

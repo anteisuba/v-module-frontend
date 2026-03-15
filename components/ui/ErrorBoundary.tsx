@@ -54,17 +54,17 @@ export default class ErrorBoundary extends Component<Props, State> {
         <div className="flex min-h-screen flex-col items-center justify-center bg-black px-4 text-white">
           <div className="max-w-md text-center">
             <h1 className="mb-4 text-2xl font-bold">出现了一些问题</h1>
-            <p className="mb-6 text-gray-400">
+            <p className="mb-6 text-[color:var(--editorial-muted)]">
               抱歉，页面加载时出现了错误。请刷新页面重试。
             </p>
 
             {process.env.NODE_ENV === "development" && this.state.error && (
-              <div className="mb-6 rounded-lg bg-red-900/20 p-4 text-left text-sm">
-                <p className="font-mono text-red-400">
+              <div className="mb-6 rounded-lg p-4 text-left text-sm" style={{ background: "color-mix(in srgb, #9a4b3d 20%, transparent)" }}>
+                <p className="font-mono text-[color:#9a4b3d]">
                   {this.state.error.message}
                 </p>
                 {this.state.error.stack && (
-                  <pre className="mt-2 overflow-auto text-xs text-gray-500">
+                  <pre className="mt-2 overflow-auto text-xs text-[color:var(--editorial-muted)]">
                     {this.state.error.stack}
                   </pre>
                 )}
@@ -74,7 +74,7 @@ export default class ErrorBoundary extends Component<Props, State> {
             <div className="flex gap-4 justify-center">
               <button
                 onClick={() => window.location.reload()}
-                className="rounded bg-white px-6 py-2 text-black transition-colors hover:bg-gray-200"
+                className="editorial-button editorial-button--secondary px-6 py-2"
               >
                 刷新页面
               </button>

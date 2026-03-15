@@ -375,7 +375,7 @@ function ShopPageContent() {
                           <span
                             className={`text-xs ${
                               product.stock === 0
-                                ? "font-semibold text-red-600"
+                                ? "font-semibold text-[color:#9a4b3d]"
                                 : "text-[color:var(--editorial-muted)]"
                             }`}
                           >

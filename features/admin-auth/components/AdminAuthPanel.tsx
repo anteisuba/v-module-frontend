@@ -82,7 +82,7 @@ export default function AdminAuthPanel() {
         />
 
         {error ? (
-          <div className="rounded-[1.2rem] border border-red-500/25 bg-red-500/8 px-4 py-3 text-sm text-red-700">
+          <div className="rounded-[1.2rem] border px-4 py-3 text-sm" style={{ borderColor: "color-mix(in srgb, #9a4b3d 25%, transparent)", background: "color-mix(in srgb, #9a4b3d 8%, var(--editorial-surface))", color: "#9a4b3d" }}>
             {error}
           </div>
         ) : null}

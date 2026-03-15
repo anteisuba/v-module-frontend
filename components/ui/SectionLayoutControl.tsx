@@ -26,8 +26,8 @@ export function SectionLayoutControl({
 }: SectionLayoutControlProps) {
   return (
     <div className={classNames("flex items-center gap-2", className)}>
-      <span className="text-xs font-medium text-gray-600">Width:</span>
-      <div className="inline-flex rounded-lg bg-gray-100/80 p-0.5 backdrop-blur-sm">
+      <span className="text-xs font-medium text-[color:var(--editorial-muted)]">Width:</span>
+      <div className="inline-flex rounded-lg p-0.5 backdrop-blur-sm" style={{ background: "color-mix(in srgb, var(--editorial-surface) 80%, transparent)" }}>
         {layouts.map((layout) => (
           <button
             key={layout.value}
@@ -37,8 +37,8 @@ export function SectionLayoutControl({
               "px-3 py-1.5 text-xs font-medium rounded-md transition-all",
               "hover:bg-white/60 active:scale-95",
               value === layout.value
-                ? "bg-white text-gray-900 shadow-sm"
-                : "text-gray-600 hover:text-gray-900"
+                ? "bg-white text-[color:var(--editorial-text)] shadow-sm"
+                : "text-[color:var(--editorial-muted)] hover:text-[color:var(--editorial-text)]"
             )}
             aria-label={`Set width to ${layout.label}`}
           >
