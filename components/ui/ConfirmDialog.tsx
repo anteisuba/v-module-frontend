@@ -43,10 +43,13 @@ export default function ConfirmDialog({
   const dialogContent = (
     <div
       data-testid="confirm-dialog"
-      className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4"
+      className="fixed inset-0 backdrop-blur-sm flex items-center justify-center p-4"
       onClick={onCancel}
       onKeyDown={handleKeyDown}
       tabIndex={-1}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="confirm-dialog-title"
       style={{
         position: "fixed",
         top: 0,
@@ -55,10 +58,11 @@ export default function ConfirmDialog({
         bottom: 0,
         zIndex: 99999,
         pointerEvents: "auto",
+        background: "color-mix(in srgb, var(--editorial-bg) 60%, transparent)",
       }}
     >
       <div
-        className="bg-white rounded-xl shadow-xl max-w-md w-full p-6 relative"
+        className="editorial-card max-w-md w-full p-6 relative"
         onClick={(e) => e.stopPropagation()}
         style={{
           maxHeight: "calc(100vh - 2rem)",
@@ -66,15 +70,26 @@ export default function ConfirmDialog({
           zIndex: 100000,
         }}
       >
-        <h3 className="text-lg font-semibold text-black mb-2">{title}</h3>
-        <p className="text-sm text-black/70 mb-6">{message}</p>
+        <h3
+          id="confirm-dialog-title"
+          className="text-lg font-semibold mb-2"
+          style={{ color: "var(--editorial-text)" }}
+        >
+          {title}
+        </h3>
+        <p
+          className="text-sm mb-6"
+          style={{ color: "var(--editorial-muted)" }}
+        >
+          {message}
+        </p>
 
         <div className="flex items-center justify-end gap-3">
           <button
             type="button"
             onClick={onCancel}
             data-testid="confirm-dialog-cancel"
-            className="rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black/20 focus:ring-offset-2 cursor-pointer border border-black/20 bg-white/70 text-black hover:bg-white/80 active:bg-white/90 px-4 py-2.5 text-sm"
+            className="editorial-button editorial-button--secondary px-4 py-2.5 text-sm"
           >
             {cancelLabel || t("common.cancel")}
           </button>
@@ -83,18 +98,21 @@ export default function ConfirmDialog({
             onClick={onConfirm}
             data-testid="confirm-dialog-confirm"
             className={[
-              "rounded-lg font-medium transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-black/20 focus:ring-offset-2 cursor-pointer px-4 py-2.5 text-sm",
+              "editorial-button px-4 py-2.5 text-sm",
               variant === "danger"
-                ? "border border-red-300 bg-red-50 text-red-600 hover:bg-red-100 active:bg-red-200"
-                : "bg-black text-white hover:bg-black/90 active:bg-black/95",
+                ? "editorial-button--danger"
+                : "editorial-button--primary",
             ].join(" ")}
           >
             {confirmLabel || t("common.confirm")}
           </button>
         </div>
 
-        <p className="text-xs text-black/40 mt-4 text-center">
-          按 ESC 取消，Ctrl+Enter 确认
+        <p
+          className="text-xs mt-4 text-center"
+          style={{ color: "var(--editorial-muted)" }}
+        >
+          {t("common.escToCancel") ?? "ESC"} · Ctrl+Enter
         </p>
       </div>
     </div>

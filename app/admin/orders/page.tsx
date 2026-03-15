@@ -12,6 +12,7 @@ import {
   LanguageSelector,
   Button,
   Input,
+  StatusBadge,
 } from "@/components/ui";
 import { shopApi } from "@/lib/api";
 import { useUser } from "@/lib/context/UserContext";
@@ -187,17 +188,7 @@ export default function OrdersPage() {
     return labels[status] || status;
   }
 
-  function getStatusColor(status: string) {
-    const colors: Record<string, string> = {
-      AWAITING_PAYMENT: "bg-amber-100 text-amber-700",
-      PENDING: "bg-yellow-100 text-yellow-700",
-      PAID: "bg-blue-100 text-blue-700",
-      SHIPPED: "bg-purple-100 text-purple-700",
-      DELIVERED: "bg-emerald-100 text-emerald-700",
-      CANCELLED: "bg-gray-100 text-gray-700",
-    };
-    return colors[status] || "bg-gray-100 text-gray-700";
-  }
+  // 状态颜色通过 StatusBadge 组件统一管理
 
   if (userLoading || loading) {
     return (
@@ -237,8 +228,8 @@ export default function OrdersPage() {
         {/* 头部 */}
         <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-black">订单管理</h1>
-            <p className="mt-1 text-sm text-black/70">管理您的所有订单</p>
+            <h1 className="text-2xl font-bold text-[color:var(--editorial-text)]">订单管理</h1>
+            <p className="mt-1 text-sm text-[color:var(--editorial-muted)]">管理您的所有订单</p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Button
@@ -259,7 +250,7 @@ export default function OrdersPage() {
         <div className="mb-6 rounded-xl border border-black/10 bg-white/55 p-4 backdrop-blur-xl">
           <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px_auto] md:items-end">
             <div>
-              <label className="mb-2 block text-xs font-medium text-black/70">
+              <label className="mb-2 block text-xs font-medium text-[color:var(--editorial-muted)]">
                 搜索订单
               </label>
               <Input
@@ -270,7 +261,7 @@ export default function OrdersPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-xs font-medium text-black/70">
+              <label className="mb-2 block text-xs font-medium text-[color:var(--editorial-muted)]">
                 状态筛选
               </label>
               <select
@@ -312,7 +303,7 @@ export default function OrdersPage() {
             </div>
           </div>
 
-          <div className="mt-3 flex items-center justify-between text-xs text-black/55">
+          <div className="mt-3 flex items-center justify-between text-xs text-[color:var(--editorial-muted)]">
             <span>当前结果 {orders.length} 条</span>
             {refreshing ? <span>正在更新结果...</span> : null}
           </div>
@@ -321,12 +312,12 @@ export default function OrdersPage() {
         {/* 统计 */}
         <div className="grid grid-cols-2 gap-4 mb-6">
           <div className="rounded-xl border border-black/10 bg-white/55 p-4 backdrop-blur-xl">
-            <div className="text-sm text-black/60 mb-1">待支付 / 待处理</div>
-            <div className="text-2xl font-bold text-black">{stats.pendingCount}</div>
+            <div className="text-sm text-[color:var(--editorial-muted)] mb-1">待支付 / 待处理</div>
+            <div className="text-2xl font-bold text-[color:var(--editorial-text)]">{stats.pendingCount}</div>
           </div>
           <div className="rounded-xl border border-black/10 bg-white/55 p-4 backdrop-blur-xl">
-            <div className="text-sm text-black/60 mb-1">今日销售额</div>
-            <div className="text-2xl font-bold text-black">
+            <div className="text-sm text-[color:var(--editorial-muted)] mb-1">今日销售额</div>
+            <div className="text-2xl font-bold text-[color:var(--editorial-text)]">
               {formatPrice(stats.todaySales)}
             </div>
           </div>
@@ -345,7 +336,7 @@ export default function OrdersPage() {
         {/* 订单列表 */}
         {orders.length === 0 ? (
           <div className="rounded-2xl border border-black/10 bg-white/55 p-12 text-center backdrop-blur-xl">
-            <p className="text-black/60">
+            <p className="text-[color:var(--editorial-muted)]">
               {debouncedQuery || statusFilter !== "ALL"
                 ? "当前筛选条件下没有订单"
                 : "暂无订单"}
@@ -364,36 +355,32 @@ export default function OrdersPage() {
                   <div className="flex items-start justify-between mb-4">
                     <div>
                       <div className="flex items-center gap-2 mb-1">
-                        <span className="font-semibold text-black">
+                        <span className="font-semibold text-[color:var(--editorial-text)]">
                           订单 #{order.id.slice(0, 8).toUpperCase()}
                         </span>
-                        <span
-                          className={`px-2 py-0.5 rounded text-xs ${getStatusColor(
-                            order.status
-                          )}`}
-                        >
+                        <StatusBadge domain="order" status={order.status}>
                           {getStatusLabel(order.status)}
-                        </span>
+                        </StatusBadge>
                       </div>
-                      <p className="text-sm text-black/60">
+                      <p className="text-sm text-[color:var(--editorial-muted)]">
                         {order.buyerName || order.buyerEmail}
                       </p>
                       {order.paymentProvider ? (
-                        <p className="text-xs text-black/50">
+                        <p className="text-xs text-[color:var(--editorial-muted)]">
                           支付：{order.paymentProvider} / {order.paymentStatus || "UNKNOWN"}
                         </p>
                       ) : null}
-                      <p className="text-xs text-black/50">{formatDate(order.createdAt)}</p>
+                      <p className="text-xs text-[color:var(--editorial-muted)]">{formatDate(order.createdAt)}</p>
                     </div>
                     <div className="text-right">
-                      <div className="text-lg font-bold text-black">
+                      <div className="text-lg font-bold text-[color:var(--editorial-text)]">
                         {formatPrice(order.totalAmount)}
                       </div>
                       <button
                         type="button"
                         onClick={() => handleViewOrder(order.id)}
                         data-testid={`admin-order-view-${order.id}`}
-                        className="mt-3 rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black transition-colors hover:bg-white/80"
+                        className="editorial-button editorial-button--secondary mt-3 px-3 py-1.5 text-xs"
                       >
                         查看详情
                       </button>
@@ -407,10 +394,10 @@ export default function OrdersPage() {
                         key={item.id}
                         className="flex items-center justify-between text-sm"
                       >
-                        <span className="text-black/70">
+                        <span className="text-[color:var(--editorial-muted)]">
                           {(item.product?.name || item.productId)} × {item.quantity}
                         </span>
-                        <span className="text-black/60">
+                        <span className="text-[color:var(--editorial-muted)]">
                           {formatPrice(item.subtotal)}
                         </span>
                       </div>

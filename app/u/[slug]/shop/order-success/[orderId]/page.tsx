@@ -228,8 +228,8 @@ function OrderSuccessPageContent({
       return {
         title: "订单详情",
         subtitle: "请使用下单邮箱查询订单状态。",
-        iconClassName: "bg-slate-100",
-        iconColorClassName: "text-slate-600",
+        iconBg: "color-mix(in srgb, var(--editorial-muted) 15%, var(--editorial-surface))",
+        iconColor: "var(--editorial-muted)",
         iconPath: (
           <path
             strokeLinecap="round"
@@ -249,8 +249,8 @@ function OrderSuccessPageContent({
       return {
         title: "支付结果确认中",
         subtitle: "Stripe 已返回成功页面，系统正在等待 webhook 确认付款。",
-        iconClassName: "bg-amber-100",
-        iconColorClassName: "text-amber-600",
+        iconBg: "color-mix(in srgb, #b8863a 15%, var(--editorial-surface))",
+        iconColor: "#b8863a",
         iconPath: (
           <path
             strokeLinecap="round"
@@ -266,8 +266,8 @@ function OrderSuccessPageContent({
       return {
         title: "订单已支付",
         subtitle: "付款已确认，订单已进入处理流程。",
-        iconClassName: "bg-emerald-100",
-        iconColorClassName: "text-emerald-600",
+        iconBg: "color-mix(in srgb, #6b8a5e 15%, var(--editorial-surface))",
+        iconColor: "#6b8a5e",
         iconPath: (
           <path
             strokeLinecap="round"
@@ -283,8 +283,8 @@ function OrderSuccessPageContent({
       return {
         title: "支付未完成",
         subtitle: "订单已取消；如已尝试付款，请稍后检查邮箱或联系卖家确认。",
-        iconClassName: "bg-rose-100",
-        iconColorClassName: "text-rose-600",
+        iconBg: "color-mix(in srgb, #9a4b3d 15%, var(--editorial-surface))",
+        iconColor: "#9a4b3d",
         iconPath: (
           <path
             strokeLinecap="round"
@@ -299,8 +299,8 @@ function OrderSuccessPageContent({
     return {
       title: "订单详情",
       subtitle: `当前状态：${formatStatus(currentOrder.status)}`,
-      iconClassName: "bg-sky-100",
-      iconColorClassName: "text-sky-600",
+      iconBg: "color-mix(in srgb, var(--editorial-accent) 15%, var(--editorial-surface))",
+      iconColor: "var(--editorial-accent)",
       iconPath: (
         <path
           strokeLinecap="round"
@@ -341,17 +341,17 @@ function OrderSuccessPageContent({
   return (
     <div
       data-testid="public-shop-order-success-page"
-      className="relative min-h-screen py-16 px-6"
+      className="editorial-shell editorial-shell--light relative min-h-screen py-16 px-6"
     >
       {/* 右上角菜单按钮 */}
-      <div className="fixed top-6 right-6 z-50 flex items-center gap-4 text-white">
+      <div className="fixed top-6 right-6 z-50 flex items-center gap-4">
         <button
-          className="text-2xl opacity-90 hover:opacity-100 transition drop-shadow-lg"
+          className="editorial-button min-h-10 px-4 py-2 text-[10px]"
           type="button"
-          aria-label="menu"
+          aria-label={t("common.menu") ?? "Menu"}
           onClick={menu.toggleMenu}
         >
-          ☰
+          Menu
         </button>
       </div>
 
@@ -361,16 +361,12 @@ function OrderSuccessPageContent({
       <div className="max-w-3xl mx-auto">
         <div className="mb-8">
           <div
-            className={[
-              "w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4",
-              statusPresentation.iconClassName,
-            ].join(" ")}
+            className="w-20 h-20 rounded-full flex items-center justify-center mx-auto mb-4"
+            style={{ background: statusPresentation.iconBg }}
           >
             <svg
-              className={[
-                "w-10 h-10",
-                statusPresentation.iconColorClassName,
-              ].join(" ")}
+              className="w-10 h-10"
+              style={{ color: statusPresentation.iconColor }}
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -383,10 +379,10 @@ function OrderSuccessPageContent({
             {statusPresentation.title}
             </span>
           </h1>
-          <p className="text-black/60 text-center">
+          <p className="text-[color:var(--editorial-muted)] text-center">
             订单号: {orderId?.slice(0, 8).toUpperCase() || "--"}
           </p>
-          <p className="mt-2 text-center text-sm text-black/60">
+          <p className="mt-2 text-center text-sm text-[color:var(--editorial-muted)]">
             {statusPresentation.subtitle}
           </p>
         </div>
@@ -394,8 +390,8 @@ function OrderSuccessPageContent({
         {error && <Alert type="error" message={error} onClose={clearError} />}
 
         {!order ? (
-          <div className="bg-white/50 rounded-lg p-6 border border-black/10 mb-6">
-            <p className="text-black/70 mb-4">
+          <div className="editorial-card p-6 mb-6">
+            <p className="text-[color:var(--editorial-muted)] mb-4">
               支付完成后，请输入下单时使用的邮箱，以查看本次订单详情。
             </p>
             <form onSubmit={handleLookupSubmit} className="space-y-4">
@@ -422,7 +418,14 @@ function OrderSuccessPageContent({
         ) : (
           <div className="space-y-4 mb-6">
             {awaitingPayment ? (
-              <div className="bg-amber-50 rounded-lg p-4 border border-amber-200 text-sm text-amber-800">
+              <div
+                className="rounded-lg border p-4 text-sm"
+                style={{
+                  borderColor: "color-mix(in srgb, #b8863a 40%, transparent)",
+                  background: "color-mix(in srgb, #b8863a 8%, var(--editorial-surface))",
+                  color: "#b8863a",
+                }}
+              >
                 {statusPresentation.subtitle}
                 {confirmingPayment
                   ? " 正在向 Stripe 确认支付结果..."
@@ -434,25 +437,25 @@ function OrderSuccessPageContent({
 
             <div
               data-testid="public-shop-order-detail-card"
-              className="bg-white/55 rounded-lg p-6 border border-black/10"
+              className="editorial-card p-6"
             >
               <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
                 <div>
                   <h2 className="text-xl font-semibold mb-1">订单详情</h2>
-                  <p className="text-sm text-black/60">
+                  <p className="text-sm text-[color:var(--editorial-muted)]">
                     提交时间：{formatDate(order.createdAt)}
                   </p>
-                  <p className="text-sm text-black/60">
+                  <p className="text-sm text-[color:var(--editorial-muted)]">
                     状态：{formatStatus(order.status)}
                   </p>
                   {order.paymentProvider ? (
-                    <p className="text-sm text-black/60">
+                    <p className="text-sm text-[color:var(--editorial-muted)]">
                       支付：{order.paymentProvider} / {order.paymentStatus || "UNKNOWN"}
                     </p>
                   ) : null}
                 </div>
                 <div className="text-left md:text-right">
-                  <div className="text-sm text-black/60">订单总额</div>
+                  <div className="text-sm text-[color:var(--editorial-muted)]">订单总额</div>
                   <div className="text-2xl font-bold">{formatPrice(order.totalAmount)}</div>
                 </div>
               </div>
@@ -460,10 +463,10 @@ function OrderSuccessPageContent({
 
             <div
               data-testid="public-shop-order-buyer-card"
-              className="bg-white/55 rounded-lg p-6 border border-black/10"
+              className="editorial-card p-6"
             >
               <h3 className="font-semibold mb-4">买家信息</h3>
-              <div className="space-y-2 text-sm text-black/70">
+              <div className="space-y-2 text-sm text-[color:var(--editorial-muted)]">
                 <p>邮箱：{order.buyerEmail}</p>
                 <p>姓名：{order.buyerName || "未提供"}</p>
                 <p>配送方式：{order.shippingMethod || "未提供"}</p>
@@ -471,23 +474,23 @@ function OrderSuccessPageContent({
               </div>
             </div>
 
-            <div className="bg-white/55 rounded-lg p-6 border border-black/10">
+            <div className="editorial-card p-6">
               <h3 className="font-semibold mb-4">商品明细</h3>
               <div className="space-y-3">
                 {order.items.map((item) => (
                   <div
                     key={item.id}
-                    className="flex items-start justify-between gap-4 border-b border-black/10 pb-3 last:border-b-0 last:pb-0"
+                    className="flex items-start justify-between gap-4 border-b border-[color:color-mix(in_srgb,var(--editorial-border)_60%,transparent)] pb-3 last:border-b-0 last:pb-0"
                   >
                     <div>
-                      <p className="font-medium text-black">
+                      <p className="font-medium text-[color:var(--editorial-text)]">
                         {item.product?.name || `商品 ${item.productId}`}
                       </p>
-                      <p className="text-sm text-black/60">
+                      <p className="text-sm text-[color:var(--editorial-muted)]">
                         数量 {item.quantity} × {formatPrice(item.price)}
                       </p>
                     </div>
-                    <div className="text-sm font-semibold text-black">
+                    <div className="text-sm font-semibold text-[color:var(--editorial-text)]">
                       {formatPrice(item.subtotal)}
                     </div>
                   </div>
@@ -500,13 +503,13 @@ function OrderSuccessPageContent({
         <div className="flex gap-4 justify-center">
           <Link
             href={`/u/${slug}/shop`}
-            className="rounded-lg border border-black/20 bg-white/70 px-6 py-2 text-sm font-medium text-black hover:bg-white/80 transition-colors"
+            className="editorial-button editorial-button--secondary px-6 py-2 text-sm"
           >
             继续购物
           </Link>
           <Link
             href={`/u/${slug}`}
-            className="rounded-lg bg-black px-6 py-2 text-sm font-medium text-white hover:bg-black/90 transition-colors"
+            className="editorial-button editorial-button--primary px-6 py-2 text-sm"
           >
             返回主页
           </Link>

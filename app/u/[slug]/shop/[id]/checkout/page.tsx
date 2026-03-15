@@ -146,17 +146,17 @@ export default function CheckoutPage({
   return (
     <div
       data-testid="public-shop-checkout-page"
-      className="relative min-h-screen bg-white py-16 px-6 text-black"
+      className="editorial-shell editorial-shell--light relative min-h-screen py-16 px-6"
     >
       {/* 右上角菜单按钮 */}
-      <div className="fixed top-6 right-6 z-50 flex items-center gap-4 text-black">
+      <div className="fixed top-6 right-6 z-50 flex items-center gap-4">
         <button
-          className="text-2xl opacity-80 transition hover:opacity-100"
+          className="editorial-button min-h-10 px-4 py-2 text-[10px]"
           type="button"
-          aria-label="menu"
+          aria-label={t("common.menu") ?? "Menu"}
           onClick={menu.toggleMenu}
         >
-          ☰
+          Menu
         </button>
       </div>
 
@@ -166,7 +166,7 @@ export default function CheckoutPage({
       <div className="max-w-4xl mx-auto">
         <Link
           href={`/u/${slug}/shop/${product.id}`}
-          className="inline-block mb-6 text-sm text-black/60 hover:text-black transition-colors"
+          className="editorial-link mb-6 inline-block text-sm"
         >
           ← 返回商品详情
         </Link>
@@ -178,7 +178,7 @@ export default function CheckoutPage({
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {/* 商品信息 */}
-          <div className="bg-white/50 rounded-lg p-6 border border-black/10">
+          <div className="editorial-card p-6">
             <h2 className="text-lg font-semibold mb-4">商品信息</h2>
             <div className="flex gap-4 mb-4">
               {product.images && product.images.length > 0 && (
@@ -206,7 +206,7 @@ export default function CheckoutPage({
                 <p className="text-lg font-bold">{formatPrice(product.price)}</p>
               </div>
             </div>
-            <div className="border-t border-black/10 pt-4">
+            <div className="border-t border-[color:color-mix(in_srgb,var(--editorial-border)_60%,transparent)] pt-4">
               <div className="flex justify-between mb-2">
                 <span>数量:</span>
                 <div className="flex items-center gap-2">
@@ -214,7 +214,7 @@ export default function CheckoutPage({
                     type="button"
                     onClick={() => setQuantity(Math.max(1, quantity - 1))}
                     disabled={submitting}
-                    className="w-8 h-8 rounded border border-black/20 hover:bg-black/5"
+                    className="w-8 h-8 rounded border border-[color:color-mix(in_srgb,var(--editorial-border)_60%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--editorial-surface)_50%,transparent)]"
                   >
                     -
                   </button>
@@ -225,13 +225,13 @@ export default function CheckoutPage({
                       setQuantity(Math.min(product.stock, quantity + 1))
                     }
                     disabled={submitting || quantity >= product.stock}
-                    className="w-8 h-8 rounded border border-black/20 hover:bg-black/5"
+                    className="w-8 h-8 rounded border border-[color:color-mix(in_srgb,var(--editorial-border)_60%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--editorial-surface)_50%,transparent)]"
                   >
                     +
                   </button>
                 </div>
               </div>
-              <div className="flex justify-between font-bold text-lg pt-2 border-t border-black/10">
+              <div className="flex justify-between font-bold text-lg pt-2 border-t border-[color:color-mix(in_srgb,var(--editorial-border)_60%,transparent)]">
                 <span>总计:</span>
                 <span>{formatPrice(totalPrice)}</span>
               </div>
@@ -317,7 +317,7 @@ export default function CheckoutPage({
                 value={shippingMethod}
                 onChange={(e) => setShippingMethod(e.target.value)}
                 disabled={submitting}
-                className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-xs text-black"
+                className="editorial-select text-xs"
               >
                 <option value="Standard">标准配送</option>
                 <option value="Express">快速配送</option>
@@ -335,7 +335,7 @@ export default function CheckoutPage({
               前往 Stripe 支付
             </Button>
 
-            <p className="text-xs text-black/60 text-center">
+            <p className="text-xs text-center" style={{ color: "var(--editorial-muted)" }}>
               提交后将跳转到 Stripe 托管支付页，支付完成后自动返回订单详情页
             </p>
           </form>

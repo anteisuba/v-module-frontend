@@ -5,7 +5,7 @@ import { getUserPageDataBySlug } from "@/domain/page-config";
 import { getBlogPosts } from "@/domain/blog/services";
 import BlogList from "@/features/blog/BlogList";
 import type { PageConfig } from "@/domain/page-config/types";
-import { EMPTY_PAGE_CONFIG } from "@/domain/page-config/constants";
+import { EMPTY_PAGE_CONFIG, resolveBackgroundStyle } from "@/domain/page-config/constants";
 import { getServerSession } from "@/lib/session/userSession";
 import {
   findE2EPublicPageState,
@@ -76,35 +76,9 @@ export default async function UserBlogPage({
     }
   }
 
-  // 获取背景样式（优先使用 blogBackground，如果没有则使用 newsBackground 作为后备）
-  const getBackgroundStyle = (): React.CSSProperties => {
-    const blogBg = config?.blogBackground;
-    if (blogBg && blogBg.type && blogBg.value && blogBg.value.trim() !== "") {
-      return blogBg.type === "color"
-        ? { backgroundColor: blogBg.value }
-        : {
-            backgroundImage: `url(${blogBg.value})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-          };
-    }
-    // 如果没有 blogBackground，使用 newsBackground 作为后备
-    const newsBg = config?.newsBackground;
-    if (newsBg && newsBg.type && newsBg.value && newsBg.value.trim() !== "") {
-      return newsBg.type === "color"
-        ? { backgroundColor: newsBg.value }
-        : {
-            backgroundImage: `url(${newsBg.value})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-          };
-    }
-    return { backgroundColor: "#000000" };
-  };
+  const backgroundStyle = resolveBackgroundStyle(config?.blogBackground, config?.newsBackground);
 
-  return <BlogList posts={blogData.posts} userSlug={slug} backgroundStyle={getBackgroundStyle()} />;
+  return <BlogList posts={blogData.posts} userSlug={slug} backgroundStyle={backgroundStyle} />;
 }
 
 export async function generateMetadata({

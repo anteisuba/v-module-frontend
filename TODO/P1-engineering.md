@@ -22,7 +22,7 @@
 
 ### 1.3 构建管线
 - [x] 添加 PR 自动检查：build + check + test + lint
-- [ ] 配置 Vercel Preview Deployments
+- [x] 配置 Vercel Preview Deployments
 - [ ] 考虑引入 `changesets` 管理版本
 
 ---
@@ -38,10 +38,10 @@
 ### 2.2 卖家体验
 - [x] 卖家后台 payout settings 页增加文案说明
 - [x] 卖家 onboarding 流程增加进度提示
-- [ ] Connect 账户状态异常时的提示与引导
+- [x] Connect 账户状态异常时的提示与引导
 
 ### 2.3 安全与监控
-- [ ] Connect Webhook 签名验证覆盖所有事件类型
+- [x] Connect Webhook 签名验证覆盖所有事件类型
 - [ ] 添加 Connect 账户状态定期同步的健康检查日志
 - [ ] dispute 处理流程增加证据提交引导
 

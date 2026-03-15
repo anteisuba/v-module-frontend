@@ -14,6 +14,7 @@ import {
   BackgroundEditor,
   SaveStatus,
   Button,
+  StatusBadge,
 } from "@/components/ui";
 import {
   SHOP_DETAIL_BACKGROUND,
@@ -201,18 +202,7 @@ function ShopPageContent() {
     }
   }
 
-  function getStatusColor(status: string) {
-    switch (status) {
-      case "DRAFT":
-        return "bg-gray-100 text-gray-700";
-      case "PUBLISHED":
-        return "bg-emerald-100 text-emerald-700";
-      case "ARCHIVED":
-        return "bg-yellow-100 text-yellow-700";
-      default:
-        return "bg-gray-100 text-gray-700";
-    }
-  }
+  // 状态颜色通过 StatusBadge 组件统一管理
 
   const togglePanel = (tabId: EditorTabId, panelId: string) => {
     setOpenPanelByTab((prev) => ({
@@ -326,7 +316,7 @@ function ShopPageContent() {
       content:
         products.length === 0 ? (
           <div className="rounded-2xl border border-black/10 bg-white/55 p-12 text-center backdrop-blur-xl">
-            <p className="text-black/60">{t("shop.list.empty")}</p>
+            <p className="text-[color:var(--editorial-muted)]">{t("shop.list.empty")}</p>
             <button
               onClick={() => router.push("/admin/shop/new")}
               className="mt-4 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/90"
@@ -357,8 +347,8 @@ function ShopPageContent() {
                       />
                     </div>
                   ) : (
-                    <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-lg bg-gray-200">
-                      <span className="text-xs text-gray-400">No Image</span>
+                    <div className="flex h-24 w-24 flex-shrink-0 items-center justify-center rounded-lg" style={{ background: "color-mix(in srgb, var(--editorial-border) 40%, transparent)" }}>
+                      <span className="text-xs text-[color:var(--editorial-muted)]">No Image</span>
                     </div>
                   )}
 
@@ -366,38 +356,34 @@ function ShopPageContent() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
                         <div className="mb-1 flex items-center gap-2">
-                          <h3 className="text-lg font-semibold text-black">
+                          <h3 className="text-lg font-semibold text-[color:var(--editorial-text)]">
                             {product.name}
                           </h3>
-                          <span
-                            className={`rounded px-2 py-0.5 text-xs ${getStatusColor(
-                              product.status
-                            )}`}
-                          >
+                          <StatusBadge domain="product" status={product.status}>
                             {getStatusLabel(product.status)}
-                          </span>
+                          </StatusBadge>
                         </div>
                         {product.description ? (
-                          <p className="mb-2 line-clamp-2 text-sm text-black/60">
+                          <p className="mb-2 line-clamp-2 text-sm text-[color:var(--editorial-muted)]">
                             {product.description}
                           </p>
                         ) : null}
                         <div className="flex items-center gap-4 text-sm">
-                          <span className="font-semibold text-black">
+                          <span className="font-semibold text-[color:var(--editorial-text)]">
                             {formatPrice(product.price)}
                           </span>
                           <span
                             className={`text-xs ${
                               product.stock === 0
                                 ? "font-semibold text-red-600"
-                                : "text-black/50"
+                                : "text-[color:var(--editorial-muted)]"
                             }`}
                           >
                             {product.stock === 0
                               ? t("shop.list.outOfStock")
                               : `${t("shop.list.inStock")}: ${product.stock}`}
                           </span>
-                          <span className="text-xs text-black/50">
+                          <span className="text-xs text-[color:var(--editorial-muted)]">
                             {formatDate(product.createdAt)}
                           </span>
                         </div>
@@ -420,7 +406,7 @@ function ShopPageContent() {
                             setShowDeleteConfirm(true);
                           }}
                           disabled={deletingId === product.id}
-                          className="rounded-lg border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-100 disabled:opacity-50"
+                          className="editorial-button editorial-button--danger px-3 py-1.5 text-xs disabled:opacity-50"
                         >
                           {deletingId === product.id
                             ? t("common.loading")

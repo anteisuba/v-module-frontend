@@ -14,6 +14,7 @@ import {
   BackgroundEditor,
   SaveStatus,
   Button,
+  StatusBadge,
 } from "@/components/ui";
 import {
   BLOG_DETAIL_BACKGROUND,
@@ -289,7 +290,7 @@ function BlogPageContent() {
       content:
         posts.length === 0 ? (
           <div className="rounded-2xl border border-black/10 bg-white/55 p-12 text-center backdrop-blur-xl">
-            <p className="text-black/60">{t("blog.list.empty")}</p>
+            <p className="text-[color:var(--editorial-muted)]">{t("blog.list.empty")}</p>
             <button
               onClick={() => handleNavigate("/admin/blog/new")}
               className="mt-4 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/90"
@@ -324,24 +325,18 @@ function BlogPageContent() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex-1">
-                        <h3 className="mb-1 text-lg font-semibold text-black">
+                        <h3 className="mb-1 text-lg font-semibold text-[color:var(--editorial-text)]">
                           {post.title}
                         </h3>
-                        <p className="mb-2 line-clamp-2 text-sm text-black/60">
+                        <p className="mb-2 line-clamp-2 text-sm text-[color:var(--editorial-muted)]">
                           {post.content.substring(0, 100)}
                           {post.content.length > 100 ? "..." : ""}
                         </p>
-                        <div className="flex items-center gap-3 text-xs text-black/50">
+                        <div className="flex items-center gap-3 text-xs" style={{ color: "var(--editorial-muted)" }}>
                           <span>{formatDate(post.createdAt)}</span>
-                          {post.published ? (
-                            <span className="rounded bg-emerald-100 px-2 py-0.5 text-emerald-700">
-                              {t("blog.list.published")}
-                            </span>
-                          ) : (
-                            <span className="rounded bg-gray-100 px-2 py-0.5 text-gray-700">
-                              {t("blog.list.draft")}
-                            </span>
-                          )}
+                          <StatusBadge domain="product" status={post.published ? "PUBLISHED" : "DRAFT"}>
+                            {post.published ? t("blog.list.published") : t("blog.list.draft")}
+                          </StatusBadge>
                         </div>
                       </div>
 
@@ -351,7 +346,7 @@ function BlogPageContent() {
                             e.stopPropagation();
                             handleNavigate(`/admin/blog/${post.id}`);
                           }}
-                          className="rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black transition-colors hover:bg-white/80"
+                          className="editorial-button editorial-button--secondary px-3 py-1.5 text-xs"
                         >
                           {t("common.edit")}
                         </button>
@@ -362,7 +357,7 @@ function BlogPageContent() {
                             setShowDeleteConfirm(true);
                           }}
                           disabled={deletingId === post.id}
-                          className="rounded-lg border border-red-300 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-600 transition-colors hover:bg-red-100 disabled:opacity-50"
+                          className="editorial-button editorial-button--danger px-3 py-1.5 text-xs disabled:opacity-50"
                         >
                           {deletingId === post.id
                             ? t("common.loading")

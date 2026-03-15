@@ -11,7 +11,7 @@
 ## P1
 
 - Playwright 的 CI 接入、多浏览器矩阵、README badge 和一轮高风险测试扩面已落地；测试侧下一步优先做 flaky 治理和剩余高风险链路补测
-- 把 Stripe Connect 作为当前正式路线继续补运维闭环，routing / account 维度筛选、结算分组、异常告警、订单 CSV Connect 字段导出、payout settings 说明和 onboarding 进度提示已落地；下一步优先做异常状态引导
+- 把 Stripe Connect 作为当前正式路线继续补运维闭环，routing / account 维度筛选、结算分组、异常告警、订单 CSV Connect 字段导出、payout settings 说明、onboarding 进度提示、异常状态引导，以及 Connect webhook 对 `account.updated` / `account.external_account.*` / `payout.*` 的验签和 payout 快照回写已落地；下一步优先做 Connect 账户状态定期同步的健康检查日志和 dispute 证据提交引导
 - 升级 Next / Browserslist / Playwright 时复核当前 `scripts/` 兼容层，能删除就删除，不长期堆兼容脚本
 
 ## P2

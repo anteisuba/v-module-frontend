@@ -101,3 +101,43 @@ export function createStripeConnectAccountEvent(options?: {
     },
   };
 }
+
+export function createStripeConnectPayoutEvent(options?: {
+  type?:
+    | "payout.created"
+    | "payout.updated"
+    | "payout.paid"
+    | "payout.failed"
+    | "payout.canceled";
+  account?: string;
+  payout?: Record<string, unknown>;
+}) {
+  const type = options?.type || "payout.updated";
+  const statusByType = {
+    "payout.created": "pending",
+    "payout.updated": "in_transit",
+    "payout.paid": "paid",
+    "payout.failed": "failed",
+    "payout.canceled": "canceled",
+  } as const;
+
+  return {
+    type,
+    account: options?.account || "acct_test_789",
+    data: {
+      object: {
+        object: "payout",
+        id: "po_test_123",
+        amount: 9300,
+        currency: "jpy",
+        status: statusByType[type],
+        method: "standard",
+        description: "Weekly payout",
+        statement_descriptor: "VT BLOG",
+        created: 1770000000,
+        arrival_date: 1770086400,
+        ...options?.payout,
+      },
+    },
+  };
+}

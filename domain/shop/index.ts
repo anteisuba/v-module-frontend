@@ -106,6 +106,7 @@ export {
   buildPaymentSettlementReportFromData,
   getPaymentSettlementReport,
   syncStripeSettlementLedger,
+  syncStripeSettlementPayoutByConnectedAccountId,
   updatePaymentSettlementEntries,
   type PaymentSettlementAnomaly,
   type PaymentSettlementEntryGroup,

@@ -33,7 +33,8 @@
 ## P1: 工学安定性と Stripe 運用閉ループ
 
 - 既存の Playwright シナリオを継続実行へ正式に組み込む。GitHub Actions で PR / push 時に `check / test / build / lint` を回し、`11` 個の e2e spec を Chromium / Firefox / WebKit 行列で実行し、失敗時は Playwright 成果物をアップロードするようになった。README badge と高リスク経路の一段目テスト拡張も完了し、次は flaky 分析と残る高リスク経路の補測を優先する
-- Stripe Connect を正式路線として継続し、照合ページの routing / account 軸フィルタ、精算照合ページの payout 状態グルーピング、異常メール / Slack アラート、注文 CSV の Connect 項目出力、payout settings の説明文追加、onboarding 進捗表示は完了済みとして、次は異常状態の案内を補強する
+- デリバリー基線として、Vercel の本番デプロイと Preview Deployments も接続済みである。現時点の残る判断は Preview 基線の追加ではなく、`changesets` を導入してバージョン記録と release note を揃えるかどうか
+- Stripe Connect を正式路線として継続し、照合ページの routing / account 軸フィルタ、精算照合ページの payout 状態グルーピング、異常メール / Slack アラート、注文 CSV の Connect 項目出力、payout settings の説明文追加、onboarding 進捗表示、異常状態ガイド、さらに Connect webhook の `account.updated` / `account.external_account.*` / `payout.*` に対する署名検証と payout スナップショット反映までは完了済みとして、次は Connect 口座状態の定期同期ヘルスチェックログと dispute 証拠提出フローを補強する
 - `scripts/run-node-tool.mjs`、`scripts/run-prisma-generate.mjs`、preload 互換層を維持し、Next / Playwright / Prisma のツールノイズを主経路へ戻さない
 
 ## TODO: 決済拡張

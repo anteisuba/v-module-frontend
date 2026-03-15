@@ -92,3 +92,33 @@ test("shows onboarding progress hints for pending payout accounts", async ({
     "onboarding 还没完全走完"
   );
 });
+
+test("shows restricted account guidance when Stripe blocks the seller account", async ({
+  page,
+}) => {
+  await page.route("**/api/payments/connect/accounts/me", async (route) => {
+    await fulfillJson(route, {
+      account: createPayoutAccountSummary({
+        status: "RESTRICTED",
+        chargesEnabled: false,
+        payoutsEnabled: false,
+        requirementsCurrentlyDue: [],
+        requirementsPastDue: ["company.tax_id"],
+        disabledReason: "requirements.past_due",
+      }),
+    });
+  });
+
+  await page.goto("/admin/settings/payouts");
+
+  await expect(page.getByTestId("payout-alerts")).toBeVisible();
+  await expect(page.getByTestId("payout-alert-restricted")).toContainText(
+    "收款账户当前受限"
+  );
+  await expect(page.getByTestId("payout-alert-restricted")).toContainText(
+    "requirements.past_due"
+  );
+  await expect(page.getByTestId("payout-alert-action-restricted")).toHaveText(
+    "继续完成 Stripe 收款设置"
+  );
+});

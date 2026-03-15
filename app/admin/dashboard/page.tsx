@@ -5,7 +5,7 @@
 import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { useUser } from "@/lib/context/UserContext";
-import { LanguageSelector } from "@/components/ui";
+import { LanguageSelector, LoadingState } from "@/components/ui";
 import { useI18n } from "@/lib/i18n/context";
 
 type EditPageOption = {
@@ -90,7 +90,7 @@ export default function DashboardPage() {
     return (
       <main className="relative min-h-screen w-full overflow-hidden">
         <div className="flex h-screen items-center justify-center">
-          <div className="text-lg text-black">{t("common.loading")}</div>
+          <LoadingState message={t("common.loading")} />
         </div>
       </main>
     );
@@ -100,7 +100,7 @@ export default function DashboardPage() {
     <main className="relative min-h-screen w-full overflow-hidden">
       <button
         onClick={handleLogout}
-        className="absolute left-6 top-6 z-50 rounded-lg border border-black/20 bg-white/70 px-4 py-2 text-sm font-medium text-black hover:bg-white/80"
+        className="editorial-button editorial-button--secondary absolute left-6 top-6 z-50 px-4 py-2 text-sm"
       >
         {t("admin.dashboard.logout")}
       </button>
@@ -123,15 +123,15 @@ export default function DashboardPage() {
       <div className="relative z-10 mx-auto max-w-4xl px-6 py-10">
         {/* 头部 */}
         <div className="mb-8 text-center">
-          <h1 className="text-3xl font-bold text-black">{t("admin.dashboard.title")}</h1>
-          <p className="mt-2 text-sm text-black/70">
+          <h1 className="text-3xl font-bold" style={{ color: "var(--editorial-text)" }}>{t("admin.dashboard.title")}</h1>
+          <p className="mt-2 text-sm" style={{ color: "var(--editorial-muted)" }}>
             {t("admin.dashboard.welcome").replace("{name}", user?.displayName || user?.email || t("admin.dashboard.user"))}
           </p>
         </div>
 
         {/* 页面选择 */}
-        <div className="rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
-          <h2 className="mb-4 text-lg font-semibold text-black">{t("admin.dashboard.selectPage")}</h2>
+        <div className="editorial-card p-6">
+          <h2 className="mb-4 text-lg font-semibold" style={{ color: "var(--editorial-text)" }}>{t("admin.dashboard.selectPage")}</h2>
 
           <div className="space-y-3">
             {EDIT_PAGES.map((page) => (
@@ -141,9 +141,9 @@ export default function DashboardPage() {
                   "flex cursor-pointer items-center gap-4 rounded-lg border p-4 transition-colors",
                   page.available
                     ? selectedPage === page.id
-                      ? "border-black/30 bg-white/80"
-                      : "border-black/10 bg-white/50 hover:bg-white/70"
-                    : "cursor-not-allowed border-black/5 bg-white/30 opacity-60",
+                      ? "border-[color:color-mix(in_srgb,var(--editorial-accent)_40%,transparent)] bg-[color:color-mix(in_srgb,var(--editorial-surface)_90%,transparent)]"
+                      : "border-[color:color-mix(in_srgb,var(--editorial-border)_60%,transparent)] bg-[color:color-mix(in_srgb,var(--editorial-surface)_50%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--editorial-surface)_70%,transparent)]"
+                    : "cursor-not-allowed opacity-60 border-[color:color-mix(in_srgb,var(--editorial-border)_30%,transparent)] bg-[color:color-mix(in_srgb,var(--editorial-surface)_30%,transparent)]",
                 ].join(" ")}
               >
                 <input
@@ -157,15 +157,15 @@ export default function DashboardPage() {
                 />
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <span className="font-medium text-black">{page.label}</span>
+                    <span className="font-medium" style={{ color: "var(--editorial-text)" }}>{page.label}</span>
                     {!page.available && (
-                      <span className="rounded bg-gray-200 px-2 py-0.5 text-xs text-gray-600">
+                      <span className="editorial-pill">
                         {t("admin.dashboard.comingSoon")}
                       </span>
                     )}
                   </div>
                   {page.description && (
-                    <p className="mt-1 text-xs text-black/60">{page.description}</p>
+                    <p className="mt-1 text-xs" style={{ color: "var(--editorial-muted)" }}>{page.description}</p>
                   )}
                 </div>
               </label>
@@ -177,7 +177,7 @@ export default function DashboardPage() {
             <button
               onClick={handleNavigate}
               disabled={!EDIT_PAGES.find((p) => p.id === selectedPage)?.available}
-              className="rounded-xl bg-black px-6 py-3 text-sm font-medium text-white hover:bg-black/90 disabled:cursor-not-allowed disabled:opacity-50"
+              className="editorial-button editorial-button--primary px-6 py-3 text-sm"
             >
               {t("admin.dashboard.enterEdit")}
             </button>
@@ -191,7 +191,7 @@ export default function DashboardPage() {
               href={`/u/${user.slug}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-black/70 hover:text-black underline"
+              className="editorial-link text-sm"
             >
               {t("admin.dashboard.viewPublicPage")} →
             </a>

@@ -5,6 +5,7 @@
 import { useState } from "react";
 import Link from "next/link";
 import {
+  Alert,
   BackButton,
   Button,
   EditorialAuthLayout,
@@ -71,9 +72,11 @@ export default function ForgotPasswordPage() {
             </div>
 
             {success ? (
-              <div className="rounded-[1.4rem] border border-emerald-500/24 bg-emerald-500/8 px-5 py-4 text-sm leading-7 text-emerald-800">
-                我们已发送重置密码链接到您的邮箱。请检查您的邮箱，包括垃圾邮件文件夹。链接将在 24 小时后过期。
-              </div>
+              <Alert
+                type="success"
+                message="我们已发送重置密码链接到您的邮箱。请检查您的邮箱，包括垃圾邮件文件夹。链接将在 24 小时后过期。"
+                className="rounded-[1.4rem] px-5 py-4 text-sm leading-7"
+              />
             ) : (
               <form onSubmit={onSubmit} className="space-y-5">
                 <Input
@@ -88,9 +91,7 @@ export default function ForgotPasswordPage() {
                 />
 
                 {error ? (
-                  <div className="rounded-[1.2rem] border border-red-500/25 bg-red-500/8 px-4 py-3 text-sm text-red-700">
-                    {error}
-                  </div>
+                  <Alert type="error" message={error} className="rounded-[1.2rem]" />
                 ) : null}
 
                 <Button

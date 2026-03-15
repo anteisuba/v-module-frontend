@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import type Stripe from "stripe";
-import { syncStripePayoutAccountByConnectedAccountId } from "@/domain/shop";
+import {
+  syncStripePayoutAccountByConnectedAccountId,
+  syncStripeSettlementPayoutByConnectedAccountId,
+} from "@/domain/shop";
 import {
   getStripeClient,
   getStripeConnectWebhookSecret,
@@ -16,6 +19,17 @@ function isAccountObject(
     object !== null &&
     "object" in object &&
     object.object === "account"
+  );
+}
+
+function isPayoutObject(
+  object: Stripe.Event.Data.Object
+): object is Stripe.Payout {
+  return (
+    typeof object === "object" &&
+    object !== null &&
+    "object" in object &&
+    object.object === "payout"
   );
 }
 
@@ -53,6 +67,18 @@ export async function POST(request: Request) {
       case "account.external_account.deleted":
         if (event.account) {
           await syncStripePayoutAccountByConnectedAccountId(event.account);
+        }
+        break;
+      case "payout.created":
+      case "payout.updated":
+      case "payout.paid":
+      case "payout.failed":
+      case "payout.canceled":
+        if (event.account && isPayoutObject(event.data.object)) {
+          await syncStripeSettlementPayoutByConnectedAccountId(
+            event.account,
+            event.data.object
+          );
         }
         break;
       default:

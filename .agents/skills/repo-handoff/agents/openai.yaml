@@ -1,0 +1,6 @@
+interface:
+  display_name: "Repo Handoff"
+  short_description: "Read or write the latest repo handoff summary"
+  default_prompt: "Use $repo-handoff to continue unfinished work or prepare the next-session handoff in this repository."
+policy:
+  allow_implicit_invocation: true

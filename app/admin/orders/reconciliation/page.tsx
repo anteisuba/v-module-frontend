@@ -16,6 +16,8 @@ import {
   LanguageSelector,
   Button,
   Input,
+  StatusBadge,
+  getToneStyle,
 } from "@/components/ui";
 import { shopApi } from "@/lib/api";
 import { useUser } from "@/lib/context/UserContext";
@@ -121,38 +123,22 @@ export default function OrdersReconciliationPage() {
     return `¥${amount.toFixed(2)}`;
   }
 
-  function getSeverityStyle(severity: PaymentReconciliationAnomaly["severity"]) {
-    switch (severity) {
-      case "high":
-        return "bg-red-100 text-red-700";
-      case "medium":
-        return "bg-amber-100 text-amber-700";
-      default:
-        return "bg-blue-100 text-blue-700";
-    }
+  function getSeverityTone(severity: PaymentReconciliationAnomaly["severity"]) {
+    if (severity === "high") return "danger" as const;
+    if (severity === "medium") return "warning" as const;
+    return "info" as const;
   }
 
-  function getEventStatusStyle(event: PaymentReconciliationEvent) {
+  function getEventStatusTone(event: PaymentReconciliationEvent) {
     if (event.kind === "REFUND") {
-      if (event.status === "SUCCEEDED") {
-        return "bg-emerald-100 text-emerald-700";
-      }
-      if (event.status === "FAILED") {
-        return "bg-red-100 text-red-700";
-      }
-      return "bg-amber-100 text-amber-700";
+      if (event.status === "SUCCEEDED") return "success" as const;
+      if (event.status === "FAILED") return "danger" as const;
+      return "warning" as const;
     }
-
-    if (event.status === "PAID") {
-      return "bg-blue-100 text-blue-700";
-    }
-    if (event.status === "FAILED") {
-      return "bg-red-100 text-red-700";
-    }
-    if (event.status === "EXPIRED") {
-      return "bg-gray-100 text-gray-700";
-    }
-    return "bg-amber-100 text-amber-700";
+    if (event.status === "PAID") return "info" as const;
+    if (event.status === "FAILED") return "danger" as const;
+    if (event.status === "EXPIRED") return "neutral" as const;
+    return "warning" as const;
   }
 
   function getRoutingLabel(
@@ -163,12 +149,10 @@ export default function OrdersReconciliationPage() {
       : "平台 fallback";
   }
 
-  function getRoutingStyle(
+  function getRoutingTone(
     mode: PaymentReconciliationEvent["paymentRoutingMode"]
   ) {
-    return mode === "STRIPE_CONNECT_DESTINATION"
-      ? "bg-emerald-100 text-emerald-700"
-      : "bg-slate-200 text-slate-700";
+    return mode === "STRIPE_CONNECT_DESTINATION" ? "success" as const : "neutral" as const;
   }
 
   const summaryCards = useMemo(() => {
@@ -293,8 +277,8 @@ export default function OrdersReconciliationPage() {
         <div className="mb-6 rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <h1 className="text-2xl font-bold text-black">Stripe 支付对账</h1>
-              <p className="mt-1 text-sm text-black/65">
+              <h1 className="text-2xl font-bold text-[color:var(--editorial-text)]">Stripe 支付对账</h1>
+              <p className="mt-1 text-sm text-[color:var(--editorial-muted)]">
                 汇总支付/退款事件，导出 CSV，并优先处理异常订单。
               </p>
             </div>
@@ -336,7 +320,7 @@ export default function OrdersReconciliationPage() {
         <div className="mb-6 rounded-2xl border border-black/10 bg-white/55 p-4 backdrop-blur-xl">
           <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_220px_minmax(0,1fr)_auto_auto] xl:items-end">
             <div>
-              <label className="mb-2 block text-xs font-medium text-black/70">
+              <label className="mb-2 block text-xs font-medium text-[color:var(--editorial-muted)]">
                 开始日期
               </label>
               <Input
@@ -346,7 +330,7 @@ export default function OrdersReconciliationPage() {
               />
             </div>
             <div>
-              <label className="mb-2 block text-xs font-medium text-black/70">
+              <label className="mb-2 block text-xs font-medium text-[color:var(--editorial-muted)]">
                 结束日期
               </label>
               <Input
@@ -356,7 +340,7 @@ export default function OrdersReconciliationPage() {
               />
             </div>
             <div>
-              <label className="mb-2 block text-xs font-medium text-black/70">
+              <label className="mb-2 block text-xs font-medium text-[color:var(--editorial-muted)]">
                 Routing mode
               </label>
               <select
@@ -366,7 +350,7 @@ export default function OrdersReconciliationPage() {
                     event.target.value as PaymentRoutingModeFilter
                   )
                 }
-                className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black"
+                className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-[color:var(--editorial-text)]"
               >
                 <option value="ALL">全部路由</option>
                 <option value="STRIPE_CONNECT_DESTINATION">Connect 路由</option>
@@ -374,7 +358,7 @@ export default function OrdersReconciliationPage() {
               </select>
             </div>
             <div>
-              <label className="mb-2 block text-xs font-medium text-black/70">
+              <label className="mb-2 block text-xs font-medium text-[color:var(--editorial-muted)]">
                 Connected account
               </label>
               <Input
@@ -402,7 +386,7 @@ export default function OrdersReconciliationPage() {
               </Button>
             </div>
           </div>
-          <div className="mt-3 text-xs text-black/50">
+          <div className="mt-3 text-xs text-[color:var(--editorial-muted)]">
             当前窗口 {formatDate(report.summary.windowStart)} 至{" "}
             {formatDate(report.summary.windowEnd)}
             {" / "}
@@ -425,8 +409,8 @@ export default function OrdersReconciliationPage() {
               key={card.label}
               className="rounded-2xl border border-black/10 bg-white/55 p-4 backdrop-blur-xl"
             >
-              <div className="text-sm text-black/55">{card.label}</div>
-              <div className="mt-1 text-2xl font-bold text-black">{card.value}</div>
+              <div className="text-sm text-[color:var(--editorial-muted)]">{card.label}</div>
+              <div className="mt-1 text-2xl font-bold text-[color:var(--editorial-text)]">{card.value}</div>
             </div>
           ))}
         </div>
@@ -434,17 +418,17 @@ export default function OrdersReconciliationPage() {
         <div className="grid gap-6 xl:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
           <section className="rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-black">
+              <h2 className="text-lg font-semibold text-[color:var(--editorial-text)]">
                 异常对账页
               </h2>
-              <span className="text-xs text-black/45">
+              <span className="text-xs text-[color:var(--editorial-muted)]">
                 {report.anomalies.length} 条异常
               </span>
             </div>
 
             <div className="space-y-4">
               {report.anomalies.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-black/10 bg-white/40 p-6 text-sm text-black/55">
+                <div className="rounded-xl border border-dashed border-black/10 bg-white/40 p-6 text-sm text-[color:var(--editorial-muted)]">
                   当前没有发现 Stripe 对账异常。
                 </div>
               ) : (
@@ -457,32 +441,36 @@ export default function OrdersReconciliationPage() {
                       <div className="min-w-0 flex-1">
                         <div className="mb-2 flex flex-wrap items-center gap-2">
                           <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getSeverityStyle(
-                              anomaly.severity
-                            )}`}
+                            className="rounded-full border px-2 py-0.5 text-[10px] font-medium"
+                            style={(() => {
+                              const ts = getToneStyle(getSeverityTone(anomaly.severity));
+                              return { borderColor: ts.border, background: ts.bg, color: ts.text };
+                            })()}
                           >
                             {anomaly.severity.toUpperCase()}
                           </span>
-                          <span className="text-[11px] text-black/45">
+                          <span className="text-[11px] text-[color:var(--editorial-muted)]">
                             {anomaly.code}
                           </span>
                         </div>
-                        <h3 className="text-sm font-semibold text-black">
+                        <h3 className="text-sm font-semibold text-[color:var(--editorial-text)]">
                           {anomaly.title}
                         </h3>
-                        <p className="mt-1 text-sm text-black/70">
+                        <p className="mt-1 text-sm text-[color:var(--editorial-muted)]">
                           {anomaly.description}
                         </p>
-                        <p className="mt-2 text-xs text-black/50">
+                        <p className="mt-2 text-xs text-[color:var(--editorial-muted)]">
                           建议处理：{anomaly.suggestedAction}
                         </p>
-                        <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-black/45">
+                        <div className="mt-3 flex flex-wrap items-center gap-3 text-xs text-[color:var(--editorial-muted)]">
                           <span>订单状态 {anomaly.orderStatus}</span>
                           <span>支付状态 {anomaly.paymentStatus || "未记录"}</span>
                           <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getRoutingStyle(
-                              anomaly.paymentRoutingMode
-                            )}`}
+                            className="rounded-full border px-2 py-0.5 text-[10px] font-medium"
+                            style={(() => {
+                              const ts = getToneStyle(getRoutingTone(anomaly.paymentRoutingMode));
+                              return { borderColor: ts.border, background: ts.bg, color: ts.text };
+                            })()}
                           >
                             {getRoutingLabel(anomaly.paymentRoutingMode)}
                           </span>
@@ -496,7 +484,7 @@ export default function OrdersReconciliationPage() {
                       </div>
                       <Link
                         href={`/admin/orders/${anomaly.orderId}`}
-                        className="shrink-0 rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black transition-colors hover:bg-white/80"
+                        className="shrink-0 rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-[color:var(--editorial-text)] transition-colors hover:bg-white/80"
                       >
                         查看订单
                       </Link>
@@ -509,15 +497,15 @@ export default function OrdersReconciliationPage() {
 
           <section className="rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
             <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-black">近期支付/退款事件</h2>
-              <span className="text-xs text-black/45">
+              <h2 className="text-lg font-semibold text-[color:var(--editorial-text)]">近期支付/退款事件</h2>
+              <span className="text-xs text-[color:var(--editorial-muted)]">
                 显示最近 {report.events.length} 条
               </span>
             </div>
 
             <div className="space-y-3">
               {report.events.length === 0 ? (
-                <div className="rounded-xl border border-dashed border-black/10 bg-white/40 p-6 text-sm text-black/55">
+                <div className="rounded-xl border border-dashed border-black/10 bg-white/40 p-6 text-sm text-[color:var(--editorial-muted)]">
                   当前时间窗口内没有 Stripe 事件。
                 </div>
               ) : (
@@ -529,56 +517,60 @@ export default function OrdersReconciliationPage() {
                     <div className="flex items-start justify-between gap-4">
                       <div className="min-w-0 flex-1">
                         <div className="mb-2 flex flex-wrap items-center gap-2">
-                          <span className="rounded-full bg-black/5 px-2 py-0.5 text-[10px] font-medium text-black/70">
+                          <span className="rounded-full bg-black/5 px-2 py-0.5 text-[10px] font-medium text-[color:var(--editorial-muted)]">
                             {event.kind === "REFUND" ? "REFUND" : "PAYMENT"}
                           </span>
                           <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getEventStatusStyle(
-                              event
-                            )}`}
+                            className="rounded-full border px-2 py-0.5 text-[10px] font-medium"
+                            style={(() => {
+                              const ts = getToneStyle(getEventStatusTone(event));
+                              return { borderColor: ts.border, background: ts.bg, color: ts.text };
+                            })()}
                           >
                             {event.status}
                           </span>
                           <span
-                            className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getRoutingStyle(
-                              event.paymentRoutingMode
-                            )}`}
+                            className="rounded-full border px-2 py-0.5 text-[10px] font-medium"
+                            style={(() => {
+                              const ts = getToneStyle(getRoutingTone(event.paymentRoutingMode));
+                              return { borderColor: ts.border, background: ts.bg, color: ts.text };
+                            })()}
                           >
                             {getRoutingLabel(event.paymentRoutingMode)}
                           </span>
                         </div>
-                        <div className="text-sm font-semibold text-black">
+                        <div className="text-sm font-semibold text-[color:var(--editorial-text)]">
                           {formatPrice(event.amount)} / {event.buyerName || event.buyerEmail}
                         </div>
-                        <div className="mt-1 text-xs text-black/55">
+                        <div className="mt-1 text-xs text-[color:var(--editorial-muted)]">
                           订单 {event.orderId.slice(0, 8).toUpperCase()} / {event.provider}
                         </div>
-                        <div className="mt-1 text-xs text-black/45">
+                        <div className="mt-1 text-xs text-[color:var(--editorial-muted)]">
                           {event.paymentIntentId || event.paymentSessionId || "无外部标识"}
                         </div>
-                        <div className="mt-1 text-xs text-black/45">
+                        <div className="mt-1 text-xs text-[color:var(--editorial-muted)]">
                           {event.connectedAccountId
                             ? `Connected ${event.connectedAccountId}`
                             : "当前未关联 connected account"}
                         </div>
                         {event.reason ? (
-                          <div className="mt-2 text-xs text-black/55">
+                          <div className="mt-2 text-xs text-[color:var(--editorial-muted)]">
                             原因：{event.reason}
                           </div>
                         ) : null}
                         {event.failureReason ? (
-                          <div className="mt-2 text-xs text-red-600">
+                          <div className="mt-2 text-xs text-[color:#9a4b3d]">
                             {event.failureReason}
                           </div>
                         ) : null}
                       </div>
                       <div className="shrink-0 text-right">
-                        <div className="text-xs text-black/45">
+                        <div className="text-xs text-[color:var(--editorial-muted)]">
                           {formatDate(event.occurredAt)}
                         </div>
                         <Link
                           href={`/admin/orders/${event.orderId}`}
-                          className="mt-3 inline-block rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-black transition-colors hover:bg-white/80"
+                          className="mt-3 inline-block rounded-lg border border-black/20 bg-white/70 px-3 py-1.5 text-xs font-medium text-[color:var(--editorial-text)] transition-colors hover:bg-white/80"
                         >
                           查看订单
                         </Link>

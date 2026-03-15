@@ -5,7 +5,7 @@ import { getUserPageDataBySlug } from "@/domain/page-config";
 import { getProductById } from "@/domain/shop/services";
 import ProductDetail from "@/features/shop/ProductDetail";
 import type { PageConfig } from "@/domain/page-config/types";
-import { EMPTY_PAGE_CONFIG } from "@/domain/page-config/constants";
+import { EMPTY_PAGE_CONFIG, resolveBackgroundStyle } from "@/domain/page-config/constants";
 import {
   findE2EPublicPageState,
   getE2EPublicPageProduct,
@@ -56,51 +56,17 @@ export default async function ProductDetailPage({
     notFound();
   }
 
-  const getBackgroundStyle = (): React.CSSProperties => {
-    const detailBg = config?.shopDetailBackground;
-    if (detailBg && detailBg.type && detailBg.value && detailBg.value.trim() !== "") {
-      return detailBg.type === "color"
-        ? { backgroundColor: detailBg.value }
-        : {
-            backgroundImage: `url(${detailBg.value})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-          };
-    }
-
-    const listBg = config?.shopBackground;
-    if (listBg && listBg.type && listBg.value && listBg.value.trim() !== "") {
-      return listBg.type === "color"
-        ? { backgroundColor: listBg.value }
-        : {
-            backgroundImage: `url(${listBg.value})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-          };
-    }
-
-    const newsBg = config?.newsBackground;
-    if (newsBg && newsBg.type && newsBg.value && newsBg.value.trim() !== "") {
-      return newsBg.type === "color"
-        ? { backgroundColor: newsBg.value }
-        : {
-            backgroundImage: `url(${newsBg.value})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-          };
-    }
-
-    return { backgroundColor: "#000000" };
-  };
+  const backgroundStyle = resolveBackgroundStyle(
+    config?.shopDetailBackground,
+    config?.shopBackground,
+    config?.newsBackground,
+  );
 
   return (
     <ProductDetail
       product={product}
       userSlug={slug}
-      backgroundStyle={getBackgroundStyle()}
+      backgroundStyle={backgroundStyle}
     />
   );
 }

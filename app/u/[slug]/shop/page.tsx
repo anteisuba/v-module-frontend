@@ -5,7 +5,7 @@ import { getUserPageDataBySlug } from "@/domain/page-config";
 import { getProducts } from "@/domain/shop/services";
 import ProductList from "@/features/shop/ProductList";
 import type { PageConfig } from "@/domain/page-config/types";
-import { EMPTY_PAGE_CONFIG } from "@/domain/page-config/constants";
+import { EMPTY_PAGE_CONFIG, resolveBackgroundStyle } from "@/domain/page-config/constants";
 import {
   findE2EPublicPageState,
   getE2EPublicPageProducts,
@@ -70,36 +70,9 @@ export default async function UserShopPage({
     }
   }
 
-  // 获取背景样式
-  const getBackgroundStyle = (): React.CSSProperties => {
-    const shopBg = config?.shopBackground;
-    if (shopBg && shopBg.type && shopBg.value && shopBg.value.trim() !== "") {
-      return shopBg.type === "color"
-        ? { backgroundColor: shopBg.value }
-        : {
-            backgroundImage: `url(${shopBg.value})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-          };
-    }
+  const backgroundStyle = resolveBackgroundStyle(config?.shopBackground, config?.newsBackground);
 
-    const newsBg = config?.newsBackground;
-    if (newsBg && newsBg.type && newsBg.value && newsBg.value.trim() !== "") {
-      return newsBg.type === "color"
-        ? { backgroundColor: newsBg.value }
-        : {
-            backgroundImage: `url(${newsBg.value})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-          };
-    }
-
-    return { backgroundColor: "#000000" };
-  };
-
-  return <ProductList products={productData.products} userSlug={slug} backgroundStyle={getBackgroundStyle()} />;
+  return <ProductList products={productData.products} userSlug={slug} backgroundStyle={backgroundStyle} />;
 }
 
 export async function generateMetadata({

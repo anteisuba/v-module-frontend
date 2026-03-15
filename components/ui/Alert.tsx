@@ -9,22 +9,47 @@ interface AlertProps {
   className?: string;
 }
 
+const statusColors = {
+  error: {
+    border: "color-mix(in srgb, #9a4b3d 40%, transparent)",
+    bg: "color-mix(in srgb, #9a4b3d 8%, var(--editorial-surface))",
+    text: "#9a4b3d",
+  },
+  success: {
+    border: "color-mix(in srgb, #6b8a5e 40%, transparent)",
+    bg: "color-mix(in srgb, #6b8a5e 8%, var(--editorial-surface))",
+    text: "#6b8a5e",
+  },
+  info: {
+    border: "color-mix(in srgb, var(--editorial-accent) 40%, transparent)",
+    bg: "color-mix(in srgb, var(--editorial-accent) 8%, var(--editorial-surface))",
+    text: "var(--editorial-accent)",
+  },
+  warning: {
+    border: "color-mix(in srgb, #b8863a 40%, transparent)",
+    bg: "color-mix(in srgb, #b8863a 8%, var(--editorial-surface))",
+    text: "#b8863a",
+  },
+};
+
 export default function Alert({
   type = "info",
   message,
   onClose,
   className = "",
 }: AlertProps) {
-  const typeStyles = {
-    error: "border-red-500/30 bg-red-50 text-red-700",
-    success: "border-emerald-500/30 bg-emerald-50 text-emerald-700",
-    info: "border-blue-500/30 bg-blue-50 text-blue-700",
-    warning: "border-yellow-500/30 bg-yellow-50 text-yellow-700",
-  };
+  const colors = statusColors[type];
+  const role = type === "error" || type === "warning" ? "alert" : "status";
 
   return (
     <div
-      className={`mb-4 rounded-lg border px-3 py-2 text-xs ${typeStyles[type]} ${className}`}
+      role={role}
+      className={`mb-4 rounded-lg border px-3 py-2 text-xs ${className}`}
+      style={{
+        borderColor: colors.border,
+        background: colors.bg,
+        color: colors.text,
+      }}
     >
       <div className="flex items-center justify-between">
         <span>{message}</span>
@@ -32,7 +57,7 @@ export default function Alert({
           <button
             type="button"
             onClick={onClose}
-            className="ml-2 text-current opacity-70 hover:opacity-100"
+            className="ml-2 text-current opacity-70 hover:opacity-100 transition-opacity"
             aria-label="Close"
           >
             ×

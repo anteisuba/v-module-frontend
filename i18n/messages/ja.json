@@ -83,6 +83,7 @@
         "backToDashboard": "編集ディレクトリに戻る",
         "emptyState": "まだ Stripe の受取口座が作成されていません。オンボーディングを開始すると、Stripe が基本情報、決済権限、銀行口座設定を案内します。",
         "sections": {
+          "alerts": "異常状態と対応ガイド",
           "guide": "利用ガイド",
           "progress": "Onboarding 進捗",
           "account": "アカウント概要",
@@ -90,6 +91,39 @@
           "currentlyDue": "現在不足している情報",
           "pastDue": "期限超過の不足情報",
           "eventuallyDue": "今後必要になる可能性がある情報"
+        },
+        "alerts": {
+          "intro": "Stripe が制限、切断、または capability 異常を返した場合、この欄で優先順に対処内容を案内します。まずここを解消し、その後で進捗や通常説明を確認してください。",
+          "tone": {
+            "critical": "最優先",
+            "warning": "要確認",
+            "info": "経過確認"
+          },
+          "disconnected": {
+            "title": "受取口座が切断されています",
+            "description": "connected account が削除または切断されており、新しい注文は販売者専用の受取経路を使えません。",
+            "detail": "Stripe 受取設定を最初からやり直し、販売者専用受取に必要な口座接続を復旧してください。"
+          },
+          "restricted": {
+            "title": "受取口座が制限中です",
+            "description": "Stripe がこの口座に期限超過または制限項目を検出しており、決済、返金、入金に影響する可能性があります。",
+            "detail": "まず Stripe 受取設定に入り、制限項目を解消してからこの画面へ戻って同期してください。"
+          },
+          "currentlyDue": {
+            "title": "まだ提出が必要な情報があります",
+            "description": "Stripe は追加情報や確認結果を待っており、完了するまでは capability が完全に有効にならない可能性があります。",
+            "detail": "onboarding フォームを続けて、現在不足している項目を優先して解消してください。"
+          },
+          "chargesReview": {
+            "title": "決済機能はまだ審査中です",
+            "description": "必要情報は提出済みですが、Stripe はまだ決済機能を完全には有効化していません。",
+            "detail": "Stripe の審査を待ち、少し時間をおいてから「Stripe 状態を同期」で capability を更新してください。"
+          },
+          "payoutsPending": {
+            "title": "入金機能がまだ有効ではありません",
+            "description": "この口座は決済を受けられますが、銀行口座への payout はまだ完全には有効化されていません。",
+            "detail": "Stripe Express Dashboard で銀行口座と payout 設定を確認し、その後この画面で状態を再同期してください。"
+          }
         },
         "guide": {
           "overview": "このページが管理するのは販売者の Stripe Connect 受取口座であり、アプリ内残高ではありません。購入後の資金は Stripe が connected account に計上し、その後 payout の周期で連携済み銀行口座へ送金します。",
@@ -179,6 +213,7 @@
           "country": "国 / 地域",
           "defaultCurrency": "既定通貨",
           "lastSyncedAt": "最終同期",
+          "disconnectedAt": "切断日時",
           "detailsSubmitted": "情報提出済み",
           "chargesEnabled": "決済可能",
           "payoutsEnabled": "入金可能",

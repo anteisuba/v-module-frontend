@@ -1,6 +1,64 @@
 // domain/page-config/constants.ts
 
-import type { PageConfig } from "./types";
+import type { BackgroundConfig, PageConfig } from "./types";
+
+/**
+ * 默认背景色（near-black，匹配 editorial 设计系统的 --color-bg）
+ */
+const DEFAULT_BG_COLOR = "#0d0d0b";
+
+/**
+ * 判断 BackgroundConfig 是否有有效值
+ */
+function isValidBg(bg: BackgroundConfig | undefined): bg is BackgroundConfig {
+  return !!bg && !!bg.type && !!bg.value && bg.value.trim() !== "";
+}
+
+/**
+ * 将 BackgroundConfig 转为 React.CSSProperties
+ */
+function bgToStyle(bg: BackgroundConfig): React.CSSProperties {
+  return bg.type === "color"
+    ? { backgroundColor: bg.value }
+    : {
+        backgroundImage: `url(${bg.value})`,
+        backgroundSize: "cover",
+        backgroundPosition: "center",
+        backgroundRepeat: "no-repeat",
+      };
+}
+
+/**
+ * 从多个 BackgroundConfig 候选中解析出背景样式。
+ * 按优先级尝试，第一个有效的会被使用，全部无效时返回默认 near-black。
+ *
+ * @example
+ * resolveBackgroundStyle(config?.shopDetailBackground, config?.shopBackground, config?.newsBackground)
+ */
+export function resolveBackgroundStyle(
+  ...candidates: (BackgroundConfig | undefined)[]
+): React.CSSProperties {
+  for (const bg of candidates) {
+    if (isValidBg(bg)) {
+      return bgToStyle(bg);
+    }
+  }
+  return { backgroundColor: DEFAULT_BG_COLOR };
+}
+
+/**
+ * 从多个 BackgroundConfig 候选中找出第一个有效的背景类型。
+ */
+export function resolveBackgroundType(
+  ...candidates: (BackgroundConfig | undefined)[]
+): "color" | "image" {
+  for (const bg of candidates) {
+    if (isValidBg(bg)) {
+      return bg.type;
+    }
+  }
+  return "color";
+}
 
 /**
  * 空页面配置

@@ -5,7 +5,7 @@ import { getUserPageDataBySlug } from "@/domain/page-config";
 import { getBlogPostById, getBlogPostDetailById } from "@/domain/blog/services";
 import BlogDetail from "@/features/blog/BlogDetail";
 import type { PageConfig } from "@/domain/page-config/types";
-import { EMPTY_PAGE_CONFIG } from "@/domain/page-config/constants";
+import { EMPTY_PAGE_CONFIG, resolveBackgroundStyle, resolveBackgroundType } from "@/domain/page-config/constants";
 import { getServerSession } from "@/lib/session/userSession";
 import {
   findE2EPublicPageState,
@@ -63,55 +63,14 @@ export default async function BlogDetailPage({
     notFound();
   }
 
-  // 获取背景样式（优先使用 blogDetailBackground，如果没有则使用 blogBackground，最后使用 newsBackground 作为后备）
-  const getBackgroundStyle = (): React.CSSProperties => {
-    const blogDetailBg = config?.blogDetailBackground;
-    if (blogDetailBg && blogDetailBg.type && blogDetailBg.value && blogDetailBg.value.trim() !== "") {
-      return blogDetailBg.type === "color"
-        ? { backgroundColor: blogDetailBg.value }
-        : {
-            backgroundImage: `url(${blogDetailBg.value})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-          };
-    }
-    // 如果没有 blogDetailBackground，使用 blogBackground
-    const blogBg = config?.blogBackground;
-    if (blogBg && blogBg.type && blogBg.value && blogBg.value.trim() !== "") {
-      return blogBg.type === "color"
-        ? { backgroundColor: blogBg.value }
-        : {
-            backgroundImage: `url(${blogBg.value})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-          };
-    }
-    // 如果都没有，使用 newsBackground 作为后备
-    const newsBg = config?.newsBackground;
-    if (newsBg && newsBg.type && newsBg.value && newsBg.value.trim() !== "") {
-      return newsBg.type === "color"
-        ? { backgroundColor: newsBg.value }
-        : {
-            backgroundImage: `url(${newsBg.value})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-          };
-    }
-    return { backgroundColor: "#000000" };
-  };
-
-  // 判断当前使用的背景类型（用于显示遮罩层）
-  const currentBackgroundType = config?.blogDetailBackground?.type || config?.blogBackground?.type || config?.newsBackground?.type || "color";
+  const bgCandidates = [config?.blogDetailBackground, config?.blogBackground, config?.newsBackground] as const;
 
   return (
     <BlogDetail
       post={post}
       userSlug={slug}
-      backgroundStyle={getBackgroundStyle()}
-      backgroundType={currentBackgroundType}
+      backgroundStyle={resolveBackgroundStyle(...bgCandidates)}
+      backgroundType={resolveBackgroundType(...bgCandidates)}
     />
   );
 }

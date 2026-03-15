@@ -6,6 +6,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
+  Alert,
   BackButton,
   Button,
   EditorialAuthLayout,
@@ -89,9 +90,11 @@ function ResetPasswordForm() {
             </div>
 
             {success ? (
-              <div className="rounded-[1.4rem] border border-emerald-500/24 bg-emerald-500/8 px-5 py-4 text-sm leading-7 text-emerald-800">
-                密码重置成功，正在跳转到登录页面。
-              </div>
+              <Alert
+                type="success"
+                message="密码重置成功，正在跳转到登录页面。"
+                className="rounded-[1.4rem] px-5 py-4 text-sm leading-7"
+              />
             ) : (
               <form onSubmit={onSubmit} className="space-y-5">
                 <Input
@@ -119,9 +122,7 @@ function ResetPasswordForm() {
                 />
 
                 {error ? (
-                  <div className="rounded-[1.2rem] border border-red-500/25 bg-red-500/8 px-4 py-3 text-sm text-red-700">
-                    {error}
-                  </div>
+                  <Alert type="error" message={error} className="rounded-[1.2rem]" />
                 ) : null}
 
                 <Button

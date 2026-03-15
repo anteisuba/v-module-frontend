@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep -r \"marketplace\" /Users/fulina/Desktop/workspace/vtuber-blog/v-module-frontend --include=\"*.md\" --include=\"*.json\" --include=\"*.yaml\" --include=\"*.yml\" 2>/dev/null | grep -v node_modules)",
+      "Bash(find /Users/fulina/Desktop/workspace/vtuber-blog/v-module-frontend -type f -name \"*.json\" 2>/dev/null | xargs grep -l \"impeccable\\\\|pbakaus\\\\|marketplace\" 2>/dev/null | grep -v node_modules)",
+      "Bash(ls -la /Users/fulina/Desktop/workspace/vtuber-blog/v-module-frontend/.claude*/)",
+      "Bash(grep -r \"impeccable\\\\|pbakaus\\\\|marketplace\" /Users/fulina/Desktop/workspace/vtuber-blog/v-module-frontend --include=\"*.ts\" --include=\"*.tsx\" --include=\"*.js\" 2>/dev/null | grep -v node_modules | head -20)",
+      "Bash(find /Users/fulina/Desktop/workspace/vtuber-blog/v-module-frontend -name \"*.impeccable*\" -o -name \"*impeccable*\" 2>/dev/null | grep -v node_modules | grep -v \".next\")",
+      "Read(//Users/fulina/.claude/**)",
+      "Read(//Users/fulina/.claude/plugins/**)",
+      "Bash(npx tsc:*)",
+      "Bash(pnpm check:*)"
+    ]
+  }
+}

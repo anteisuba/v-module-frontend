@@ -15,8 +15,7 @@
 - `lib/`: 会话、环境变量、上下文、客户端封装、工具函数
 - `prisma/`: schema、迁移、seed、辅助 SQL
 - `docs/`: 正式长文档层
-- `.Codex/skills/`: 可复用 AI 工作模式
-- `.Codex/hooks/`: 当前仓库的 guardrail 说明和验证矩阵
+- `.agents/skills/`: 可复用 AI 工作模式
 
 关键入口：
 
@@ -39,12 +38,14 @@
 - AI 摘要：[`docs/zh-CN/agent/repo-brief.md`](./docs/zh-CN/agent/repo-brief.md)
 - AI 地图：[`docs/zh-CN/agent/repo-map.md`](./docs/zh-CN/agent/repo-map.md)
 - AI 工作流：[`docs/zh-CN/agent/workflows.md`](./docs/zh-CN/agent/workflows.md)
+- 继续旧任务前：如果根目录存在 `*-handoff.md`，先读日期最新的一份
 - 长文档入口：[`docs/README.md`](./docs/README.md)
-- 技能：[`review-checklist`](./.Codex/skills/review-checklist/SKILL.md)、[`change-playbook`](./.Codex/skills/change-playbook/SKILL.md)
+- 技能：[`review-checklist`](./.agents/skills/review-checklist/SKILL.md)、[`change-playbook`](./.agents/skills/change-playbook/SKILL.md)、[`repo-handoff`](./.agents/skills/repo-handoff/SKILL.md)
 
 ## Rules
 
 - 不要把根文档写成知识堆。短入口放在这里，长解释放到 `docs/` 或局部 `CLAUDE.md`
+- 继续未完成任务时，先核对最新 `*-handoff.md`、`git status --short` 和 `git diff --stat`
 - 改认证逻辑时，同时检查 `proxy.ts`、`lib/session/`、相关 API 路由和登录后的跳转行为
 - 改页面配置时，同时检查类型、Zod 校验、CMS 编辑器、渲染器和现状文档
 - 改商店 / 订单时，先分清“卖家后台管理”与“访客公开下单”两种语义；不要再把公开结账写回 `/api/shop/orders`

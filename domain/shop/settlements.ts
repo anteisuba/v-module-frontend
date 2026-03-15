@@ -33,6 +33,7 @@ export const SETTLEMENT_RECONCILIATION_STATUS_OPEN = "OPEN" as const;
 export const SETTLEMENT_RECONCILIATION_STATUS_RECONCILED =
   "RECONCILED" as const;
 export const SETTLEMENT_RECONCILIATION_STATUS_IGNORED = "IGNORED" as const;
+const SETTLEMENT_ACCOUNT_SCOPE_CONNECTED = "CONNECTED" as const;
 
 type SettlementReconciliationStatus =
   | typeof SETTLEMENT_RECONCILIATION_STATUS_OPEN
@@ -906,12 +907,26 @@ async function resolveSettlementContext(
   } satisfies ResolvedSettlementContext;
 }
 
-async function upsertSettlementPayout(payout: Stripe.Payout) {
+async function upsertSettlementPayout(
+  payout: Stripe.Payout,
+  options?: {
+    stripeAccountId?: string | null;
+    accountScope?: string | null;
+  }
+) {
+  const accountData = options
+    ? {
+        stripeAccountId: options.stripeAccountId ?? null,
+        accountScope: options.accountScope ?? null,
+      }
+    : {};
+
   return prisma.paymentSettlementPayout.upsert({
     where: {
       externalPayoutId: payout.id,
     },
     create: {
+      ...accountData,
       provider: ORDER_PAYMENT_PROVIDER_STRIPE,
       externalPayoutId: payout.id,
       status: payout.status,
@@ -927,6 +942,7 @@ async function upsertSettlementPayout(payout: Stripe.Payout) {
         payout.status === "paid" ? fromUnixSeconds(payout.arrival_date) : null,
     },
     update: {
+      ...accountData,
       status: payout.status,
       amount: fromStripeAmount(payout.amount, payout.currency),
       currency: payout.currency.toUpperCase(),
@@ -943,6 +959,16 @@ async function upsertSettlementPayout(payout: Stripe.Payout) {
       id: true,
       externalPayoutId: true,
     },
+  });
+}
+
+export async function syncStripeSettlementPayoutByConnectedAccountId(
+  connectedAccountId: string,
+  payout: Stripe.Payout
+) {
+  return upsertSettlementPayout(payout, {
+    stripeAccountId: connectedAccountId,
+    accountScope: SETTLEMENT_ACCOUNT_SCOPE_CONNECTED,
   });
 }
 

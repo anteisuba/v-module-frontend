@@ -34,10 +34,11 @@
 
 - `pnpm build`: 成功。`middleware -> proxy`、`prisma.config.ts` 移行とローカル build warning は解消済みで、現在は標準 build 出力
 - `pnpm check`: 成功
-- `pnpm test`: 成功。現在は `30` ファイル `102` テスト
+- `pnpm test`: 成功。現在は `31` ファイル `111` テスト
 - `pnpm test:e2e`: 現在は `11` 個の e2e spec があり、Chromium / Firefox / WebKit の 3 ブラウザ行列で実行する構成
 - `pnpm lint`: 成功。現在は `0 errors / 0 warnings`
 - GitHub Actions: PR / push 向け CI を追加し、`pnpm check`、`pnpm test`、`pnpm build`、`pnpm lint` と Playwright の Chromium / Firefox / WebKit 行列を実行。e2e 失敗時は `playwright-report` と `test-results` をアップロード
+- Vercel: 本番デプロイとブランチ Preview Deployments が接続済みで、`main` 以外のアクティブブランチごとに独立したプレビュー環境を生成できる
 - 自動テストファイル: `Vitest + Playwright` の spec があり、かつ実行済みで認証、権限境界、ページ設定編集と公開レンダリング経路、メディアライブラリ、公開コンテンツ、Shop 注文、Stripe Checkout / Webhook / Connect / 照合 / 精算、payout onboarding などをカバー
 - Prisma migration ディレクトリ数: 現在 `13`
 
@@ -56,8 +57,10 @@
 - Stripe Checkout / Webhook: 公開注文で Checkout Session を生成し、支払い成功・失敗・期限切れ・dispute を注文へ反映
 - 支払い照合: 管理画面に Stripe 照合ページがあり、イベント / 異常の確認と CSV エクスポートが可能
 - 精算照合: Stripe `balance transactions` / `payouts` を同期し、payout 状態ごとに流水をまとめて確認しながら一括で reconciliation 状態を更新可能
-- Stripe Connect: 売り手収益口座モデル、onboarding / dashboard link / account sync API、`/admin/settings/payouts` 画面、destination charge と `PLATFORM` fallback があり、payout settings 画面には資金フロー、推奨操作順、ステータス説明、onboarding 進捗表示も追加済み
+- Stripe Connect: 売り手収益口座モデル、onboarding / dashboard link / account sync API、`/admin/settings/payouts` 画面、destination charge と `PLATFORM` fallback があり、payout settings 画面には資金フロー、推奨操作順、ステータス説明、onboarding 進捗表示、異常状態ガイドも追加済み
+- Connect Webhook: `POST /api/payments/stripe/connect/webhook` は `account.updated`、`account.external_account.*`、`payout.*` に対して Connect secret で署名検証を行い、口座状態と connected account 単位の payout スナップショットを更新できる
 - Connect 運用可視性: 注文詳細、注文 CSV、照合、精算ページで `paymentRoutingMode`、connected account、charge / transfer、platform fee、seller net のスナップショットを表示または出力でき、照合ページでは `routing mode` / `connected account` フィルタも利用可能
+- デプロイ運用: Vercel が本番環境とブランチプレビュー環境を併用しており、Next.js ページ、API、管理画面経路をマージ前に確認できる
 - 内部定期同期: 売り手単位で Stripe の精算・payout・dispute を同期する内部 cron API がある
 - 財務異常アラート: 内部 `stripe-finance-sync` は支払い照合 / 精算異常を検出した際に、売り手メールと任意の Slack webhook へ通知できる
 - テスト fixture 基線: ページ設定、セッション、Stripe event の共有 helper を追加し、高リスク API / レンダリング検証の重複 mock を減らした
@@ -69,8 +72,8 @@
 ## 部分実装 / ギャップ
 
 - 正式な決済ルートは現在も Stripe 単一チャネルで、PayPal / ローカル決済は後回し
-- Stripe Connect の主経路は動くが、異常状態の案内は今後も強化余地がある
-- 工学基線は「build / check / test / lint / e2e」まで安定し、GitHub Actions + Chromium / Firefox / WebKit の継続実行も入った。残る主要ギャップはより細かい flaky 分析と Stripe Connect 運用閉ループの強化
+- Stripe Connect の主経路は動いており、残る主要ギャップは Connect 口座状態の定期同期ヘルスチェックログと dispute 証拠提出フローに寄っている
+- 工学基線は「build / check / test / lint / e2e / preview deploy」まで安定し、GitHub Actions、Vercel Preview、Chromium / Firefox / WebKit の継続実行も入った。残る主要ギャップは `changesets` によるバージョン管理を導入するかの判断、より細かい flaky 分析、Stripe Connect 運用閉ループの強化
 
 ## 未実装
 

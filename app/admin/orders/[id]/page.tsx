@@ -10,6 +10,8 @@ import {
   LanguageSelector,
   Button,
   Input,
+  StatusBadge,
+  getToneStyle,
 } from "@/components/ui";
 import { shopApi } from "@/lib/api";
 import { useUser } from "@/lib/context/UserContext";
@@ -121,17 +123,7 @@ export default function OrderDetailPage({
     return labels[status] || status;
   }
 
-  function getStatusColor(status: string) {
-    const colors: Record<string, string> = {
-      AWAITING_PAYMENT: "bg-amber-100 text-amber-700",
-      PENDING: "bg-yellow-100 text-yellow-700",
-      PAID: "bg-blue-100 text-blue-700",
-      SHIPPED: "bg-purple-100 text-purple-700",
-      DELIVERED: "bg-emerald-100 text-emerald-700",
-      CANCELLED: "bg-gray-100 text-gray-700",
-    };
-    return colors[status] || "bg-gray-100 text-gray-700";
-  }
+  // 订单状态颜色通过 StatusBadge 组件统一管理
 
   function getPaymentStatusLabel(status: string | null) {
     if (!status) {
@@ -148,19 +140,6 @@ export default function OrderDetailPage({
     };
 
     return labels[status] || status;
-  }
-
-  function getPaymentStatusColor(status: string | null) {
-    const colors: Record<string, string> = {
-      OPEN: "bg-amber-100 text-amber-700",
-      PAID: "bg-blue-100 text-blue-700",
-      FAILED: "bg-red-100 text-red-700",
-      EXPIRED: "bg-gray-100 text-gray-700",
-      PARTIALLY_REFUNDED: "bg-orange-100 text-orange-700",
-      REFUNDED: "bg-emerald-100 text-emerald-700",
-    };
-
-    return colors[status || ""] || "bg-gray-100 text-gray-700";
   }
 
   function getRoutingModeLabel(mode: SerializedOrder["paymentRoutingMode"]) {
@@ -200,22 +179,6 @@ export default function OrderDetailPage({
     };
 
     return labels[status] || status;
-  }
-
-  function getDisputeStatusColor(status: string) {
-    if (status === "won" || status === "warning_closed") {
-      return "bg-emerald-100 text-emerald-700";
-    }
-
-    if (status === "lost") {
-      return "bg-red-100 text-red-700";
-    }
-
-    if (status === "under_review" || status === "warning_under_review") {
-      return "bg-blue-100 text-blue-700";
-    }
-
-    return "bg-amber-100 text-amber-700";
   }
 
   function getNextStatus(currentOrder: SerializedOrder | null) {
@@ -489,37 +452,29 @@ export default function OrderDetailPage({
         <div className="mb-6 flex flex-col gap-4 rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl lg:flex-row lg:items-start lg:justify-between">
           <div>
             <div className="mb-2 flex flex-wrap items-center gap-2">
-              <h1 className="text-2xl font-bold text-black">
+              <h1 className="text-2xl font-bold text-[color:var(--editorial-text)]">
                 订单 #{order.id.slice(0, 8).toUpperCase()}
               </h1>
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-medium ${getStatusColor(
-                  order.status
-                )}`}
-              >
+              <StatusBadge domain="order" status={order.status}>
                 {getStatusLabel(order.status)}
-              </span>
-              <span
-                className={`rounded-full px-3 py-1 text-xs font-medium ${getPaymentStatusColor(
-                  order.paymentStatus
-                )}`}
-              >
+              </StatusBadge>
+              <StatusBadge domain="payment" status={order.paymentStatus || "OPEN"}>
                 {getPaymentStatusLabel(order.paymentStatus)}
-              </span>
+              </StatusBadge>
             </div>
-            <p className="text-sm text-black/65">
+            <p className="text-sm text-[color:var(--editorial-muted)]">
               下单时间 {formatDate(order.createdAt)} / 买家{" "}
               {order.buyerName || order.buyerEmail}
             </p>
-            <p className="mt-2 text-sm text-black/55">
+            <p className="mt-2 text-sm text-[color:var(--editorial-muted)]">
               Provider: {order.paymentProvider || "MANUAL"} / Currency: {order.currency}
             </p>
           </div>
 
           <div className="flex flex-col items-start gap-3 lg:items-end">
             <div className="text-right">
-              <div className="text-xs text-black/50">订单总额</div>
-              <div className="text-2xl font-bold text-black">
+              <div className="text-xs text-[color:var(--editorial-muted)]">订单总额</div>
+              <div className="text-2xl font-bold text-[color:var(--editorial-text)]">
                 {formatPrice(order.totalAmount, order.currency)}
               </div>
             </div>
@@ -545,7 +500,7 @@ export default function OrderDetailPage({
         <div className="grid gap-6 lg:grid-cols-[minmax(0,1.4fr)_minmax(320px,0.9fr)]">
           <div className="space-y-6">
             <section className="rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
-              <h2 className="mb-4 text-lg font-semibold text-black">订单商品</h2>
+              <h2 className="mb-4 text-lg font-semibold text-[color:var(--editorial-text)]">订单商品</h2>
               <div className="space-y-3">
                 {order.items.map((item) => (
                   <div
@@ -564,16 +519,16 @@ export default function OrderDetailPage({
                         ) : null}
                       </div>
                       <div>
-                        <div className="font-medium text-black">
+                        <div className="font-medium text-[color:var(--editorial-text)]">
                           {item.product?.name || item.productId}
                         </div>
-                        <div className="text-xs text-black/55">
+                        <div className="text-xs text-[color:var(--editorial-muted)]">
                           数量 {item.quantity} / 单价{" "}
                           {formatPrice(item.price, order.currency)}
                         </div>
                       </div>
                     </div>
-                    <div className="text-sm font-semibold text-black">
+                    <div className="text-sm font-semibold text-[color:var(--editorial-text)]">
                       {formatPrice(item.subtotal, order.currency)}
                     </div>
                   </div>
@@ -582,29 +537,27 @@ export default function OrderDetailPage({
             </section>
 
             <section className="rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
-              <h2 className="mb-4 text-lg font-semibold text-black">支付时间线</h2>
+              <h2 className="mb-4 text-lg font-semibold text-[color:var(--editorial-text)]">支付时间线</h2>
               <div className="space-y-4">
                 {timeline.map((event) => (
                   <div key={event.id} className="flex gap-4">
-                    <div className="mt-1 flex w-20 shrink-0 justify-end text-xs text-black/45">
+                    <div className="mt-1 flex w-20 shrink-0 justify-end text-xs text-[color:var(--editorial-muted)]">
                       {formatDate(event.occurredAt)}
                     </div>
                     <div className="relative flex-1 rounded-xl border border-black/10 bg-white/70 p-4">
-                      <div
-                        className={[
-                          "mb-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-medium",
-                          event.tone === "success"
-                            ? "bg-emerald-100 text-emerald-700"
-                            : event.tone === "warning"
-                              ? "bg-amber-100 text-amber-700"
-                              : event.tone === "danger"
-                                ? "bg-red-100 text-red-700"
-                                : "bg-black/5 text-black/65",
-                        ].join(" ")}
-                      >
-                        {event.title}
-                      </div>
-                      <p className="text-sm text-black/75">{event.description}</p>
+                      {(() => {
+                        const toneKey = event.tone === "default" ? "neutral" : (event.tone as "success" | "warning" | "danger");
+                        const ts = getToneStyle(toneKey);
+                        return (
+                          <div
+                            className="mb-1 inline-flex rounded-full border px-2 py-0.5 text-[10px] font-medium"
+                            style={{ borderColor: ts.border, background: ts.bg, color: ts.text }}
+                          >
+                            {event.title}
+                          </div>
+                        );
+                      })()}
+                      <p className="text-sm text-[color:var(--editorial-muted)]">{event.description}</p>
                     </div>
                   </div>
                 ))}
@@ -614,88 +567,88 @@ export default function OrderDetailPage({
 
           <div className="space-y-6">
             <section className="rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
-              <h2 className="mb-4 text-lg font-semibold text-black">买家与配送</h2>
-              <dl className="space-y-3 text-sm text-black/75">
+              <h2 className="mb-4 text-lg font-semibold text-[color:var(--editorial-text)]">买家与配送</h2>
+              <dl className="space-y-3 text-sm text-[color:var(--editorial-muted)]">
                 <div>
-                  <dt className="text-xs text-black/45">买家姓名</dt>
+                  <dt className="text-xs text-[color:var(--editorial-muted)]">买家姓名</dt>
                   <dd>{order.buyerName || "未填写"}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-black/45">买家邮箱</dt>
+                  <dt className="text-xs text-[color:var(--editorial-muted)]">买家邮箱</dt>
                   <dd>{order.buyerEmail}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-black/45">配送方式</dt>
+                  <dt className="text-xs text-[color:var(--editorial-muted)]">配送方式</dt>
                   <dd>{order.shippingMethod || "未填写"}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-black/45">配送地址</dt>
+                  <dt className="text-xs text-[color:var(--editorial-muted)]">配送地址</dt>
                   <dd className="whitespace-pre-wrap">{formatAddress(order.shippingAddress)}</dd>
                 </div>
               </dl>
             </section>
 
             <section className="rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
-              <h2 className="mb-4 text-lg font-semibold text-black">支付信息</h2>
-              <dl className="space-y-3 text-sm text-black/75">
+              <h2 className="mb-4 text-lg font-semibold text-[color:var(--editorial-text)]">支付信息</h2>
+              <dl className="space-y-3 text-sm text-[color:var(--editorial-muted)]">
                 <div>
-                  <dt className="text-xs text-black/45">支付提供方</dt>
+                  <dt className="text-xs text-[color:var(--editorial-muted)]">支付提供方</dt>
                   <dd>{order.paymentProvider || "未记录"}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-black/45">收款路由</dt>
+                  <dt className="text-xs text-[color:var(--editorial-muted)]">收款路由</dt>
                   <dd>{getRoutingModeLabel(order.paymentRoutingMode)}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-black/45">支付状态</dt>
+                  <dt className="text-xs text-[color:var(--editorial-muted)]">支付状态</dt>
                   <dd>{getPaymentStatusLabel(order.paymentStatus)}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-black/45">路由说明</dt>
+                  <dt className="text-xs text-[color:var(--editorial-muted)]">路由说明</dt>
                   <dd>{getRoutingModeDescription(order)}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-black/45">Payout Account</dt>
+                  <dt className="text-xs text-[color:var(--editorial-muted)]">Payout Account</dt>
                   <dd className="break-all">{order.payoutAccountId || " - "}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-black/45">Connected Account</dt>
+                  <dt className="text-xs text-[color:var(--editorial-muted)]">Connected Account</dt>
                   <dd className="break-all">{order.connectedAccountId || " - "}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-black/45">Charge ID</dt>
+                  <dt className="text-xs text-[color:var(--editorial-muted)]">Charge ID</dt>
                   <dd className="break-all">{order.externalChargeId || " - "}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-black/45">Transfer ID</dt>
+                  <dt className="text-xs text-[color:var(--editorial-muted)]">Transfer ID</dt>
                   <dd className="break-all">{order.externalTransferId || " - "}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-black/45">Checkout Session</dt>
+                  <dt className="text-xs text-[color:var(--editorial-muted)]">Checkout Session</dt>
                   <dd className="break-all">{order.paymentSessionId || " - "}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-black/45">Payment Intent</dt>
+                  <dt className="text-xs text-[color:var(--editorial-muted)]">Payment Intent</dt>
                   <dd className="break-all">{order.paymentIntentId || " - "}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-black/45">支付完成时间</dt>
+                  <dt className="text-xs text-[color:var(--editorial-muted)]">支付完成时间</dt>
                   <dd>{formatDate(order.paidAt)}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-black/45">支付失败原因</dt>
+                  <dt className="text-xs text-[color:var(--editorial-muted)]">支付失败原因</dt>
                   <dd>{order.paymentFailureReason || " - "}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-black/45">平台手续费快照</dt>
+                  <dt className="text-xs text-[color:var(--editorial-muted)]">平台手续费快照</dt>
                   <dd>{formatOptionalPrice(order.platformFeeAmount, order.currency)}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-black/45">卖家收款总额快照</dt>
+                  <dt className="text-xs text-[color:var(--editorial-muted)]">卖家收款总额快照</dt>
                   <dd>{formatOptionalPrice(order.sellerGrossAmount, order.currency)}</dd>
                 </div>
                 <div>
-                  <dt className="text-xs text-black/45">卖家预估净额快照</dt>
+                  <dt className="text-xs text-[color:var(--editorial-muted)]">卖家预估净额快照</dt>
                   <dd>{formatOptionalPrice(order.sellerNetExpectedAmount, order.currency)}</dd>
                 </div>
               </dl>
@@ -703,13 +656,13 @@ export default function OrderDetailPage({
 
             <section className="rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-black">争议 / Chargeback</h2>
-                <span className="text-xs text-black/45">{order.disputes.length} 条记录</span>
+                <h2 className="text-lg font-semibold text-[color:var(--editorial-text)]">争议 / Chargeback</h2>
+                <span className="text-xs text-[color:var(--editorial-muted)]">{order.disputes.length} 条记录</span>
               </div>
 
               <div className="space-y-3">
                 {order.disputes.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-black/10 bg-white/40 p-4 text-sm text-black/50">
+                  <div className="rounded-xl border border-dashed border-black/10 bg-white/40 p-4 text-sm text-[color:var(--editorial-muted)]">
                     当前没有 Stripe dispute / chargeback 记录
                   </div>
                 ) : (
@@ -718,17 +671,17 @@ export default function OrderDetailPage({
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <div className="flex flex-wrap items-center gap-2">
-                            <span className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getDisputeStatusColor(dispute.status)}`}>
+                            <StatusBadge domain="dispute" status={dispute.status}>
                               {getDisputeStatusLabel(dispute.status)}
-                            </span>
-                            <span className="text-xs text-black/45">
+                            </StatusBadge>
+                            <span className="text-xs text-[color:var(--editorial-muted)]">
                               {formatPrice(dispute.amount, dispute.currency)}
                             </span>
                           </div>
-                          <div className="mt-2 text-sm text-black/75">
+                          <div className="mt-2 text-sm text-[color:var(--editorial-muted)]">
                             原因：{dispute.reason || "未记录"}
                           </div>
-                          <div className="mt-2 space-y-1 text-xs text-black/50">
+                          <div className="mt-2 space-y-1 text-xs text-[color:var(--editorial-muted)]">
                             <div>Dispute ID: {dispute.externalDisputeId}</div>
                             <div>Charge: {dispute.externalChargeId || " - "}</div>
                             <div>PaymentIntent: {dispute.externalPaymentIntentId || " - "}</div>
@@ -736,7 +689,7 @@ export default function OrderDetailPage({
                             <div>关闭时间: {formatDate(dispute.closedAt)}</div>
                           </div>
                         </div>
-                        <div className="shrink-0 text-right text-xs text-black/45">
+                        <div className="shrink-0 text-right text-xs text-[color:var(--editorial-muted)]">
                           <div>创建 {formatDate(dispute.createdAt)}</div>
                           <div>更新 {formatDate(dispute.updatedAt)}</div>
                         </div>
@@ -749,32 +702,28 @@ export default function OrderDetailPage({
 
             <section className="rounded-2xl border border-black/10 bg-white/55 p-6 backdrop-blur-xl">
               <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-semibold text-black">退款</h2>
-                <span
-                  className={`rounded-full px-3 py-1 text-xs font-medium ${getPaymentStatusColor(
-                    order.paymentStatus
-                  )}`}
-                >
+                <h2 className="text-lg font-semibold text-[color:var(--editorial-text)]">退款</h2>
+                <StatusBadge domain="payment" status={order.paymentStatus || "OPEN"}>
                   {getPaymentStatusLabel(order.paymentStatus)}
-                </span>
+                </StatusBadge>
               </div>
 
               <div className="grid gap-3 sm:grid-cols-3">
                 <div className="rounded-xl border border-black/10 bg-white/70 p-3">
-                  <div className="text-xs text-black/45">已退款</div>
-                  <div className="mt-1 font-semibold text-black">
+                  <div className="text-xs text-[color:var(--editorial-muted)]">已退款</div>
+                  <div className="mt-1 font-semibold text-[color:var(--editorial-text)]">
                     {formatPrice(order.refundedAmount, order.currency)}
                   </div>
                 </div>
                 <div className="rounded-xl border border-black/10 bg-white/70 p-3">
-                  <div className="text-xs text-black/45">退款处理中</div>
-                  <div className="mt-1 font-semibold text-black">
+                  <div className="text-xs text-[color:var(--editorial-muted)]">退款处理中</div>
+                  <div className="mt-1 font-semibold text-[color:var(--editorial-text)]">
                     {formatPrice(order.pendingRefundAmount, order.currency)}
                   </div>
                 </div>
                 <div className="rounded-xl border border-black/10 bg-white/70 p-3">
-                  <div className="text-xs text-black/45">剩余可退</div>
-                  <div className="mt-1 font-semibold text-black">
+                  <div className="text-xs text-[color:var(--editorial-muted)]">剩余可退</div>
+                  <div className="mt-1 font-semibold text-[color:var(--editorial-text)]">
                     {formatPrice(order.refundableAmount, order.currency)}
                   </div>
                 </div>
@@ -782,7 +731,7 @@ export default function OrderDetailPage({
 
               <div className="mt-4 space-y-3 rounded-xl border border-black/10 bg-white/70 p-4">
                 <div>
-                  <label className="mb-2 block text-xs font-medium text-black/70">
+                  <label className="mb-2 block text-xs font-medium text-[color:var(--editorial-muted)]">
                     退款金额
                   </label>
                   <Input
@@ -796,7 +745,7 @@ export default function OrderDetailPage({
                   />
                 </div>
                 <div>
-                  <label className="mb-2 block text-xs font-medium text-black/70">
+                  <label className="mb-2 block text-xs font-medium text-[color:var(--editorial-muted)]">
                     退款原因
                   </label>
                   <textarea
@@ -804,13 +753,13 @@ export default function OrderDetailPage({
                     onChange={(event) => setRefundReason(event.target.value)}
                     rows={3}
                     data-testid="order-refund-reason"
-                    className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black placeholder:text-black/35"
+                    className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-[color:var(--editorial-text)] placeholder:text-[color:var(--editorial-muted)]"
                     placeholder="例如：买家取消、库存异常、售后补偿"
                     disabled={Boolean(refundEligibilityMessage) || refunding}
                   />
                 </div>
                 {refundEligibilityMessage ? (
-                  <div className="text-xs text-black/55">{refundEligibilityMessage}</div>
+                  <div className="text-xs text-[color:var(--editorial-muted)]">{refundEligibilityMessage}</div>
                 ) : null}
                 <div className="flex justify-end">
                   <Button
@@ -827,7 +776,7 @@ export default function OrderDetailPage({
 
               <div className="mt-4 space-y-3">
                 {order.refunds.length === 0 ? (
-                  <div className="rounded-xl border border-dashed border-black/10 bg-white/40 p-4 text-sm text-black/50">
+                  <div className="rounded-xl border border-dashed border-black/10 bg-white/40 p-4 text-sm text-[color:var(--editorial-muted)]">
                     还没有退款记录
                   </div>
                 ) : (
@@ -839,35 +788,33 @@ export default function OrderDetailPage({
                       <div className="flex items-start justify-between gap-4">
                         <div>
                           <div className="flex items-center gap-2">
-                            <span
-                              className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${getPaymentStatusColor(
-                                refund.status === "SUCCEEDED"
-                                  ? "REFUNDED"
-                                  : refund.status === "PENDING"
-                                    ? "OPEN"
-                                    : "FAILED"
-                              )}`}
-                            >
+                            <StatusBadge domain="payment" status={
+                              refund.status === "SUCCEEDED"
+                                ? "REFUNDED"
+                                : refund.status === "PENDING"
+                                  ? "OPEN"
+                                  : "FAILED"
+                            }>
                               {refund.status}
-                            </span>
-                            <span className="text-xs text-black/45">
+                            </StatusBadge>
+                            <span className="text-xs text-[color:var(--editorial-muted)]">
                               {formatDate(refund.refundedAt || refund.createdAt)}
                             </span>
                           </div>
-                          <div className="mt-2 text-sm text-black/75">
+                          <div className="mt-2 text-sm text-[color:var(--editorial-muted)]">
                             {refund.reason || "未填写退款原因"}
                           </div>
                           {refund.failureReason ? (
-                            <div className="mt-1 text-xs text-red-600">
+                            <div className="mt-1 text-xs text-[color:#9a4b3d]">
                               {refund.failureReason}
                             </div>
                           ) : null}
                         </div>
                         <div className="text-right">
-                          <div className="font-semibold text-black">
+                          <div className="font-semibold text-[color:var(--editorial-text)]">
                             {formatPrice(refund.amount, refund.currency)}
                           </div>
-                          <div className="mt-1 text-[11px] text-black/45">
+                          <div className="mt-1 text-[11px] text-[color:var(--editorial-muted)]">
                             {refund.externalRefundId || "等待外部退款 ID"}
                           </div>
                         </div>

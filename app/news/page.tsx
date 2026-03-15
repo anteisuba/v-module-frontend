@@ -9,10 +9,13 @@ import { newsArticleApi, pageApi } from "@/lib/api";
 import { ApiError, NetworkError } from "@/lib/api/errors";
 import { useI18n } from "@/lib/i18n/context";
 import PageLoading from "@/components/ui/PageLoading";
+import Alert from "@/components/ui/Alert";
+import LoadingState from "@/components/ui/LoadingState";
 import { useHeroMenu } from "@/features/home-hero/hooks/useHeroMenu";
 import HeroMenu from "@/features/home-hero/components/HeroMenu";
 import type { NewsArticle } from "@/lib/api/types";
 import type { PageConfig } from "@/domain/page-config/types";
+import { resolveBackgroundStyle } from "@/domain/page-config/constants";
 
 function NewsListContent() {
   const searchParams = useSearchParams();
@@ -79,7 +82,7 @@ function NewsListContent() {
       if (err instanceof ApiError || err instanceof NetworkError) {
         setError(err.message);
       } else {
-        setError("加载文章列表失败");
+        setError(t("common.loadError") ?? "Failed to load");
       }
     } finally {
       setLoading(false);
@@ -91,21 +94,7 @@ function NewsListContent() {
     void loadArticles();
   }, [loadArticles]);
 
-  // 获取背景样式
-  const getBackgroundStyle = (): React.CSSProperties => {
-    const newsBg = pageConfig?.newsBackground;
-    if (newsBg && newsBg.type && newsBg.value && newsBg.value.trim() !== "") {
-      return newsBg.type === "color"
-        ? { backgroundColor: newsBg.value }
-        : {
-            backgroundImage: `url(${newsBg.value})`,
-            backgroundSize: "cover",
-            backgroundPosition: "center",
-            backgroundRepeat: "no-repeat",
-          };
-    }
-    return { backgroundColor: "#000000" };
-  };
+  const getBackgroundStyle = () => resolveBackgroundStyle(pageConfig?.newsBackground);
 
   // 初始加载时显示完整的加载页面（避免黑屏）
   if (loading && (isInitialLoad || articles.length === 0)) {
@@ -151,24 +140,24 @@ function NewsListContent() {
               href={backUrl}
               className="editorial-button min-h-11 border-white/14 bg-black/26 px-4 py-2.5 text-[11px] text-white backdrop-blur-md hover:bg-black/40"
             >
-              Back
+              {t("common.back")}
             </Link>
           ) : null}
         </div>
 
         {error && (
-          <div className="mb-4 rounded-[1.2rem] border border-red-400/24 bg-red-500/10 p-4 text-sm text-red-100">
-            {error}
-          </div>
+          <Alert type="error" message={error} className="rounded-[1.2rem]" />
         )}
 
         {loading && (
-          <div className="py-12 text-center text-white/56">加载中...</div>
+          <div className="py-12 flex justify-center">
+            <LoadingState message={t("common.loading")} />
+          </div>
         )}
 
         {!loading && articles.length === 0 && (
-          <div className="reveal editorial-panel px-6 py-16 text-center text-white/56">
-            暂无文章
+          <div className="reveal editorial-panel px-6 py-16 text-center" style={{ color: "var(--editorial-muted)" }}>
+            {t("common.noContent") ?? "No content yet"}
           </div>
         )}
 
@@ -206,20 +195,22 @@ function NewsListContent() {
               type="button"
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
+              aria-label={t("common.previous")}
               className="editorial-button min-h-11 border-white/14 bg-black/26 px-4 py-2.5 text-[11px] text-white backdrop-blur-md disabled:opacity-40"
             >
-              前へ
+              {t("common.previous")}
             </button>
-            <span className="text-[11px] uppercase tracking-[0.18em] text-white/44">
+            <span className="text-[11px] uppercase tracking-[0.18em] text-white/44" aria-current="page">
               {currentPage} / {totalPages}
             </span>
             <button
               type="button"
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
+              aria-label={t("common.next")}
               className="editorial-button min-h-11 border-white/14 bg-black/26 px-4 py-2.5 text-[11px] text-white backdrop-blur-md disabled:opacity-40"
             >
-              次へ
+              {t("common.next")}
             </button>
           </div>
         )}

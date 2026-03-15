@@ -148,6 +148,6 @@
 - `GET /api/shop/orders/[id]` 支持卖家会话读取；访客公开读取时必须显式提供 `buyerEmail`
 - `PUT /api/shop/orders/[id]` 与 `POST /api/shop/orders/[id]/refunds` 仅面向卖家后台；Stripe 待支付订单不能在后台手工标记为 `PAID`
 - `POST /api/payments/stripe/webhook` 处理 Stripe `checkout.session.completed`、`checkout.session.async_payment_succeeded`、`checkout.session.async_payment_failed`、`checkout.session.expired` 和 dispute
-- `POST /api/payments/stripe/connect/webhook` 与 `/api/payments/connect/accounts/*` 仅面向卖家 Stripe Connect 收款账户同步 / onboarding 流程
+- `POST /api/payments/stripe/connect/webhook` 与 `/api/payments/connect/accounts/*` 仅面向卖家 Stripe Connect 收款账户同步 / onboarding 流程；其中 Connect webhook 会先用 Connect secret 验签，再处理 `account.updated`、`account.external_account.*` 和 `payout.*`
 - `GET /api/shop/payments/reconciliation` 与 `GET/POST/PATCH /api/shop/payments/settlements` 仅面向卖家后台支付运维；其中对账接口支持 `start`、`end`、`paymentRoutingMode`、`connectedAccountId` 和 `export=events|anomalies`，返回已带 `paymentRoutingMode`、connected account、charge / transfer、platform fee、seller net 等快照字段
 - `POST /api/internal/cron/stripe-finance-sync` 是内部同步入口，不应暴露为公开业务 API；配置邮件与 `FINANCE_ALERT_SLACK_WEBHOOK_URL` 后，会在发现支付对账 / 结算异常时发送告警

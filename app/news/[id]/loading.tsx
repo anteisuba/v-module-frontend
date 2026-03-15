@@ -12,7 +12,7 @@ export default function NewsDetailLoading() {
   const { t } = useI18n();
   return (
     <div className="flex min-h-screen items-center justify-center bg-white">
-      <p className="text-black/60">{t("common.loading")}</p>
+      <p className="text-[color:var(--editorial-muted)]">{t("common.loading")}</p>
     </div>
   );
 }

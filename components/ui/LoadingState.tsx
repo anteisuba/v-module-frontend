@@ -30,7 +30,10 @@ export default function LoadingState({
 
   if (type === "skeleton") {
     return (
-      <div className={`animate-pulse bg-black/10 rounded-lg ${className}`}>
+      <div
+        className={`animate-pulse rounded-lg ${className}`}
+        style={{ background: "color-mix(in srgb, var(--editorial-border) 40%, transparent)" }}
+      >
         <div className="h-20 w-full" />
       </div>
     );
@@ -40,12 +43,18 @@ export default function LoadingState({
     return (
       <div className={`space-y-2 ${className}`}>
         {message && (
-          <p className="text-xs text-black/70">{message}</p>
+          <p className="text-xs" style={{ color: "var(--editorial-muted)" }}>{message}</p>
         )}
-        <div className="w-full bg-black/10 rounded-full h-2">
+        <div
+          className="w-full rounded-full h-2"
+          style={{ background: "color-mix(in srgb, var(--editorial-border) 50%, transparent)" }}
+        >
           <div
-            className="bg-black h-2 rounded-full transition-all duration-300"
-            style={{ width: `${Math.min(100, Math.max(0, progress))}%` }}
+            className="h-2 rounded-full transition-all duration-300"
+            style={{
+              width: `${Math.min(100, Math.max(0, progress))}%`,
+              background: "var(--editorial-accent)",
+            }}
             role="progressbar"
             aria-valuenow={progress}
             aria-valuemin={0}
@@ -53,7 +62,7 @@ export default function LoadingState({
           />
         </div>
         {progress !== undefined && (
-          <p className="text-xs text-black/50 text-right">{progress}%</p>
+          <p className="text-xs text-right" style={{ color: "var(--editorial-muted)" }}>{progress}%</p>
         )}
       </div>
     );
@@ -62,12 +71,13 @@ export default function LoadingState({
   return (
     <div className={`flex items-center gap-2 ${className}`}>
       <div
-        className={`animate-spin rounded-full border-2 border-black border-t-transparent ${sizeClasses[size]}`}
+        className={`animate-spin rounded-full border-2 border-t-transparent ${sizeClasses[size]}`}
+        style={{ borderColor: "var(--editorial-accent)", borderTopColor: "transparent" }}
         role="status"
         aria-label={message || t("common.loading")}
       />
       {message && (
-        <span className="text-xs text-black/70">{message}</span>
+        <span className="text-xs" style={{ color: "var(--editorial-muted)" }}>{message}</span>
       )}
     </div>
   );

@@ -83,6 +83,7 @@
         "backToDashboard": "返回编辑目录",
         "emptyState": "当前还没有创建 Stripe 收款账户。开始绑定后，Stripe 会引导你完成基础资料、收款能力和银行卡设置。",
         "sections": {
+          "alerts": "异常状态与处理建议",
           "guide": "使用说明",
           "progress": "Onboarding 进度",
           "account": "账户概览",
@@ -90,6 +91,39 @@
           "currentlyDue": "当前待补资料",
           "pastDue": "已逾期待补资料",
           "eventuallyDue": "后续可能需要补充"
+        },
+        "alerts": {
+          "intro": "当 Stripe 返回限制、断开或能力异常时，这里会按优先级给出处理提示。先解决这些异常，再看下方进度和常规说明。",
+          "tone": {
+            "critical": "高优先级",
+            "warning": "需要关注",
+            "info": "跟进中"
+          },
+          "disconnected": {
+            "title": "收款账户已断开",
+            "description": "当前 connected account 已被删除或断开，新的订单不会继续走卖家独立收款链路。",
+            "detail": "重新开始 Stripe 收款绑定，系统会恢复卖家独立收款所需的账户连接。"
+          },
+          "restricted": {
+            "title": "收款账户当前受限",
+            "description": "Stripe 检测到这个账户存在逾期或受限项，可能影响收款、退款或打款。",
+            "detail": "优先重新进入 Stripe 收款设置处理限制项，完成后回到这里同步状态。"
+          },
+          "currentlyDue": {
+            "title": "仍有待补资料",
+            "description": "Stripe 还在等待补充资料或校验结果，在补齐前能力可能不会完全生效。",
+            "detail": "继续完成 onboarding 表单并同步状态，优先处理当前待补项。"
+          },
+          "chargesReview": {
+            "title": "收款能力仍在审核中",
+            "description": "资料已提交，但 Stripe 还没有完全开启收款能力。",
+            "detail": "可以先等待 Stripe 审核，稍后点击“同步 Stripe 状态”刷新 capabilities。"
+          },
+          "payoutsPending": {
+            "title": "打款能力尚未生效",
+            "description": "这个账户已经能收款，但 Stripe 还没有完全开启 payout 到银行卡。",
+            "detail": "优先在 Stripe Express Dashboard 核对银行卡和 payout 设置，再回到这里同步状态。"
+          }
         },
         "guide": {
           "overview": "这个页面管理的是卖家的 Stripe Connect 收款账户，不是站内余额。买家支付后，Stripe 会先把资金记到卖家的 connected account，再按 payout 节奏打到绑定银行卡。",
@@ -179,6 +213,7 @@
           "country": "国家 / 地区",
           "defaultCurrency": "默认货币",
           "lastSyncedAt": "最近同步",
+          "disconnectedAt": "断开时间",
           "detailsSubmitted": "资料已提交",
           "chargesEnabled": "可收款",
           "payoutsEnabled": "可打款",

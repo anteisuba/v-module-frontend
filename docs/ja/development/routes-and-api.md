@@ -145,6 +145,6 @@
 - `GET /api/shop/orders/[id]` は売り手セッションでも、`buyerEmail` を明示した公開参照でも利用できる
 - `PUT /api/shop/orders/[id]` と `POST /api/shop/orders/[id]/refunds` は売り手管理用。Stripe 未決済注文を手動で `PAID` にはできない
 - `POST /api/payments/stripe/webhook` は Checkout 成功、非同期成功 / 失敗、期限切れ、dispute を処理する
-- `POST /api/payments/stripe/connect/webhook` と `/api/payments/connect/accounts/*` は売り手の Stripe Connect 口座同期 / onboarding 用
+- `POST /api/payments/stripe/connect/webhook` と `/api/payments/connect/accounts/*` は売り手の Stripe Connect 口座同期 / onboarding 用であり、Connect webhook はまず Connect secret で署名検証を行ったうえで `account.updated`、`account.external_account.*`、`payout.*` を処理する
 - `GET /api/shop/payments/reconciliation` と `GET/POST/PATCH /api/shop/payments/settlements` は支払い運用向けで、照合 API は `start`、`end`、`paymentRoutingMode`、`connectedAccountId`、`export=events|anomalies` を受け取り、`paymentRoutingMode`、connected account、charge / transfer、platform fee、seller net のスナップショットを返す
 - `POST /api/internal/cron/stripe-finance-sync` は内部同期用で、公開 API として扱わない。メール設定と `FINANCE_ALERT_SLACK_WEBHOOK_URL` がある場合、支払い照合 / 精算異常を検出したときに通知を送る

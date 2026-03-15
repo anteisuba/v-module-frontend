@@ -10,6 +10,7 @@ import {
   Button,
   EditorialAuthLayout,
   Input,
+  Alert,
 } from "@/components/ui";
 import { userApi } from "@/lib/api";
 import { ApiError, NetworkError } from "@/lib/api/errors";
@@ -120,9 +121,7 @@ export default function RegisterPage() {
               />
 
               {error ? (
-                <div className="rounded-[1.2rem] border border-red-500/25 bg-red-500/8 px-4 py-3 text-sm text-red-700">
-                  {error}
-                </div>
+                <Alert type="error" message={error} className="rounded-[1.2rem]" />
               ) : null}
 
               <Button

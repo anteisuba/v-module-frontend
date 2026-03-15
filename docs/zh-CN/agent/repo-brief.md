@@ -19,14 +19,15 @@
 - 用户注册、登录、退出、密码重置
 - `/u/[slug]` 配置驱动公开页
 - 页面配置读写会自动清理 legacy `links` section，不再留下空白公开卡片
-- 已接入 `Vitest + Playwright` 测试文件；当前 `pnpm test` 为 `30` 个文件 `102` 个测试通过，Playwright 现有 `11` 个 e2e 规格已配置为 Chromium / Firefox / WebKit 三浏览器矩阵，且 GitHub Actions 已在 PR / push 上持续执行 `check / test / build / lint + Playwright`
+- 已接入 `Vitest + Playwright` 测试文件；当前 `pnpm test` 为 `31` 个文件 `111` 个测试通过，Playwright 现有 `11` 个 e2e 规格已配置为 Chromium / Firefox / WebKit 三浏览器矩阵，且 GitHub Actions 已在 PR / push 上持续执行 `check / test / build / lint + Playwright`
 - 已补 Stripe Webhook、认证 / 权限边界与公开页渲染链路测试，并沉淀页面配置、会话、Stripe 事件共享 fixture
 - 内部 `stripe-finance-sync` 现已可在发现支付对账 / 结算异常时向卖家邮箱发送告警，并可选推送 Slack 汇总
 - 公开下单成功页已可读取订单详情，使用 `orderId + buyerEmail` 作为访客访问边界，并在需要时补做支付确认
 - 卖家后台订单列表已支持搜索、状态过滤和 CSV 导出；订单导出与详情页都已包含 Connect routing 快照，便于关联支付时间线与退款记录
 - 已接入 Stripe Checkout + Webhook：公开结账会创建 Checkout Session，支付成功后回写订单并触发邮件通知
+- Connect webhook 已对 `account.updated`、`account.external_account.*`、`payout.*` 做独立 secret 验签，并将 connected account payout 快照回写到结算模型
 - 已提供 Stripe 对账页、结算核销页、内部定时同步接口和 dispute 记录
-- 已提供卖家 Stripe Connect payout settings、onboarding / sync / dashboard link API，以及 `PLATFORM` fallback；payout settings 页已补资金流、操作顺序、状态说明和 onboarding 进度提示
+- 已提供卖家 Stripe Connect payout settings、onboarding / sync / dashboard link API，以及 `PLATFORM` fallback；payout settings 页已补资金流、操作顺序、状态说明、onboarding 进度提示和异常状态引导
 - 后台 CMS / 博客 / 商店编辑已统一为 tab + 折叠面板骨架，保留草稿保存和发布能力
 - 新闻列表 / 详情 / 后台编辑
 - 博客列表 / 详情 / 点赞 / 评论提交，评论默认进入审核队列；卖家后台可在 `/admin/comments` 审核与删除
@@ -37,7 +38,7 @@
 ## 当前已知缺口
 
 - Playwright 已接入 CI 且已配置多浏览器矩阵；当前缺口主要是更细粒度的 flaky 治理和剩余高风险链路补测
-- Stripe Connect 运营视角仍可继续补异常状态引导
+- Stripe Connect 运营视角当前剩余优先缺口已转到 Connect 账户状态定期同步的健康检查日志和 dispute 证据提交引导
 - 正式支付路线仍是 Stripe 单一通道；PayPal / 本地支付方式已后置
 
 ## AI 阅读顺序

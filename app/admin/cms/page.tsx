@@ -376,7 +376,7 @@ function CMSPageContent() {
           onToggle={(panelId) => togglePanel(activeTab, panelId)}
         />
 
-        <div className="mt-6 text-[10px] text-black/50 text-center">
+        <div className="mt-6 text-[10px] text-[color:var(--editorial-muted)] text-center">
           {t("cms.instruction")}
         </div>
 

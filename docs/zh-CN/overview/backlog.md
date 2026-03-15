@@ -33,7 +33,8 @@
 ## P1：工程稳定性与 Stripe 运维闭环
 
 - 把现有 Playwright 场景正式纳入持续执行：当前已接入 GitHub Actions，在 PR / push 上运行 `check / test / build / lint`，并以 Chromium / Firefox / WebKit 矩阵执行 `11` 个 e2e 规格；失败时会上传 Playwright 产物。README badge 和一轮高风险测试扩面已落地，测试侧下一步优先做 flaky 治理和剩余高风险链路补测
-- 继续补强 Stripe Connect 运维视角；对账页的 routing / account 维度筛选、结算核销页按 payout 状态分组、异常邮件 / Slack 告警、订单 CSV Connect 字段导出、payout settings 说明和 onboarding 进度提示已经落地，下一步优先补异常状态引导，而不是切回 PayPal 优先级
+- 交付链路方面，Vercel 生产部署与 Preview Deployments 已接入；当前剩余决策主要是是否引入 `changesets` 统一版本记录和 release note，而不是继续补 Preview 基线
+- 继续补强 Stripe Connect 运维视角；对账页的 routing / account 维度筛选、结算核销页按 payout 状态分组、异常邮件 / Slack 告警、订单 CSV Connect 字段导出、payout settings 说明、onboarding 进度提示、异常状态引导，以及 Connect webhook 对 `account.updated` / `account.external_account.*` / `payout.*` 的验签和 payout 快照回写都已经落地；下一步优先补 Connect 账户状态定期同步的健康检查日志和 dispute 证据提交流程，而不是切回 PayPal 优先级
 - 维持当前脚本基线：继续使用 `scripts/run-node-tool.mjs`、`scripts/run-prisma-generate.mjs` 和对应 preload 兼容层，避免 Next / Playwright / Prisma 的工具噪音重新回流到主链路
 
 ## TODO：支付扩展

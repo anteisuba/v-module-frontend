@@ -11,6 +11,7 @@ import {
   Input,
   LanguageSelector,
   LoadingState,
+  StatusBadge,
 } from "@/components/ui";
 import { blogApi } from "@/lib/api";
 import { useUser } from "@/lib/context/UserContext";
@@ -193,15 +194,7 @@ export default function CommentsPage() {
     return labels[status];
   }
 
-  function getStatusColor(status: CommentStatus) {
-    const colors: Record<CommentStatus, string> = {
-      PENDING: "bg-yellow-100 text-yellow-700",
-      APPROVED: "bg-emerald-100 text-emerald-700",
-      REJECTED: "bg-gray-100 text-gray-700",
-    };
-
-    return colors[status];
-  }
+  // 状态颜色通过 StatusBadge 组件统一管理
 
   if (userLoading || loading) {
     return (
@@ -235,8 +228,8 @@ export default function CommentsPage() {
         </div>
 
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-black">{t("comments.title")}</h1>
-          <p className="mt-1 text-sm text-black/70">
+          <h1 className="text-2xl font-bold text-[color:var(--editorial-text)]">{t("comments.title")}</h1>
+          <p className="mt-1 text-sm text-[color:var(--editorial-muted)]">
             {t("comments.description")}
           </p>
         </div>
@@ -244,7 +237,7 @@ export default function CommentsPage() {
         <div className="mb-6 rounded-xl border border-black/10 bg-white/55 p-4 backdrop-blur-xl">
           <div className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px_auto] md:items-end">
             <div>
-              <label className="mb-2 block text-xs font-medium text-black/70">
+              <label className="mb-2 block text-xs font-medium text-[color:var(--editorial-muted)]">
                 {t("comments.filters.searchLabel")}
               </label>
               <Input
@@ -255,7 +248,7 @@ export default function CommentsPage() {
             </div>
 
             <div>
-              <label className="mb-2 block text-xs font-medium text-black/70">
+              <label className="mb-2 block text-xs font-medium text-[color:var(--editorial-muted)]">
                 {t("comments.filters.statusLabel")}
               </label>
               <select
@@ -263,7 +256,7 @@ export default function CommentsPage() {
                 onChange={(event) =>
                   setStatusFilter(event.target.value as StatusFilter)
                 }
-                className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-black"
+                className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-[color:var(--editorial-text)]"
               >
                 <option value="ALL">{t("comments.filters.statusAll")}</option>
                 <option value="PENDING">{t("comments.status.pending")}</option>
@@ -287,7 +280,7 @@ export default function CommentsPage() {
             </div>
           </div>
 
-          <div className="mt-3 flex items-center justify-between text-xs text-black/55">
+          <div className="mt-3 flex items-center justify-between text-xs text-[color:var(--editorial-muted)]">
             <span>
               {t("comments.list.currentResults").replace(
                 "{count}",
@@ -300,32 +293,32 @@ export default function CommentsPage() {
 
         <div className="mb-6 grid gap-4 md:grid-cols-4">
           <div className="rounded-xl border border-black/10 bg-white/55 p-4 backdrop-blur-xl">
-            <div className="text-sm text-black/60">{t("comments.stats.total")}</div>
-            <div className="mt-1 text-2xl font-bold text-black">
+            <div className="text-sm text-[color:var(--editorial-muted)]">{t("comments.stats.total")}</div>
+            <div className="mt-1 text-2xl font-bold text-[color:var(--editorial-text)]">
               {summary.total}
             </div>
           </div>
           <div className="rounded-xl border border-black/10 bg-white/55 p-4 backdrop-blur-xl">
-            <div className="text-sm text-black/60">
+            <div className="text-sm text-[color:var(--editorial-muted)]">
               {t("comments.stats.pending")}
             </div>
-            <div className="mt-1 text-2xl font-bold text-black">
+            <div className="mt-1 text-2xl font-bold text-[color:var(--editorial-text)]">
               {summary.pending}
             </div>
           </div>
           <div className="rounded-xl border border-black/10 bg-white/55 p-4 backdrop-blur-xl">
-            <div className="text-sm text-black/60">
+            <div className="text-sm text-[color:var(--editorial-muted)]">
               {t("comments.stats.approved")}
             </div>
-            <div className="mt-1 text-2xl font-bold text-black">
+            <div className="mt-1 text-2xl font-bold text-[color:var(--editorial-text)]">
               {summary.approved}
             </div>
           </div>
           <div className="rounded-xl border border-black/10 bg-white/55 p-4 backdrop-blur-xl">
-            <div className="text-sm text-black/60">
+            <div className="text-sm text-[color:var(--editorial-muted)]">
               {t("comments.stats.rejected")}
             </div>
-            <div className="mt-1 text-2xl font-bold text-black">
+            <div className="mt-1 text-2xl font-bold text-[color:var(--editorial-text)]">
               {summary.rejected}
             </div>
           </div>
@@ -341,7 +334,7 @@ export default function CommentsPage() {
 
         {comments.length === 0 ? (
           <div className="rounded-2xl border border-black/10 bg-white/55 p-12 text-center backdrop-blur-xl">
-            <p className="text-black/60">
+            <p className="text-[color:var(--editorial-muted)]">
               {debouncedQuery || statusFilter !== "ALL"
                 ? t("comments.list.emptyFiltered")
                 : t("comments.list.empty")}
@@ -357,16 +350,12 @@ export default function CommentsPage() {
                 <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                   <div className="min-w-0 flex-1">
                     <div className="mb-2 flex flex-wrap items-center gap-2">
-                      <span className="font-semibold text-black">
+                      <span className="font-semibold text-[color:var(--editorial-text)]">
                         {comment.user?.displayName || comment.userName}
                       </span>
-                      <span
-                        className={`rounded px-2 py-0.5 text-xs ${getStatusColor(
-                          comment.status
-                        )}`}
-                      >
+                      <StatusBadge domain="comment" status={comment.status}>
                         {getStatusLabel(comment.status)}
-                      </span>
+                      </StatusBadge>
                       {comment.user ? (
                         <span className="text-xs text-blue-600">
                           @{comment.user.slug}
@@ -374,7 +363,7 @@ export default function CommentsPage() {
                       ) : null}
                     </div>
 
-                    <div className="space-y-1 text-sm text-black/65">
+                    <div className="space-y-1 text-sm text-[color:var(--editorial-muted)]">
                       <p>
                         {t("comments.list.postLabel")}
                         {" "}
@@ -407,7 +396,7 @@ export default function CommentsPage() {
                       </p>
                     </div>
 
-                    <p className="mt-4 whitespace-pre-wrap rounded-xl border border-black/10 bg-white/70 p-4 text-sm leading-relaxed text-black/85">
+                    <p className="mt-4 whitespace-pre-wrap rounded-xl border border-black/10 bg-white/70 p-4 text-sm leading-relaxed text-[color:var(--editorial-text)]">
                       {comment.content}
                     </p>
                   </div>

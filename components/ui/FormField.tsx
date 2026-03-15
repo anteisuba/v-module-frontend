@@ -45,19 +45,21 @@ export default function FormField({
     <div className={`space-y-1.5 ${className}`}>
       <label
         htmlFor={fieldId}
-        className="block text-xs font-medium text-black"
+        className="block text-xs font-medium"
+        style={{ color: "var(--editorial-text)" }}
       >
         {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        {required && <span className="ml-1" style={{ color: "#9a4b3d" }}>*</span>}
       </label>
 
       <div
         className={[
           "relative",
-          error && "ring-1 ring-red-500 rounded-lg",
+          error && "ring-1 rounded-lg",
         ]
           .filter(Boolean)
           .join(" ")}
+        style={error ? { "--tw-ring-color": "#9a4b3d" } as React.CSSProperties : undefined}
       >
         {isValidElement<FormFieldChildProps>(children)
           ? cloneElement(children, {
@@ -71,7 +73,7 @@ export default function FormField({
                 .join(" ") || undefined,
               className: [
                 children.props.className,
-                error && "border-red-500",
+                error && "border-[#9a4b3d]",
               ]
                 .filter(Boolean)
                 .join(" "),
@@ -82,7 +84,8 @@ export default function FormField({
       {helpText && !error && (
         <p
           id={helpId}
-          className="text-[10px] text-black/50"
+          className="text-[10px]"
+          style={{ color: "var(--editorial-muted)" }}
         >
           {helpText}
         </p>
@@ -91,7 +94,8 @@ export default function FormField({
       {error && (
         <p
           id={errorId}
-          className="text-xs text-red-600 flex items-center gap-1"
+          className="text-xs flex items-center gap-1"
+          style={{ color: "#9a4b3d" }}
           role="alert"
         >
           <span>⚠</span>
