@@ -303,7 +303,7 @@ export default function BlogDetail({
               </button>
 
               {showShareMenu && (
-                <div className="absolute bottom-full right-0 z-50 mb-2 w-44 overflow-hidden rounded-[1.2rem] border border-white/10 bg-[color:color-mix(in_srgb,var(--editorial-surface-strong)_98%,transparent)] shadow-[0_20px_70px_rgba(0,0,0,0.24)]">
+                <div className="absolute bottom-full right-0 z-50 mb-2 w-44 overflow-hidden rounded-[1.2rem] border border-white/10 bg-[color:color-mix(in_srgb,var(--editorial-surface-strong)_98%,transparent)] shadow-[0_20px_70px_rgba(17,12,6,0.24)]">
                   <button
                     type="button"
                     onClick={handleCopyLink}

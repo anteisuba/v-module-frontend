@@ -208,7 +208,7 @@ function ToastNotification({ toast, onClose }: ToastNotificationProps) {
         px-4 py-3
         rounded-lg
         border
-        shadow-lg
+        shadow-[0_8px_32px_rgba(17,12,6,0.1)]
         ${style.bg}
         ${style.border}
         animate-toast-in

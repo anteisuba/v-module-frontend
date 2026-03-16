@@ -47,7 +47,7 @@ export function AdminEditorCard({
   return (
     <div
       className={joinClasses(
-        "editorial-panel border-[color:var(--editorial-border)] bg-[color:var(--editorial-surface-strong)] shadow-[0_24px_72px_rgba(17,12,6,0.12)] backdrop-blur-xl",
+        "editorial-panel border-[color:var(--editorial-border)] bg-[color:var(--editorial-surface-strong)] backdrop-blur-xl",
         className
       )}
     >

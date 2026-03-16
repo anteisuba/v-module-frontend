@@ -9,6 +9,7 @@ const {
   sendStripeFinanceAnomalyAlertsMock,
   syncStripeSettlementLedgerMock,
   syncStripeDisputesForUserMock,
+  checkConnectAccountHealthMock,
 } = vi.hoisted(() => ({
   findManyMock: vi.fn(),
   userFindManyMock: vi.fn(),
@@ -18,6 +19,7 @@ const {
   sendStripeFinanceAnomalyAlertsMock: vi.fn(),
   syncStripeSettlementLedgerMock: vi.fn(),
   syncStripeDisputesForUserMock: vi.fn(),
+  checkConnectAccountHealthMock: vi.fn(),
 }));
 
 vi.mock("@/lib/prisma", () => ({
@@ -39,6 +41,7 @@ vi.mock("@/domain/shop", () => ({
   sendStripeFinanceAnomalyAlerts: sendStripeFinanceAnomalyAlertsMock,
   syncStripeSettlementLedger: syncStripeSettlementLedgerMock,
   syncStripeDisputesForUser: syncStripeDisputesForUserMock,
+  checkConnectAccountHealth: checkConnectAccountHealthMock,
 }));
 
 import {
@@ -53,6 +56,12 @@ describe("stripe finance cron route", () => {
     vi.clearAllMocks();
     process.env.CRON_SECRET = "cron-secret";
     hasStripeFinanceAlertDestinationsMock.mockReturnValue(false);
+    checkConnectAccountHealthMock.mockResolvedValue({
+      checked: 0,
+      drifted: 0,
+      resynced: 0,
+      errors: 0,
+    });
     sendStripeFinanceAnomalyAlertsMock.mockResolvedValue({
       enabled: false,
       alertedUserCount: 0,

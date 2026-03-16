@@ -12,7 +12,10 @@
       "Bash(pnpm check:*)",
       "Bash(pnpm add:*)",
       "Bash(pnpm changeset:*)",
-      "Bash(ls /Users/fulina/Desktop/workspace/vtuber-blog/v-module-frontend/app/api/shop/orders/[id]/)"
+      "Bash(ls /Users/fulina/Desktop/workspace/vtuber-blog/v-module-frontend/app/api/shop/orders/[id]/)",
+      "Bash(ls -la /Users/fulina/Desktop/workspace/vtuber-blog/v-module-frontend/*.ts /Users/fulina/Desktop/workspace/vtuber-blog/v-module-frontend/*.js 2>/dev/null | grep -v node_modules)",
+      "Bash(ls -1 /Users/fulina/Desktop/workspace/vtuber-blog/v-module-frontend/components/ui/*.tsx | wc -l)",
+      "Bash(pnpm test:*)"
     ]
   }
 }

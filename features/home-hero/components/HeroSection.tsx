@@ -139,11 +139,11 @@ export default function HeroSection({
                   Editorial landing
                 </div>
                 <div className="mt-5 h-px w-28 bg-white/18" />
-                <h1 className="mt-8 font-serif text-[clamp(3.4rem,8vw,7.5rem)] font-light leading-[0.92] tracking-[0.03em] text-white drop-shadow-[0_20px_60px_rgba(0,0,0,0.32)]">
+                <h1 className="mt-8 font-serif text-[clamp(3.4rem,8vw,7.5rem)] font-light leading-[0.92] tracking-[0.03em] text-white drop-shadow-[0_20px_60px_rgba(17,12,6,0.32)]">
                   {title}
                 </h1>
                 {subtitle ? (
-                  <p className="mt-6 max-w-2xl text-base leading-8 text-white/78 drop-shadow-[0_10px_30px_rgba(0,0,0,0.2)] sm:text-lg">
+                  <p className="mt-6 max-w-2xl text-base leading-8 text-white/78 drop-shadow-[0_10px_30px_rgba(17,12,6,0.2)] sm:text-lg">
                     {subtitle}
                   </p>
                 ) : null}

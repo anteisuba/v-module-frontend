@@ -39,7 +39,7 @@ function ProductCard({ product, userSlug, formatPrice }: {
     <Link
       href={`/u/${userSlug}/shop/${product.id}`}
       data-testid={`public-user-shop-product-${product.id}`}
-      className="group reveal overflow-hidden rounded-[1.8rem] border border-white/10 bg-[color:color-mix(in_srgb,var(--editorial-surface-strong)_92%,transparent)] backdrop-blur-xl shadow-[0_24px_80px_rgba(0,0,0,0.22)] transition-transform hover:-translate-y-1"
+      className="group reveal overflow-hidden rounded-[1.8rem] border border-white/10 bg-[color:color-mix(in_srgb,var(--editorial-surface-strong)_92%,transparent)] backdrop-blur-xl shadow-[0_24px_72px_rgba(17,12,6,0.12)] transition-colors hover:border-white/20"
     >
       {imageSrc && !imageError ? (
         <div className="relative h-64 w-full overflow-hidden">

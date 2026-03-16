@@ -95,7 +95,7 @@ export default function PublicShopCatalog({
                 <article
                   key={product.id}
                   data-testid={`public-shop-catalog-product-${product.id}`}
-                  className="reveal overflow-hidden rounded-[1.9rem] border border-[color:color-mix(in_srgb,var(--editorial-border)_86%,transparent)] bg-[color:color-mix(in_srgb,var(--editorial-surface-strong)_94%,transparent)] shadow-[0_24px_80px_rgba(0,0,0,0.12)]"
+                  className="reveal overflow-hidden rounded-[1.9rem] border border-[color:color-mix(in_srgb,var(--editorial-border)_86%,transparent)] bg-[color:color-mix(in_srgb,var(--editorial-surface-strong)_94%,transparent)] shadow-[0_24px_72px_rgba(17,12,6,0.12)]"
                 >
                   <Link
                     href={productHref}

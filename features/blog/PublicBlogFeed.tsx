@@ -92,7 +92,7 @@ export default function PublicBlogFeed({ posts }: PublicBlogFeedProps) {
                 <article
                   key={post.id}
                   data-testid={`public-blog-feed-post-${post.id}`}
-                  className="reveal grid gap-0 overflow-hidden rounded-[2rem] border border-[color:color-mix(in_srgb,var(--editorial-border)_86%,transparent)] bg-[color:color-mix(in_srgb,var(--editorial-surface-strong)_94%,transparent)] shadow-[0_24px_80px_rgba(0,0,0,0.12)] md:grid-cols-[300px_minmax(0,1fr)]"
+                  className="reveal grid gap-0 overflow-hidden rounded-[2rem] border border-[color:color-mix(in_srgb,var(--editorial-border)_86%,transparent)] bg-[color:color-mix(in_srgb,var(--editorial-surface-strong)_94%,transparent)] shadow-[0_24px_72px_rgba(17,12,6,0.12)] md:grid-cols-[300px_minmax(0,1fr)]"
                 >
                   <Link
                     href={postHref}

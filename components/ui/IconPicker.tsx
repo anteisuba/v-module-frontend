@@ -534,7 +534,7 @@ export function IconPicker({ value, onChange, disabled = false }: IconPickerProp
       {isOpen && !disabled && (
         <div
           ref={popupRef}
-          className="absolute left-0 top-full z-[10000] mt-2 w-full min-w-[400px] rounded-xl border border-black/10 bg-white shadow-2xl"
+          className="absolute left-0 top-full z-[10000] mt-2 w-full min-w-[400px] rounded-xl border border-black/10 bg-white shadow-[0_16px_48px_rgba(17,12,6,0.14)]"
           onClick={handlePopupClick}
         >
             {/* 搜索和分类 */}

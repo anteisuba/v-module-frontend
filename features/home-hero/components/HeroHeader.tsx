@@ -32,7 +32,7 @@ export default function HeroHeader({
             className="flex items-center gap-4 select-none"
           >
             <div
-              className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-[1.35rem] border border-white/14 bg-black/26 backdrop-blur-md shadow-[0_20px_60px_rgba(0,0,0,0.22)]"
+              className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-[1.35rem] border border-white/14 bg-black/26 backdrop-blur-md shadow-[0_20px_60px_rgba(17,12,6,0.22)]"
               style={{ opacity: logo?.opacity ?? 1 }}
             >
               {logo?.src ? (

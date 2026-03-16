@@ -89,7 +89,7 @@ function DashboardCard({
   loading?: boolean;
 }) {
   return (
-    <div className="flex flex-col rounded-[1.4rem] border border-[color:color-mix(in_srgb,var(--editorial-border)_70%,transparent)] bg-[color:color-mix(in_srgb,var(--editorial-surface-strong)_96%,transparent)] shadow-[0_8px_32px_rgba(0,0,0,0.06)]">
+    <div className="flex flex-col rounded-[1.4rem] border border-[color:color-mix(in_srgb,var(--editorial-border)_70%,transparent)] bg-[color:color-mix(in_srgb,var(--editorial-surface-strong)_96%,transparent)] shadow-[0_8px_32px_rgba(17,12,6,0.06)]">
       <div className="flex flex-1 flex-col gap-4 p-5 sm:p-6">
         <div>
           <div className="flex items-start justify-between gap-3">
@@ -321,10 +321,10 @@ function BgController({
                         type="button"
                         onClick={() => onChange({ ...bg, color: c })}
                         className={[
-                          "h-8 w-8 rounded-full border-2 transition-transform hover:scale-110",
+                          "h-8 w-8 rounded-full border-2 transition-colors",
                           bg.color === c
-                            ? "border-[color:var(--editorial-accent)] scale-110"
-                            : "border-[color:color-mix(in_srgb,var(--editorial-border)_50%,transparent)]",
+                            ? "border-[color:var(--editorial-accent)]"
+                            : "border-[color:color-mix(in_srgb,var(--editorial-border)_50%,transparent)] hover:border-[color:var(--editorial-muted)]",
                         ].join(" ")}
                         style={{ backgroundColor: c }}
                         aria-label={c}

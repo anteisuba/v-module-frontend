@@ -617,7 +617,7 @@ function AdminPayoutSettingsPageContent() {
         {statusAlerts.length > 0 ? (
           <section
             data-testid="payout-alerts"
-            className="mb-5 rounded-[28px] border border-black/10 bg-white/72 p-6 shadow-[0_28px_90px_rgba(0,0,0,0.08)] backdrop-blur-xl"
+            className="mb-5 rounded-[28px] border border-black/10 bg-white/72 p-6 shadow-[0_24px_72px_rgba(17,12,6,0.08)] backdrop-blur-xl"
           >
             <div className="flex flex-col gap-5">
               <div>
@@ -687,7 +687,7 @@ function AdminPayoutSettingsPageContent() {
 
         <section
           data-testid="payout-guide"
-          className="mb-5 rounded-[28px] border border-black/10 bg-white/72 p-6 shadow-[0_28px_90px_rgba(0,0,0,0.08)] backdrop-blur-xl"
+          className="mb-5 rounded-[28px] border border-black/10 bg-white/72 p-6 shadow-[0_24px_72px_rgba(17,12,6,0.08)] backdrop-blur-xl"
         >
           <div className="flex flex-col gap-5 xl:grid xl:grid-cols-[0.95fr_1.05fr_1fr]">
             <div>
@@ -747,7 +747,7 @@ function AdminPayoutSettingsPageContent() {
 
         <section
           data-testid="payout-progress"
-          className="mb-5 rounded-[28px] border border-black/10 bg-white/72 p-6 shadow-[0_28px_90px_rgba(0,0,0,0.08)] backdrop-blur-xl"
+          className="mb-5 rounded-[28px] border border-black/10 bg-white/72 p-6 shadow-[0_24px_72px_rgba(17,12,6,0.08)] backdrop-blur-xl"
         >
           <div className="flex flex-col gap-6">
             <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
@@ -857,7 +857,7 @@ function AdminPayoutSettingsPageContent() {
         </section>
 
         <div className="grid gap-5 lg:grid-cols-[1.3fr_0.7fr]">
-          <section className="rounded-[28px] border border-black/10 bg-white/72 p-6 shadow-[0_28px_90px_rgba(0,0,0,0.08)] backdrop-blur-xl">
+          <section className="rounded-[28px] border border-black/10 bg-white/72 p-6 shadow-[0_24px_72px_rgba(17,12,6,0.08)] backdrop-blur-xl">
             <div className="flex flex-wrap items-center gap-3">
               <h2 className="text-lg font-semibold">
                 {t("admin.payouts.sections.account")}
@@ -958,7 +958,7 @@ function AdminPayoutSettingsPageContent() {
           </section>
 
           <section className="space-y-5">
-            <div className="rounded-[28px] border border-black/10 bg-white/72 p-6 shadow-[0_28px_90px_rgba(0,0,0,0.08)] backdrop-blur-xl">
+            <div className="rounded-[28px] border border-black/10 bg-white/72 p-6 shadow-[0_24px_72px_rgba(17,12,6,0.08)] backdrop-blur-xl">
               <h2 className="text-lg font-semibold">
                 {t("admin.payouts.sections.nextSteps")}
               </h2>
@@ -998,7 +998,7 @@ function AdminPayoutSettingsPageContent() {
             ].map((section) => (
               <div
                 key={section.title}
-                className="rounded-[28px] border border-black/10 bg-white/72 p-6 shadow-[0_28px_90px_rgba(0,0,0,0.08)] backdrop-blur-xl"
+                className="rounded-[28px] border border-black/10 bg-white/72 p-6 shadow-[0_24px_72px_rgba(17,12,6,0.08)] backdrop-blur-xl"
               >
                 <h2 className="text-lg font-semibold">{section.title}</h2>
                 {section.items.length === 0 ? (

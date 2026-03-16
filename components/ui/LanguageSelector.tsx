@@ -99,8 +99,8 @@ export default function LanguageSelector({
 
   const menuClass =
     variant === "dark"
-      ? `${menuPositionClass} z-[100] min-w-[132px] overflow-hidden rounded-[1.2rem] border border-white/12 bg-black/68 backdrop-blur-xl shadow-[0_24px_80px_rgba(0,0,0,0.28)]`
-      : `${menuPositionClass} z-[100] min-w-[132px] overflow-hidden rounded-[1.2rem] border border-[color:color-mix(in_srgb,var(--editorial-border)_86%,transparent)] bg-[color:color-mix(in_srgb,var(--editorial-surface-strong)_96%,transparent)] backdrop-blur-xl shadow-[0_20px_70px_rgba(0,0,0,0.12)]`;
+      ? `${menuPositionClass} z-[100] min-w-[132px] overflow-hidden rounded-[1.2rem] border border-white/12 bg-black/68 backdrop-blur-xl shadow-[0_24px_72px_rgba(17,12,6,0.28)]`
+      : `${menuPositionClass} z-[100] min-w-[132px] overflow-hidden rounded-[1.2rem] border border-[color:color-mix(in_srgb,var(--editorial-border)_86%,transparent)] bg-[color:color-mix(in_srgb,var(--editorial-surface-strong)_96%,transparent)] backdrop-blur-xl shadow-[0_20px_70px_rgba(17,12,6,0.12)]`;
 
   const itemClass = (loc: Locale) =>
     variant === "dark"

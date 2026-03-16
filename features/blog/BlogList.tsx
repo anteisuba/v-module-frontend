@@ -118,7 +118,7 @@ export default function BlogList({ posts, userSlug, backgroundStyle }: BlogListP
               <div
                 key={post.id}
                 data-testid={`public-user-blog-post-${post.id}`}
-                className="reveal overflow-hidden rounded-[1.8rem] border border-white/10 bg-[color:color-mix(in_srgb,var(--editorial-surface-strong)_92%,transparent)] backdrop-blur-xl shadow-[0_24px_80px_rgba(0,0,0,0.22)]"
+                className="reveal overflow-hidden rounded-[1.8rem] border border-white/10 bg-[color:color-mix(in_srgb,var(--editorial-surface-strong)_92%,transparent)] backdrop-blur-xl shadow-[0_24px_72px_rgba(17,12,6,0.12)]"
               >
                 {post.coverImage && (
                   <Link href={`/u/${userSlug}/blog/${post.id}`}>

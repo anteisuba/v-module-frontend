@@ -44,7 +44,7 @@ export default function MediaPickerDialog({
     >
       <div className="flex min-h-full items-center justify-center p-4">
         <div
-          className="flex max-h-[calc(100vh-2rem)] w-full max-w-6xl flex-col overflow-hidden rounded-[28px] border border-black/10 bg-[#f8f5ef] shadow-2xl"
+          className="flex max-h-[calc(100vh-2rem)] w-full max-w-6xl flex-col overflow-hidden rounded-[28px] border border-black/10 bg-[#f8f5ef] shadow-[0_24px_72px_rgba(17,12,6,0.18)]"
           onClick={(event) => event.stopPropagation()}
         >
           <div className="flex items-start justify-between gap-4 border-b border-black/10 px-6 py-5">
