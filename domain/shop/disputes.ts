@@ -300,3 +300,142 @@ export async function syncStripeDisputesForUser(
     unmatchedDisputes,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Dispute 证据提交引导
+// ---------------------------------------------------------------------------
+
+/** 根据 dispute reason 返回证据提交建议 */
+const EVIDENCE_GUIDANCE: Record<string, {
+  summary: string;
+  recommendedEvidence: string[];
+}> = {
+  fraudulent: {
+    summary: "买方声称未授权此交易",
+    recommendedEvidence: [
+      "客户签名或身份验证记录",
+      "交易时的 IP 地址和设备信息",
+      "历史交易记录（证明买方此前有正常交易）",
+      "发货追踪号和签收证明",
+    ],
+  },
+  product_not_received: {
+    summary: "买方声称未收到商品",
+    recommendedEvidence: [
+      "物流追踪号和签收证明",
+      "发货确认邮件/通知",
+      "物流公司的投递确认",
+      "与买方的沟通记录",
+    ],
+  },
+  product_unacceptable: {
+    summary: "买方声称商品与描述不符或有质量问题",
+    recommendedEvidence: [
+      "商品页面截图和原始描述",
+      "发货前的商品照片",
+      "退换货政策说明",
+      "与买方的沟通记录",
+    ],
+  },
+  duplicate: {
+    summary: "买方声称被重复收费",
+    recommendedEvidence: [
+      "每次收费对应的独立订单/发货记录",
+      "不同交易的商品或服务差异说明",
+      "已退款的证明（如已处理退款）",
+    ],
+  },
+  subscription_canceled: {
+    summary: "买方声称已取消订阅但仍被收费",
+    recommendedEvidence: [
+      "订阅条款和取消政策",
+      "买方的取消请求记录（或无取消记录的证明）",
+      "取消前的服务使用记录",
+    ],
+  },
+  general: {
+    summary: "一般性争议",
+    recommendedEvidence: [
+      "交易确认记录",
+      "商品/服务的交付证明",
+      "与买方的沟通记录",
+      "退换货政策说明",
+    ],
+  },
+};
+
+export interface DisputeEvidenceGuidance {
+  disputeId: string;
+  status: string;
+  reason: string | null;
+  amount: string;
+  currency: string;
+  dueBy: string | null;
+  isOpen: boolean;
+  isExpired: boolean;
+  guidance: {
+    summary: string;
+    recommendedEvidence: string[];
+    submissionMethod: string;
+    urgency: "high" | "medium" | "low" | "closed";
+  };
+}
+
+export async function getDisputeEvidenceGuidance(
+  disputeId: string,
+  userId: string
+): Promise<DisputeEvidenceGuidance | null> {
+  const dispute = await prisma.orderDispute.findUnique({
+    where: { externalDisputeId: disputeId },
+    select: {
+      externalDisputeId: true,
+      userId: true,
+      status: true,
+      reason: true,
+      amount: true,
+      currency: true,
+      dueBy: true,
+    },
+  });
+
+  if (!dispute || dispute.userId !== userId) {
+    return null;
+  }
+
+  const isOpen = isOpenOrderDisputeStatus(dispute.status);
+  const now = new Date();
+  const dueBy = dispute.dueBy;
+  const isExpired = dueBy != null && dueBy < now;
+
+  const reasonKey = dispute.reason || "general";
+  const guide = EVIDENCE_GUIDANCE[reasonKey] || EVIDENCE_GUIDANCE.general;
+
+  let urgency: DisputeEvidenceGuidance["guidance"]["urgency"];
+  if (!isOpen) {
+    urgency = "closed";
+  } else if (isExpired) {
+    urgency = "closed";
+  } else if (dueBy != null) {
+    const hoursLeft = (dueBy.getTime() - now.getTime()) / (1000 * 60 * 60);
+    urgency = hoursLeft < 72 ? "high" : hoursLeft < 168 ? "medium" : "low";
+  } else {
+    urgency = "medium";
+  }
+
+  return {
+    disputeId: dispute.externalDisputeId,
+    status: dispute.status,
+    reason: dispute.reason,
+    amount: dispute.amount.toString(),
+    currency: dispute.currency,
+    dueBy: dueBy?.toISOString() ?? null,
+    isOpen,
+    isExpired,
+    guidance: {
+      ...guide,
+      submissionMethod:
+        "请通过 Stripe Express Dashboard 提交证据。前往「设置 → 支付」页面点击「打开 Stripe 面板」。",
+      urgency,
+    },
+  };
+}

@@ -1,6 +1,6 @@
 # TODO 总览
 
-> 最后更新：2026-03-14
+> 最后更新：2026-03-16
 
 本目录汇总所有待办事项和优化方向，按优先级和领域分文件组织。
 
@@ -9,7 +9,7 @@
 | 文件 | 内容 | 状态 |
 | --- | --- | --- |
 | [P0-critical.md](./P0-critical.md) | 阻断级问题 | ✅ 当前无阻断项 |
-| [P1-engineering.md](./P1-engineering.md) | 工程稳定性与 CI/CD | 🔧 进行中 |
+| [P1-engineering.md](./P1-engineering.md) | 工程稳定性与 CI/CD | ✅ 全部完成 |
 | [P2-features.md](./P2-features.md) | 新功能开发 | 📋 待排期 |
 | [P3-polish.md](./P3-polish.md) | 打磨与优化 | 📋 待排期 |
 | [OPTIMIZATION.md](./OPTIMIZATION.md) | 代码质量与架构优化 | 🔧 持续改进 |

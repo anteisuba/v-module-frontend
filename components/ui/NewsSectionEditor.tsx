@@ -348,6 +348,41 @@ export default function NewsSectionEditor({
                 disabled={disabled}
               />
             </div>
+            {/* 左右内边距 */}
+            <div>
+              <label className="block text-xs text-black/70 mb-2">
+                {t("newsSectionEditor.layout.paddingX") || "左右内边距"}: {newsSection.props.layout?.paddingX ?? 24}px
+              </label>
+              <input
+                type="range"
+                min="0"
+                max="200"
+                value={newsSection.props.layout?.paddingX ?? 24}
+                onChange={(e) => {
+                  const newsSection = ensureNewsSection();
+                  if (!newsSection || newsSection.type !== "news") return;
+                  onConfigChange({
+                    ...config,
+                    sections: config.sections.map((s) =>
+                      s.id === newsSection.id && s.type === "news"
+                        ? {
+                            ...s,
+                            props: {
+                              ...s.props,
+                              layout: {
+                                ...s.props.layout,
+                                paddingX: parseInt(e.target.value),
+                              },
+                            },
+                          }
+                        : s
+                    ),
+                  });
+                }}
+                className="w-full"
+                disabled={disabled}
+              />
+            </div>
             {/* 背景颜色 */}
             <div>
               <label className="block text-xs text-black/70 mb-2">

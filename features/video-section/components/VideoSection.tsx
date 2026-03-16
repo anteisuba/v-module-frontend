@@ -83,28 +83,25 @@ export default function VideoSection({ props }: VideoSectionPropsInternal) {
     <section
       className="w-full"
       style={{
-        paddingTop: `${paddingY}px`,
-        paddingBottom: `${paddingY}px`,
+        padding: `${paddingY}px ${paddingX}px`,
         backgroundColor: backgroundColorWithOpacity,
       }}
     >
-      <div className="mx-auto" style={{ ...maxWidthStyle, paddingLeft: `${paddingX}px`, paddingRight: `${paddingX}px` }}>
-        {columns === 1 ? (
-          // 单视频布局
-          <div className={aspectRatioClass || "aspect-[16/9]"}>
-            <VideoPlayer item={items[0]} />
-          </div>
-        ) : (
-          // 多视频网格布局
-          <div className={`grid ${columnsClass} ${gapClass}`}>
-            {items.map((item) => (
-              <div key={item.id} className={aspectRatioClass || "aspect-[16/9]"}>
-                <VideoPlayer item={item} />
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+      {columns === 1 ? (
+        // 单视频布局
+        <div className={`relative w-full ${aspectRatioClass || "aspect-[16/9]"}`}>
+          <VideoPlayer item={items[0]} />
+        </div>
+      ) : (
+        // 多视频网格布局
+        <div className={`grid ${columnsClass} ${gapClass}`}>
+          {items.map((item) => (
+            <div key={item.id} className={`relative ${aspectRatioClass || "aspect-[16/9]"}`}>
+              <VideoPlayer item={item} />
+            </div>
+          ))}
+        </div>
+      )}
     </section>
   );
 }

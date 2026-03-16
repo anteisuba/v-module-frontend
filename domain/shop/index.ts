@@ -81,7 +81,9 @@ export {
   handleStripeDisputeUpdated,
   isOpenOrderDisputeStatus,
   syncStripeDisputesForUser,
+  getDisputeEvidenceGuidance,
   type StripeDisputeSyncResult,
+  type DisputeEvidenceGuidance,
 } from "./disputes";
 
 export {
@@ -134,6 +136,8 @@ export {
   syncStripePayoutAccountByConnectedAccountId,
   createStripePayoutOnboardingLink,
   createStripePayoutDashboardLink,
+  checkConnectAccountHealth,
   type SerializedSellerPayoutAccount,
   type StripeCheckoutRouting,
+  type ConnectAccountHealthResult,
 } from "./payout-accounts";

@@ -1,7 +1,7 @@
 # P1：工程稳定性与运维闭环
 
-> 最后更新：2026-03-14
-> 当前阶段最高优先级
+> 最后更新：2026-03-16
+> ✅ 全部完成
 
 ---
 
@@ -23,7 +23,7 @@
 ### 1.3 构建管线
 - [x] 添加 PR 自动检查：build + check + test + lint
 - [x] 配置 Vercel Preview Deployments
-- [ ] 考虑引入 `changesets` 管理版本
+- [x] 引入 `@changesets/cli` 管理版本（`.changeset/config.json`、`pnpm changeset` 系列命令）
 
 ---
 
@@ -42,14 +42,14 @@
 
 ### 2.3 安全与监控
 - [x] Connect Webhook 签名验证覆盖所有事件类型
-- [ ] 添加 Connect 账户状态定期同步的健康检查日志
-- [ ] dispute 处理流程增加证据提交引导
+- [x] Connect 账户状态定期同步的健康检查日志（`checkConnectAccountHealth()` 集成到 cron，自动检测并修复状态漂移）
+- [x] dispute 处理流程增加证据提交引导（`getDisputeEvidenceGuidance()` + `/api/shop/disputes/[disputeId]/evidence-guidance` API）
 
 ---
 
 ## 3. 脚本兼容层维护
 
-- [ ] 升级 Next.js 时复核 `scripts/run-node-tool.mjs` 是否还需要
-- [ ] 升级 Prisma 时复核 `scripts/run-prisma-generate.mjs` 兼容层
-- [ ] 升级 Playwright 时检查 preload 兼容层是否可移除
-- [ ] 记录每个兼容脚本存在的原因及移除条件
+- [x] 升级 Next.js 时复核 `scripts/run-node-tool.mjs` 是否还需要 — 当前仍需（`baseline-browser-mapping` 警告）
+- [x] 升级 Prisma 时复核 `scripts/run-prisma-generate.mjs` 兼容层 — 当前仍需（跨平台静默更新提示）
+- [x] 升级 Playwright 时检查 preload 兼容层是否可移除 — 当前仍需（同 `run-node-tool.mjs`）
+- [x] 记录每个兼容脚本存在的原因及移除条件 → `scripts/README.md`

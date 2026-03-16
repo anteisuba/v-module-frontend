@@ -537,3 +537,127 @@ export async function createStripePayoutDashboardLink(userId: string) {
     url: loginLink.url,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Connect 账户健康检查：对比本地状态与 Stripe 远端状态
+// ---------------------------------------------------------------------------
+
+export interface ConnectAccountHealthEntry {
+  providerAccountId: string;
+  userId: string;
+  localStatus: string;
+  remoteStatus: string;
+  drifted: boolean;
+  resynced: boolean;
+  error: string | null;
+}
+
+export interface ConnectAccountHealthResult {
+  checked: number;
+  drifted: number;
+  resynced: number;
+  errors: number;
+  accounts: ConnectAccountHealthEntry[];
+}
+
+/**
+ * 检查所有非 DISCONNECTED 的 Connect 账户，对比 Stripe 远端状态。
+ * 如果 autoResync 为 true，自动将漂移的账户同步到最新状态。
+ */
+export async function checkConnectAccountHealth(options?: {
+  autoResync?: boolean;
+}): Promise<ConnectAccountHealthResult> {
+  const autoResync = options?.autoResync ?? true;
+
+  if (!isStripeConfigured()) {
+    return { checked: 0, drifted: 0, resynced: 0, errors: 0, accounts: [] };
+  }
+
+  const accounts = await prisma.sellerPayoutAccount.findMany({
+    where: {
+      provider: PAYOUT_PROVIDER_STRIPE,
+      status: { not: SELLER_PAYOUT_ACCOUNT_STATUS_DISCONNECTED },
+    },
+    select: {
+      id: true,
+      userId: true,
+      providerAccountId: true,
+      status: true,
+      accountType: true,
+      country: true,
+      defaultCurrency: true,
+      displayNameSnapshot: true,
+      onboardingCompletedAt: true,
+    },
+  });
+
+  const stripe = getStripeClient();
+  const entries: ConnectAccountHealthEntry[] = [];
+  let drifted = 0;
+  let resynced = 0;
+  let errors = 0;
+
+  for (const local of accounts) {
+    try {
+      const remote = await stripe.accounts.retrieve(local.providerAccountId);
+      const remoteStatus = deriveStripeAccountStatus(remote);
+      const hasDrift = local.status !== remoteStatus;
+
+      let didResync = false;
+
+      if (hasDrift) {
+        drifted += 1;
+        console.warn(
+          `[connect-health] drift detected: account=${local.providerAccountId} ` +
+            `local=${local.status} remote=${remoteStatus}`
+        );
+
+        if (autoResync) {
+          await updateStripePayoutAccountRecord(local, remote);
+          didResync = true;
+          resynced += 1;
+          console.log(
+            `[connect-health] resynced: account=${local.providerAccountId} → ${remoteStatus}`
+          );
+        }
+      }
+
+      entries.push({
+        providerAccountId: local.providerAccountId,
+        userId: local.userId,
+        localStatus: local.status,
+        remoteStatus,
+        drifted: hasDrift,
+        resynced: didResync,
+        error: null,
+      });
+    } catch (err) {
+      errors += 1;
+      const message = err instanceof Error ? err.message : String(err);
+      console.error(
+        `[connect-health] failed to check account=${local.providerAccountId}: ${message}`
+      );
+      entries.push({
+        providerAccountId: local.providerAccountId,
+        userId: local.userId,
+        localStatus: local.status,
+        remoteStatus: "UNKNOWN",
+        drifted: false,
+        resynced: false,
+        error: message,
+      });
+    }
+  }
+
+  if (drifted > 0 || errors > 0) {
+    console.warn(
+      `[connect-health] summary: checked=${accounts.length} drifted=${drifted} resynced=${resynced} errors=${errors}`
+    );
+  } else {
+    console.log(
+      `[connect-health] all ${accounts.length} account(s) in sync`
+    );
+  }
+
+  return { checked: accounts.length, drifted, resynced, errors, accounts: entries };
+}

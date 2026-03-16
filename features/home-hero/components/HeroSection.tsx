@@ -41,7 +41,9 @@ export default function HeroSection({
   };
 }) {
   const HERO_SCROLL_HEIGHT_VH = layout?.heightVh ?? 150;
-  const HERO_IMAGE_HEIGHT_VH = layout?.heightVh ?? 150;
+  // 可见区域高度：最多 100vh（全屏），heightVh 超出部分用于视差滚动
+  const visibleHeightVh = Math.min(HERO_SCROLL_HEIGHT_VH, 100);
+  const HERO_IMAGE_HEIGHT_VH = HERO_SCROLL_HEIGHT_VH;
   const backgroundColor = layout?.backgroundColor || "#000000";
   const backgroundOpacity = layout?.backgroundOpacity ?? 1;
 
@@ -99,7 +101,10 @@ export default function HeroSection({
         backgroundColor: backgroundColorWithOpacity,
       }}
     >
-      <div className="sticky top-0 h-screen w-full overflow-hidden">
+      <div
+        className="sticky top-0 w-full overflow-hidden"
+        style={{ height: `${visibleHeightVh}vh` }}
+      >
         {/* 背景图片轮播：仅在有多张图片时显示 */}
         {current && current.src && (
           <HeroBackground

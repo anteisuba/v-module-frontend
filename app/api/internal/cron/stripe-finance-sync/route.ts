@@ -8,6 +8,7 @@ import {
   sendStripeFinanceAnomalyAlerts,
   syncStripeDisputesForUser,
   syncStripeSettlementLedger,
+  checkConnectAccountHealth,
 } from "@/domain/shop";
 
 export const runtime = "nodejs";
@@ -180,6 +181,9 @@ async function handle(request: Request) {
           errors: [],
         };
 
+    // Connect 账户健康检查：对比本地与 Stripe 远端状态，自动修复漂移
+    const connectHealth = await checkConnectAccountHealth({ autoResync: true });
+
     if (alerts.errors.length > 0) {
       console.error("Stripe finance alerts completed with errors:", alerts.errors);
     }
@@ -200,6 +204,12 @@ async function handle(request: Request) {
         syncedDisputes,
         matchedDisputeOrders,
         unmatchedDisputes,
+      },
+      connectHealth: {
+        checked: connectHealth.checked,
+        drifted: connectHealth.drifted,
+        resynced: connectHealth.resynced,
+        errors: connectHealth.errors,
       },
       alerts,
       users,

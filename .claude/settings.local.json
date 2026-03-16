@@ -9,7 +9,10 @@
       "Read(//Users/fulina/.claude/**)",
       "Read(//Users/fulina/.claude/plugins/**)",
       "Bash(npx tsc:*)",
-      "Bash(pnpm check:*)"
+      "Bash(pnpm check:*)",
+      "Bash(pnpm add:*)",
+      "Bash(pnpm changeset:*)",
+      "Bash(ls /Users/fulina/Desktop/workspace/vtuber-blog/v-module-frontend/app/api/shop/orders/[id]/)"
     ]
   }
 }
