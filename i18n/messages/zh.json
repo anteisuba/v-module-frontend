@@ -87,7 +87,7 @@
       },
       "comingSoon": "待开发"
     },
-      "editorScaffold": {
+    "editorScaffold": {
       "tabs": {
         "layout": {
           "title": "页面布局",
@@ -110,172 +110,172 @@
         },
         "create": {
           "description": "创建新内容并设置初始展示信息。"
-          }
-        }
-      },
-      "payouts": {
-        "eyebrow": "Stripe Connect",
-        "title": "卖家收款设置",
-        "subtitle": "为当前账号绑定独立收款账户。买家支付成功后，后续资金将由 Stripe 结算到这个卖家的 connected account，再按 Stripe payout 打到绑定银行卡。",
-        "backToDashboard": "返回编辑目录",
-        "emptyState": "当前还没有创建 Stripe 收款账户。开始绑定后，Stripe 会引导你完成基础资料、收款能力和银行卡设置。",
-        "sections": {
-          "alerts": "异常状态与处理建议",
-          "guide": "使用说明",
-          "progress": "Onboarding 进度",
-          "account": "账户概览",
-          "nextSteps": "下一步与风险提示",
-          "currentlyDue": "当前待补资料",
-          "pastDue": "已逾期待补资料",
-          "eventuallyDue": "后续可能需要补充"
-        },
-        "alerts": {
-          "intro": "当 Stripe 返回限制、断开或能力异常时，这里会按优先级给出处理提示。先解决这些异常，再看下方进度和常规说明。",
-          "tone": {
-            "critical": "高优先级",
-            "warning": "需要关注",
-            "info": "跟进中"
-          },
-          "disconnected": {
-            "title": "收款账户已断开",
-            "description": "当前 connected account 已被删除或断开，新的订单不会继续走卖家独立收款链路。",
-            "detail": "重新开始 Stripe 收款绑定，系统会恢复卖家独立收款所需的账户连接。"
-          },
-          "restricted": {
-            "title": "收款账户当前受限",
-            "description": "Stripe 检测到这个账户存在逾期或受限项，可能影响收款、退款或打款。",
-            "detail": "优先重新进入 Stripe 收款设置处理限制项，完成后回到这里同步状态。"
-          },
-          "currentlyDue": {
-            "title": "仍有待补资料",
-            "description": "Stripe 还在等待补充资料或校验结果，在补齐前能力可能不会完全生效。",
-            "detail": "继续完成 onboarding 表单并同步状态，优先处理当前待补项。"
-          },
-          "chargesReview": {
-            "title": "收款能力仍在审核中",
-            "description": "资料已提交，但 Stripe 还没有完全开启收款能力。",
-            "detail": "可以先等待 Stripe 审核，稍后点击“同步 Stripe 状态”刷新 capabilities。"
-          },
-          "payoutsPending": {
-            "title": "打款能力尚未生效",
-            "description": "这个账户已经能收款，但 Stripe 还没有完全开启 payout 到银行卡。",
-            "detail": "优先在 Stripe Express Dashboard 核对银行卡和 payout 设置，再回到这里同步状态。"
-          }
-        },
-        "guide": {
-          "overview": "这个页面管理的是卖家的 Stripe Connect 收款账户，不是站内余额。买家支付后，Stripe 会先把资金记到卖家的 connected account，再按 payout 节奏打到绑定银行卡。",
-          "flowTitle": "推荐操作顺序",
-          "flowSteps": {
-            "start": "首次使用先点“开始绑定 Stripe 收款”，完成身份资料、业务信息和银行卡设置。",
-            "sync": "从 Stripe 返回后点一次“同步 Stripe 状态”，以这里显示的 capabilities 和 requirements 为准。",
-            "manage": "日常查看 payout、更新银行卡或补资料时，优先打开 Stripe Express Dashboard 处理。"
-          },
-          "statusTitle": "状态说明",
-          "statusHelp": {
-            "NOT_STARTED": "还没创建或开始 onboarding，当前不会走卖家自己的 Stripe 收款链路。",
-            "PENDING": "账户已创建，但 Stripe 还在等你补资料或等待能力开通。",
-            "RESTRICTED": "存在逾期或受限项，通常会影响收款或打款，需要优先处理。",
-            "ACTIVE": "收款和打款都已启用，可以按正常节奏接单并等待 Stripe payout。",
-            "DISCONNECTED": "账户已被断开或删除，需要重新绑定后才能恢复卖家独立收款。"
-          }
-        },
-        "progress": {
-          "completed": "已完成阶段",
-          "recommendedAction": "建议下一步",
-          "counts": {
-            "currentlyDue": "当前待补",
-            "pastDue": "逾期待补",
-            "eventuallyDue": "后续可能补件"
-          },
-          "state": {
-            "complete": "完成",
-            "current": "进行中",
-            "todo": "未开始",
-            "attention": "需处理"
-          },
-          "summary": {
-            "notStarted": "当前还没创建卖家收款账户。先开始 Stripe onboarding，才能进入卖家独立收款链路。",
-            "disconnected": "这个收款账户已经断开。需要重新绑定后，Stripe 才能继续按卖家账户收款和打款。",
-            "pastDue": "Stripe 仍有逾期待补资料。先补齐限制项，再同步状态确认能力是否恢复。",
-            "details": "onboarding 还没完全走完。先完成 Stripe 要求的资料与银行卡设置，再回到这里同步状态。",
-            "review": "基础资料已经提交，当前主要是在等待 Stripe 开通收款能力。完成后同步一次状态即可。",
-            "payouts": "收款能力已经打开，但打款能力还没完全生效。继续等待 Stripe 审核，并在返回后同步状态。",
-            "active": "Stripe Connect onboarding 已完成，当前已具备独立收款和打款能力。"
-          },
-          "steps": {
-            "account": {
-              "label": "创建卖家收款账户",
-              "todo": "先开始 Stripe onboarding，系统才会创建这个卖家的 connected account。",
-              "done": "卖家 Stripe Connect 账户已创建，可以继续补资料或查看账户状态。",
-              "attention": "原有收款账户已断开，需要重新绑定后才能继续使用。"
-            },
-            "details": {
-              "label": "提交基础资料与银行卡",
-              "todo": "等待先创建收款账户后，再去 Stripe 补身份、业务和银行卡信息。",
-              "current": "资料还没完全满足 Stripe 当前要求，继续补齐后再同步状态。",
-              "done": "基础资料和主 onboarding 表单已提交完成，后续主要看 Stripe 能力是否生效。",
-              "attention": "存在逾期资料或限制项，先处理这些问题再继续后续步骤。"
-            },
-            "charges": {
-              "label": "开启收款能力",
-              "todo": "先完成资料提交，Stripe 才会开始为这个账户开通收款能力。",
-              "current": "Stripe 正在审核或等待补充信息，收款能力还没有完全启用。",
-              "done": "这个卖家账户已经可以收款，新的订单会按 Connect 路由进入卖家账户。",
-              "attention": "上方限制项会影响收款能力，先处理逾期或受限问题。"
-            },
-            "payouts": {
-              "label": "开启打款能力",
-              "todo": "收款能力启用后，Stripe 才会继续放开 payout 到银行卡。",
-              "current": "打款能力还在等待 Stripe 生效，先保留同步，直到显示可打款。",
-              "done": "打款能力已经启用，Stripe 会按 payout 节奏把资金打到绑定银行卡。",
-              "attention": "当前限制会影响 payout，先解除限制再等待打款能力恢复。"
-            }
-          }
-        },
-        "actions": {
-          "startOnboarding": "开始绑定 Stripe 收款",
-          "continueOnboarding": "继续完成 Stripe 收款设置",
-          "openDashboard": "打开 Stripe Express Dashboard",
-          "sync": "同步 Stripe 状态"
-        },
-        "status": {
-          "NOT_STARTED": "未开始",
-          "PENDING": "待完成",
-          "RESTRICTED": "受限",
-          "ACTIVE": "已启用",
-          "DISCONNECTED": "已断开"
-        },
-        "fields": {
-          "providerAccountId": "Stripe Account",
-          "country": "国家 / 地区",
-          "defaultCurrency": "默认货币",
-          "lastSyncedAt": "最近同步",
-          "disconnectedAt": "断开时间",
-          "detailsSubmitted": "资料已提交",
-          "chargesEnabled": "可收款",
-          "payoutsEnabled": "可打款",
-          "bankAccount": "银行卡摘要",
-          "bankUnavailable": "尚未同步到可展示的银行卡摘要，请在 Stripe Express Dashboard 中确认绑定情况。",
-          "disabledReason": "受限原因",
-          "none": "当前没有待补项"
-        },
-        "flags": {
-          "ready": "已就绪",
-          "notReady": "未就绪"
-        },
-        "hints": {
-          "active": "这个账号已经具备收款和打款能力。你仍然可以打开 Stripe Express Dashboard 查看 payout 节奏、补资料或调整银行账户。",
-          "pending": "当前账号还没有完全开通。继续完成 Stripe onboarding，并在返回后点一次“同步 Stripe 状态”确认能力是否生效。"
-        },
-        "messages": {
-          "returned": "已从 Stripe 返回，当前状态已重新同步。",
-          "synced": "Stripe 收款账户状态已更新。"
-        },
-        "errors": {
-          "loadFailed": "加载收款账户失败，请稍后再试。"
         }
       }
     },
+    "payouts": {
+      "eyebrow": "Stripe Connect",
+      "title": "卖家收款设置",
+      "subtitle": "为当前账号绑定独立收款账户。买家支付成功后，后续资金将由 Stripe 结算到这个卖家的 connected account，再按 Stripe payout 打到绑定银行卡。",
+      "backToDashboard": "返回编辑目录",
+      "emptyState": "当前还没有创建 Stripe 收款账户。开始绑定后，Stripe 会引导你完成基础资料、收款能力和银行卡设置。",
+      "sections": {
+        "alerts": "异常状态与处理建议",
+        "guide": "使用说明",
+        "progress": "Onboarding 进度",
+        "account": "账户概览",
+        "nextSteps": "下一步与风险提示",
+        "currentlyDue": "当前待补资料",
+        "pastDue": "已逾期待补资料",
+        "eventuallyDue": "后续可能需要补充"
+      },
+      "alerts": {
+        "intro": "当 Stripe 返回限制、断开或能力异常时，这里会按优先级给出处理提示。先解决这些异常，再看下方进度和常规说明。",
+        "tone": {
+          "critical": "高优先级",
+          "warning": "需要关注",
+          "info": "跟进中"
+        },
+        "disconnected": {
+          "title": "收款账户已断开",
+          "description": "当前 connected account 已被删除或断开，新的订单不会继续走卖家独立收款链路。",
+          "detail": "重新开始 Stripe 收款绑定，系统会恢复卖家独立收款所需的账户连接。"
+        },
+        "restricted": {
+          "title": "收款账户当前受限",
+          "description": "Stripe 检测到这个账户存在逾期或受限项，可能影响收款、退款或打款。",
+          "detail": "优先重新进入 Stripe 收款设置处理限制项，完成后回到这里同步状态。"
+        },
+        "currentlyDue": {
+          "title": "仍有待补资料",
+          "description": "Stripe 还在等待补充资料或校验结果，在补齐前能力可能不会完全生效。",
+          "detail": "继续完成 onboarding 表单并同步状态，优先处理当前待补项。"
+        },
+        "chargesReview": {
+          "title": "收款能力仍在审核中",
+          "description": "资料已提交，但 Stripe 还没有完全开启收款能力。",
+          "detail": "可以先等待 Stripe 审核，稍后点击“同步 Stripe 状态”刷新 capabilities。"
+        },
+        "payoutsPending": {
+          "title": "打款能力尚未生效",
+          "description": "这个账户已经能收款，但 Stripe 还没有完全开启 payout 到银行卡。",
+          "detail": "优先在 Stripe Express Dashboard 核对银行卡和 payout 设置，再回到这里同步状态。"
+        }
+      },
+      "guide": {
+        "overview": "这个页面管理的是卖家的 Stripe Connect 收款账户，不是站内余额。买家支付后，Stripe 会先把资金记到卖家的 connected account，再按 payout 节奏打到绑定银行卡。",
+        "flowTitle": "推荐操作顺序",
+        "flowSteps": {
+          "start": "首次使用先点“开始绑定 Stripe 收款”，完成身份资料、业务信息和银行卡设置。",
+          "sync": "从 Stripe 返回后点一次“同步 Stripe 状态”，以这里显示的 capabilities 和 requirements 为准。",
+          "manage": "日常查看 payout、更新银行卡或补资料时，优先打开 Stripe Express Dashboard 处理。"
+        },
+        "statusTitle": "状态说明",
+        "statusHelp": {
+          "NOT_STARTED": "还没创建或开始 onboarding，当前不会走卖家自己的 Stripe 收款链路。",
+          "PENDING": "账户已创建，但 Stripe 还在等你补资料或等待能力开通。",
+          "RESTRICTED": "存在逾期或受限项，通常会影响收款或打款，需要优先处理。",
+          "ACTIVE": "收款和打款都已启用，可以按正常节奏接单并等待 Stripe payout。",
+          "DISCONNECTED": "账户已被断开或删除，需要重新绑定后才能恢复卖家独立收款。"
+        }
+      },
+      "progress": {
+        "completed": "已完成阶段",
+        "recommendedAction": "建议下一步",
+        "counts": {
+          "currentlyDue": "当前待补",
+          "pastDue": "逾期待补",
+          "eventuallyDue": "后续可能补件"
+        },
+        "state": {
+          "complete": "完成",
+          "current": "进行中",
+          "todo": "未开始",
+          "attention": "需处理"
+        },
+        "summary": {
+          "notStarted": "当前还没创建卖家收款账户。先开始 Stripe onboarding，才能进入卖家独立收款链路。",
+          "disconnected": "这个收款账户已经断开。需要重新绑定后，Stripe 才能继续按卖家账户收款和打款。",
+          "pastDue": "Stripe 仍有逾期待补资料。先补齐限制项，再同步状态确认能力是否恢复。",
+          "details": "onboarding 还没完全走完。先完成 Stripe 要求的资料与银行卡设置，再回到这里同步状态。",
+          "review": "基础资料已经提交，当前主要是在等待 Stripe 开通收款能力。完成后同步一次状态即可。",
+          "payouts": "收款能力已经打开，但打款能力还没完全生效。继续等待 Stripe 审核，并在返回后同步状态。",
+          "active": "Stripe Connect onboarding 已完成，当前已具备独立收款和打款能力。"
+        },
+        "steps": {
+          "account": {
+            "label": "创建卖家收款账户",
+            "todo": "先开始 Stripe onboarding，系统才会创建这个卖家的 connected account。",
+            "done": "卖家 Stripe Connect 账户已创建，可以继续补资料或查看账户状态。",
+            "attention": "原有收款账户已断开，需要重新绑定后才能继续使用。"
+          },
+          "details": {
+            "label": "提交基础资料与银行卡",
+            "todo": "等待先创建收款账户后，再去 Stripe 补身份、业务和银行卡信息。",
+            "current": "资料还没完全满足 Stripe 当前要求，继续补齐后再同步状态。",
+            "done": "基础资料和主 onboarding 表单已提交完成，后续主要看 Stripe 能力是否生效。",
+            "attention": "存在逾期资料或限制项，先处理这些问题再继续后续步骤。"
+          },
+          "charges": {
+            "label": "开启收款能力",
+            "todo": "先完成资料提交，Stripe 才会开始为这个账户开通收款能力。",
+            "current": "Stripe 正在审核或等待补充信息，收款能力还没有完全启用。",
+            "done": "这个卖家账户已经可以收款，新的订单会按 Connect 路由进入卖家账户。",
+            "attention": "上方限制项会影响收款能力，先处理逾期或受限问题。"
+          },
+          "payouts": {
+            "label": "开启打款能力",
+            "todo": "收款能力启用后，Stripe 才会继续放开 payout 到银行卡。",
+            "current": "打款能力还在等待 Stripe 生效，先保留同步，直到显示可打款。",
+            "done": "打款能力已经启用，Stripe 会按 payout 节奏把资金打到绑定银行卡。",
+            "attention": "当前限制会影响 payout，先解除限制再等待打款能力恢复。"
+          }
+        }
+      },
+      "actions": {
+        "startOnboarding": "开始绑定 Stripe 收款",
+        "continueOnboarding": "继续完成 Stripe 收款设置",
+        "openDashboard": "打开 Stripe Express Dashboard",
+        "sync": "同步 Stripe 状态"
+      },
+      "status": {
+        "NOT_STARTED": "未开始",
+        "PENDING": "待完成",
+        "RESTRICTED": "受限",
+        "ACTIVE": "已启用",
+        "DISCONNECTED": "已断开"
+      },
+      "fields": {
+        "providerAccountId": "Stripe Account",
+        "country": "国家 / 地区",
+        "defaultCurrency": "默认货币",
+        "lastSyncedAt": "最近同步",
+        "disconnectedAt": "断开时间",
+        "detailsSubmitted": "资料已提交",
+        "chargesEnabled": "可收款",
+        "payoutsEnabled": "可打款",
+        "bankAccount": "银行卡摘要",
+        "bankUnavailable": "尚未同步到可展示的银行卡摘要，请在 Stripe Express Dashboard 中确认绑定情况。",
+        "disabledReason": "受限原因",
+        "none": "当前没有待补项"
+      },
+      "flags": {
+        "ready": "已就绪",
+        "notReady": "未就绪"
+      },
+      "hints": {
+        "active": "这个账号已经具备收款和打款能力。你仍然可以打开 Stripe Express Dashboard 查看 payout 节奏、补资料或调整银行账户。",
+        "pending": "当前账号还没有完全开通。继续完成 Stripe onboarding，并在返回后点一次“同步 Stripe 状态”确认能力是否生效。"
+      },
+      "messages": {
+        "returned": "已从 Stripe 返回，当前状态已重新同步。",
+        "synced": "Stripe 收款账户状态已更新。"
+      },
+      "errors": {
+        "loadFailed": "加载收款账户失败，请稍后再试。"
+      }
+    }
+  },
   "auth": {
     "login": {
       "title": "登录",
@@ -382,6 +382,30 @@
       "preview": "效果预览",
       "previewButton": "主题色按钮",
       "previewLink": "主题色链接"
+    },
+    "architect": {
+      "title": "页面架构",
+      "global": "全局",
+      "sections": "版块",
+      "emptyComposer": "← 点击左侧版块或设置项开始编辑",
+      "composerSuffix": "/ 编辑器",
+      "sectionNotFound": "版块未找到",
+      "addMenuSection": "添加菜单版块",
+      "notConfigured": "点击添加"
+    },
+    "globalPanels": {
+      "background": {
+        "label": "页面背景",
+        "description": "全局背景图片或颜色"
+      },
+      "theme": {
+        "label": "主题颜色",
+        "description": "品牌强调色"
+      },
+      "articles": {
+        "label": "文章",
+        "description": "管理新闻文章"
+      }
     }
   },
   "heroMenu": {
@@ -804,6 +828,57 @@
     "deleteConfirm": {
       "title": "确认删除",
       "message": "确定要删除这个商品吗？此操作无法撤销。"
+    }
+  },
+  "sectionMeta": {
+    "hero": "顶部主视觉",
+    "video": "视频",
+    "news": "图片导航",
+    "gallery": "相册",
+    "menu": "导航菜单",
+    "on": "启用",
+    "off": "禁用",
+    "enabled": "已启用",
+    "disabled": "已禁用",
+    "colSpan": {
+      "quarter": "1/4",
+      "half": "1/2",
+      "threeQuarter": "3/4",
+      "full": "全宽"
+    }
+  },
+  "menuEditor": {
+    "navItems": {
+      "title": "导航项目",
+      "labelPlaceholder": "名称",
+      "hrefPlaceholder": "/路径 或 https://...",
+      "addCustom": "添加自定义链接"
+    },
+    "logo": {
+      "title": "Logo",
+      "show": "显示 Logo",
+      "urlLabel": "Logo 图片 URL",
+      "urlPlaceholder": "https://... 或 /uploads/...",
+      "library": "媒体库",
+      "pickerTitle": "选择 Logo",
+      "opacityLabel": "透明度：{value}%"
+    },
+    "socialLinks": {
+      "title": "社交链接",
+      "showOnPage": "在页面显示社交链接",
+      "addLink": "添加社交链接",
+      "removeTitle": "删除社交链接",
+      "removeMessage": "确定要删除这个社交链接吗？",
+      "removeConfirm": "删除",
+      "removed": "社交链接已删除"
+    },
+    "style": {
+      "title": "菜单样式",
+      "backdropBlur": "背景模糊效果",
+      "buttonVariant": "按钮样式",
+      "variantDefault": "默认",
+      "variantOutline": "描边",
+      "variantGhost": "透明"
     }
   }
 }

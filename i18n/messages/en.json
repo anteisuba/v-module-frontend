@@ -87,7 +87,7 @@
       },
       "comingSoon": "Coming soon"
     },
-      "editorScaffold": {
+    "editorScaffold": {
       "tabs": {
         "layout": {
           "title": "Page Layout",
@@ -111,171 +111,171 @@
         "create": {
           "description": "Create new content and set its initial presentation."
         }
-        }
-      },
-      "payouts": {
-        "eyebrow": "Stripe Connect",
-        "title": "Seller payout settings",
-        "subtitle": "Connect an independent payout account for this seller. After buyers pay, Stripe will settle funds to this connected account and then send payouts to the linked bank account.",
-        "backToDashboard": "Back to edit directory",
-        "emptyState": "No Stripe payout account has been created yet. Start onboarding and Stripe will guide this seller through profile, payment capability, and bank-account setup.",
-        "sections": {
-          "alerts": "Abnormal status guidance",
-          "guide": "How this works",
-          "progress": "Onboarding progress",
-          "account": "Account overview",
-          "nextSteps": "Next steps and risk flags",
-          "currentlyDue": "Currently due requirements",
-          "pastDue": "Past due requirements",
-          "eventuallyDue": "Eventually due requirements"
-        },
-        "alerts": {
-          "intro": "When Stripe reports restrictions, disconnections, or capability issues, this section surfaces the highest-priority fix first. Resolve these blockers before relying on the progress and general guidance below.",
-          "tone": {
-            "critical": "High priority",
-            "warning": "Needs attention",
-            "info": "Monitor"
-          },
-          "disconnected": {
-            "title": "The payout account is disconnected",
-            "description": "The connected account was deleted or disconnected, so new orders cannot keep using seller-specific payout routing.",
-            "detail": "Start Stripe payout setup again to restore the account link required for seller-specific payouts."
-          },
-          "restricted": {
-            "title": "The payout account is restricted",
-            "description": "Stripe detected past-due or restricted items on this account that can affect charging, refunds, or payouts.",
-            "detail": "Re-enter Stripe payout setup first, resolve the blocked items, and then sync status again here."
-          },
-          "currentlyDue": {
-            "title": "More information is still required",
-            "description": "Stripe is still waiting for additional details or verification results, so capabilities may not be fully active yet.",
-            "detail": "Continue the onboarding flow and prioritize the currently due items before syncing again."
-          },
-          "chargesReview": {
-            "title": "Charge capability is still under review",
-            "description": "The required details are already submitted, but Stripe has not fully enabled charging yet.",
-            "detail": "Wait for Stripe's review to finish, then use “Sync Stripe status” to refresh capabilities."
-          },
-          "payoutsPending": {
-            "title": "Payout capability is not active yet",
-            "description": "This account can already charge, but Stripe has not fully enabled payouts to the linked bank account.",
-            "detail": "Check bank-account and payout settings in the Stripe Express Dashboard, then sync again here."
-          }
-        },
-        "guide": {
-          "overview": "This page manages the seller's Stripe Connect payout account, not an in-app balance. After buyers pay, Stripe books funds to the connected account first and then sends payouts to the linked bank account on Stripe's payout schedule.",
-          "flowTitle": "Recommended flow",
-          "flowSteps": {
-            "start": "On first setup, choose “Start Stripe payout onboarding” and finish profile, business, and bank-account details.",
-            "sync": "After returning from Stripe, run “Sync Stripe status” once and treat the capabilities and requirements shown here as the latest source of truth.",
-            "manage": "For day-to-day payout checks, bank updates, or extra verification, use the Stripe Express Dashboard first."
-          },
-          "statusTitle": "Status guide",
-          "statusHelp": {
-            "NOT_STARTED": "No account or onboarding exists yet, so seller-specific Stripe routing is not active.",
-            "PENDING": "The account exists, but Stripe is still waiting for more information or capability activation.",
-            "RESTRICTED": "There are past-due or restricted items that can block charging or payouts and should be handled first.",
-            "ACTIVE": "Charges and payouts are both enabled, so orders can flow normally while Stripe handles payouts.",
-            "DISCONNECTED": "The account was disconnected or deleted and must be linked again before seller-specific payouts can resume."
-          }
-        },
-        "progress": {
-          "completed": "Completed steps",
-          "recommendedAction": "Recommended next action",
-          "counts": {
-            "currentlyDue": "Currently due",
-            "pastDue": "Past due",
-            "eventuallyDue": "Eventually due"
-          },
-          "state": {
-            "complete": "Complete",
-            "current": "In progress",
-            "todo": "Not started",
-            "attention": "Needs action"
-          },
-          "summary": {
-            "notStarted": "No seller payout account exists yet. Start Stripe onboarding before seller-specific payout routing can go live.",
-            "disconnected": "This payout account is disconnected. Stripe cannot keep seller-specific charges and payouts running until it is linked again.",
-            "pastDue": "Stripe still has past-due requirements for this account. Clear the blocked items first, then sync again to confirm capability recovery.",
-            "details": "Onboarding is not finished yet. Complete Stripe's required profile and bank-account details, then sync status here again.",
-            "review": "Core details are already submitted. The current phase is mainly waiting for Stripe to enable charge capabilities, so sync again after review completes.",
-            "payouts": "Charging is already enabled, but payout capability is not fully active yet. Wait for Stripe to finish and sync again after returning.",
-            "active": "Stripe Connect onboarding is complete and seller-specific charging and payouts are now active."
-          },
-          "steps": {
-            "account": {
-              "label": "Create the seller payout account",
-              "todo": "Start Stripe onboarding first so the seller's connected account can be created.",
-              "done": "The seller's Stripe Connect account already exists and is ready for more details or status checks.",
-              "attention": "The previous payout account is disconnected and must be linked again."
-            },
-            "details": {
-              "label": "Submit profile and bank details",
-              "todo": "Create the payout account first, then finish identity, business, and bank-account details in Stripe.",
-              "current": "The account still does not satisfy Stripe's current requirements. Finish the missing details, then sync again.",
-              "done": "The core profile and onboarding form are already submitted, so the next concern is capability activation.",
-              "attention": "There are past-due or restricted requirements that must be fixed before continuing."
-            },
-            "charges": {
-              "label": "Enable charging",
-              "todo": "Stripe starts enabling charge capability after the required details are submitted.",
-              "current": "Stripe is still reviewing or waiting for more information, so charge capability is not fully live yet.",
-              "done": "This seller account can already accept charges and receive Connect-routed order funds.",
-              "attention": "The blocked items above are affecting charge capability and need to be cleared first."
-            },
-            "payouts": {
-              "label": "Enable payouts",
-              "todo": "Stripe can continue enabling bank payouts after charge capability is ready.",
-              "current": "Payout capability is still waiting to become active. Keep syncing until the account shows payouts enabled.",
-              "done": "Payouts are enabled and Stripe can send funds to the linked bank account on schedule.",
-              "attention": "The current restrictions are affecting payouts, so clear those blockers first."
-            }
-          }
-        },
-        "actions": {
-          "startOnboarding": "Start Stripe payout onboarding",
-          "continueOnboarding": "Continue Stripe payout setup",
-          "openDashboard": "Open Stripe Express Dashboard",
-          "sync": "Sync Stripe status"
-        },
-        "status": {
-          "NOT_STARTED": "Not started",
-          "PENDING": "Pending",
-          "RESTRICTED": "Restricted",
-          "ACTIVE": "Active",
-          "DISCONNECTED": "Disconnected"
-        },
-        "fields": {
-          "providerAccountId": "Stripe account",
-          "country": "Country / region",
-          "defaultCurrency": "Default currency",
-          "lastSyncedAt": "Last synced",
-          "disconnectedAt": "Disconnected at",
-          "detailsSubmitted": "Details submitted",
-          "chargesEnabled": "Charges enabled",
-          "payoutsEnabled": "Payouts enabled",
-          "bankAccount": "Bank account summary",
-          "bankUnavailable": "No bank summary is available yet. Confirm the linked bank account inside the Stripe Express Dashboard.",
-          "disabledReason": "Disabled reason",
-          "none": "Nothing is due right now"
-        },
-        "flags": {
-          "ready": "Ready",
-          "notReady": "Not ready"
-        },
-        "hints": {
-          "active": "This seller account can already charge and receive payouts. You can still open the Stripe Express Dashboard to review payout timing, submit more information, or update bank details.",
-          "pending": "This seller account is not fully enabled yet. Continue Stripe onboarding, then sync again after returning to confirm whether capabilities are live."
-        },
-        "messages": {
-          "returned": "Returned from Stripe and refreshed the latest account status.",
-          "synced": "Stripe payout account status updated."
-        },
-        "errors": {
-          "loadFailed": "Failed to load the payout account. Please try again later."
-        }
       }
     },
+    "payouts": {
+      "eyebrow": "Stripe Connect",
+      "title": "Seller payout settings",
+      "subtitle": "Connect an independent payout account for this seller. After buyers pay, Stripe will settle funds to this connected account and then send payouts to the linked bank account.",
+      "backToDashboard": "Back to edit directory",
+      "emptyState": "No Stripe payout account has been created yet. Start onboarding and Stripe will guide this seller through profile, payment capability, and bank-account setup.",
+      "sections": {
+        "alerts": "Abnormal status guidance",
+        "guide": "How this works",
+        "progress": "Onboarding progress",
+        "account": "Account overview",
+        "nextSteps": "Next steps and risk flags",
+        "currentlyDue": "Currently due requirements",
+        "pastDue": "Past due requirements",
+        "eventuallyDue": "Eventually due requirements"
+      },
+      "alerts": {
+        "intro": "When Stripe reports restrictions, disconnections, or capability issues, this section surfaces the highest-priority fix first. Resolve these blockers before relying on the progress and general guidance below.",
+        "tone": {
+          "critical": "High priority",
+          "warning": "Needs attention",
+          "info": "Monitor"
+        },
+        "disconnected": {
+          "title": "The payout account is disconnected",
+          "description": "The connected account was deleted or disconnected, so new orders cannot keep using seller-specific payout routing.",
+          "detail": "Start Stripe payout setup again to restore the account link required for seller-specific payouts."
+        },
+        "restricted": {
+          "title": "The payout account is restricted",
+          "description": "Stripe detected past-due or restricted items on this account that can affect charging, refunds, or payouts.",
+          "detail": "Re-enter Stripe payout setup first, resolve the blocked items, and then sync status again here."
+        },
+        "currentlyDue": {
+          "title": "More information is still required",
+          "description": "Stripe is still waiting for additional details or verification results, so capabilities may not be fully active yet.",
+          "detail": "Continue the onboarding flow and prioritize the currently due items before syncing again."
+        },
+        "chargesReview": {
+          "title": "Charge capability is still under review",
+          "description": "The required details are already submitted, but Stripe has not fully enabled charging yet.",
+          "detail": "Wait for Stripe's review to finish, then use “Sync Stripe status” to refresh capabilities."
+        },
+        "payoutsPending": {
+          "title": "Payout capability is not active yet",
+          "description": "This account can already charge, but Stripe has not fully enabled payouts to the linked bank account.",
+          "detail": "Check bank-account and payout settings in the Stripe Express Dashboard, then sync again here."
+        }
+      },
+      "guide": {
+        "overview": "This page manages the seller's Stripe Connect payout account, not an in-app balance. After buyers pay, Stripe books funds to the connected account first and then sends payouts to the linked bank account on Stripe's payout schedule.",
+        "flowTitle": "Recommended flow",
+        "flowSteps": {
+          "start": "On first setup, choose “Start Stripe payout onboarding” and finish profile, business, and bank-account details.",
+          "sync": "After returning from Stripe, run “Sync Stripe status” once and treat the capabilities and requirements shown here as the latest source of truth.",
+          "manage": "For day-to-day payout checks, bank updates, or extra verification, use the Stripe Express Dashboard first."
+        },
+        "statusTitle": "Status guide",
+        "statusHelp": {
+          "NOT_STARTED": "No account or onboarding exists yet, so seller-specific Stripe routing is not active.",
+          "PENDING": "The account exists, but Stripe is still waiting for more information or capability activation.",
+          "RESTRICTED": "There are past-due or restricted items that can block charging or payouts and should be handled first.",
+          "ACTIVE": "Charges and payouts are both enabled, so orders can flow normally while Stripe handles payouts.",
+          "DISCONNECTED": "The account was disconnected or deleted and must be linked again before seller-specific payouts can resume."
+        }
+      },
+      "progress": {
+        "completed": "Completed steps",
+        "recommendedAction": "Recommended next action",
+        "counts": {
+          "currentlyDue": "Currently due",
+          "pastDue": "Past due",
+          "eventuallyDue": "Eventually due"
+        },
+        "state": {
+          "complete": "Complete",
+          "current": "In progress",
+          "todo": "Not started",
+          "attention": "Needs action"
+        },
+        "summary": {
+          "notStarted": "No seller payout account exists yet. Start Stripe onboarding before seller-specific payout routing can go live.",
+          "disconnected": "This payout account is disconnected. Stripe cannot keep seller-specific charges and payouts running until it is linked again.",
+          "pastDue": "Stripe still has past-due requirements for this account. Clear the blocked items first, then sync again to confirm capability recovery.",
+          "details": "Onboarding is not finished yet. Complete Stripe's required profile and bank-account details, then sync status here again.",
+          "review": "Core details are already submitted. The current phase is mainly waiting for Stripe to enable charge capabilities, so sync again after review completes.",
+          "payouts": "Charging is already enabled, but payout capability is not fully active yet. Wait for Stripe to finish and sync again after returning.",
+          "active": "Stripe Connect onboarding is complete and seller-specific charging and payouts are now active."
+        },
+        "steps": {
+          "account": {
+            "label": "Create the seller payout account",
+            "todo": "Start Stripe onboarding first so the seller's connected account can be created.",
+            "done": "The seller's Stripe Connect account already exists and is ready for more details or status checks.",
+            "attention": "The previous payout account is disconnected and must be linked again."
+          },
+          "details": {
+            "label": "Submit profile and bank details",
+            "todo": "Create the payout account first, then finish identity, business, and bank-account details in Stripe.",
+            "current": "The account still does not satisfy Stripe's current requirements. Finish the missing details, then sync again.",
+            "done": "The core profile and onboarding form are already submitted, so the next concern is capability activation.",
+            "attention": "There are past-due or restricted requirements that must be fixed before continuing."
+          },
+          "charges": {
+            "label": "Enable charging",
+            "todo": "Stripe starts enabling charge capability after the required details are submitted.",
+            "current": "Stripe is still reviewing or waiting for more information, so charge capability is not fully live yet.",
+            "done": "This seller account can already accept charges and receive Connect-routed order funds.",
+            "attention": "The blocked items above are affecting charge capability and need to be cleared first."
+          },
+          "payouts": {
+            "label": "Enable payouts",
+            "todo": "Stripe can continue enabling bank payouts after charge capability is ready.",
+            "current": "Payout capability is still waiting to become active. Keep syncing until the account shows payouts enabled.",
+            "done": "Payouts are enabled and Stripe can send funds to the linked bank account on schedule.",
+            "attention": "The current restrictions are affecting payouts, so clear those blockers first."
+          }
+        }
+      },
+      "actions": {
+        "startOnboarding": "Start Stripe payout onboarding",
+        "continueOnboarding": "Continue Stripe payout setup",
+        "openDashboard": "Open Stripe Express Dashboard",
+        "sync": "Sync Stripe status"
+      },
+      "status": {
+        "NOT_STARTED": "Not started",
+        "PENDING": "Pending",
+        "RESTRICTED": "Restricted",
+        "ACTIVE": "Active",
+        "DISCONNECTED": "Disconnected"
+      },
+      "fields": {
+        "providerAccountId": "Stripe account",
+        "country": "Country / region",
+        "defaultCurrency": "Default currency",
+        "lastSyncedAt": "Last synced",
+        "disconnectedAt": "Disconnected at",
+        "detailsSubmitted": "Details submitted",
+        "chargesEnabled": "Charges enabled",
+        "payoutsEnabled": "Payouts enabled",
+        "bankAccount": "Bank account summary",
+        "bankUnavailable": "No bank summary is available yet. Confirm the linked bank account inside the Stripe Express Dashboard.",
+        "disabledReason": "Disabled reason",
+        "none": "Nothing is due right now"
+      },
+      "flags": {
+        "ready": "Ready",
+        "notReady": "Not ready"
+      },
+      "hints": {
+        "active": "This seller account can already charge and receive payouts. You can still open the Stripe Express Dashboard to review payout timing, submit more information, or update bank details.",
+        "pending": "This seller account is not fully enabled yet. Continue Stripe onboarding, then sync again after returning to confirm whether capabilities are live."
+      },
+      "messages": {
+        "returned": "Returned from Stripe and refreshed the latest account status.",
+        "synced": "Stripe payout account status updated."
+      },
+      "errors": {
+        "loadFailed": "Failed to load the payout account. Please try again later."
+      }
+    }
+  },
   "auth": {
     "login": {
       "title": "Login",
@@ -382,6 +382,30 @@
       "preview": "Preview",
       "previewButton": "Theme Button",
       "previewLink": "Theme Link"
+    },
+    "architect": {
+      "title": "Page Architect",
+      "global": "Global",
+      "sections": "Sections",
+      "emptyComposer": "Select a section or setting from the left to start editing",
+      "composerSuffix": "/ Composer",
+      "sectionNotFound": "Section not found",
+      "addMenuSection": "Add Menu Section",
+      "notConfigured": "Click to add"
+    },
+    "globalPanels": {
+      "background": {
+        "label": "Page Background",
+        "description": "Global background color or image"
+      },
+      "theme": {
+        "label": "Theme Color",
+        "description": "Brand accent color"
+      },
+      "articles": {
+        "label": "Articles",
+        "description": "Manage news articles"
+      }
     }
   },
   "heroMenu": {
@@ -804,6 +828,57 @@
     "deleteConfirm": {
       "title": "Confirm Delete",
       "message": "Are you sure you want to delete this product? This action cannot be undone."
+    }
+  },
+  "sectionMeta": {
+    "hero": "Hero",
+    "video": "Video",
+    "news": "News",
+    "gallery": "Gallery",
+    "menu": "Menu",
+    "on": "On",
+    "off": "Off",
+    "enabled": "Enabled",
+    "disabled": "Disabled",
+    "colSpan": {
+      "quarter": "1/4",
+      "half": "Half",
+      "threeQuarter": "3/4",
+      "full": "Full"
+    }
+  },
+  "menuEditor": {
+    "navItems": {
+      "title": "Navigation Items",
+      "labelPlaceholder": "Label",
+      "hrefPlaceholder": "/path or https://...",
+      "addCustom": "Add Custom Link"
+    },
+    "logo": {
+      "title": "Logo",
+      "show": "Show Logo",
+      "urlLabel": "Logo Image URL",
+      "urlPlaceholder": "https://... or /uploads/...",
+      "library": "Library",
+      "pickerTitle": "Select Logo",
+      "opacityLabel": "Opacity: {value}%"
+    },
+    "socialLinks": {
+      "title": "Social Links",
+      "showOnPage": "Show social links on page",
+      "addLink": "Add Social Link",
+      "removeTitle": "Remove Social Link",
+      "removeMessage": "Are you sure you want to remove this social link?",
+      "removeConfirm": "Remove",
+      "removed": "Social link removed"
+    },
+    "style": {
+      "title": "Menu Style",
+      "backdropBlur": "Backdrop blur effect",
+      "buttonVariant": "Button Variant",
+      "variantDefault": "Default",
+      "variantOutline": "Outline",
+      "variantGhost": "Ghost"
     }
   }
 }

@@ -112,6 +112,24 @@ const VideoSectionPropsSchema = z.object({
     .optional(),
 });
 
+const NavLinkItemSchema = z.object({
+  id: z.string().min(1),
+  key: z.string().min(1),
+  label: z.string().optional(),
+  href: z.string().optional(),
+  enabled: z.boolean(),
+});
+
+const MenuSectionPropsSchema = z.object({
+  items: z.array(NavLinkItemSchema).max(20).optional(),
+  style: z
+    .object({
+      backdropBlur: z.boolean().optional(),
+      buttonVariant: z.enum(["default", "outline", "ghost"]).optional(),
+    })
+    .optional(),
+});
+
 const SectionConfigSchema = z.discriminatedUnion("type", [
   z.object({
     id: z.string(),
@@ -138,6 +156,13 @@ const SectionConfigSchema = z.discriminatedUnion("type", [
     id: z.string(),
     type: z.literal("video"),
     props: VideoSectionPropsSchema,
+    enabled: z.boolean(),
+    order: z.number().int().min(0),
+  }),
+  z.object({
+    id: z.string(),
+    type: z.literal("menu"),
+    props: MenuSectionPropsSchema,
     enabled: z.boolean(),
     order: z.number().int().min(0),
   }),

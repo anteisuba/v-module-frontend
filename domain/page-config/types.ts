@@ -2,7 +2,7 @@
 
 export type BackgroundType = 'color' | 'image';
 
-export type SectionType = 'hero' | 'gallery' | 'news' | 'video';
+export type SectionType = 'hero' | 'gallery' | 'news' | 'video' | 'menu';
 
 export type BackgroundConfig = 
   | { type: 'color'; value: string }  // hex color, e.g. "#000000"
@@ -84,11 +84,30 @@ export type VideoSectionProps = {
   };
 };
 
-export type SectionConfig = 
+// 菜单导航项
+export type NavLinkItem = {
+  id: string;
+  key: string;      // e.g. "news", "blog", "shop", "contact"
+  label?: string;   // 自定义显示名称（空则使用 key 的默认翻译）
+  href?: string;    // 自定义链接（空则使用默认路径）
+  enabled: boolean;
+};
+
+// 菜单 section 配置
+export type MenuSectionProps = {
+  items?: NavLinkItem[];
+  style?: {
+    backdropBlur?: boolean;           // 背景模糊效果，默认 true
+    buttonVariant?: 'default' | 'outline' | 'ghost'; // 按钮样式
+  };
+};
+
+export type SectionConfig =
   | { id: string; type: 'hero'; props: HeroSectionProps; enabled: boolean; order: number; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } }
   | { id: string; type: 'gallery'; props: GallerySectionProps; enabled: boolean; order: number; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } }
   | { id: string; type: 'news'; props: NewsSectionProps; enabled: boolean; order: number; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } }
-  | { id: string; type: 'video'; props: VideoSectionProps; enabled: boolean; order: number; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } };
+  | { id: string; type: 'video'; props: VideoSectionProps; enabled: boolean; order: number; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } }
+  | { id: string; type: 'menu'; props: MenuSectionProps; enabled: boolean; order: number; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } };
 
 
 export type SocialLinkItem = {

@@ -62,7 +62,7 @@ describe("POST /api/user/login", () => {
     );
 
     expect(response.status).toBe(401);
-    await expect(response.json()).resolves.toEqual({ message: "该邮箱未注册" });
+    await expect(response.json()).resolves.toEqual({ error: "该邮箱未注册", code: "USER_NOT_FOUND" });
     expect(compareMock).not.toHaveBeenCalled();
   });
 
@@ -87,7 +87,7 @@ describe("POST /api/user/login", () => {
     );
 
     expect(response.status).toBe(401);
-    await expect(response.json()).resolves.toEqual({ message: "密码不正确" });
+    await expect(response.json()).resolves.toEqual({ error: "密码不正确", code: "INVALID_PASSWORD" });
     expect(ensureUserPageMock).not.toHaveBeenCalled();
   });
 

@@ -75,6 +75,7 @@ describe("POST /api/shop/checkout", () => {
     expect(response.status).toBe(503);
     await expect(response.json()).resolves.toEqual({
       error: "Stripe Checkout is not configured",
+      code: "STRIPE_NOT_CONFIGURED",
     });
     expect(createStripeCheckoutMock).not.toHaveBeenCalled();
   });

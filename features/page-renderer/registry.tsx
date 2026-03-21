@@ -57,6 +57,11 @@ export function renderSection(section: SectionConfig, pageConfig?: PageConfig): 
     );
   }
 
+  // Menu section is rendered via the FloatingMenu component at layout level, not here
+  if (section.type === "menu") {
+    return null;
+  }
+
   // TypeScript exhaustive check
   const exhaustiveCheck: never = section;
   console.warn("Unknown section type", exhaustiveCheck);

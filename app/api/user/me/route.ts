@@ -2,15 +2,24 @@
 
 import { NextResponse } from "next/server";
 import { getServerSession } from "@/lib/session/userSession";
+import { ApiRouteError, createApiErrorResponse } from "@/lib/api/server";
 
 export const runtime = "nodejs"; // Session requires Node.js runtime
 
 export async function GET() {
-  const session = await getServerSession();
+  try {
+    const session = await getServerSession();
 
-  if (!session?.user?.id) {
-    return NextResponse.json({ ok: false }, { status: 401 });
+    if (!session?.user?.id) {
+      throw new ApiRouteError("UNAUTHORIZED", "请先登录", 401);
+    }
+
+    return NextResponse.json({ ok: true, user: session.user });
+  } catch (error) {
+    return createApiErrorResponse(error, {
+      code: "ME_FAILED",
+      message: "获取用户信息失败",
+      status: 500,
+    });
   }
-
-  return NextResponse.json({ ok: true, user: session.user });
 }
