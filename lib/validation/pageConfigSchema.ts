@@ -61,7 +61,7 @@ const NewsSectionPropsSchema = z.object({
       id: z.string(),
       src: z.string().min(1),
       alt: z.string().optional(),
-      href: z.string().min(1), // 外部链接，必填
+      href: z.string().default(""), // 外部链接，允许为空（用户可能先选图再填链接）
       objectPosition: z.string().optional(), // 图片位置
     })
   ),

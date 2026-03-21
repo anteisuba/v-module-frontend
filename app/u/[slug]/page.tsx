@@ -56,9 +56,9 @@ export default async function UserPage({
       <Suspense fallback={<PageLoadingWrapper messageKey="common.loadingPageContent" />}>
         <PageRenderer config={config} />
       </Suspense>
-      <NewsListSection 
-        slug={slug} 
-        limit={3} 
+      <NewsListSection
+        slug={slug}
+        limit={3}
         background={config.newsBackground || { type: "color", value: "#000000" }}
       />
     </ThemeProvider>
@@ -104,4 +104,3 @@ export async function generateMetadata({
       `Personal page of ${user.displayName || user.slug}`,
   };
 }
-

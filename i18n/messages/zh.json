@@ -315,6 +315,20 @@
     "title": "页面编辑器",
     "description": "编辑你的个人页面配置",
     "openPage": "打开页面",
+    "previewDraft": "预览草稿",
+    "preview": {
+      "title": "草稿预览",
+      "mobile": "手机",
+      "tablet": "平板",
+      "desktop": "桌面",
+      "close": "关闭",
+      "sections": "版块顺序",
+      "draftNote": "草稿预览 · 编辑内容后自动同步 · 拖动左侧版块调整顺序",
+      "syncing": "同步中…",
+      "synced": "已同步",
+      "syncError": "同步失败",
+      "refresh": "刷新预览"
+    },
     "saveDraft": "保存草稿",
     "saving": "保存中...",
     "publish": "发布",
@@ -524,6 +538,7 @@
     "layout": {
       "title": "布局设置",
       "paddingY": "上下内边距（px）：",
+      "paddingX": "左右内边距（px）：",
       "backgroundColor": "背景颜色",
       "backgroundOpacity": "背景透明度：",
       "maxWidth": "最大宽度",
@@ -664,7 +679,8 @@
       "newsArticleBackground": "新闻文章背景",
       "heroLogo": "Hero Logo",
       "heroSlide": "Hero 轮播图",
-      "newsItem": "新闻模块图片"
+      "newsItem": "新闻模块图片",
+      "galleryImage": "相册图片"
     },
     "referenceKinds": {
       "pageDraft": "页面草稿配置",
@@ -880,5 +896,15 @@
       "variantOutline": "描边",
       "variantGhost": "透明"
     }
+  },
+  "galleryEditor": {
+    "addImage": "新增图片",
+    "changeImage": "更换图片",
+    "columns": "列数",
+    "gap": "间距",
+    "altPlaceholder": "替代文字",
+    "hrefPlaceholder": "点击链接（选填）",
+    "empty": "尚未添加任何图片",
+    "uploadSuccess": "图片上传成功"
   }
 }

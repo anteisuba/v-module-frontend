@@ -9,6 +9,7 @@ interface CMSHeaderProps {
   title?: string;
   description?: string;
   userSlug?: string | null;
+  onPreview?: () => void;
   onSaveDraft?: () => void;
   onPublish?: () => void;
   saving?: boolean;
@@ -20,6 +21,7 @@ export default function CMSHeader({
   title,
   description,
   userSlug,
+  onPreview,
   onSaveDraft,
   onPublish,
   saving = false,
@@ -50,6 +52,17 @@ export default function CMSHeader({
           >
             {t("cms.openPage")}
           </a>
+        )}
+
+        {userSlug && onPreview && (
+          <button
+            type="button"
+            onClick={onPreview}
+            disabled={disabled}
+            className="editorial-button editorial-button--secondary min-h-11 px-4 py-2.5 text-[11px] disabled:opacity-50"
+          >
+            {t("cms.previewDraft")}
+          </button>
         )}
 
         {onSaveDraft && (

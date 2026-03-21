@@ -315,6 +315,20 @@
     "title": "Page Editor",
     "description": "Edit your personal page configuration",
     "openPage": "Open Page",
+    "previewDraft": "Preview Draft",
+    "preview": {
+      "title": "Draft Preview",
+      "mobile": "Mobile",
+      "tablet": "Tablet",
+      "desktop": "Desktop",
+      "close": "Close",
+      "sections": "Section Order",
+      "draftNote": "Draft preview · Auto-syncs on edit · Drag sections to reorder",
+      "syncing": "Syncing…",
+      "synced": "Synced",
+      "syncError": "Sync failed",
+      "refresh": "Refresh preview"
+    },
     "saveDraft": "Save Draft",
     "saving": "Saving...",
     "publish": "Publish",
@@ -524,6 +538,7 @@
     "layout": {
       "title": "Layout Settings",
       "paddingY": "Vertical Padding (px):",
+      "paddingX": "Horizontal Padding (px):",
       "backgroundColor": "Background Color",
       "backgroundOpacity": "Background Opacity:",
       "maxWidth": "Max Width",
@@ -664,7 +679,8 @@
       "newsArticleBackground": "News article background",
       "heroLogo": "Hero logo",
       "heroSlide": "Hero slide",
-      "newsItem": "News item image"
+      "newsItem": "News item image",
+      "galleryImage": "Gallery image"
     },
     "referenceKinds": {
       "pageDraft": "Draft page config",
@@ -880,5 +896,15 @@
       "variantOutline": "Outline",
       "variantGhost": "Ghost"
     }
+  },
+  "galleryEditor": {
+    "addImage": "Add Image",
+    "changeImage": "Change Image",
+    "columns": "Columns",
+    "gap": "Gap",
+    "altPlaceholder": "Alt text",
+    "hrefPlaceholder": "Link URL (optional)",
+    "empty": "No images added yet",
+    "uploadSuccess": "Image uploaded"
   }
 }

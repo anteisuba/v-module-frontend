@@ -10,6 +10,7 @@ export const NEWS_ARTICLE_BACKGROUND = "NEWS_ARTICLE_BACKGROUND";
 export const HERO_LOGO = "HERO_LOGO";
 export const HERO_SLIDE = "HERO_SLIDE";
 export const NEWS_ITEM = "NEWS_ITEM";
+export const GALLERY_IMAGE = "GALLERY_IMAGE";
 
 export const MEDIA_ASSET_USAGE_CONTEXTS = [
   PAGE_BACKGROUND,
@@ -24,6 +25,7 @@ export const MEDIA_ASSET_USAGE_CONTEXTS = [
   HERO_LOGO,
   HERO_SLIDE,
   NEWS_ITEM,
+  GALLERY_IMAGE,
 ] as const;
 
 export type MediaAssetUsageContext =
@@ -54,6 +56,7 @@ export const MEDIA_ASSET_USAGE_LABEL_KEYS: Record<
   HERO_LOGO: "mediaLibrary.usage.heroLogo",
   HERO_SLIDE: "mediaLibrary.usage.heroSlide",
   NEWS_ITEM: "mediaLibrary.usage.newsItem",
+  GALLERY_IMAGE: "mediaLibrary.usage.galleryImage",
 };
 
 export function isMediaAssetUsageContext(

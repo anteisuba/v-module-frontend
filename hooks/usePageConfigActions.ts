@@ -1,6 +1,6 @@
 // hooks/usePageConfigActions.ts
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef, useEffect } from "react";
 import { pageApi } from "@/lib/api";
 import type { PageConfig } from "@/domain/page-config/types";
 import { cleanPageConfig } from "@/utils/pageConfig";
@@ -27,11 +27,18 @@ export function usePageConfigActions({
   const [saving, setSaving] = useState(false);
   const [publishing, setPublishing] = useState(false);
 
+  // 使用 ref 确保 saveDraft 永远读取最新 config，避免 stale closure 问题
+  const configRef = useRef(config);
+  useEffect(() => {
+    configRef.current = config;
+  });
+
   const saveDraft = useCallback(async () => {
     setSaving(true);
     try {
-      // 清理配置数据
-      const cleanedConfig = cleanPageConfig(config);
+      // 永远从 ref 读取最新 config（避免 stale closure）
+      const latestConfig = configRef.current;
+      const cleanedConfig = cleanPageConfig(latestConfig);
 
       // 保存时同时传递主题设置
       await pageApi.updateDraftConfig(cleanedConfig, {
@@ -40,25 +47,27 @@ export function usePageConfigActions({
       });
 
       onToast?.("cms.draftSaved");
-      // 更新本地配置为清理后的版本
-      setConfig(cleanedConfig);
+      // 更新本地配置：使用 functional update 确保基于最新状态清理
+      setConfig(cleanPageConfig(configRef.current));
     } catch (e) {
       onError?.(e);
     } finally {
       setSaving(false);
     }
-  }, [config, setConfig, themeColor, fontFamily, onError, onToast]);
+  // configRef 永远指向最新 config，不需要放进 deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setConfig, themeColor, fontFamily, onError, onToast]);
 
   const publish = useCallback(async () => {
     setPublishing(true);
     try {
       // 先保存草稿（带 hasPublished 标记）
       const configToSave = {
-        ...config,
+        ...configRef.current,
         hasPublished: true, // 标记为已发布
       };
       const cleanedConfig = cleanPageConfig(configToSave);
-      
+
       // 保存时同时传递主题设置
       await pageApi.updateDraftConfig(cleanedConfig, {
         themeColor,
@@ -77,7 +86,9 @@ export function usePageConfigActions({
     } finally {
       setPublishing(false);
     }
-  }, [config, setConfig, themeColor, fontFamily, onError, onToast]);
+  // configRef 永远指向最新 config，不需要放进 deps
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [setConfig, themeColor, fontFamily, onError, onToast]);
 
   return {
     saving,

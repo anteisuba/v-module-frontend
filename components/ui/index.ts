@@ -40,3 +40,5 @@ export { default as Skeleton, ImageSkeleton, TextSkeleton, CardSkeleton } from "
 export { default as StatusBadge, getStatusTone, getToneStyle } from "./StatusBadge";
 export { default as SectionArchitectCard } from "./SectionArchitectCard";
 export { default as MenuSectionEditor } from "./MenuSectionEditor";
+export { default as DraftPreviewPanel } from "./DraftPreviewPanel";
+export { default as GallerySectionEditor } from "./GallerySectionEditor";

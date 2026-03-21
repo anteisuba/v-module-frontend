@@ -3,8 +3,6 @@
 
 "use client";
 
-import { useI18n } from "@/lib/i18n/context";
-
 interface LoadingStateProps {
   message?: string;
   progress?: number; // 0-100
@@ -20,7 +18,6 @@ export default function LoadingState({
   size = "md",
   className = "",
 }: LoadingStateProps) {
-  const { t } = useI18n();
 
   const sizeClasses = {
     sm: "h-4 w-4",
@@ -74,7 +71,7 @@ export default function LoadingState({
         className={`animate-spin rounded-full border-2 border-t-transparent ${sizeClasses[size]}`}
         style={{ borderColor: "var(--editorial-accent)", borderTopColor: "transparent" }}
         role="status"
-        aria-label={message || t("common.loading")}
+        aria-label={message || "Loading"}
       />
       {message && (
         <span className="text-xs" style={{ color: "var(--editorial-muted)" }}>{message}</span>

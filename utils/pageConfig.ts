@@ -43,7 +43,7 @@ function isRenderableSection(section: unknown): section is SectionConfig {
     return false;
   }
 
-  return ["hero", "gallery", "news", "video"].includes(section.type);
+  return ["hero", "gallery", "news", "video", "menu"].includes(section.type);
 }
 
 export function normalizePageConfig(config: unknown): PageConfig {
@@ -175,21 +175,29 @@ export function cleanPageConfig(config: PageConfig): PageConfig {
         };
       }
       if (section.type === "news") {
-        // 过滤掉 src 或 href 为空的 items
+        // 只过滤掉 src 为空的 items（href 允许暂时为空，用户可能先选图再填链接）
         const validItems = section.props.items.filter(
           (item) =>
             item.src &&
-            item.src.trim().length > 0 &&
-            item.href &&
-            item.href.trim().length > 0
+            item.src.trim().length > 0
         );
 
         return {
           ...section,
           props: {
-            ...section.props, // 保留现有的 props（包括 layout）
-            items: validItems, // 允许空数组
+            ...section.props,
+            items: validItems,
           },
+        };
+      }
+      if (section.type === "gallery") {
+        // 过滤掉 src 为空的 items（新增但未选图的占位项）
+        const validItems = section.props.items.filter(
+          (item) => item.src && item.src.trim().length > 0
+        );
+        return {
+          ...section,
+          props: { ...section.props, items: validItems },
         };
       }
       return section;

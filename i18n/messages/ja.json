@@ -315,6 +315,20 @@
     "title": "ページエディター",
     "description": "個人ページ設定を編集",
     "openPage": "ページを開く",
+    "previewDraft": "下書きプレビュー",
+    "preview": {
+      "title": "下書きプレビュー",
+      "mobile": "モバイル",
+      "tablet": "タブレット",
+      "desktop": "デスクトップ",
+      "close": "閉じる",
+      "sections": "セクション順序",
+      "draftNote": "下書きプレビュー · 編集後に自動同期 · 左側のセクションをドラッグで並べ替え",
+      "syncing": "同期中…",
+      "synced": "同期済み",
+      "syncError": "同期失敗",
+      "refresh": "プレビュー更新"
+    },
     "saveDraft": "下書きを保存",
     "saving": "保存中...",
     "publish": "公開",
@@ -524,6 +538,7 @@
     "layout": {
       "title": "レイアウト設定",
       "paddingY": "上下パディング（px）：",
+      "paddingX": "左右パディング（px）：",
       "backgroundColor": "背景色",
       "backgroundOpacity": "背景透明度：",
       "maxWidth": "最大幅",
@@ -664,7 +679,8 @@
       "newsArticleBackground": "ニュース記事背景",
       "heroLogo": "Hero ロゴ",
       "heroSlide": "Hero スライド",
-      "newsItem": "ニュース画像"
+      "newsItem": "ニュース画像",
+      "galleryImage": "アルバム画像"
     },
     "referenceKinds": {
       "pageDraft": "ページ下書き設定",
@@ -880,5 +896,15 @@
       "variantOutline": "アウトライン",
       "variantGhost": "ゴースト"
     }
+  },
+  "galleryEditor": {
+    "addImage": "画像を追加",
+    "changeImage": "画像を変更",
+    "columns": "カラム数",
+    "gap": "間隔",
+    "altPlaceholder": "代替テキスト",
+    "hrefPlaceholder": "リンクURL（任意）",
+    "empty": "画像がまだありません",
+    "uploadSuccess": "画像をアップロードしました"
   }
 }

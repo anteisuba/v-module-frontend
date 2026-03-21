@@ -33,6 +33,8 @@ import {
 } from "@/components/ui";
 import SectionArchitectCard from "@/components/ui/SectionArchitectCard";
 import MenuSectionEditor from "@/components/ui/MenuSectionEditor";
+import GallerySectionEditor from "@/components/ui/GallerySectionEditor";
+import DraftPreviewPanel from "@/components/ui/DraftPreviewPanel";
 import { SectionLayoutControl } from "@/components/ui/SectionLayoutControl";
 import { pageApi } from "@/lib/api";
 import { useUser } from "@/lib/context/UserContext";
@@ -382,6 +384,19 @@ function ComposerContent({
         />
       );
     }
+
+    if (section.type === "gallery") {
+      return (
+        <GallerySectionEditor
+          config={config}
+          onConfigChange={setConfig}
+          disabled={disabled}
+          onUploadImage={(file, options) => pageApi.uploadImage(file, options)}
+          onToast={showToast}
+          onError={handleError}
+        />
+      );
+    }
   }
 
   return null;
@@ -470,6 +485,7 @@ function CMSPageContent() {
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
   const [lastSaved, setLastSaved] = useState<Date | null>(null);
   const [showPublishConfirm, setShowPublishConfirm] = useState(false);
+  const [showPreview, setShowPreview] = useState(false);
   const [composerTarget, setComposerTarget] = useState<ComposerTarget | null>(
     null
   );
@@ -619,6 +635,7 @@ function CMSPageContent() {
         {/* 页头 */}
         <CMSHeader
           userSlug={user?.slug || null}
+          onPreview={() => setShowPreview(true)}
           onSaveDraft={handleSaveDraft}
           onPublish={() => setShowPublishConfirm(true)}
           saving={saving}
@@ -833,6 +850,20 @@ function CMSPageContent() {
           onCancel={() => setShowPublishConfirm(false)}
         />
       </div>
+
+      {/* 草稿預覽面板 */}
+      {user?.slug && (
+        <DraftPreviewPanel
+          isOpen={showPreview}
+          onClose={() => setShowPreview(false)}
+          slug={user.slug}
+          sections={sortedSections}
+          onReorder={(reordered) =>
+            setConfig({ ...config, sections: reordered })
+          }
+          onSyncDraft={saveDraft}
+        />
+      )}
     </main>
   );
 }

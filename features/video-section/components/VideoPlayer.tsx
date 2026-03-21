@@ -24,13 +24,6 @@ interface VideoPlayerProps {
   className?: string;
 }
 
-type PlayerDebugInfo = {
-  originalUrl: string;
-  normalizedUrl: string;
-  finalUrl: string;
-  platform: VideoPlatform | null;
-  configKeys: string[];
-};
 
 function formatPlayerError(error: unknown) {
   if (error instanceof Error) {
@@ -100,22 +93,7 @@ export default function VideoPlayer({
   const finalUrl = normalizedUrl;
   const hasPlayerConfig = playerConfig != null && Object.keys(playerConfig).length > 0;
 
-  const debugInfo = useMemo<PlayerDebugInfo>(
-    () => ({
-      originalUrl: item.url,
-      normalizedUrl,
-      finalUrl,
-      platform,
-      configKeys: hasPlayerConfig ? Object.keys(playerConfig) : [],
-    }),
-    [finalUrl, hasPlayerConfig, item.url, normalizedUrl, platform, playerConfig]
-  );
 
-  useEffect(() => {
-    if (process.env.NODE_ENV === "development") {
-      console.log("VideoPlayer render:", debugInfo);
-    }
-  }, [debugInfo]);
 
   if (!url) {
     return (
@@ -211,16 +189,9 @@ export default function VideoPlayer({
                 setHasError(true);
               }}
               onReady={() => {
-                if (process.env.NODE_ENV === "development") {
-                  console.log("Video player ready");
-                }
                 setHasError(false);
               }}
-              onStart={() => {
-                if (process.env.NODE_ENV === "development") {
-                  console.log("Video started");
-                }
-              }}
+              onStart={() => {}}
               className="rounded-lg"
               style={{ position: "absolute", top: 0, left: 0 }}
               light={false}
