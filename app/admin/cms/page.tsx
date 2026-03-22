@@ -257,35 +257,85 @@ function ComposerContent({
               helpText={t("cms.themeSettings.themeColorHelp")}
               disabled={disabled}
             />
-            {/* Preview */}
+            {/* Font Selection */}
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-black/60">
+                Font
+              </label>
+              <div className="flex gap-1 rounded-lg bg-black/5 p-1">
+                {([
+                  { value: "var(--font-cormorant)", label: "Serif" },
+                  { value: "var(--font-jost)", label: "Sans" },
+                  { value: "var(--font-geist-mono)", label: "Mono" },
+                ] as const).map((font) => (
+                  <button
+                    key={font.value}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() =>
+                      setConfig({
+                        ...config,
+                        theme: { ...config.theme, headingFont: font.value },
+                      })
+                    }
+                    className={`flex-1 rounded-md px-3 py-1.5 text-xs font-medium transition-all ${
+                      (config.theme?.headingFont || "var(--font-cormorant)") === font.value
+                        ? "bg-white text-black shadow-sm"
+                        : "text-black/50 hover:text-black/70"
+                    }`}
+                  >
+                    {font.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+            {/* Live Preview Card */}
             <div className="space-y-2">
               <label className="block text-xs font-medium text-black">
                 {t("cms.themeSettings.preview")}
               </label>
               <div
-                className="flex items-center gap-3 rounded-lg p-3"
+                className="overflow-hidden rounded-xl"
                 style={{
                   backgroundColor: config.theme?.backgroundColor || "#0d0d0b",
                   color: config.theme?.textColor || "#e8e4d9",
+                  borderRadius: config.theme?.borderRadius || "1.5rem",
                 }}
               >
-                <button
-                  type="button"
-                  className="rounded-lg px-4 py-2 text-sm font-medium"
-                  style={{
-                    backgroundColor: config.theme?.primaryColor || themeColor,
-                    color: "#ffffff",
-                  }}
-                  disabled
-                >
-                  {t("cms.themeSettings.previewButton")}
-                </button>
-                <span
-                  className="text-sm underline"
-                  style={{ color: config.theme?.primaryColor || themeColor }}
-                >
-                  {t("cms.themeSettings.previewLink")}
-                </span>
+                <div className="p-5">
+                  <div
+                    className="mb-1 text-lg font-light tracking-wide"
+                    style={{ fontFamily: config.theme?.headingFont || "var(--font-cormorant)" }}
+                  >
+                    Heading Preview
+                  </div>
+                  <div
+                    className="mb-3 text-xs opacity-60"
+                    style={{ fontFamily: config.theme?.bodyFont || "var(--font-jost)" }}
+                  >
+                    Body text preview with the selected font.
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      className="rounded-lg px-4 py-1.5 text-xs font-medium"
+                      style={{
+                        backgroundColor: config.theme?.primaryColor || themeColor,
+                        color: "#ffffff",
+                        borderRadius: config.theme?.borderRadius || "0.5rem",
+                      }}
+                      disabled
+                    >
+                      {t("cms.themeSettings.previewButton")}
+                    </button>
+                    <span
+                      className="text-xs underline"
+                      style={{ color: config.theme?.primaryColor || themeColor }}
+                    >
+                      {t("cms.themeSettings.previewLink")}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
