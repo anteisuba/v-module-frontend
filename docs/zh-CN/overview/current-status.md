@@ -1,7 +1,7 @@
 # 当前状态
 
 - 日本語: [現状](../../ja/overview/current-status.md)
-- 最后更新: 2026-03-22
+- 最后更新: 2026-03-23
 
 ## 用途
 
@@ -34,8 +34,8 @@
 
 - `pnpm build`：通过；`middleware -> proxy`、`prisma.config.ts` 迁移和本地构建 warning 已清理，当前为标准 build 输出
 - `pnpm check`：通过
-- `pnpm test`：通过，当前为 `31` 个文件 `111` 个测试
-- `pnpm test:e2e`：已存在 `11` 个 e2e 规格，当前配置会在 Chromium / Firefox / WebKit 三浏览器矩阵下执行
+- `pnpm test`：通过，当前为 `37` 个文件 `154` 个测试
+- `pnpm test:e2e`：已存在 `12` 个 e2e 规格，当前配置会在 Chromium / Firefox / WebKit 三浏览器矩阵下执行
 - `pnpm lint`：通过，当前为 `0 errors / 0 warnings`
 - GitHub Actions：已新增 PR / push 持续集成，执行 `pnpm check`、`pnpm test`、`pnpm build`、`pnpm lint`，并以 Chromium / Firefox / WebKit 矩阵运行 Playwright；e2e 失败时会上传 `playwright-report` 与 `test-results`
 - Vercel：生产部署与分支 Preview Deployments 已接入，可在 `main` 外的活跃分支上生成独立预览环境
@@ -53,7 +53,7 @@
 - 博客系统：后台列表 / 编辑、公开列表 / 详情、点赞接口、评论接口与前端 UI
 - 评论审核：`BlogComment` 已支持 `PENDING / APPROVED / REJECTED`，访客评论默认进入待审核，卖家后台可搜索、审核和删除
 - 商店系统：后台商品管理、公开商品列表 / 详情、公开结账、订单成功页访客查询、卖家订单列表 / 详情 / 状态更新
-- 退款与争议：订单已记录 `OrderPaymentAttempt`、`OrderRefund`、`OrderDispute`，后台可对 Stripe 已支付订单发起退款并查看 dispute 时间线
+- 退款与争议：订单已记录 `OrderPaymentAttempt`、`OrderRefund`、`OrderDispute`，后台可对 Stripe 已支付订单发起退款并查看 dispute 时间线；卖家可按争议类型提交文本和文件证据（草稿保存 + 最终提交），支持 Stripe 文件上传和状态同步
 - Stripe Checkout：`POST /api/shop/checkout` 会创建托管 Checkout Session；公开结账页跳转到 Stripe 支付页
 - Stripe Webhook：`POST /api/payments/stripe/webhook` 已处理支付成功、异步失败、会话过期和 dispute，并回写订单支付状态与库存补偿
 - 支付对账：后台已提供 Stripe 对账页，可查看事件、异常、导出 CSV，并按异常跳转到订单
@@ -69,22 +69,24 @@
 - 媒体库：后台已提供统一媒体库页面，支持复用、按使用场景筛选、批量选择、删除保护、引用追踪、库内直接替换引用资源与批量标签维护
 - 媒体上传：后台上传接口、本地文件系统与 R2 分支、`MediaAsset` 数据记录
 - 国际化基础：存在 `zh`、`ja`、`en` 文案文件与语言切换器；当前代码中引用的全部 key（含 `newsSectionEditor.layout.paddingX`、`mediaLibrary.usage.galleryImage`）已在三个语言文件中补全
+- 视觉自由度：主题预设系统（Elegant Dark / Warm Natural / Cool Modern）+ Section 变体 + 字体选择器 + Showcase 页面；公开页可通过 CMS 一键切换整体视觉风格
+- Cloudflare Turnstile：所有公开写入入口（评论、结账、登录、注册、密码重置）已接入 invisible 模式验证码
 
 ## 部分完成 / 存在缺口
 
 - 当前支付正式路线仍是 Stripe 单一通道；PayPal / 本地支付方式已明确后置
-- Stripe Connect 主链路已可用，当前剩余缺口主要转向 Connect 账户状态定期同步的健康检查日志和 dispute 证据提交流程
-- 工程基线已进入“可构建 / 可检查 / 可测试 / 可跑 e2e / 可预览部署”的稳定态，且已接入 GitHub Actions、Vercel Preview 与 Chromium / Firefox / WebKit 持续执行；当前剩余缺口主要是是否引入 `changesets` 管理版本、更细的 flaky 治理和 Stripe Connect 运维闭环打磨
+- Stripe Connect 运维闭环已基本完成（对账、结算、告警、健康检查、dispute 证据提交）；当前剩余缺口主要是更细的 flaky 治理
+- 工程基线已进入”可构建 / 可检查 / 可测试 / 可跑 e2e / 可预览部署”的稳定态，且已接入 GitHub Actions、Vercel Preview 与 Chromium / Firefox / WebKit 持续执行；当前剩余缺口主要是是否引入 `changesets` 管理版本和更细的 flaky 治理
 
 ## 未实现
 
 - 购物车与多商品结账
 - 库存预警
-- Turnstile / 验证码
 - 直播日程 `ScheduleBlock`
+- SEO 基础（meta tags、sitemap、robots、动态 OG 图片）
 - PayPal / 本地支付方式
-- 更完整的 SEO、监控、日志和错误追踪
+- 更完整的监控、日志和错误追踪
 
 ## 当前结论
 
-这已经是一个“公开页 + CMS + 内容 + 商店订单 + Stripe 支付运维”都已成型的项目，不应再按原型判断。下一阶段重点应该放在 Stripe Connect 运维闭环打磨和更细粒度的 flaky 治理，而不是把媒体库、warning 清理或 PayPal 重新误判成当前最高优先级。
+这已经是一个”公开页 + CMS + 内容 + 商店订单 + Stripe 支付运维 + 安全验证”都已成型的项目，不应再按原型判断。Stripe Connect 运维闭环已基本完成。下一阶段重点应该放在 SEO 基础设施、直播日程和购物车等用户可见功能扩展，而不是继续向运维链路投入。

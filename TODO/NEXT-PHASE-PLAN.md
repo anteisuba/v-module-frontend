@@ -1,28 +1,25 @@
 # 下一阶段执行计划（视觉自由度之后）
 
 > 创建日期：2026-03-23
-> 状态：📋 待实施
+> 状态：🔄 进行中（Phase A 已完成，Phase B 待实施）
 > 前置：视觉自由度计划已完成（代码层面）
 
 ---
 
-## Phase A（~30min CC）：Turnstile 验证码
+## Phase A（~30min CC）：Turnstile 验证码 ✅
 
-安全加固，阻止机器人滥用公开写入入口。
+> 已完成：2026-03-23（commit `d6f24f8`）
 
-- [ ] 安装 Cloudflare Turnstile SDK
-- [ ] 创建共享 `<TurnstileWidget>` 组件（invisible 模式）
-- [ ] 创建服务端验证工具函数 `verifyTurnstileToken()`
-- [ ] 接入评论提交 API
-- [ ] 接入公开结账 API
-- [ ] 接入登录 API
-- [ ] 接入注册 API
-- [ ] 接入密码重置 API
-- [ ] 环境变量：`TURNSTILE_SITE_KEY` + `TURNSTILE_SECRET_KEY`
-- [ ] 写测试：验证 token 校验逻辑
-
-**价值**：所有公开写入入口都暴露在公网，无验证码是实际安全风险。
-**风险**：使用 invisible 模式不影响用户体验。开发环境用 Turnstile test key 跳过。
+- [x] 安装 Cloudflare Turnstile SDK
+- [x] 创建共享 `<TurnstileWidget>` 组件（invisible 模式）
+- [x] 创建服务端验证工具函数 `verifyTurnstileToken()`
+- [x] 接入评论提交 API
+- [x] 接入公开结账 API
+- [x] 接入登录 API
+- [x] 接入注册 API
+- [x] 接入密码重置 API
+- [x] 环境变量：`TURNSTILE_SITE_KEY` + `TURNSTILE_SECRET_KEY`
+- [x] 写测试：验证 token 校验逻辑
 
 ---
 

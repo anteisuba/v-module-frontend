@@ -1,6 +1,6 @@
 # 后续建议摘要
 
-- 最后更新：2026-03-14
+- 最后更新：2026-03-23
 - 角色：AI / 代理视角的优先级摘要，不是 canonical backlog
 - canonical backlog：[`../overview/backlog.md`](../overview/backlog.md)
 
@@ -10,20 +10,24 @@
 
 ## P1
 
-- Playwright 的 CI 接入、多浏览器矩阵、README badge 和一轮高风险测试扩面已落地；测试侧下一步优先做 flaky 治理和剩余高风险链路补测
-- 把 Stripe Connect 作为当前正式路线继续补运维闭环，routing / account 维度筛选、结算分组、异常告警、订单 CSV Connect 字段导出、payout settings 说明、onboarding 进度提示、异常状态引导，以及 Connect webhook 对 `account.updated` / `account.external_account.*` / `payout.*` 的验签和 payout 快照回写已落地；下一步优先做 Connect 账户状态定期同步的健康检查日志和 dispute 证据提交引导
-- 升级 Next / Browserslist / Playwright 时复核当前 `scripts/` 兼容层，能删除就删除，不长期堆兼容脚本
+- Stripe Connect 运维闭环已基本完成（对账、结算、告警、健康检查、dispute 证据提交均已落地）；测试侧下一步做 flaky 治理和剩余高风险链路补测
+- SEO 基础设施：meta tags、Open Graph、sitemap.xml、robots.txt、动态 OG 图片（Phase B of NEXT-PHASE-PLAN）
+- ScheduleBlock 直播日程模块：section 全链路（Phase C of NEXT-PHASE-PLAN）
 
 ## P2
 
 - 购物车和多商品结账
 - 库存预警
-- 直播日程模块
-- Turnstile / 验证码
-- 更完整的 SEO、监控、日志和错误追踪
+- 更完整的监控、日志和错误追踪
+
+## 已完成（本轮）
+
+- Cloudflare Turnstile 验证码接入（5 个公开入口）
+- 视觉自由度系统（主题预设 + Section 变体 + Showcase）
+- Dispute 证据提交流程（服务 + API + UI + 测试）
 
 ## 使用约束
 
-- 不要再把媒体库、退款后台、支付对账写回 P1，它们已经是现状
-- PayPal / 本地支付方式是后置项，不应抢在 Stripe Connect 运维闭环之前
+- 不要再把 Stripe Connect 运维闭环写回 P1 首要任务，它已经完成
+- PayPal / 本地支付方式是后置项
 - 如果要改正式优先级，请回到 [`../overview/backlog.md`](../overview/backlog.md)

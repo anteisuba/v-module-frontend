@@ -1,7 +1,7 @@
 # 后续待办
 
 - 日本語: [バックログ](../../ja/overview/backlog.md)
-- 最后更新: 2026-03-22
+- 最后更新: 2026-03-23
 
 ## 用途
 
@@ -34,12 +34,12 @@
 
 - 把现有 Playwright 场景正式纳入持续执行：当前已接入 GitHub Actions，在 PR / push 上运行 `check / test / build / lint`，并以 Chromium / Firefox / WebKit 矩阵执行 `11` 个 e2e 规格；失败时会上传 Playwright 产物。README badge 和一轮高风险测试扩面已落地，测试侧下一步优先做 flaky 治理和剩余高风险链路补测
 - 交付链路方面，Vercel 生产部署与 Preview Deployments 已接入；当前剩余决策主要是是否引入 `changesets` 统一版本记录和 release note，而不是继续补 Preview 基线
-- 继续补强 Stripe Connect 运维视角；对账页的 routing / account 维度筛选、结算核销页按 payout 状态分组、异常邮件 / Slack 告警、订单 CSV Connect 字段导出、payout settings 说明、onboarding 进度提示、异常状态引导，以及 Connect webhook 对 `account.updated` / `account.external_account.*` / `payout.*` 的验签和 payout 快照回写都已经落地；下一步优先补 Connect 账户状态定期同步的健康检查日志和 dispute 证据提交流程，而不是切回 PayPal 优先级
+- Stripe Connect 运维闭环已基本完成：对账页筛选、结算核销、异常告警、订单 CSV 导出、payout settings、onboarding 引导、异常状态引导、Connect webhook 验签、payout 快照回写、健康检查诊断、dispute 证据提交流程均已落地；当前仅剩更细的 flaky 治理
 - 维持当前脚本基线：继续使用 `scripts/run-node-tool.mjs`、`scripts/run-prisma-generate.mjs` 和对应 preload 兼容层，避免 Next / Playwright / Prisma 的工具噪音重新回流到主链路
 
 ## TODO：支付扩展
 
-- 在 Stripe Connect 与现有运维闭环稳定后，再评估 PayPal / 本地支付方式和更深入的 dispute 证据提交流程
+- 在 Stripe Connect 运维闭环稳定运行一段时间后，再评估 PayPal / 本地支付方式
 
 ## TODO：公开页 CMS 内容扩展
 
@@ -57,10 +57,9 @@
 
 ## P2：体验与增长
 
+- SEO 基础设施（meta tags、sitemap、robots、动态 OG 图片）
 - 购物车与多商品结账
 - 库存预警
-- Turnstile / 验证码
-- 更完整的 SEO 和公共入口策略
 - 更细粒度的监控、日志和错误追踪
 
 ## 文档维护要求
