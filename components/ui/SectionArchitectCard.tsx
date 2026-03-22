@@ -63,6 +63,7 @@ export default function SectionArchitectCard({
     <div
       ref={setNodeRef}
       style={style}
+      {...attributes}
       className={[
         "group relative overflow-hidden rounded-2xl border transition-all duration-200",
         isSelected
@@ -78,12 +79,11 @@ export default function SectionArchitectCard({
         {/* 拖拽把手 */}
         <button
           type="button"
-          {...attributes}
           {...listeners}
           className={[
             "flex cursor-grab items-center justify-center self-stretch px-2.5 active:cursor-grabbing",
-            "text-[color:var(--editorial-muted)] opacity-0 transition group-hover:opacity-100",
-            isSelected && "opacity-60",
+            "text-[color:var(--editorial-muted)] opacity-25 transition hover:opacity-70 group-hover:opacity-60",
+            isSelected && "opacity-60 hover:opacity-100",
           ]
             .filter(Boolean)
             .join(" ")}

@@ -8,9 +8,26 @@ interface NewsListSectionProps {
   slug?: string; // 用户 slug，用于返回链接
   limit?: number; // 显示的文章数量
   background?: { type: "color" | "image"; value: string }; // 新闻页面背景配置
+  // 来自 news section config 的布局控制
+  layout?: {
+    paddingY?: number;
+    paddingX?: number;
+    backgroundColor?: string;
+    backgroundOpacity?: number;
+    maxWidth?: string;
+  };
+  enabled?: boolean; // 是否显示（来自 section.enabled）
 }
 
-export default async function NewsListSection({ slug, limit = 3, background }: NewsListSectionProps) {
+export default async function NewsListSection({
+  slug,
+  limit = 3,
+  background,
+  layout,
+  enabled = true,
+}: NewsListSectionProps) {
+  // 如果 section 被禁用则不渲染
+  if (!enabled) return null;
   // 服务端直接获取数据
   let articles: NewsArticle[] = [];
   
@@ -34,22 +51,46 @@ export default async function NewsListSection({ slug, limit = 3, background }: N
   // 构建返回链接
   const newsHref = slug ? `/news?from=/u/${slug}` : "/news";
 
-  // 获取背景样式
-  const backgroundStyle: React.CSSProperties = background
-    ? background.type === "color"
-      ? { backgroundColor: background.value }
-      : {
+  // 背景样式（来自 newsBackground，可被 layout.backgroundColor 覆盖）
+  const bgColor = layout?.backgroundColor || (background?.type === "color" ? background.value : "#000000");
+  const bgOpacity = layout?.backgroundOpacity ?? 1;
+
+  const backgroundStyle: React.CSSProperties =
+    background?.type === "image"
+      ? {
           backgroundImage: `url(${background.value})`,
           backgroundSize: "cover",
           backgroundPosition: "center",
           backgroundRepeat: "no-repeat",
         }
-    : { backgroundColor: "#000000" };
+      : {};
+
+  // 布局尺寸
+  const paddingY = layout?.paddingY ?? 64;
+  const paddingX = layout?.paddingX ?? 0;
+  const maxWidthMap: Record<string, string> = {
+    full: "100%", "7xl": "80rem", "6xl": "72rem", "5xl": "64rem", "4xl": "56rem",
+  };
+  const maxWidthVal = maxWidthMap[layout?.maxWidth ?? "7xl"] ?? "80rem";
 
   return (
-    <section className="editorial-shell relative py-16" style={backgroundStyle}>
+    <section
+      className="editorial-shell relative"
+      style={{
+        ...backgroundStyle,
+        paddingTop: `${paddingY}px`,
+        paddingBottom: `${paddingY}px`,
+        paddingLeft: `${paddingX}px`,
+        paddingRight: `${paddingX}px`,
+      }}
+    >
+      {/* 背景色层（支持透明度） */}
+      <div
+        className="absolute inset-0"
+        style={{ backgroundColor: bgColor, opacity: bgOpacity }}
+      />
       <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(8,8,6,0.24),rgba(8,8,6,0.64)_56%,rgba(8,8,6,0.82))]" />
-      <div className="editorial-container">
+      <div className="editorial-container" style={{ maxWidth: maxWidthVal, margin: "0 auto" }}>
         <div className="reveal max-w-3xl">
           <div className="editorial-kicker text-white/54">Latest dispatches</div>
           <div className="line-wipe mt-5 max-w-sm bg-white/16" />

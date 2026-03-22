@@ -268,6 +268,8 @@ function ComposerContent({
           onNewsBackgroundChange={(background) =>
             setConfig({ ...config, newsBackground: background })
           }
+          config={config}
+          onConfigChange={setConfig}
         />
       );
     }
@@ -379,8 +381,6 @@ function ComposerContent({
           config={config}
           onConfigChange={setConfig}
           disabled={disabled}
-          onToast={showToast}
-          onError={handleError}
         />
       );
     }

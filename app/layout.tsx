@@ -12,7 +12,7 @@ import {
   parseLocale,
 } from "@/i18n/config";
 import ErrorFilter from "@/components/ErrorFilter";
-import RevealObserver from "@/components/ui/RevealObserver";
+import DynamicRevealObserver from "@/components/ui/DynamicRevealObserver";
 import { ErrorBoundary } from "@/components/ui";
 import "@/lib/env"; // 触发环境变量验证
 import "./globals.css";
@@ -56,7 +56,7 @@ export default async function RootLayout({
       <body
         className={`${bodyFont.variable} ${displayFont.variable} ${geistMono.variable} antialiased`}
       >
-        <RevealObserver />
+        <DynamicRevealObserver />
         <ErrorBoundary>
           <ErrorFilter />
           <InspectorWrapper>

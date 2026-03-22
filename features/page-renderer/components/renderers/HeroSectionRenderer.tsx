@@ -20,6 +20,7 @@ export default function HeroSectionRenderer({
     alt: s.alt,
     href: s.href || null,
     objectPosition: s.objectPosition,
+    heightVh: s.heightVh,
   }));
 
   // 明确判断：如果配置为 false，则不显示；否则显示（包括 undefined 时使用默认值 true）
@@ -29,7 +30,7 @@ export default function HeroSectionRenderer({
 
   return (
     <div data-section-id={id} data-section-type="hero">
-      <HeroSection 
+      <HeroSection
         initialSlides={slides}
         logo={pageConfig?.logo}
         socialLinks={pageConfig?.socialLinks}
@@ -38,6 +39,8 @@ export default function HeroSectionRenderer({
         showThumbStrip={showThumbStrip}
         showLogo={showLogo}
         showSocialLinks={showSocialLinks}
+        logoPosition={pageConfig?.logoPosition}
+        socialLinksPosition={pageConfig?.socialLinksPosition}
         layout={props.layout}
         carousel={props.carousel}
       />

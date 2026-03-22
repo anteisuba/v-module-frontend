@@ -4,7 +4,6 @@
 
 import { useState, useEffect } from "react";
 import { ConfirmDialog, Button, Input } from "@/components/ui";
-import { SectionLayoutControl } from "@/components/ui/SectionLayoutControl";
 import { useI18n } from "@/lib/i18n/context";
 import { detectPlatform } from "@/features/video-section";
 import VideoPlayer from "@/features/video-section/components/VideoPlayer";
@@ -263,29 +262,13 @@ export default function VideoSectionEditor({
           </div>
         </div>
         
-        {/* 布局宽度控制器 */}
-        {videoSection && (
-          <SectionLayoutControl
-            value={(videoSection.layout?.colSpan as 1 | 2 | 3 | 4) || 4}
-            onChange={(colSpan) => {
-              onConfigChange({
-                ...config,
-                sections: config.sections.map((s) =>
-                  s.id === videoSection.id
-                    ? { ...s, layout: { ...s.layout, colSpan } }
-                    : s
-                ),
-              });
-            }}
-          />
-        )}
       </div>
 
       {/* 布局配置 */}
       {videoSection && (
         <div className="mb-4 space-y-3 rounded-lg border border-black/10 bg-white/70 p-3">
           <h3 className="text-xs font-semibold text-black mb-2">{t("videoSectionEditor.layout.title")}</h3>
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {/* 上下内边距 */}
             <div>
               <label className="block text-xs text-black/70 mb-2">
@@ -324,7 +307,7 @@ export default function VideoSectionEditor({
             {/* 左右内边距 */}
             <div>
               <label className="block text-xs text-black/70 mb-2">
-                {t("videoSectionEditor.layout.paddingX") || "左右内边距"}: {videoSection.props.layout?.paddingX ?? 24}px
+                {t("videoSectionEditor.layout.paddingX")}: {videoSection.props.layout?.paddingX ?? 24}px
               </label>
               <input
                 type="range"

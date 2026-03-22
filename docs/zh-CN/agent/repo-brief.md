@@ -1,6 +1,6 @@
 # 仓库摘要
 
-- 最后更新：2026-03-14
+- 最后更新：2026-03-22
 - 角色：AI / 代理的快速项目概览，不替代正式长文档
 - 正式来源：[`../overview/project-overview.md`](../overview/project-overview.md)、[`../overview/current-status.md`](../overview/current-status.md)
 
@@ -18,7 +18,7 @@
 
 - 用户注册、登录、退出、密码重置
 - `/u/[slug]` 配置驱动公开页
-- 页面配置读写会自动清理 legacy `links` section，不再留下空白公开卡片
+- 页面配置读写会自动清理 legacy `links` section，不再留下空白公开卡片；`news` section 的 `cleanPageConfig` 只过滤 `src` 为空的项，`href` 允许为空（用户可先选图后填链接）
 - 已接入 `Vitest + Playwright` 测试文件；当前 `pnpm test` 为 `31` 个文件 `111` 个测试通过，Playwright 现有 `11` 个 e2e 规格已配置为 Chromium / Firefox / WebKit 三浏览器矩阵，且 GitHub Actions 已在 PR / push 上持续执行 `check / test / build / lint + Playwright`
 - 已补 Stripe Webhook、认证 / 权限边界与公开页渲染链路测试，并沉淀页面配置、会话、Stripe 事件共享 fixture
 - 内部 `stripe-finance-sync` 现已可在发现支付对账 / 结算异常时向卖家邮箱发送告警，并可选推送 Slack 汇总
@@ -28,7 +28,7 @@
 - Connect webhook 已对 `account.updated`、`account.external_account.*`、`payout.*` 做独立 secret 验签，并将 connected account payout 快照回写到结算模型
 - 已提供 Stripe 对账页、结算核销页、内部定时同步接口和 dispute 记录
 - 已提供卖家 Stripe Connect payout settings、onboarding / sync / dashboard link API，以及 `PLATFORM` fallback；payout settings 页已补资金流、操作顺序、状态说明、onboarding 进度提示和异常状态引导
-- 后台 CMS / 博客 / 商店编辑已统一为 tab + 折叠面板骨架，保留草稿保存和发布能力
+- 后台 CMS / 博客 / 商店编辑已统一为 tab + 折叠面板骨架，保留草稿保存和发布能力；`saveDraft` 通过 `configRef` 模式读取最新配置，避免 useCallback 闭包失效导致编辑内容丢失；`LoadingState` 已移除对 `useI18n` 的依赖，可安全作为 Suspense fallback
 - 新闻列表 / 详情 / 后台编辑
 - 博客列表 / 详情 / 点赞 / 评论提交，评论默认进入审核队列；卖家后台可在 `/admin/comments` 审核与删除
 - 商品管理、公开商品展示、公开结账下单、卖家订单管理

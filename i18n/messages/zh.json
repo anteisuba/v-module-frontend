@@ -489,7 +489,11 @@
       "url": "Logo 图片 URL（留空则显示文字 \"ano\"）",
       "upload": "上传 Logo 图片",
       "uploadSuccess": "Logo 上传成功",
-      "opacity": "透明度"
+      "opacity": "透明度",
+      "position": "位置",
+      "positionLeft": "左上角",
+      "positionCenter": "顶部居中",
+      "size": "图标大小"
     },
     "socialLinks": {
       "title": "社交链接（右上角）",
@@ -498,7 +502,10 @@
       "url": "链接 URL",
       "icon": "图标（可选：选择图标、输入文字如 \"X\"、\"YT\"，emoji 如 🐦，或图片 URL）",
       "show": "显示",
-      "empty": "暂无社交链接，点击上方\"新增\"按钮添加"
+      "empty": "暂无社交链接，点击上方\"新增\"按钮添加",
+      "position": "位置",
+      "positionTopRight": "右上角",
+      "positionBottomCenter": "底部居中"
     },
     "titleSubtitle": {
       "titleHelp": "显示在 Hero 区域顶部的标题",
@@ -513,7 +520,9 @@
       "height": "高度（vh）",
       "backgroundColor": "背景颜色",
       "backgroundColorHelp": "选择 Hero 区域的背景颜色",
-      "backgroundOpacity": "背景透明度："
+      "backgroundOpacity": "背景透明度：",
+      "parallax": "视差",
+      "heightHint": "100vh = 全屏，自动开启视差滚动效果"
     },
     "slides": {
       "title": "轮播图片",
@@ -529,7 +538,10 @@
       "linkPlaceholder": "https://example.com/image.jpg 或 /path/to/image.jpg",
       "uploadSuccess": "图片 {index} 上传成功",
       "updated": "图片 {index} 已更新",
-      "noImage": "暂无图片"
+      "noImage": "暂无图片",
+      "height": "显示高度",
+      "heightDefault": "跟随全局",
+      "heightReset": "恢复默认"
     }
   },
   "newsSectionEditor": {
@@ -571,7 +583,8 @@
       "maxWidth": "最大宽度",
       "aspectRatio": "宽高比",
       "full": "全宽",
-      "auto": "自动"
+      "auto": "自动",
+      "paddingX": "左右内边距"
     },
     "display": {
       "title": "显示设置",
@@ -728,6 +741,10 @@
       "createdPublished": "文章已创建并发布",
       "createdDraft": "文章已创建（草稿）",
       "deleted": "文章已删除"
+    },
+    "display": {
+      "title": "首页展示设置",
+      "show": "是否显示"
     }
   },
   "blog": {

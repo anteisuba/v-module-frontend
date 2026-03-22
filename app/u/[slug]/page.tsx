@@ -51,6 +51,10 @@ export default async function UserPage({
   const fontFamily =
     e2ePublicPageState?.fontFamily || user.page?.fontFamily || "Inter";
 
+  // 从 articleList 读取文章列表的布局和 enabled 状态（独立于 news section 图片轮播）
+  const newsLayout = config.articleList?.layout;
+  const newsEnabled = config.articleList?.enabled !== false;
+
   return (
     <ThemeProvider themeColor={themeColor} fontFamily={fontFamily}>
       <Suspense fallback={<PageLoadingWrapper messageKey="common.loadingPageContent" />}>
@@ -60,6 +64,8 @@ export default async function UserPage({
         slug={slug}
         limit={3}
         background={config.newsBackground || { type: "color", value: "#000000" }}
+        layout={newsLayout}
+        enabled={newsEnabled}
       />
     </ThemeProvider>
   );

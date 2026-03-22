@@ -1,76 +1,36 @@
 "use client";
 
-import Image from "next/image";
-import type { SocialLinkItem } from "@/domain/page-config/types";
+import type { SocialLinkItem, SocialLinksPosition } from "@/domain/page-config/types";
 import { renderIcon } from "@/lib/utils/iconRenderer";
 
 type Props = {
-  logo?: { src?: string; alt?: string; opacity?: number };
   socialLinks?: SocialLinkItem[];
-  showLogo?: boolean;
   showSocialLinks?: boolean;
+  socialLinksPosition?: SocialLinksPosition;
+  // 以下 props 保留接口兼容，但不再渲染（Logo 由 FloatingMenu 统一处理）
+  logo?: { src?: string; alt?: string; opacity?: number };
+  showLogo?: boolean;
+  logoPosition?: string;
 };
 
-const isExternalUrl = (url: string) => url.startsWith("http://") || url.startsWith("https://");
+const SOCIAL_POSITION_CLASS: Record<SocialLinksPosition, string> = {
+  "top-right":     "absolute top-6 right-30 z-50 flex items-center gap-4 text-white",
+  "bottom-center": "absolute bottom-8 left-1/2 z-50 -translate-x-1/2 flex items-center gap-4 text-white",
+};
 
 export default function HeroHeader({
-  logo,
   socialLinks,
-  showLogo = true,
   showSocialLinks = true,
+  socialLinksPosition = "top-right",
 }: Props) {
   // 过滤出启用的社交链接
   const enabledLinks = socialLinks?.filter((link) => link.enabled && link.url) || [];
 
   return (
     <>
-      {showLogo && (
-        <div className="absolute left-5 top-5 z-50 sm:left-6 sm:top-6">
-          <a
-            href="#top"
-            aria-label="Home"
-            className="flex items-center gap-4 select-none"
-          >
-            <div
-              className="flex h-16 w-16 items-center justify-center overflow-hidden rounded-[1.35rem] border border-white/14 bg-black/26 backdrop-blur-md shadow-[0_20px_60px_rgba(17,12,6,0.22)]"
-              style={{ opacity: logo?.opacity ?? 1 }}
-            >
-              {logo?.src ? (
-                isExternalUrl(logo.src) ? (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img
-                    src={logo.src}
-                    alt={logo.alt || "Logo"}
-                    className="h-full w-full object-cover"
-                  />
-                ) : (
-                  <Image
-                    src={logo.src}
-                    alt={logo.alt || "Logo"}
-                    width={64}
-                    height={64}
-                    className="h-full w-full object-cover"
-                  />
-                )
-              ) : (
-                <span className="text-[11px] uppercase tracking-[0.28em] text-white/80">
-                  VTS
-                </span>
-              )}
-            </div>
-            <div className="hidden sm:block">
-              <div className="text-[10px] uppercase tracking-[0.28em] text-white/50">
-                Creator page
-              </div>
-              <div className="mt-1 font-serif text-[1.4rem] font-light tracking-[0.04em] text-white">
-                VTuber Site
-              </div>
-            </div>
-          </a>
-        </div>
-      )}
+      {/* Logo 由 layout 层的 FloatingMenu 统一渲染（fixed 定位，全页面可见），HeroHeader 不再重复渲染 */}
 
-      <div className="absolute top-6 right-30 flex items-center gap-4 text-white">
+      <div className={SOCIAL_POSITION_CLASS[socialLinksPosition]}>
         {showSocialLinks &&
           enabledLinks.map((link) => (
             <a

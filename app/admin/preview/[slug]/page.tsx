@@ -6,6 +6,7 @@ import { notFound } from "next/navigation";
 import { PageRenderer } from "@/features/page-renderer";
 import { NewsListSection } from "@/features/news-list";
 import { ThemeProvider } from "@/components/theme";
+import FloatingMenu from "@/features/home-hero/components/FloatingMenu";
 import { getServerSession } from "@/lib/session/userSession";
 import { prisma } from "@/lib/prisma";
 import { normalizePageConfig } from "@/utils/pageConfig";
@@ -46,8 +47,14 @@ export default async function PreviewPage({
   const themeColor = page.themeColor || "#000000";
   const fontFamily = page.fontFamily || "Inter";
 
+  // 从 articleList 读取文章列表的布局和 enabled 状态
+  const newsLayout = config.articleList?.layout;
+  const newsEnabled = config.articleList?.enabled !== false;
+
   return (
     <ThemeProvider themeColor={themeColor} fontFamily={fontFamily}>
+      {/* FloatingMenu：与公开页保持一致，使用 draftConfig 中的 logo/showLogo */}
+      <FloatingMenu logo={config.logo} showLogo={config.showLogo !== false} />
       <Suspense fallback={<div className="flex h-screen items-center justify-center text-sm text-gray-400">Loading…</div>}>
         <PageRenderer config={config} />
       </Suspense>
@@ -55,6 +62,8 @@ export default async function PreviewPage({
         slug={slug}
         limit={3}
         background={config.newsBackground || { type: "color", value: "#000000" }}
+        layout={newsLayout}
+        enabled={newsEnabled}
       />
     </ThemeProvider>
   );

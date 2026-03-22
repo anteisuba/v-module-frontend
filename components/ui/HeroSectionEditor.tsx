@@ -227,6 +227,7 @@ export default function HeroSectionEditor({
       src?: string;
       alt?: string;
       objectPosition?: string;
+      heightVh?: number | null;
     }
   ) {
     const heroSection = ensureHeroSection();
@@ -247,6 +248,11 @@ export default function HeroSectionEditor({
       }),
       ...(updates.objectPosition !== undefined && {
         objectPosition: updates.objectPosition,
+      }),
+      ...(updates.heightVh !== undefined && {
+        ...(updates.heightVh === null
+          ? { heightVh: undefined }
+          : { heightVh: updates.heightVh }),
       }),
     };
 
@@ -440,34 +446,86 @@ export default function HeroSectionEditor({
           </div>
         </div>
         
-        {/* Logo 透明度调整 */}
+        {/* Logo 透明度 + 尺寸：两列并排 */}
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-xs text-black/70 mb-2">
+              {t("heroEditor.logo.opacity")}：{Math.round((config.logo?.opacity ?? 1) * 100)}%
+            </label>
+            <input
+              type="range"
+              min="0"
+              max="100"
+              value={(config.logo?.opacity ?? 1) * 100}
+              onChange={(e) => {
+                onConfigChange({
+                  ...config,
+                  logo: {
+                    ...config.logo,
+                    src: config.logo?.src,
+                    alt: config.logo?.alt || "Logo",
+                    opacity: parseInt(e.target.value) / 100,
+                  },
+                });
+              }}
+              className="w-full"
+              disabled={disabled}
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-black/70 mb-2">
+              {t("heroEditor.logo.size")}：{config.logo?.size ?? 40}px
+            </label>
+            <input
+              type="range"
+              min="24"
+              max="120"
+              value={config.logo?.size ?? 40}
+              onChange={(e) => {
+                onConfigChange({
+                  ...config,
+                  logo: {
+                    ...config.logo,
+                    src: config.logo?.src,
+                    alt: config.logo?.alt || "Logo",
+                    size: parseInt(e.target.value),
+                  },
+                });
+              }}
+              className="w-full"
+              disabled={disabled}
+            />
+          </div>
+        </div>
+
+        {/* Logo 位置选择 */}
         <div>
           <label className="block text-xs text-black/70 mb-2">
-            {t("heroEditor.logo.opacity")}：{Math.round((config.logo?.opacity ?? 1) * 100)}%
+            {t("heroEditor.logo.position")}
           </label>
-          <input
-            type="range"
-            min="0"
-            max="100"
-            value={(config.logo?.opacity ?? 1) * 100}
-            onChange={(e) => {
-              onConfigChange({
-                ...config,
-                logo: {
-                  ...config.logo,
-                  src: config.logo?.src,
-                  alt: config.logo?.alt || "Logo",
-                  opacity: parseInt(e.target.value) / 100,
-                },
-              });
-            }}
-            className="w-full"
-            disabled={disabled}
-          />
+          <div className="flex gap-2">
+            {(["top-left", "top-center"] as const).map((pos) => (
+              <button
+                key={pos}
+                type="button"
+                disabled={disabled}
+                onClick={() => onConfigChange({ ...config, logoPosition: pos })}
+                className={[
+                  "flex-1 rounded-lg border py-2 text-[11px] font-medium transition",
+                  (config.logoPosition ?? "top-left") === pos
+                    ? "border-black bg-black text-white"
+                    : "border-black/20 bg-white/60 text-black/70 hover:border-black/40",
+                  disabled && "opacity-50 cursor-not-allowed",
+                ].join(" ")}
+              >
+                {pos === "top-left" ? t("heroEditor.logo.positionLeft") : t("heroEditor.logo.positionCenter")}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      {/* 社交链接编辑（右上角） */}
+      {/* 社交链接编辑 */}
       <div className="mb-4 space-y-3 rounded-lg border border-black/10 bg-white/70 p-3">
         <div className="flex items-center justify-between mb-2">
           <h3 className="text-xs font-semibold text-black">{t("heroEditor.socialLinks.title")}</h3>
@@ -499,6 +557,32 @@ export default function HeroSectionEditor({
             </Button>
           </div>
         </div>
+        {/* 社交链接位置选择 */}
+        <div>
+          <label className="block text-xs text-black/70 mb-2">
+            {t("heroEditor.socialLinks.position")}
+          </label>
+          <div className="flex gap-2">
+            {(["top-right", "bottom-center"] as const).map((pos) => (
+              <button
+                key={pos}
+                type="button"
+                disabled={disabled}
+                onClick={() => onConfigChange({ ...config, socialLinksPosition: pos })}
+                className={[
+                  "flex-1 rounded-lg border py-2 text-[11px] font-medium transition",
+                  (config.socialLinksPosition ?? "top-right") === pos
+                    ? "border-black bg-black text-white"
+                    : "border-black/20 bg-white/60 text-black/70 hover:border-black/40",
+                  disabled && "opacity-50 cursor-not-allowed",
+                ].join(" ")}
+              >
+                {pos === "top-right" ? t("heroEditor.socialLinks.positionTopRight") : t("heroEditor.socialLinks.positionBottomCenter")}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div className="space-y-3">
           {(config.socialLinks || []).map((link, index) => (
             <div
@@ -736,14 +820,19 @@ export default function HeroSectionEditor({
                 {t("heroEditor.layout.height")}
               </label>
               <span className="text-xs font-semibold text-black">
-                {heroSection?.props.layout?.heightVh ?? 150} vh
+                {Math.min(heroSection?.props.layout?.heightVh ?? 100, 100)} vh
+                {(heroSection?.props.layout?.heightVh ?? 100) >= 100 && (
+                  <span className="ml-1.5 text-[9px] font-normal text-black/40 uppercase tracking-wide">
+                    {t("heroEditor.layout.parallax")}
+                  </span>
+                )}
               </span>
             </div>
             <input
               type="range"
-              min="50"
-              max="300"
-              value={heroSection?.props.layout?.heightVh ?? 150}
+              min="30"
+              max="100"
+              value={Math.min(heroSection?.props.layout?.heightVh ?? 100, 100)}
               onChange={(e) => {
                 const heroSection = ensureHeroSection();
                 onConfigChange({
@@ -767,6 +856,9 @@ export default function HeroSectionEditor({
               className="w-full h-2 bg-black/10 rounded-lg appearance-none cursor-pointer accent-black"
               disabled={disabled}
             />
+            <p className="text-[10px] text-black/40">
+              {t("heroEditor.layout.heightHint")}
+            </p>
           </div>
           {/* 背景透明度 */}
           <div className="space-y-2">
@@ -976,7 +1068,7 @@ export default function HeroSectionEditor({
                 </div>
 
                 {/* 预览 - 可拖拽编辑位置 */}
-                <div className="mb-4">
+                <div className="mb-3">
                   {slide?.src ? (
                     <ImagePositionEditor
                       src={slide.src}
@@ -992,6 +1084,39 @@ export default function HeroSectionEditor({
                       {t("heroEditor.slides.noImage")}
                     </div>
                   )}
+                </div>
+
+                {/* 图片高度设置 */}
+                <div className="mb-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-xs text-black/70">
+                      {t("heroEditor.slides.height")}：
+                      {slide?.heightVh != null
+                        ? `${slide.heightVh}vh`
+                        : t("heroEditor.slides.heightDefault")}
+                    </label>
+                    {slide?.heightVh != null && (
+                      <button
+                        type="button"
+                        className="text-[10px] text-black/40 hover:text-black/70 underline"
+                        onClick={() => updateHeroSlide(index, { heightVh: null })}
+                        disabled={isUploading || disabled}
+                      >
+                        {t("heroEditor.slides.heightReset")}
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    type="range"
+                    min="20"
+                    max="100"
+                    value={slide?.heightVh ?? (heroSection?.type === "hero" ? (heroSection.props.layout?.heightVh ?? 100) : 100)}
+                    onChange={(e) =>
+                      updateHeroSlide(index, { heightVh: parseInt(e.target.value) })
+                    }
+                    className="w-full"
+                    disabled={isUploading || disabled}
+                  />
                 </div>
 
                 {/* 上传文件 */}

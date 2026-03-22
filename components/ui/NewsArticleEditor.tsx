@@ -15,6 +15,7 @@ import type { NewsArticle } from "@/lib/api/types";
 import BackgroundEditor from "./BackgroundEditor";
 import { useI18n } from "@/lib/i18n/context";
 import { ConfirmDialog, Button } from "@/components/ui";
+import type { PageConfig } from "@/domain/page-config/types";
 
 interface NewsArticleEditorProps {
   disabled?: boolean;
@@ -29,6 +30,9 @@ interface NewsArticleEditorProps {
   onNewsBackgroundChange?: (background: { type: "color" | "image"; value: string }) => void;
   focusTarget?: string | null;
   initialArticleId?: string | null;
+  // 首页展示设置（news section layout 控制）
+  config?: PageConfig;
+  onConfigChange?: (config: PageConfig) => void;
 }
 
 const SHARE_PLATFORMS = [
@@ -46,6 +50,8 @@ export default function NewsArticleEditor({
   onNewsBackgroundChange,
   focusTarget = null,
   initialArticleId = null,
+  config,
+  onConfigChange,
 }: NewsArticleEditorProps) {
   const { t } = useI18n();
   const [articles, setArticles] = useState<NewsArticle[]>([]);
@@ -369,6 +375,127 @@ export default function NewsArticleEditor({
           + {t("newsArticleEditor.create")}
         </Button>
       </div>
+
+      {/* ── 首页展示设置 ──────────────────────────────────────────── */}
+      {config && onConfigChange && (() => {
+        const articleList = config.articleList ?? {};
+        const layout = articleList.layout ?? {};
+        const isEnabled = articleList.enabled !== false;
+
+        function updateArticleList(patch: Partial<PageConfig["articleList"]>) {
+          if (!config || !onConfigChange) return;
+          onConfigChange({ ...config, articleList: { ...config.articleList, ...patch } });
+        }
+
+        function updateArticleListLayout(patch: Record<string, unknown>) {
+          updateArticleList({ layout: { ...layout, ...patch } });
+        }
+
+        return (
+          <div className="mb-4 rounded-lg border border-black/10 bg-white/70 p-4 space-y-4">
+            {/* 标题行：展示开关 */}
+            <div className="flex items-center justify-between gap-3">
+              <span className="text-xs font-semibold text-black">
+                {t("newsArticleEditor.display.title")}
+              </span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-black/60">{t("newsArticleEditor.display.show")}</span>
+                <button
+                  type="button"
+                  onClick={() => updateArticleList({ enabled: !isEnabled })}
+                  disabled={disabled}
+                  className={[
+                    "relative inline-flex h-5 w-9 shrink-0 items-center rounded-full transition-colors",
+                    "focus:outline-none focus:ring-2 focus:ring-black/20 focus:ring-offset-1",
+                    isEnabled ? "bg-black" : "bg-black/25",
+                    disabled ? "cursor-not-allowed opacity-50" : "cursor-pointer",
+                  ].join(" ")}
+                  aria-label="Toggle"
+                >
+                  <span
+                    className={[
+                      "inline-block h-3.5 w-3.5 transform rounded-full bg-white shadow transition-transform",
+                      isEnabled ? "translate-x-4.5" : "translate-x-0.5",
+                    ].join(" ")}
+                  />
+                </button>
+              </div>
+            </div>
+
+            {/* 布局参数：4 列 grid */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {/* 上下内边距 */}
+              <div>
+                <label className="block text-xs text-black/70 mb-2">
+                  {t("newsSectionEditor.layout.paddingY")}{layout.paddingY ?? 64}
+                </label>
+                <input
+                  type="range" min="0" max="200"
+                  value={layout.paddingY ?? 64}
+                  onChange={(e) => updateArticleListLayout({ paddingY: parseInt(e.target.value) })}
+                  className="w-full" disabled={disabled}
+                />
+              </div>
+              {/* 左右内边距 */}
+              <div>
+                <label className="block text-xs text-black/70 mb-2">
+                  {t("newsSectionEditor.layout.paddingX")}{layout.paddingX ?? 24}
+                </label>
+                <input
+                  type="range" min="0" max="200"
+                  value={layout.paddingX ?? 24}
+                  onChange={(e) => updateArticleListLayout({ paddingX: parseInt(e.target.value) })}
+                  className="w-full" disabled={disabled}
+                />
+              </div>
+              {/* 背景颜色 */}
+              <div>
+                <label className="block text-xs text-black/70 mb-2">
+                  {t("newsSectionEditor.layout.backgroundColor")}
+                </label>
+                <input
+                  type="color"
+                  value={layout.backgroundColor || "#000000"}
+                  onChange={(e) => updateArticleListLayout({ backgroundColor: e.target.value })}
+                  className="w-full h-8 rounded border border-black/10"
+                  disabled={disabled}
+                />
+              </div>
+              {/* 背景透明度 */}
+              <div>
+                <label className="block text-xs text-black/70 mb-2">
+                  {t("newsSectionEditor.layout.backgroundOpacity")}
+                  {((layout.backgroundOpacity ?? 1) * 100).toFixed(0)}%
+                </label>
+                <input
+                  type="range" min="0" max="100"
+                  value={(layout.backgroundOpacity ?? 1) * 100}
+                  onChange={(e) => updateArticleListLayout({ backgroundOpacity: parseInt(e.target.value) / 100 })}
+                  className="w-full" disabled={disabled}
+                />
+              </div>
+              {/* 最大宽度 */}
+              <div>
+                <label className="block text-xs text-black/70 mb-2">
+                  {t("newsSectionEditor.layout.maxWidth")}
+                </label>
+                <select
+                  value={layout.maxWidth || "7xl"}
+                  onChange={(e) => updateArticleListLayout({ maxWidth: e.target.value })}
+                  className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-xs text-black"
+                  disabled={disabled}
+                >
+                  <option value="full">{t("newsSectionEditor.layout.full")}</option>
+                  <option value="7xl">{t("newsSectionEditor.layout.xl7")}</option>
+                  <option value="6xl">6xl</option>
+                  <option value="5xl">5xl</option>
+                  <option value="4xl">4xl</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* 新闻页面背景设置（用于 NewsListSection、/news 和 /news/[id] 页面） */}
       {newsBackground && onNewsBackgroundChange && (

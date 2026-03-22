@@ -8,7 +8,7 @@ import { useStickyProgress } from "@/lib/hooks/useStickyProgress";
 import HeroThumbStrip from "./HeroThumbStrip";
 import type { HeroSlide } from "../types";
 
-import type { SocialLinkItem } from "@/domain/page-config/types";
+import type { SocialLinkItem, LogoPosition, SocialLinksPosition } from "@/domain/page-config/types";
 
 export default function HeroSection({
   initialSlides,
@@ -19,6 +19,8 @@ export default function HeroSection({
   showThumbStrip = true,
   showLogo = true,
   showSocialLinks = true,
+  logoPosition,
+  socialLinksPosition,
   layout,
   carousel,
 }: {
@@ -30,6 +32,8 @@ export default function HeroSection({
   showThumbStrip?: boolean;
   showLogo?: boolean;
   showSocialLinks?: boolean;
+  logoPosition?: LogoPosition;
+  socialLinksPosition?: SocialLinksPosition;
   layout?: {
     heightVh?: number;
     backgroundColor?: string;
@@ -40,10 +44,19 @@ export default function HeroSection({
     transitionDuration?: number;
   };
 }) {
-  const HERO_SCROLL_HEIGHT_VH = layout?.heightVh ?? 150;
-  // 可见区域高度：最多 100vh（全屏），heightVh 超出部分用于视差滚动
-  const visibleHeightVh = Math.min(HERO_SCROLL_HEIGHT_VH, 100);
+  // 可见高度：优先使用当前 slide 的 heightVh，否则使用 section 级别的 heightVh
+  // 兼容旧配置：旧版 heightVh 可能 > 100（视差模式），一律 clamp 到 100
+  // 注意：current 在 useHeroSlides 里计算，这里先用全局值初始化；
+  // 实际渲染时通过 style 动态覆盖。
+  const globalHeightVh = Math.min(Math.max(layout?.heightVh ?? 100, 30), 100);
+
+  // 当可见高度 = 100vh 时自动开启视差：图片额外高出 50vh，供滚动时移动
+  // 当可见高度 < 100vh 时图片精确填满可见区域，无视差
+  const parallaxEnabled = globalHeightVh >= 100;
+  const HERO_SCROLL_HEIGHT_VH = parallaxEnabled ? 150 : globalHeightVh;
   const HERO_IMAGE_HEIGHT_VH = HERO_SCROLL_HEIGHT_VH;
+  // visibleHeightVh 保留兼容
+  const visibleHeightVh = globalHeightVh;
   const backgroundColor = layout?.backgroundColor || "#000000";
   const backgroundOpacity = layout?.backgroundOpacity ?? 1;
 
@@ -91,19 +104,29 @@ export default function HeroSection({
   const sectionRef = useRef<HTMLElement | null>(null);
   const { progress, vh } = useStickyProgress(sectionRef);
 
+  // 当前 slide 的可见高度：优先使用 slide 级别的 heightVh，否则 fallback 到 section 全局值
+  const currentSlideHeightVh = current?.heightVh != null
+    ? Math.min(Math.max(current.heightVh, 20), 100)
+    : visibleHeightVh;
+  const currentParallaxEnabled = currentSlideHeightVh >= 100;
+  const currentScrollHeightVh = currentParallaxEnabled ? 150 : currentSlideHeightVh;
+
   return (
     <section
       ref={sectionRef}
       id="top"
       className="relative w-full"
       style={{
-        height: `${HERO_SCROLL_HEIGHT_VH}vh`,
+        // 全屏视差时：section 150vh 高（多出 50vh 供视差滚动）
+        // 非全屏时：section 高度 = 可见高度（无视差）
+        height: `${currentScrollHeightVh}vh`,
         backgroundColor: backgroundColorWithOpacity,
+        transition: "height 0.4s ease",
       }}
     >
       <div
-        className="sticky top-0 w-full overflow-hidden"
-        style={{ height: `${visibleHeightVh}vh` }}
+        className={currentParallaxEnabled ? "sticky top-0 w-full overflow-hidden" : "relative w-full overflow-hidden"}
+        style={{ height: `${currentSlideHeightVh}vh`, transition: "height 0.4s ease" }}
       >
         {/* 背景图片轮播：仅在有多张图片时显示 */}
         {current && current.src && (
@@ -115,7 +138,7 @@ export default function HeroSection({
             objectPosition={current.objectPosition}
             progress={progress}
             vh={vh}
-            imageHeightVh={HERO_IMAGE_HEIGHT_VH}
+            imageHeightVh={currentScrollHeightVh}
           />
         )}
 
@@ -124,6 +147,8 @@ export default function HeroSection({
           socialLinks={socialLinks}
           showLogo={showLogo}
           showSocialLinks={showSocialLinks}
+          logoPosition={logoPosition}
+          socialLinksPosition={socialLinksPosition}
         />
 
         {title && (

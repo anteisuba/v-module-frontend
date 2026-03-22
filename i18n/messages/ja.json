@@ -489,7 +489,11 @@
       "url": "Logo 画像 URL（空欄の場合は文字 \"ano\" を表示）",
       "upload": "Logo 画像をアップロード",
       "uploadSuccess": "Logo のアップロードに成功しました",
-      "opacity": "透明度"
+      "opacity": "透明度",
+      "position": "位置",
+      "positionLeft": "左上",
+      "positionCenter": "上部中央",
+      "size": "アイコンサイズ"
     },
     "socialLinks": {
       "title": "ソーシャルリンク（右上）",
@@ -498,7 +502,10 @@
       "url": "リンク URL",
       "icon": "アイコン（オプション：アイコンを選択、\"X\"、\"YT\"などの文字を入力、🐦などの絵文字、または画像 URL）",
       "show": "表示",
-      "empty": "ソーシャルリンクがありません。上の「新規追加」ボタンをクリックして追加してください"
+      "empty": "ソーシャルリンクがありません。上の「新規追加」ボタンをクリックして追加してください",
+      "position": "位置",
+      "positionTopRight": "右上",
+      "positionBottomCenter": "下部中央"
     },
     "titleSubtitle": {
       "titleHelp": "Hero エリアの上部に表示されるタイトル",
@@ -513,7 +520,9 @@
       "height": "高さ（vh）",
       "backgroundColor": "背景色",
       "backgroundColorHelp": "Hero エリアの背景色を選択",
-      "backgroundOpacity": "背景透明度："
+      "backgroundOpacity": "背景透明度：",
+      "parallax": "パララックス",
+      "heightHint": "100vh = 全画面、パララックススクロール自動有効"
     },
     "slides": {
       "title": "スライド画像",
@@ -529,7 +538,10 @@
       "linkPlaceholder": "https://example.com/image.jpg または /path/to/image.jpg",
       "uploadSuccess": "画像 {index} のアップロードに成功しました",
       "updated": "画像 {index} を更新しました",
-      "noImage": "画像がありません"
+      "noImage": "画像がありません",
+      "height": "表示高さ",
+      "heightDefault": "グローバルに従う",
+      "heightReset": "リセット"
     }
   },
   "newsSectionEditor": {
@@ -571,7 +583,8 @@
       "maxWidth": "最大幅",
       "aspectRatio": "アスペクト比",
       "full": "全幅",
-      "auto": "自動"
+      "auto": "自動",
+      "paddingX": "左右パディング"
     },
     "display": {
       "title": "表示設定",
@@ -728,6 +741,10 @@
       "createdPublished": "記事を作成して公開しました",
       "createdDraft": "記事を作成しました（下書き）",
       "deleted": "記事を削除しました"
+    },
+    "display": {
+      "title": "ホームページ表示設定",
+      "show": "表示"
     }
   },
   "blog": {

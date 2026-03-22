@@ -49,6 +49,7 @@ function GalleryItemCard({ item, onUpdate, onDelete, onPickImage, disabled }: Ga
         transition,
         opacity: isDragging ? 0.4 : 1,
       }}
+      {...attributes}
       className="group relative overflow-hidden rounded-xl border border-[color:var(--editorial-border)] bg-[color:var(--editorial-surface)]"
     >
       {/* 圖片區域 */}
@@ -80,11 +81,10 @@ function GalleryItemCard({ item, onUpdate, onDelete, onPickImage, disabled }: Ga
         {/* 拖曳把手 */}
         <button
           type="button"
-          {...attributes}
           {...listeners}
           tabIndex={-1}
           aria-label="drag"
-          className="absolute left-1.5 top-1.5 flex h-6 w-6 cursor-grab items-center justify-center rounded-md bg-black/40 text-white opacity-0 transition group-hover:opacity-100 active:cursor-grabbing"
+          className="absolute left-1.5 top-1.5 flex h-6 w-6 cursor-grab items-center justify-center rounded-md bg-black/50 text-white opacity-40 transition group-hover:opacity-90 active:cursor-grabbing"
         >
           <svg width="10" height="10" viewBox="0 0 10 10" fill="currentColor" aria-hidden>
             <circle cx="2.5" cy="2.5" r="1.2" /><circle cx="7.5" cy="2.5" r="1.2" />

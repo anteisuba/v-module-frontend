@@ -489,7 +489,11 @@
       "url": "Logo Image URL (leave empty to show text \"ano\")",
       "upload": "Upload Logo Image",
       "uploadSuccess": "Logo uploaded successfully",
-      "opacity": "Opacity"
+      "opacity": "Opacity",
+      "position": "Position",
+      "positionLeft": "Top Left",
+      "positionCenter": "Top Center",
+      "size": "Icon Size"
     },
     "socialLinks": {
       "title": "Social Links (Top Right)",
@@ -498,7 +502,10 @@
       "url": "Link URL",
       "icon": "Icon (optional: select icon, enter text like \"X\", \"YT\", emoji like 🐦, or image URL)",
       "show": "Show",
-      "empty": "No social links yet. Click \"Add New\" above to add"
+      "empty": "No social links yet. Click \"Add New\" above to add",
+      "position": "Position",
+      "positionTopRight": "Top Right",
+      "positionBottomCenter": "Bottom Center"
     },
     "titleSubtitle": {
       "titleHelp": "Title displayed at the top of the Hero section",
@@ -513,7 +520,9 @@
       "height": "Height (vh)",
       "backgroundColor": "Background Color",
       "backgroundColorHelp": "Select the background color for the Hero section",
-      "backgroundOpacity": "Background Opacity:"
+      "backgroundOpacity": "Background Opacity:",
+      "parallax": "parallax",
+      "heightHint": "100vh = full screen with automatic parallax scroll"
     },
     "slides": {
       "title": "Carousel Images",
@@ -529,7 +538,10 @@
       "linkPlaceholder": "https://example.com/image.jpg or /path/to/image.jpg",
       "uploadSuccess": "Image {index} uploaded successfully",
       "updated": "Image {index} updated",
-      "noImage": "No image"
+      "noImage": "No image",
+      "height": "Display Height",
+      "heightDefault": "Follow Global",
+      "heightReset": "Reset"
     }
   },
   "newsSectionEditor": {
@@ -571,7 +583,8 @@
       "maxWidth": "Max Width",
       "aspectRatio": "Aspect Ratio",
       "full": "Full Width",
-      "auto": "Auto"
+      "auto": "Auto",
+      "paddingX": "Horizontal Padding"
     },
     "display": {
       "title": "Display Settings",
@@ -728,6 +741,10 @@
       "createdPublished": "Article created and published",
       "createdDraft": "Article created (draft)",
       "deleted": "Article deleted"
+    },
+    "display": {
+      "title": "Homepage Display Settings",
+      "show": "Show"
     }
   },
   "blog": {

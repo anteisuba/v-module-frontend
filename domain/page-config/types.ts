@@ -14,6 +14,7 @@ export type HeroSectionProps = {
     alt?: string;
     href?: string;
     objectPosition?: string; // 图片位置，如 "center", "top", "bottom", "50% 50%" 等
+    heightVh?: number; // 图片显示高度（vh），覆盖 section 级别的 heightVh，范围 20-100
   }>;
   title?: string;
   subtitle?: string;
@@ -118,6 +119,9 @@ export type SocialLinkItem = {
   enabled: boolean; // 是否显示
 };
 
+export type LogoPosition = 'top-left' | 'top-center';
+export type SocialLinksPosition = 'top-right' | 'bottom-center';
+
 export type PageConfig = {
   // 页面背景（全局）
   background: BackgroundConfig;
@@ -140,15 +144,22 @@ export type PageConfig = {
   // 所有 sections（按 order 排序后渲染）
   sections: SectionConfig[];
   
-  // Logo 配置（左上角 ano 位置）
+  // Logo 配置
   logo?: {
     src?: string; // 图片路径，如果为空则显示文字 "ano"
     alt?: string;
     opacity?: number; // Logo 透明度（0-1），默认 1
+    size?: number; // Logo 显示大小（px），默认 40
   };
-  
-  // 社交链接配置（右上角）- 动态数组
+
+  // Logo 位置（默认 top-left）
+  logoPosition?: LogoPosition;
+
+  // 社交链接配置 - 动态数组
   socialLinks?: SocialLinkItem[];
+
+  // 社交链接位置（默认 top-right）
+  socialLinksPosition?: SocialLinksPosition;
   
   // 是否显示 Hero 轮播缩略图条（HeroThumbStrip）
   showHeroThumbStrip?: boolean;
@@ -163,6 +174,18 @@ export type PageConfig = {
   meta?: {
     title?: string;
     description?: string;
+  };
+
+  // 文章列表首页展示设置（控制 NewsListSection，与 news section 图片轮播独立）
+  articleList?: {
+    enabled?: boolean;
+    layout?: {
+      paddingY?: number;
+      paddingX?: number;
+      backgroundColor?: string;
+      backgroundOpacity?: number;
+      maxWidth?: string;
+    };
   };
 
   // 是否已发布过（用于防止清空已发布的配置）

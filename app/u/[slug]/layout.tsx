@@ -4,6 +4,7 @@
 import { prisma } from "@/lib/prisma";
 import { getE2EPublicPageState } from "@/lib/e2e/publicPageState";
 import FloatingMenu from "@/features/home-hero/components/FloatingMenu";
+import type { PageConfig } from "@/domain/page-config/types";
 
 interface UserLayoutProps {
   children: React.ReactNode;
@@ -51,18 +52,33 @@ export default async function UserLayout({
   let themeColor = e2ePublicPageState?.themeColor || "#000000";
   let fontFamily = e2ePublicPageState?.fontFamily || "Inter";
 
+  // Logo 配置（从 publishedConfig 中提取）
+  let logo: PageConfig["logo"] | undefined;
+  let showLogo: boolean | undefined;
+
   if (!e2ePublicPageState) {
-    // 直接查询页面主题设置
+    // 直接查询页面主题设置和 publishedConfig
     const page = await prisma.page.findUnique({
       where: { slug },
       select: {
         themeColor: true,
         fontFamily: true,
+        publishedConfig: true,
       },
     });
 
     themeColor = page?.themeColor || "#000000";
     fontFamily = page?.fontFamily || "Inter";
+
+    // 从 publishedConfig 中提取 logo 配置
+    const pubConfig = page?.publishedConfig as PageConfig | null;
+    logo = pubConfig?.logo;
+    showLogo = pubConfig?.showLogo;
+  } else {
+    // 从 e2e 状态中提取 logo 配置
+    const pubConfig = e2ePublicPageState.publishedConfig as PageConfig | null;
+    logo = pubConfig?.logo;
+    showLogo = pubConfig?.showLogo;
   }
 
   // 计算主题色相关的变体
@@ -81,7 +97,7 @@ export default async function UserLayout({
 
   return (
     <div style={themeStyles} className="min-h-screen">
-      <FloatingMenu />
+      <FloatingMenu logo={logo} showLogo={showLogo} />
       {children}
       <footer className="editorial-shell border-t border-white/10 px-6 py-10 text-center">
         <p className="text-[11px] uppercase tracking-[0.24em] text-white/36">

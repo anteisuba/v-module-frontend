@@ -3,6 +3,21 @@
 "use client";
 
 import { useRef, useState } from "react";
+import {
+  DndContext,
+  closestCenter,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  horizontalListSortingStrategy,
+  arrayMove,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { NEWS_ITEM, type MediaAssetUsageContext } from "@/domain/media/usage";
 import { useScrollToElement } from "@/hooks/useScrollToElement";
 import {
@@ -11,9 +26,8 @@ import {
   Button,
   MediaPickerDialog,
 } from "@/components/ui";
-import { SectionLayoutControl } from "@/components/ui/SectionLayoutControl";
 import { useI18n } from "@/lib/i18n/context";
-import type { PageConfig } from "@/domain/page-config/types";
+import type { PageConfig, NewsSectionProps } from "@/domain/page-config/types";
 
 interface NewsSectionEditorProps {
   config: PageConfig;
@@ -65,6 +79,176 @@ function ToggleSwitch({
   );
 }
 
+// ────────────────────────────────────────────────────────────────────
+// 可拖拽的单张新闻图片卡片
+// ────────────────────────────────────────────────────────────────────
+interface SortableNewsItemCardProps {
+  item: NewsSectionProps["items"][number];
+  index: number;
+  disabled?: boolean;
+  uploadingIndex: number | null;
+  onUpdate: (id: string, updates: { src?: string; alt?: string; href?: string; objectPosition?: string }) => void;
+  onDelete: (id: string) => void;
+  onUpload: (id: string, file: File) => void;
+  onOpenPicker: (id: string) => void;
+}
+
+function SortableNewsItemCard({
+  item,
+  index,
+  disabled,
+  uploadingIndex,
+  onUpdate,
+  onDelete,
+  onUpload,
+  onOpenPicker,
+}: SortableNewsItemCardProps) {
+  const { t } = useI18n();
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } =
+    useSortable({ id: item.id, disabled });
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={{
+        transform: CSS.Transform.toString(transform),
+        transition,
+        opacity: isDragging ? 0.4 : 1,
+      }}
+      {...attributes}
+      className="rounded-lg border border-black/10 bg-white/70 p-3"
+    >
+      <div className="mb-2 flex items-center justify-between">
+        {/* 拖拽把手 + 序号 */}
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            {...listeners}
+            tabIndex={-1}
+            aria-label="drag to reorder"
+            className="flex cursor-grab items-center justify-center rounded p-1 text-black/25 transition hover:text-black/60 active:cursor-grabbing"
+          >
+            <svg width="10" height="14" viewBox="0 0 10 14" fill="currentColor" aria-hidden>
+              <circle cx="2" cy="2"  r="1.5" />
+              <circle cx="8" cy="2"  r="1.5" />
+              <circle cx="2" cy="7"  r="1.5" />
+              <circle cx="8" cy="7"  r="1.5" />
+              <circle cx="2" cy="12" r="1.5" />
+              <circle cx="8" cy="12" r="1.5" />
+            </svg>
+          </button>
+          <div className="text-xs font-medium text-black">
+            {t("newsSectionEditor.image.title")} {index + 1}
+          </div>
+        </div>
+        <Button
+          variant="danger"
+          size="sm"
+          onClick={() => onDelete(item.id)}
+          disabled={disabled}
+        >
+          {t("common.delete")}
+        </Button>
+      </div>
+
+      {/* 预览 - 可拖拽编辑位置 */}
+      <div className="mb-3">
+        {item.src ? (
+          <div className="aspect-[4/3] max-h-48 overflow-hidden rounded-lg border border-black/10">
+            <ImagePositionEditor
+              src={item.src}
+              alt={item.alt || `News ${index + 1}`}
+              objectPosition={item.objectPosition || "center"}
+              onChange={(position) => onUpdate(item.id, { objectPosition: position })}
+              disabled={uploadingIndex === -1 || disabled}
+            />
+          </div>
+        ) : (
+          <div className="aspect-[4/3] max-h-48 flex items-center justify-center rounded-lg border border-black/10 bg-black/5 text-xs text-black/50">
+            {t("newsSectionEditor.image.noImages")}
+          </div>
+        )}
+      </div>
+
+      {/* 表单字段 */}
+      <div className="space-y-2">
+        <div>
+          <label className="block text-[10px] text-black/70 mb-1">
+            {t("newsSectionEditor.image.upload")}
+          </label>
+          <input
+            type="file"
+            accept="image/*"
+            className="block w-full text-[10px] text-black/80 file:mr-2 file:cursor-pointer file:rounded file:border-0 file:bg-black file:px-2 file:py-1 file:text-[10px] file:text-white file:transition-colors file:duration-200 hover:file:bg-black/90"
+            disabled={uploadingIndex === -1 || disabled}
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              const input = e.currentTarget;
+              if (file) {
+                onUpload(item.id, file);
+                if (input) input.value = "";
+              }
+            }}
+          />
+          <div className="mt-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => onOpenPicker(item.id)}
+              disabled={uploadingIndex === -1 || disabled}
+            >
+              {t("mediaLibrary.open")}
+            </Button>
+          </div>
+        </div>
+        <div>
+          <label className="block text-[10px] text-black/70 mb-1">
+            {t("newsSectionEditor.image.link")}
+          </label>
+          <input
+            type="text"
+            value={item.src || ""}
+            onChange={(e) => onUpdate(item.id, { src: e.target.value })}
+            placeholder={t("newsSectionEditor.image.linkPlaceholder")}
+            className="w-full rounded border border-black/10 bg-white/70 px-2 py-1 text-[10px] text-black placeholder:text-black/30"
+            disabled={uploadingIndex === -1 || disabled}
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] text-black/70 mb-1">
+            {t("newsSectionEditor.image.externalLink")}
+          </label>
+          <input
+            type="text"
+            value={item.href || ""}
+            onChange={(e) => onUpdate(item.id, { href: e.target.value })}
+            placeholder={t("newsSectionEditor.image.linkPlaceholder2")}
+            className="w-full rounded border border-black/10 bg-white/70 px-2 py-1 text-[10px] text-black placeholder:text-black/30"
+            disabled={uploadingIndex === -1 || disabled}
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] text-black/70 mb-1">
+            {t("newsSectionEditor.image.alt")}
+          </label>
+          <input
+            type="text"
+            value={item.alt || ""}
+            onChange={(e) => onUpdate(item.id, { alt: e.target.value })}
+            placeholder={t("newsSectionEditor.image.altPlaceholder")}
+            className="w-full rounded border border-black/10 bg-white/70 px-2 py-1 text-[10px] text-black placeholder:text-black/30"
+            disabled={uploadingIndex === -1 || disabled}
+          />
+        </div>
+      </div>
+
+      {uploadingIndex === -1 && (
+        <div className="mt-2 text-xs text-black/60">{t("common.uploading")}</div>
+      )}
+    </div>
+  );
+}
+
 export default function NewsSectionEditor({
   config,
   onConfigChange,
@@ -80,6 +264,23 @@ export default function NewsSectionEditor({
   const [pickerItemId, setPickerItemId] = useState<string | null>(null);
   const nextIdRef = useRef(0);
   useScrollToElement(focusTarget === "news-items", "news-items-editor");
+
+  // ── 拖拽排序 sensors ───────────────────────────────────────────────
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
+  );
+
+  function handleItemDragEnd(event: DragEndEvent) {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    const newsSection = getNewsSection();
+    if (!newsSection || newsSection.type !== "news") return;
+    const items = newsSection.props.items;
+    const oldIdx = items.findIndex((item) => item.id === active.id);
+    const newIdx = items.findIndex((item) => item.id === over.id);
+    if (oldIdx === -1 || newIdx === -1) return;
+    updateNewsItems(arrayMove(items, oldIdx, newIdx));
+  }
 
   function createEditorId(prefix: "news" | "news-item") {
     nextIdRef.current += 1;
@@ -290,22 +491,6 @@ export default function NewsSectionEditor({
           </div>
         </div>
         
-        {/* 布局宽度控制器 */}
-        {newsSection && (
-          <SectionLayoutControl
-            value={(newsSection.layout?.colSpan as 1 | 2 | 3 | 4) || 4}
-            onChange={(colSpan) => {
-              onConfigChange({
-                ...config,
-                sections: config.sections.map((s) =>
-                  s.id === newsSection.id
-                    ? { ...s, layout: { ...s.layout, colSpan } }
-                    : s
-                ),
-              });
-            }}
-          />
-        )}
       </div>
 
       {/* 布局配置 */}
@@ -319,68 +504,44 @@ export default function NewsSectionEditor({
                 {t("newsSectionEditor.layout.paddingY")}{newsSection.props.layout?.paddingY ?? 64}
               </label>
               <input
-                type="range"
-                min="0"
-                max="200"
+                type="range" min="0" max="200"
                 value={newsSection.props.layout?.paddingY ?? 64}
                 onChange={(e) => {
-                  const newsSection = ensureNewsSection();
-                  if (!newsSection || newsSection.type !== "news") return;
+                  const sec = ensureNewsSection();
+                  if (!sec || sec.type !== "news") return;
                   onConfigChange({
                     ...config,
                     sections: config.sections.map((s) =>
-                      s.id === newsSection.id && s.type === "news"
-                        ? {
-                            ...s,
-                            props: {
-                              ...s.props,
-                              layout: {
-                                ...s.props.layout,
-                                paddingY: parseInt(e.target.value),
-                              },
-                            },
-                          }
+                      s.id === sec.id && s.type === "news"
+                        ? { ...s, props: { ...s.props, layout: { ...s.props.layout, paddingY: parseInt(e.target.value) } } }
                         : s
                     ),
                   });
                 }}
-                className="w-full"
-                disabled={disabled}
+                className="w-full" disabled={disabled}
               />
             </div>
             {/* 左右内边距 */}
             <div>
               <label className="block text-xs text-black/70 mb-2">
-                {t("newsSectionEditor.layout.paddingX") || "左右内边距"}: {newsSection.props.layout?.paddingX ?? 24}px
+                {t("newsSectionEditor.layout.paddingX")}{newsSection.props.layout?.paddingX ?? 24}
               </label>
               <input
-                type="range"
-                min="0"
-                max="200"
+                type="range" min="0" max="200"
                 value={newsSection.props.layout?.paddingX ?? 24}
                 onChange={(e) => {
-                  const newsSection = ensureNewsSection();
-                  if (!newsSection || newsSection.type !== "news") return;
+                  const sec = ensureNewsSection();
+                  if (!sec || sec.type !== "news") return;
                   onConfigChange({
                     ...config,
                     sections: config.sections.map((s) =>
-                      s.id === newsSection.id && s.type === "news"
-                        ? {
-                            ...s,
-                            props: {
-                              ...s.props,
-                              layout: {
-                                ...s.props.layout,
-                                paddingX: parseInt(e.target.value),
-                              },
-                            },
-                          }
+                      s.id === sec.id && s.type === "news"
+                        ? { ...s, props: { ...s.props, layout: { ...s.props.layout, paddingX: parseInt(e.target.value) } } }
                         : s
                     ),
                   });
                 }}
-                className="w-full"
-                disabled={disabled}
+                className="w-full" disabled={disabled}
               />
             </div>
             {/* 背景颜色 */}
@@ -390,74 +551,44 @@ export default function NewsSectionEditor({
               </label>
               <input
                 type="color"
-                value={
-                  newsSection.props.layout?.backgroundColor || "#000000"
-                }
+                value={newsSection.props.layout?.backgroundColor || "#000000"}
                 onChange={(e) => {
-                  const newsSection = ensureNewsSection();
-                  if (!newsSection || newsSection.type !== "news") return;
+                  const sec = ensureNewsSection();
+                  if (!sec || sec.type !== "news") return;
                   onConfigChange({
                     ...config,
                     sections: config.sections.map((s) =>
-                      s.id === newsSection.id && s.type === "news"
-                        ? {
-                            ...s,
-                            props: {
-                              ...s.props,
-                              layout: {
-                                ...s.props.layout,
-                                backgroundColor: e.target.value,
-                              },
-                            },
-                          }
+                      s.id === sec.id && s.type === "news"
+                        ? { ...s, props: { ...s.props, layout: { ...s.props.layout, backgroundColor: e.target.value } } }
                         : s
                     ),
                   });
                 }}
-                className="w-full h-8 rounded border border-black/10"
-                disabled={disabled}
+                className="w-full h-8 rounded border border-black/10" disabled={disabled}
               />
             </div>
             {/* 背景透明度 */}
             <div>
               <label className="block text-xs text-black/70 mb-2">
                 {t("newsSectionEditor.layout.backgroundOpacity")}
-                {(
-                  (newsSection.props.layout?.backgroundOpacity ?? 1) * 100
-                ).toFixed(0)}
-                %
+                {((newsSection.props.layout?.backgroundOpacity ?? 1) * 100).toFixed(0)}%
               </label>
               <input
-                type="range"
-                min="0"
-                max="100"
-                value={
-                  (newsSection.props.layout?.backgroundOpacity ?? 1) * 100
-                }
+                type="range" min="0" max="100"
+                value={(newsSection.props.layout?.backgroundOpacity ?? 1) * 100}
                 onChange={(e) => {
-                  const newsSection = ensureNewsSection();
-                  if (!newsSection || newsSection.type !== "news") return;
+                  const sec = ensureNewsSection();
+                  if (!sec || sec.type !== "news") return;
                   onConfigChange({
                     ...config,
                     sections: config.sections.map((s) =>
-                      s.id === newsSection.id && s.type === "news"
-                        ? {
-                            ...s,
-                            props: {
-                              ...s.props,
-                              layout: {
-                                ...s.props.layout,
-                                backgroundOpacity:
-                                  parseInt(e.target.value) / 100,
-                              },
-                            },
-                          }
+                      s.id === sec.id && s.type === "news"
+                        ? { ...s, props: { ...s.props, layout: { ...s.props.layout, backgroundOpacity: parseInt(e.target.value) / 100 } } }
                         : s
                     ),
                   });
                 }}
-                className="w-full"
-                disabled={disabled}
+                className="w-full" disabled={disabled}
               />
             </div>
             {/* 最大宽度 */}
@@ -468,22 +599,13 @@ export default function NewsSectionEditor({
               <select
                 value={newsSection.props.layout?.maxWidth || "7xl"}
                 onChange={(e) => {
-                  const newsSection = ensureNewsSection();
-                  if (!newsSection || newsSection.type !== "news") return;
+                  const sec = ensureNewsSection();
+                  if (!sec || sec.type !== "news") return;
                   onConfigChange({
                     ...config,
                     sections: config.sections.map((s) =>
-                      s.id === newsSection.id && s.type === "news"
-                        ? {
-                            ...s,
-                            props: {
-                              ...s.props,
-                              layout: {
-                                ...s.props.layout,
-                                maxWidth: e.target.value,
-                              },
-                            },
-                          }
+                      s.id === sec.id && s.type === "news"
+                        ? { ...s, props: { ...s.props, layout: { ...s.props.layout, maxWidth: e.target.value } } }
                         : s
                     ),
                   });
@@ -502,146 +624,38 @@ export default function NewsSectionEditor({
         </div>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {(newsSection?.props.items || []).map((item, index) => (
-          <div
-            key={item.id}
-            className="rounded-lg border border-black/10 bg-white/70 p-3"
+      {(!newsSection || newsSection.props.items.length === 0) ? (
+        <div className="py-6 text-center text-xs text-black/50">
+          {t("newsSectionEditor.image.noImages")}
+        </div>
+      ) : (
+        <DndContext
+          sensors={sensors}
+          collisionDetection={closestCenter}
+          onDragEnd={handleItemDragEnd}
+        >
+          <SortableContext
+            items={newsSection.props.items.map((item) => item.id)}
+            strategy={horizontalListSortingStrategy}
           >
-            <div className="mb-2 flex items-center justify-between">
-              <div className="text-xs font-medium text-black">
-                {t("newsSectionEditor.image.title")} {index + 1}
-              </div>
-              <Button
-                variant="danger"
-                size="sm"
-                onClick={() => setDeleteConfirmItemId(item.id)}
-                disabled={disabled}
-              >
-                {t("common.delete")}
-              </Button>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {newsSection.props.items.map((item, index) => (
+                <SortableNewsItemCard
+                  key={item.id}
+                  item={item}
+                  index={index}
+                  disabled={disabled}
+                  uploadingIndex={uploadingIndex}
+                  onUpdate={updateNewsItem}
+                  onDelete={setDeleteConfirmItemId}
+                  onUpload={uploadNewsImage}
+                  onOpenPicker={setPickerItemId}
+                />
+              ))}
             </div>
-
-            {/* 预览 - 可拖拽编辑位置 */}
-            <div className="mb-3">
-              {item.src ? (
-                <div className="aspect-[4/3] max-h-48 overflow-hidden rounded-lg border border-black/10">
-                  <ImagePositionEditor
-                    src={item.src}
-                    alt={item.alt || `News ${index + 1}`}
-                    objectPosition={item.objectPosition || "center"}
-                    onChange={(position) =>
-                      updateNewsItem(item.id, { objectPosition: position })
-                    }
-                    disabled={uploadingIndex === -1 || disabled}
-                  />
-                </div>
-              ) : (
-                <div className="aspect-[4/3] max-h-48 flex items-center justify-center rounded-lg border border-black/10 bg-black/5 text-xs text-black/50">
-                  {t("newsSectionEditor.image.noImages")}
-                </div>
-              )}
-            </div>
-
-            {/* 表单字段 */}
-            <div className="space-y-2">
-              {/* 上传文件 */}
-              <div>
-                <label className="block text-[10px] text-black/70 mb-1">
-                  {t("newsSectionEditor.image.upload")}
-                </label>
-                <input
-                  type="file"
-                  accept="image/*"
-                  className="block w-full text-[10px] text-black/80 file:mr-2 file:cursor-pointer file:rounded file:border-0 file:bg-black file:px-2 file:py-1 file:text-[10px] file:text-white file:transition-colors file:duration-200 hover:file:bg-black/90"
-                  disabled={uploadingIndex === -1 || disabled}
-                  onChange={(e) => {
-                    const file = e.target.files?.[0];
-                    const inputElement = e.currentTarget;
-                    if (file) {
-                      uploadNewsImage(item.id, file);
-                      if (inputElement) {
-                        inputElement.value = "";
-                      }
-                    }
-                  }}
-                />
-                <div className="mt-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    onClick={() => setPickerItemId(item.id)}
-                    disabled={uploadingIndex === -1 || disabled}
-                  >
-                    {t("mediaLibrary.open")}
-                  </Button>
-                </div>
-              </div>
-
-              {/* 图片链接 */}
-              <div>
-                <label className="block text-[10px] text-black/70 mb-1">
-                  {t("newsSectionEditor.image.link")}
-                </label>
-                <input
-                  type="text"
-                  value={item.src || ""}
-                  onChange={(e) =>
-                    updateNewsItem(item.id, { src: e.target.value })
-                  }
-                  placeholder={t("newsSectionEditor.image.linkPlaceholder")}
-                  className="w-full rounded border border-black/10 bg-white/70 px-2 py-1 text-[10px] text-black placeholder:text-black/30"
-                  disabled={uploadingIndex === -1 || disabled}
-                />
-              </div>
-
-              {/* 外部链接 */}
-              <div>
-                <label className="block text-[10px] text-black/70 mb-1">
-                  {t("newsSectionEditor.image.externalLink")}
-                </label>
-                <input
-                  type="text"
-                  value={item.href || ""}
-                  onChange={(e) =>
-                    updateNewsItem(item.id, { href: e.target.value })
-                  }
-                  placeholder={t("newsSectionEditor.image.linkPlaceholder2")}
-                  className="w-full rounded border border-black/10 bg-white/70 px-2 py-1 text-[10px] text-black placeholder:text-black/30"
-                  disabled={uploadingIndex === -1 || disabled}
-                />
-              </div>
-
-              {/* Alt 文本 */}
-              <div>
-                <label className="block text-[10px] text-black/70 mb-1">
-                  {t("newsSectionEditor.image.alt")}
-                </label>
-                <input
-                  type="text"
-                  value={item.alt || ""}
-                  onChange={(e) =>
-                    updateNewsItem(item.id, { alt: e.target.value })
-                  }
-                  placeholder={t("newsSectionEditor.image.altPlaceholder")}
-                  className="w-full rounded border border-black/10 bg-white/70 px-2 py-1 text-[10px] text-black placeholder:text-black/30"
-                  disabled={uploadingIndex === -1 || disabled}
-                />
-              </div>
-            </div>
-
-            {uploadingIndex === -1 && (
-              <div className="mt-2 text-xs text-black/60">{t("common.uploading")}</div>
-            )}
-          </div>
-        ))}
-
-        {(!newsSection || newsSection.props.items.length === 0) && (
-          <div className="py-6 text-center text-xs text-black/50">
-            {t("newsSectionEditor.image.noImages")}
-          </div>
-        )}
-      </div>
+          </SortableContext>
+        </DndContext>
+      )}
 
       {/* 删除确认对话框 */}
       <ConfirmDialog

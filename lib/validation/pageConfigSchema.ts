@@ -192,6 +192,8 @@ export const PageConfigSchema = z.object({
     })
     .optional(),
   socialLinks: z.array(SocialLinkItemSchema).max(10).optional(), // 最多 10 个社交链接
+  logoPosition: z.enum(["top-left", "top-center"]).optional(), // Logo 位置
+  socialLinksPosition: z.enum(["top-right", "bottom-center"]).optional(), // 社交链接位置
   showHeroThumbStrip: z.boolean().optional(), // 是否显示 Hero 缩略图条
   showLogo: z.boolean().optional(), // 是否显示 Logo
   showSocialLinks: z.boolean().optional(), // 是否显示社交链接

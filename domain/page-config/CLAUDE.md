@@ -16,6 +16,8 @@
 - `ensureUserPage()` seeds both configs with an empty baseline for first-time users
 - `SectionType` currently only includes `hero` / `gallery` / `news` / `video`
 - Legacy `links` sections are sanitized out in load/save/public rendering paths; do not reintroduce the type unless schema, editor, renderer, and docs all land together
+- `cleanPageConfig` for `news` section items: only strips items where `src` is empty or blank; `href` is allowed to be empty (user may choose an image first and fill in the link later). The Zod schema in `lib/validation/pageConfigSchema.ts` also reflects this — `href` is `z.string().default("")` (optional). **Do not tighten this back to require `href` without a deliberate product decision.**
+- `saveDraft` / `publish` in `hooks/usePageConfigActions.ts` uses a `configRef` pattern (useRef + useEffect sync) to always read the latest config at call time, avoiding stale closure bugs. Do not revert this to a direct `config` dependency in `useCallback`.
 
 ## Editing rules
 
