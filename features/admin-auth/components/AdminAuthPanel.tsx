@@ -107,6 +107,14 @@ export default function AdminAuthPanel() {
             {t("auth.login.register")}
           </Link>
         </div>
+        <div className="mt-3 text-center">
+          <Link
+            href="/showcase"
+            className="text-[10px] uppercase tracking-[0.2em] text-[color:var(--editorial-muted)] transition-colors hover:text-[color:var(--editorial-accent)]"
+          >
+            View showcase →
+          </Link>
+        </div>
       </form>
     </div>
   );
