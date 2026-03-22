@@ -1,8 +1,15 @@
+import type { Metadata } from "next";
 import { getBlogPosts } from "@/domain/blog";
 import PublicBlogFeed from "@/features/blog/PublicBlogFeed";
 import { getE2EPublicBlogFeed, getE2EPublicSiteState } from "@/lib/e2e/publicPageState";
 
 export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: "Blog",
+  description: "Latest blog posts from creators.",
+  openGraph: { title: "Blog", description: "Latest blog posts from creators." },
+};
 
 export default async function BlogPage() {
   const e2eSiteState = await getE2EPublicSiteState();
