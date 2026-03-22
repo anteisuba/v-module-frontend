@@ -162,6 +162,14 @@ test("saves a CMS draft and publishes the updated page", async ({ page }) => {
   await page.goto("/u/creator");
   await page.waitForLoadState("networkidle");
 
+  // Debug: capture page content for CI diagnosis
+  const pageContent = await page.content();
+  if (!pageContent.includes("直播预告")) {
+    const bodyText = await page.locator("body").innerText().catch(() => "(empty)");
+    console.log("[CMS-E2E-DEBUG] Page body text:", bodyText.slice(0, 500));
+    console.log("[CMS-E2E-DEBUG] URL:", page.url());
+  }
+
   await expect(page.getByRole("heading", { name: "直播预告" })).toBeVisible({ timeout: 30_000 });
   await expect(page.getByAltText("Creator Logo")).toBeVisible({ timeout: 15_000 });
   await expect(page.getByAltText("Creator Logo")).toHaveAttribute(
