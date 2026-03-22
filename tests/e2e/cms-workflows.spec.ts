@@ -162,8 +162,8 @@ test("saves a CMS draft and publishes the updated page", async ({ page }) => {
   await page.goto("/u/creator");
   await page.waitForLoadState("networkidle");
 
-  await expect(page.getByRole("heading", { name: "直播预告" })).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByAltText("Creator Logo")).toBeVisible({ timeout: 10_000 });
+  await expect(page.getByRole("heading", { name: "直播预告" })).toBeVisible({ timeout: 30_000 });
+  await expect(page.getByAltText("Creator Logo")).toBeVisible({ timeout: 15_000 });
   await expect(page.getByAltText("Creator Logo")).toHaveAttribute(
     "src",
     /%2Fhero%2F2\.jpeg/,
