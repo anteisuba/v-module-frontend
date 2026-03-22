@@ -1,6 +1,6 @@
 # TODO 总览
 
-> 最后更新：2026-03-22
+> 最后更新：2026-03-23
 
 本目录汇总所有待办事项和优化方向，按优先级和领域分文件组织。
 
@@ -8,7 +8,8 @@
 
 | 文件 | 内容 | 状态 |
 | --- | --- | --- |
-| [VISUAL-FREEDOM-PLAN.md](./VISUAL-FREEDOM-PLAN.md) | 视觉自由度计划（Theme Presets + Section Variants） | 🔄 审查通过，待实施 |
+| [NEXT-PHASE-PLAN.md](./NEXT-PHASE-PLAN.md) | 下一阶段：Turnstile → SEO → ScheduleBlock → 购物车 | 📋 待实施 |
+| [VISUAL-FREEDOM-PLAN.md](./VISUAL-FREEDOM-PLAN.md) | 视觉自由度计划（Theme Presets + Section Variants） | ✅ 代码完成 |
 
 ## 文件索引
 
@@ -26,7 +27,7 @@
 ```
 pnpm build      ✅ 通过
 pnpm check      ✅ 通过
-pnpm test       ✅ 30 文件 / 102 测试通过
+pnpm test       ✅ 36 文件 / 150 测试通过
 pnpm test:e2e   ✅ 11 个 e2e 场景已接入 Chromium / Firefox / WebKit CI 矩阵
 pnpm lint       ✅ 0 errors / 0 warnings
 Prisma 迁移     ✅ 13 个
