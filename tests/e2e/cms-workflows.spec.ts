@@ -114,15 +114,7 @@ test("saves a CMS draft and publishes the updated page", async ({ page }) => {
 
   await page.goto("/admin/cms");
 
-  await page.getByTestId("admin-tab-content").click();
-  await expect(page.getByTestId("admin-tab-content")).toHaveAttribute(
-    "data-state",
-    "active"
-  );
-  await expect(page.getByTestId("admin-panel-toggle-hero")).toHaveAttribute(
-    "data-state",
-    "open"
-  );
+  await page.getByTestId("cms-architect-section-hero").click();
 
   const titleInput = page.getByTestId("cms-hero-title-input");
   await expect(titleInput).toBeVisible();
@@ -250,13 +242,12 @@ test("replaces a referenced background asset from the media library flow", async
   await page.getByTestId("media-asset-go-to-replace-asset-old-0").click();
 
   await expect(page).toHaveURL(
-    /\/admin\/cms\?tab=page&panel=background&focus=page-background/
+    /\/admin\/cms\?panel=background/
   );
-  await expect(page.getByTestId("admin-panel-toggle-background")).toHaveAttribute(
+  await expect(page.getByTestId("cms-architect-background")).toHaveAttribute(
     "data-state",
     "open"
   );
-  await expect(page.locator("#page-background-editor")).toBeVisible();
 
   await page.getByTestId("background-open-media-picker").click();
   await expect(page.getByTestId("media-picker-dialog")).toBeVisible();

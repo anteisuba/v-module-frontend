@@ -51,8 +51,6 @@ export default function HeroSection({
 
   // 视差由用户显式控制，默认关闭
   const parallaxEnabled = layout?.parallax === true;
-  const HERO_SCROLL_HEIGHT_VH = parallaxEnabled ? 150 : globalHeightVh;
-  const HERO_IMAGE_HEIGHT_VH = HERO_SCROLL_HEIGHT_VH;
   const visibleHeightVh = globalHeightVh;
   const backgroundColor = layout?.backgroundColor || "#000000";
   const backgroundOpacity = layout?.backgroundOpacity ?? 1;

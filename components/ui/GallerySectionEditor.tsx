@@ -150,12 +150,13 @@ export default function GallerySectionEditor({
   config,
   onConfigChange,
   disabled,
-  onUploadImage,
   onToast,
-  onError,
 }: GallerySectionEditorProps) {
   const { t } = useI18n();
   const [pickerIndex, setPickerIndex] = useState<number | null>(null);
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
+  );
 
   // 取得 gallery section（需要在 hook 呼叫之後做 early return）
   const gallerySectionRaw = config.sections.find((s) => s.type === "gallery");
@@ -198,7 +199,7 @@ export default function GallerySectionEditor({
 
   function addItem() {
     const newItem = {
-      id: `gallery-item-${Date.now()}`,
+      id: `gallery-item-${crypto.randomUUID()}`,
       src: "",
       alt: "",
     };
@@ -206,23 +207,7 @@ export default function GallerySectionEditor({
     setPickerIndex(items.length); // 新增後立即開啟 picker
   }
 
-  // ── 上傳 ──────────────────────────────────────────────────────
-  async function handleUpload(index: number, file: File) {
-    if (!onUploadImage) return;
-    try {
-      const result = await onUploadImage(file, { usageContext: GALLERY_USAGE });
-      updateItem(index, { src: result.src });
-      onToast?.(t("galleryEditor.uploadSuccess"));
-    } catch (e) {
-      onError?.(e instanceof Error ? e.message : t("common.error"));
-    }
-  }
-
   // ── 拖曳排序 ─────────────────────────────────────────────────
-  const sensors = useSensors(
-    useSensor(PointerSensor, { activationConstraint: { distance: 6 } })
-  );
-
   function handleDragEnd(event: DragEndEvent) {
     const { active, over } = event;
     if (!over || active.id === over.id) return;

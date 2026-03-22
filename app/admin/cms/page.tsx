@@ -1,7 +1,8 @@
 // app/admin/cms/page.tsx
 "use client";
 
-import { Suspense, useState, type CSSProperties } from "react";
+import { Suspense, useEffect, useState, type CSSProperties } from "react";
+import { useSearchParams } from "next/navigation";
 import {
   DndContext,
   closestCenter,
@@ -133,30 +134,6 @@ function createDefaultSection(type: SectionType, order: number): SectionConfig {
         order,
       };
   }
-}
-
-// ────────────────────────────────────────────────────────────────────
-// 辅助：reorder sections
-// ────────────────────────────────────────────────────────────────────
-function moveSectionInConfig(
-  config: PageConfig,
-  sectionId: string,
-  dir: "up" | "down"
-): PageConfig {
-  const sorted = [...config.sections].sort((a, b) => a.order - b.order);
-  const idx = sorted.findIndex((s) => s.id === sectionId);
-  if (idx < 0) return config;
-  const target = dir === "up" ? idx - 1 : idx + 1;
-  if (target < 0 || target >= sorted.length) return config;
-  // swap orders
-  const aOrder = sorted[idx].order;
-  const bOrder = sorted[target].order;
-  const newSections = config.sections.map((s) => {
-    if (s.id === sorted[idx].id) return { ...s, order: bOrder };
-    if (s.id === sorted[target].id) return { ...s, order: aOrder };
-    return s;
-  });
-  return { ...config, sections: newSections };
 }
 
 // ────────────────────────────────────────────────────────────────────
@@ -490,6 +467,23 @@ function CMSPageContent() {
     null
   );
 
+  // 根据 URL 参数自动选择 composer target
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    const panel = searchParams.get("panel");
+    const section = searchParams.get("section");
+    if (panel && (["background", "theme", "articles"] as const).includes(panel as GlobalPanelId)) {
+      setComposerTarget({ kind: "global", panelId: panel as GlobalPanelId });
+    } else if (section) {
+      const match = config.sections.find((s) => s.type === section);
+      if (match) {
+        setComposerTarget({ kind: "section", sectionId: match.id });
+      }
+    }
+  // Only run on initial load
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   // 键盘快捷键
   useKeyboardShortcuts({
     onSave: async () => {
@@ -549,16 +543,6 @@ function CMSPageContent() {
       ...config,
       sections: config.sections.map((s) =>
         s.id === sectionId ? { ...s, enabled: !s.enabled } : s
-      ),
-    });
-  }
-
-  // ── 更新 section colSpan ─────────────────────────────────────────
-  function updateSectionColSpan(sectionId: string, colSpan: 1 | 2 | 3 | 4) {
-    setConfig({
-      ...config,
-      sections: config.sections.map((s) =>
-        s.id === sectionId ? { ...s, layout: { ...s.layout, colSpan } } : s
       ),
     });
   }
@@ -686,6 +670,8 @@ function CMSPageContent() {
                       key={panelId}
                       type="button"
                       onClick={() => selectGlobal(panelId)}
+                      data-testid={`cms-architect-${panelId}`}
+                      data-state={isActive ? "open" : "closed"}
                       className={[
                         "flex w-full items-center gap-3 rounded-2xl border px-4 py-3 text-left transition-all duration-200",
                         isActive

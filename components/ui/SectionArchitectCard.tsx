@@ -111,6 +111,7 @@ export default function SectionArchitectCard({
         <button
           type="button"
           onClick={onSelect}
+          data-testid={`cms-architect-section-${section.type}`}
           className="flex flex-1 items-center gap-3 py-3 pr-3 text-left"
           aria-pressed={isSelected}
         >

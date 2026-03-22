@@ -16,7 +16,6 @@ import {
   LanguageSelector,
   Button,
   Input,
-  StatusBadge,
   getToneStyle,
 } from "@/components/ui";
 import { shopApi } from "@/lib/api";

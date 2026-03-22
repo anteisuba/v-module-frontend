@@ -86,7 +86,7 @@ function NewsListContent() {
       setLoading(false);
       setIsInitialLoad(false);
     }
-  }, [currentPage]);
+  }, [currentPage, t]);
 
   useEffect(() => {
     void loadArticles();
