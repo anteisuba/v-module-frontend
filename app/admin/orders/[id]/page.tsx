@@ -432,14 +432,14 @@ export default function OrderDetailPage({
   return (
     <main
       data-testid="admin-order-detail-page"
-      className="relative min-h-screen w-full overflow-hidden"
+      className="editorial-shell--light relative min-h-screen w-full overflow-hidden"
     >
       <div className="absolute inset-0">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: "url(/login/login-c.jpeg)" }}
         />
-        <div className="absolute inset-0 bg-white/70" />
+        <div className="absolute inset-0 bg-white/88" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/15" />
       </div>
 

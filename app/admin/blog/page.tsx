@@ -289,11 +289,15 @@ function BlogPageContent() {
       description: t("admin.editorScaffold.panels.list.description"),
       content:
         posts.length === 0 ? (
-          <div className="rounded-2xl border border-black/10 bg-white/55 p-12 text-center backdrop-blur-xl">
-            <p className="text-[color:var(--editorial-muted)]">{t("blog.list.empty")}</p>
+          <div className="rounded-2xl border border-black/10 bg-white/55 p-16 text-center backdrop-blur-xl">
+            <p className="font-serif text-4xl font-extralight tracking-widest text-black/15">{'\u2726'}</p>
+            <p className="mt-4 text-lg font-medium text-[color:var(--editorial-text)]">{t("blog.list.empty")}</p>
+            <p className="mt-2 text-sm text-[color:var(--editorial-muted)]">
+              写下你的第一篇文章，开始创作之旅
+            </p>
             <button
               onClick={() => handleNavigate("/admin/blog/new")}
-              className="mt-4 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/90"
+              className="mt-6 rounded-lg bg-black px-5 py-2.5 text-sm font-medium text-white hover:bg-black/90"
             >
               {t("blog.create")}
             </button>

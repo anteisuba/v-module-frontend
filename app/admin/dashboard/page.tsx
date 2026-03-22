@@ -15,6 +15,17 @@ import type { StatusTone } from "@/components/ui/StatusBadge";
 const BG_STORAGE_KEY = "dashboard-bg";
 const DEFAULT_BG: BgSettings = { color: "#f5f2ec", imageUrl: null };
 
+/** Returns true if a hex color is perceptually light (should use dark text). */
+function isLightColor(hex: string): boolean {
+  const c = hex.replace("#", "");
+  if (c.length < 6) return true;
+  const r = parseInt(c.substring(0, 2), 16);
+  const g = parseInt(c.substring(2, 4), 16);
+  const b = parseInt(c.substring(4, 6), 16);
+  // Relative luminance approximation
+  return (r * 299 + g * 587 + b * 114) / 1000 > 128;
+}
+
 // ── 类型 ──
 
 type PageStatus = {
@@ -540,8 +551,10 @@ export default function DashboardPage() {
     return <ToneBadge tone="neutral">{t("admin.dashboard.status.draft")}</ToneBadge>;
   }
 
+  const lightBg = isLightColor(bg.color);
+
   return (
-    <main className="relative min-h-screen w-full overflow-hidden">
+    <main className={`relative min-h-screen w-full overflow-hidden ${lightBg ? "editorial-shell--light" : ""}`}>
       {/* 背景 */}
       <div className="absolute inset-0" style={{ backgroundColor: bg.color }}>
         {bg.imageUrl && (
@@ -571,7 +584,7 @@ export default function DashboardPage() {
         {/* 头部 */}
         <header className="mb-8">
           <div className="editorial-kicker">{t("admin.dashboard.eyebrow")}</div>
-          <h1 className="mt-4 font-serif text-[clamp(2.2rem,4vw,3.6rem)] font-light leading-[0.96] tracking-[0.02em] text-[color:var(--editorial-text)]">
+          <h1 className="mt-4 font-serif text-[clamp(2.2rem,4vw,3.6rem)] font-light leading-[1.15] tracking-[0.02em] text-[color:var(--editorial-text)]">
             {t("admin.dashboard.title")}
           </h1>
           <p className="mt-3 text-sm text-[color:var(--editorial-muted)]">

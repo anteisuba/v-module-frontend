@@ -50,7 +50,7 @@ export default function ForgotPasswordPage() {
 
   return (
     <>
-      <BackButton href="/admin" label="返回登录" />
+      <BackButton href="/admin" label="返回登录" fixed={false} className="absolute top-6 left-6 z-50" />
       <EditorialAuthLayout
         eyebrow="Recovery"
         title="Bring the account back into the room."

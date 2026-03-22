@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Alert,
+  BackButton,
   Button,
   LanguageSelector,
   LoadingState,
@@ -527,7 +528,7 @@ function AdminPayoutSettingsPageContent() {
   return (
     <main
       data-testid="admin-payout-settings-page"
-      className="relative min-h-screen overflow-hidden bg-stone-100 text-[color:var(--editorial-text)]"
+      className="editorial-shell--light relative min-h-screen overflow-hidden bg-stone-100 text-[color:var(--editorial-text)]"
     >
       <div className="fixed bottom-6 right-6 z-[100]">
         <LanguageSelector position="bottom-right" />
@@ -538,20 +539,14 @@ function AdminPayoutSettingsPageContent() {
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: "url(/login/login-c.jpeg)" }}
         />
-        <div className="absolute inset-0 bg-white/78" />
+        <div className="absolute inset-0 bg-white/88" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_left,rgba(0,0,0,0.08),transparent_50%)]" />
       </div>
 
       <div className="relative z-10 mx-auto max-w-6xl px-6 py-10">
-        <button
-          type="button"
-          onClick={() => router.push("/admin/dashboard")}
-          className="mb-6 rounded-lg border border-black/15 bg-white/70 px-4 py-2 text-sm text-[color:var(--editorial-muted)] transition hover:bg-white"
-        >
-          {t("admin.payouts.backToDashboard")}
-        </button>
+        <BackButton href="/admin/dashboard" label={t("admin.payouts.backToDashboard")} />
 
-        <div className="mb-8 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+        <div className="mb-8 mt-14 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <p className="text-xs uppercase tracking-[0.32em] text-[color:var(--editorial-muted)]">
               {t("admin.payouts.eyebrow")}

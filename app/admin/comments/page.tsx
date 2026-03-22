@@ -211,13 +211,13 @@ export default function CommentsPage() {
   }
 
   return (
-    <main className="relative min-h-screen w-full overflow-hidden">
+    <main className="editorial-shell--light relative min-h-screen w-full overflow-hidden">
       <div className="absolute inset-0">
         <div
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: "url(/login/login-c.jpeg)" }}
         />
-        <div className="absolute inset-0 bg-white/70" />
+        <div className="absolute inset-0 bg-white/88" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/15" />
       </div>
 
@@ -227,7 +227,7 @@ export default function CommentsPage() {
           <LanguageSelector position="bottom-right" />
         </div>
 
-        <div className="mb-6">
+        <div className="mb-6 mt-14">
           <h1 className="text-2xl font-bold text-[color:var(--editorial-text)]">{t("comments.title")}</h1>
           <p className="mt-1 text-sm text-[color:var(--editorial-muted)]">
             {t("comments.description")}
@@ -333,11 +333,17 @@ export default function CommentsPage() {
         )}
 
         {comments.length === 0 ? (
-          <div className="rounded-2xl border border-black/10 bg-white/55 p-12 text-center backdrop-blur-xl">
-            <p className="text-[color:var(--editorial-muted)]">
+          <div className="rounded-2xl border border-black/10 bg-white/55 p-16 text-center backdrop-blur-xl">
+            <p className="font-serif text-4xl font-extralight tracking-widest text-black/15">{'\u2726'}</p>
+            <p className="mt-4 text-lg font-medium text-[color:var(--editorial-text)]">
               {debouncedQuery || statusFilter !== "ALL"
                 ? t("comments.list.emptyFiltered")
                 : t("comments.list.empty")}
+            </p>
+            <p className="mt-2 text-sm text-[color:var(--editorial-muted)]">
+              {debouncedQuery || statusFilter !== "ALL"
+                ? "尝试调整筛选条件查看更多"
+                : "当读者在博客文章下留言后，评论将在这里显示"}
             </p>
           </div>
         ) : (

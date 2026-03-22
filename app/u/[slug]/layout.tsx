@@ -83,6 +83,11 @@ export default async function UserLayout({
     <div style={themeStyles} className="min-h-screen">
       <FloatingMenu />
       {children}
+      <footer className="editorial-shell border-t border-white/10 px-6 py-10 text-center">
+        <p className="text-[11px] uppercase tracking-[0.24em] text-white/36">
+          {new Date().getFullYear()} &middot; Creator Journal
+        </p>
+      </footer>
     </div>
   );
 }
