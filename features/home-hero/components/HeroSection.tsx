@@ -109,11 +109,13 @@ export default function HeroSection({
   //   可见窗口 = layout.heightVh（sticky，用户在视口中看到的区域）
   //   视差距离 = 图片总高度 - 可见窗口
   // 非视差模式：
-  //   section 高度 = 可见窗口 = visibleHeightVh（忽略 per-slide heightVh）
+  //   section 高度 = 可见窗口 = 图片总高度（完整展示图片比例）
   const sectionHeightVh = parallaxEnabled
     ? Math.max(currentSlideHeightVh, visibleHeightVh)
-    : visibleHeightVh;
-  const viewportHeightVh = visibleHeightVh;
+    : currentSlideHeightVh;
+  const viewportHeightVh = parallaxEnabled
+    ? visibleHeightVh
+    : currentSlideHeightVh;
 
   return (
     <section
