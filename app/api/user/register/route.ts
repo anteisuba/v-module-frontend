@@ -6,11 +6,15 @@ import { prisma } from "@/lib/prisma";
 import { ensureUserPage } from "@/domain/page-config";
 import { ApiRouteError, createApiErrorResponse, readJsonBody } from "@/lib/api/server";
 import { registerInputSchema } from "@/domain/user/schemas";
+import { verifyTurnstileToken } from "@/lib/turnstile";
 
 export const runtime = "nodejs"; // Prisma requires Node.js runtime
 
 export async function POST(req: Request) {
   try {
+    const body = await req.clone().json().catch(() => ({}));
+    await verifyTurnstileToken(body.turnstileToken);
+
     const { email, password, displayName, slug } = await readJsonBody(req, registerInputSchema, {
       code: "INVALID_REGISTER_INPUT",
       message: "注册信息格式不正确",

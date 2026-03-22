@@ -3,11 +3,15 @@ import { createStripeCheckout } from "@/domain/shop";
 import { isStripeConfigured } from "@/lib/stripe";
 import { ApiRouteError, createApiErrorResponse, readJsonBody } from "@/lib/api/server";
 import { checkoutInputSchema } from "@/domain/shop/schemas";
+import { verifyTurnstileToken } from "@/lib/turnstile";
 
 export const runtime = "nodejs";
 
 export async function POST(request: Request) {
   try {
+    const body = await request.clone().json().catch(() => ({}));
+    await verifyTurnstileToken(body.turnstileToken);
+
     if (!isStripeConfigured()) {
       throw new ApiRouteError("STRIPE_NOT_CONFIGURED", "Stripe Checkout is not configured", 503);
     }

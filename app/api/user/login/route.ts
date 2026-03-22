@@ -7,11 +7,15 @@ import { getUserSession } from "@/lib/session/userSession";
 import { ensureUserPage } from "@/domain/page-config";
 import { ApiRouteError, createApiErrorResponse, readJsonBody } from "@/lib/api/server";
 import { loginInputSchema } from "@/domain/user/schemas";
+import { verifyTurnstileToken } from "@/lib/turnstile";
 
 export const runtime = "nodejs"; // Prisma requires Node.js runtime
 
 export async function POST(req: Request) {
   try {
+    const body = await req.clone().json().catch(() => ({}));
+    await verifyTurnstileToken(body.turnstileToken);
+
     const { email, password } = await readJsonBody(req, loginInputSchema, {
       code: "INVALID_LOGIN_INPUT",
       message: "邮箱和密码格式不正确",

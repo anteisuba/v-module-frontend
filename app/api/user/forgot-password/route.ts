@@ -5,11 +5,15 @@ import { prisma } from "@/lib/prisma";
 import { generateResetToken, hashToken, checkRateLimitForUser, sendPasswordResetEmail } from "@/lib/userPasswordReset";
 import { ApiRouteError, createApiErrorResponse, readJsonBody } from "@/lib/api/server";
 import { forgotPasswordInputSchema } from "@/domain/user/schemas";
+import { verifyTurnstileToken } from "@/lib/turnstile";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
+    const body = await req.clone().json().catch(() => ({}));
+    await verifyTurnstileToken(body.turnstileToken);
+
     const { email } = await readJsonBody(req, forgotPasswordInputSchema, {
       code: "INVALID_EMAIL",
       message: "邮箱格式不正确",

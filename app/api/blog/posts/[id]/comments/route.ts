@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getServerSession } from "@/lib/session/userSession";
+import { verifyTurnstileToken } from "@/lib/turnstile";
 import {
   BLOG_COMMENT_APPROVED_STATUS,
   BLOG_COMMENT_PENDING_STATUS,
@@ -47,6 +48,7 @@ export async function POST(
 
     const session = await getServerSession();
     const body = await request.json();
+    await verifyTurnstileToken(body.turnstileToken);
     const { userName, userEmail, content } = body;
 
     if (!userName || !content || !content.trim()) {

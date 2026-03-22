@@ -6,11 +6,15 @@ import { prisma } from "@/lib/prisma";
 import { hashToken, verifyToken } from "@/lib/userPasswordReset";
 import { ApiRouteError, createApiErrorResponse, readJsonBody } from "@/lib/api/server";
 import { resetPasswordInputSchema } from "@/domain/user/schemas";
+import { verifyTurnstileToken } from "@/lib/turnstile";
 
 export const runtime = "nodejs";
 
 export async function POST(req: Request) {
   try {
+    const body = await req.clone().json().catch(() => ({}));
+    await verifyTurnstileToken(body.turnstileToken);
+
     const { token, password } = await readJsonBody(req, resetPasswordInputSchema, {
       code: "INVALID_RESET_INPUT",
       message: "token 和密码格式不正确",
