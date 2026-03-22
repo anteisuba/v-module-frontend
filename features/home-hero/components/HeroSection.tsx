@@ -140,7 +140,7 @@ export default function HeroSection({
             fadeIn={fadeIn}
             fadeMs={fadeMs}
             objectPosition={current.objectPosition}
-            progress={progress}
+            progress={parallaxEnabled ? progress : 0}
             vh={vh}
             imageHeightVh={sectionHeightVh}
           />
