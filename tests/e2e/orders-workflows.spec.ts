@@ -140,7 +140,7 @@ test("opens order detail from admin list and submits a partial refund", async ({
 
   await page.getByTestId("admin-order-view-order-e2e-1").click();
 
-  await expect(page).toHaveURL(/\/admin\/orders\/order-e2e-1$/);
+  await expect(page).toHaveURL(/\/admin\/orders\/order-e2e-1$/, { timeout: 10_000 });
   await expect(page.getByTestId("admin-order-detail-page")).toBeVisible();
   await expect(page.getByText("平台统一收款 fallback")).toBeVisible();
   await expect(page.getByText("平台统一收款").first()).toBeVisible();

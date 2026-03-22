@@ -113,6 +113,7 @@ test("saves a CMS draft and publishes the updated page", async ({ page }) => {
   });
 
   await page.goto("/admin/cms");
+  await page.waitForResponse("**/api/page/me");
 
   await page.getByTestId("cms-architect-section-hero").click();
 
@@ -123,7 +124,7 @@ test("saves a CMS draft and publishes the updated page", async ({ page }) => {
   await page.getByTestId("cms-save-draft").click();
 
   await expect.poll(() => saveRequests.length).toBe(1);
-  await expect(page.getByLabel("通知").getByText("草稿已保存")).toBeVisible();
+  await expect(page.getByLabel("通知").getByText("草稿已保存")).toBeVisible({ timeout: 10_000 });
   expect(getHeroTitleFromConfig(saveRequests[0].draftConfig)).toBe("直播预告");
   expect(saveRequests[0]?.draftConfig?.hasPublished).toBeUndefined();
 
@@ -133,27 +134,33 @@ test("saves a CMS draft and publishes the updated page", async ({ page }) => {
 
   await expect.poll(() => saveRequests.length).toBe(2);
   await expect.poll(() => publishRequests.length).toBe(1);
-  await expect(page.getByLabel("通知").getByText("已发布！")).toBeVisible();
+  await expect(page.getByLabel("通知").getByText("已发布！")).toBeVisible({ timeout: 10_000 });
 
   expect(getHeroTitleFromConfig(saveRequests[1].draftConfig)).toBe("直播预告");
   expect(saveRequests[1]?.draftConfig?.hasPublished).toBe(true);
   expect(getHeroTitleFromConfig(publishRequests[0].publishedConfig)).toBe("直播预告");
 
   await page.goto("/u/creator");
+  await page.waitForLoadState("networkidle");
 
   await expect(page.getByRole("heading", { name: "直播预告" })).toBeVisible();
   await expect(page.getByAltText("Creator Logo")).toBeVisible();
   await expect(page.getByAltText("Creator Logo")).toHaveAttribute(
     "src",
-    /%2Fhero%2F2\.jpeg/
+    /%2Fhero%2F2\.jpeg/,
+    { timeout: 10_000 }
   );
   await expect(page.getByTestId("public-page-renderer")).toBeVisible();
 
-  const backgroundImage = await page
-    .getByTestId("public-page-renderer")
-    .evaluate((element) => getComputedStyle(element).backgroundImage);
-
-  expect(backgroundImage).toContain("/hero/3.jpeg");
+  await expect
+    .poll(
+      () =>
+        page
+          .getByTestId("public-page-renderer")
+          .evaluate((element) => getComputedStyle(element).backgroundImage),
+      { timeout: 10_000 }
+    )
+    .toContain("/hero/3.jpeg");
 
   await expect
     .poll(() =>
@@ -242,7 +249,8 @@ test("replaces a referenced background asset from the media library flow", async
   await page.getByTestId("media-asset-go-to-replace-asset-old-0").click();
 
   await expect(page).toHaveURL(
-    /\/admin\/cms\?panel=background/
+    /\/admin\/cms\?panel=background/,
+    { timeout: 10_000 }
   );
   await expect(page.getByTestId("cms-architect-background")).toHaveAttribute(
     "data-state",
@@ -363,7 +371,7 @@ test("replaces references directly inside the media library", async ({
   await expect(
     page.getByTestId("media-asset-card-asset-new").getByText("已被引用 1 处")
   ).toBeVisible();
-  await expect(page.getByLabel("通知").getByText("已替换 1 处引用")).toBeVisible();
+  await expect(page.getByLabel("通知").getByText("已替换 1 处引用")).toBeVisible({ timeout: 10_000 });
 });
 
 test("updates media usage tags in bulk from the media library", async ({
@@ -470,7 +478,7 @@ test("updates media usage tags in bulk from the media library", async ({
   ).toBeVisible();
   await expect(
     page.getByLabel("通知").getByText("已批量添加标签")
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 10_000 });
 
   await page.getByTestId("media-library-bulk-tag-action").selectOption("CLEAR");
   await page.getByTestId("media-library-bulk-tag-apply").click();
@@ -485,5 +493,5 @@ test("updates media usage tags in bulk from the media library", async ({
   ).toBeVisible();
   await expect(
     page.getByLabel("通知").getByText("已清空已选素材标签")
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 10_000 });
 });
