@@ -139,5 +139,6 @@ export {
   checkConnectAccountHealth,
   type SerializedSellerPayoutAccount,
   type StripeCheckoutRouting,
+  type ConnectAccountHealthDiagnostic,
   type ConnectAccountHealthResult,
 } from "./payout-accounts";

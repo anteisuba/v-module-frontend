@@ -542,6 +542,12 @@ export async function createStripePayoutDashboardLink(userId: string) {
 // Connect 账户健康检查：对比本地状态与 Stripe 远端状态
 // ---------------------------------------------------------------------------
 
+export interface ConnectAccountHealthDiagnostic {
+  chargesEnabled: { local: boolean; remote: boolean } | null;
+  payoutsEnabled: { local: boolean; remote: boolean } | null;
+  requirementsAttention: string[];
+}
+
 export interface ConnectAccountHealthEntry {
   providerAccountId: string;
   userId: string;
@@ -550,6 +556,7 @@ export interface ConnectAccountHealthEntry {
   drifted: boolean;
   resynced: boolean;
   error: string | null;
+  diagnostic: ConnectAccountHealthDiagnostic | null;
 }
 
 export interface ConnectAccountHealthResult {
@@ -588,6 +595,10 @@ export async function checkConnectAccountHealth(options?: {
       defaultCurrency: true,
       displayNameSnapshot: true,
       onboardingCompletedAt: true,
+      chargesEnabled: true,
+      payoutsEnabled: true,
+      requirementsPastDue: true,
+      requirementsCurrentlyDue: true,
     },
   });
 
@@ -602,6 +613,47 @@ export async function checkConnectAccountHealth(options?: {
       const remote = await stripe.accounts.retrieve(local.providerAccountId);
       const remoteStatus = deriveStripeAccountStatus(remote);
       const hasDrift = local.status !== remoteStatus;
+      const isDeleted = "deleted" in remote && remote.deleted;
+
+      // Build diagnostic detail
+      const remoteChargesEnabled = isDeleted ? false : remote.charges_enabled;
+      const remotePayoutsEnabled = isDeleted ? false : remote.payouts_enabled;
+      const remotePastDue = isDeleted ? [] : (remote.requirements?.past_due || []);
+      const remoteCurrentlyDue = isDeleted ? [] : (remote.requirements?.currently_due || []);
+      const requirementsAttention = [...remotePastDue, ...remoteCurrentlyDue];
+
+      const chargesChanged = local.chargesEnabled !== remoteChargesEnabled;
+      const payoutsChanged = local.payoutsEnabled !== remotePayoutsEnabled;
+
+      const diagnostic: ConnectAccountHealthDiagnostic = {
+        chargesEnabled: chargesChanged
+          ? { local: local.chargesEnabled, remote: remoteChargesEnabled }
+          : null,
+        payoutsEnabled: payoutsChanged
+          ? { local: local.payoutsEnabled, remote: remotePayoutsEnabled }
+          : null,
+        requirementsAttention,
+      };
+
+      // Diagnostic logging
+      if (chargesChanged) {
+        console.warn(
+          `[connect-health] capability change: account=${local.providerAccountId} ` +
+            `chargesEnabled: ${local.chargesEnabled}→${remoteChargesEnabled}`
+        );
+      }
+      if (payoutsChanged) {
+        console.warn(
+          `[connect-health] capability change: account=${local.providerAccountId} ` +
+            `payoutsEnabled: ${local.payoutsEnabled}→${remotePayoutsEnabled}`
+        );
+      }
+      if (remotePastDue.length > 0) {
+        console.warn(
+          `[connect-health] requirements attention: account=${local.providerAccountId} ` +
+            `pastDue=[${remotePastDue.join(", ")}]`
+        );
+      }
 
       let didResync = false;
 
@@ -630,6 +682,7 @@ export async function checkConnectAccountHealth(options?: {
         drifted: hasDrift,
         resynced: didResync,
         error: null,
+        diagnostic,
       });
     } catch (err) {
       errors += 1;
@@ -645,6 +698,7 @@ export async function checkConnectAccountHealth(options?: {
         drifted: false,
         resynced: false,
         error: message,
+        diagnostic: null,
       });
     }
   }
