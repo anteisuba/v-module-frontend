@@ -390,7 +390,7 @@ function serializeOrderRefund(
   };
 }
 
-function serializeOrderDispute(
+export function serializeOrderDispute(
   dispute: {
     id: string;
     userId: string | null;

@@ -141,3 +141,20 @@ export function createStripeConnectPayoutEvent(options?: {
     },
   };
 }
+
+export function createStripeDisputeUpdateResult(options?: {
+  disputeId?: string;
+  status?: string;
+  evidence?: Record<string, unknown>;
+}) {
+  return {
+    id: options?.disputeId || "du_test_123",
+    object: "dispute" as const,
+    status: options?.status || "under_review",
+    evidence: options?.evidence || {},
+    amount: 5000,
+    currency: "jpy",
+    reason: "fraudulent",
+    charge: "ch_test_123",
+  };
+}

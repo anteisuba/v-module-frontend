@@ -46,6 +46,12 @@ export default function OrderDetailPage({
   const [refundAmount, setRefundAmount] = useState("");
   const [refundReason, setRefundReason] = useState("");
 
+  // Dispute evidence state
+  const [evidenceDisputeId, setEvidenceDisputeId] = useState<string | null>(null);
+  const [evidenceText, setEvidenceText] = useState<Record<string, string>>({});
+  const [evidenceFiles, setEvidenceFiles] = useState<Record<string, File>>({});
+  const [submittingEvidence, setSubmittingEvidence] = useState(false);
+
   useEffect(() => {
     void (async () => {
       const resolvedParams = await params;
@@ -415,6 +421,85 @@ export default function OrderDetailPage({
     }
   }
 
+  const EVIDENCE_GUIDANCE: Record<string, { summary: string; fields: string[] }> = {
+    fraudulent: {
+      summary: "买方声称未授权此交易",
+      fields: ["customer_name", "customer_email_address", "uncategorized_text", "receipt"],
+    },
+    product_not_received: {
+      summary: "买方声称未收到商品",
+      fields: ["shipping_tracking_number", "shipping_carrier", "shipping_documentation", "uncategorized_text"],
+    },
+    product_unacceptable: {
+      summary: "买方声称商品与描述不符",
+      fields: ["product_description", "uncategorized_text", "customer_communication"],
+    },
+    duplicate: {
+      summary: "买方声称被重复收费",
+      fields: ["uncategorized_text", "receipt"],
+    },
+    general: {
+      summary: "一般性争议",
+      fields: ["uncategorized_text", "product_description", "receipt", "customer_communication"],
+    },
+  };
+
+  const EVIDENCE_FIELD_LABELS: Record<string, string> = {
+    uncategorized_text: "补充说明",
+    product_description: "商品描述",
+    customer_name: "客户姓名",
+    customer_email_address: "客户邮箱",
+    shipping_tracking_number: "物流追踪号",
+    shipping_carrier: "物流公司",
+    receipt: "收据 / 交易凭证",
+    shipping_documentation: "发货 / 签收证明",
+    customer_communication: "客户沟通记录",
+    uncategorized_file: "其他文件",
+  };
+
+  const TEXT_EVIDENCE_FIELDS = [
+    "uncategorized_text", "product_description", "customer_name",
+    "customer_email_address", "shipping_tracking_number", "shipping_carrier",
+  ];
+
+  const FILE_EVIDENCE_FIELDS = [
+    "receipt", "shipping_documentation", "customer_communication", "uncategorized_file",
+  ];
+
+  function isActionableDispute(status: string) {
+    return status === "needs_response" || status === "warning_needs_response";
+  }
+
+  async function handleSubmitEvidence(submit: boolean) {
+    if (!evidenceDisputeId || !order) return;
+
+    if (submit && !confirm("证据一旦提交将无法撤回，确认提交？")) return;
+
+    try {
+      setSubmittingEvidence(true);
+      clearError();
+
+      const result = await shopApi.submitDisputeEvidence(evidenceDisputeId, {
+        textFields: evidenceText,
+        files: evidenceFiles,
+        submit,
+      });
+
+      // Refresh order data
+      const updated = await shopApi.getOrder(order.id);
+      setOrder(updated);
+
+      setEvidenceDisputeId(null);
+      setEvidenceText({});
+      setEvidenceFiles({});
+      showToast(result.submitted ? "证据已提交至 Stripe" : "证据草稿已保存");
+    } catch (err) {
+      handleError(err);
+    } finally {
+      setSubmittingEvidence(false);
+    }
+  }
+
   if (userLoading || loading) {
     return (
       <main className="relative min-h-screen w-full overflow-hidden">
@@ -694,6 +779,126 @@ export default function OrderDetailPage({
                           <div>更新 {formatDate(dispute.updatedAt)}</div>
                         </div>
                       </div>
+
+                      {/* Evidence submit button */}
+                      {isActionableDispute(dispute.status) && evidenceDisputeId !== dispute.externalDisputeId && (
+                        <div className="mt-3 border-t border-black/5 pt-3">
+                          <Button
+                            variant="primary"
+                            onClick={() => {
+                              setEvidenceDisputeId(dispute.externalDisputeId);
+                              setEvidenceText({});
+                              setEvidenceFiles({});
+                            }}
+                            data-testid="dispute-evidence-open"
+                          >
+                            提交证据
+                          </Button>
+                        </div>
+                      )}
+
+                      {/* Evidence form */}
+                      {evidenceDisputeId === dispute.externalDisputeId && (
+                        <div className="mt-3 space-y-3 border-t border-black/5 pt-3" data-testid="dispute-evidence-form">
+                          {/* Guidance */}
+                          <div className="rounded-lg bg-[color:var(--editorial-accent)]/5 p-3 text-xs text-[color:var(--editorial-muted)]">
+                            {(EVIDENCE_GUIDANCE[dispute.reason || "general"] || EVIDENCE_GUIDANCE.general).summary}
+                          </div>
+
+                          {/* Text fields */}
+                          {TEXT_EVIDENCE_FIELDS.filter((f) =>
+                            (EVIDENCE_GUIDANCE[dispute.reason || "general"] || EVIDENCE_GUIDANCE.general).fields.includes(f)
+                          ).map((fieldName) => (
+                            <div key={fieldName}>
+                              <label className="mb-1 block text-xs font-medium text-[color:var(--editorial-muted)]">
+                                {EVIDENCE_FIELD_LABELS[fieldName]}
+                              </label>
+                              {fieldName === "uncategorized_text" || fieldName === "product_description" ? (
+                                <textarea
+                                  value={evidenceText[fieldName] || ""}
+                                  onChange={(e) => setEvidenceText((prev) => ({ ...prev, [fieldName]: e.target.value }))}
+                                  rows={3}
+                                  className="w-full rounded-lg border border-black/10 bg-white px-3 py-2 text-sm text-[color:var(--editorial-text)]"
+                                  disabled={submittingEvidence}
+                                  data-testid={`evidence-${fieldName}`}
+                                />
+                              ) : (
+                                <Input
+                                  value={evidenceText[fieldName] || ""}
+                                  onChange={(e) => setEvidenceText((prev) => ({ ...prev, [fieldName]: e.target.value }))}
+                                  disabled={submittingEvidence}
+                                  data-testid={`evidence-${fieldName}`}
+                                />
+                              )}
+                            </div>
+                          ))}
+
+                          {/* File fields */}
+                          {FILE_EVIDENCE_FIELDS.filter((f) =>
+                            (EVIDENCE_GUIDANCE[dispute.reason || "general"] || EVIDENCE_GUIDANCE.general).fields.includes(f)
+                          ).map((fieldName) => (
+                            <div key={fieldName}>
+                              <label className="mb-1 block text-xs font-medium text-[color:var(--editorial-muted)]">
+                                {EVIDENCE_FIELD_LABELS[fieldName]}
+                              </label>
+                              <input
+                                type="file"
+                                accept="image/*,application/pdf"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (file) {
+                                    if (file.size > 4 * 1024 * 1024) {
+                                      showToast("文件不能超过 4MB");
+                                      e.target.value = "";
+                                      return;
+                                    }
+                                    setEvidenceFiles((prev) => ({ ...prev, [fieldName]: file }));
+                                  }
+                                }}
+                                className="w-full text-xs text-[color:var(--editorial-muted)]"
+                                disabled={submittingEvidence}
+                                data-testid={`evidence-file-${fieldName}`}
+                              />
+                              {evidenceFiles[fieldName] && (
+                                <div className="mt-1 text-[11px] text-[color:var(--editorial-muted)]">
+                                  已选: {evidenceFiles[fieldName].name}
+                                </div>
+                              )}
+                            </div>
+                          ))}
+
+                          {/* Actions */}
+                          <div className="flex items-center justify-end gap-2">
+                            <Button
+                              variant="secondary"
+                              onClick={() => {
+                                setEvidenceDisputeId(null);
+                                setEvidenceText({});
+                                setEvidenceFiles({});
+                              }}
+                              disabled={submittingEvidence}
+                            >
+                              取消
+                            </Button>
+                            <Button
+                              variant="secondary"
+                              onClick={() => handleSubmitEvidence(false)}
+                              loading={submittingEvidence}
+                              data-testid="evidence-save-draft"
+                            >
+                              保存草稿
+                            </Button>
+                            <Button
+                              variant="primary"
+                              onClick={() => handleSubmitEvidence(true)}
+                              loading={submittingEvidence}
+                              data-testid="evidence-submit"
+                            >
+                              提交证据
+                            </Button>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   ))
                 )}

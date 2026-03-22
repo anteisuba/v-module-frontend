@@ -35,6 +35,7 @@ import type {
   PaymentSettlementSyncResult,
   Product as ShopProduct,
   SerializedOrder,
+  SerializedOrderDispute,
   SerializedOrderRefund,
 } from "@/domain/shop";
 import type {
@@ -1086,6 +1087,34 @@ export const shopApi = {
       start: data.start || null,
       end: data.end || null,
     });
+  },
+
+  async submitDisputeEvidence(
+    disputeId: string,
+    data: {
+      textFields: Record<string, string>;
+      files: Record<string, File>;
+      submit: boolean;
+    }
+  ): Promise<{ dispute: SerializedOrderDispute; submitted: boolean }> {
+    const formData = new FormData();
+
+    for (const [key, value] of Object.entries(data.textFields)) {
+      if (value?.trim()) {
+        formData.append(key, value.trim());
+      }
+    }
+
+    for (const [key, file] of Object.entries(data.files)) {
+      formData.append(key, file);
+    }
+
+    formData.append("submit", String(data.submit));
+
+    return apiClient.upload(
+      `/api/shop/disputes/${disputeId}/evidence`,
+      formData
+    );
   },
 };
 

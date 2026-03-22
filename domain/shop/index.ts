@@ -53,6 +53,7 @@ export {
   type SerializedOrderPaymentAttempt,
   type SerializedOrderRefund,
   type SerializedOrderDispute,
+  serializeOrderDispute,
 } from "./services";
 
 export {
@@ -85,6 +86,17 @@ export {
   type StripeDisputeSyncResult,
   type DisputeEvidenceGuidance,
 } from "./disputes";
+
+export {
+  submitDisputeEvidence,
+  DisputeEvidenceError,
+  type DisputeEvidenceTextFields,
+  type DisputeEvidenceFileFieldName,
+  type DisputeEvidenceFileField,
+  type SubmitDisputeEvidenceInput,
+  type SubmitDisputeEvidenceResult,
+  type DisputeEvidenceErrorCode,
+} from "./dispute-evidence";
 
 export {
   buildPaymentAnomaliesCsv,
