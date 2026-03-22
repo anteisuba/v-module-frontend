@@ -43,9 +43,9 @@ test("opens dispute evidence form, fills text, and saves draft", async ({
     ],
   });
 
-  // Mock order detail API
+  // Mock order detail API (must wrap in { order } to match API shape)
   await page.route("**/api/shop/orders/order-dispute-1", async (route) => {
-    await fulfillJson(route, orderWithDispute);
+    await fulfillJson(route, { order: orderWithDispute });
   });
 
   // Mock evidence submission API
