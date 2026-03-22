@@ -14,6 +14,8 @@ const eslintConfig = defineConfig([
     "next-env.d.ts",
     "playwright-report/**",
     "test-results/**",
+    // Claude Code worktrees (local only, never in CI)
+    ".claude/worktrees/**",
   ]),
 ]);
 
