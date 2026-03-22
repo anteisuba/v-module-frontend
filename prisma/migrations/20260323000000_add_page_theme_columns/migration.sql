@@ -1,0 +1,3 @@
+-- AlterTable
+ALTER TABLE "Page" ADD COLUMN "themeColor" TEXT NOT NULL DEFAULT '#000000';
+ALTER TABLE "Page" ADD COLUMN "fontFamily" TEXT NOT NULL DEFAULT 'Inter';
