@@ -21,7 +21,7 @@ const HeroSectionPropsSchema = z.object({
         alt: z.string().optional(),
         href: z.string().optional(),
         objectPosition: z.string().optional(), // 图片位置
-        heightVh: z.number().min(20).max(100).optional(), // 单张 slide 高度（vh）
+        heightVh: z.number().min(20).max(300).optional(), // 单张 slide 高度（vh）
       })
     )
     .max(10), // 允许空数组，最多 10 张

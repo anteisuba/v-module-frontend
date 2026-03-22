@@ -94,7 +94,7 @@ export default function PageRenderer({ config }: { config: PageConfig }) {
 
           // Full: 脱离 container，充满整个页面宽度，不加 card 样式
           return (
-            <div key={group.section.id} className="relative w-full overflow-hidden">
+            <div key={group.section.id} className="relative w-full overflow-clip">
               {rendered}
             </div>
           );

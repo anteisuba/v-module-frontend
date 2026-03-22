@@ -1129,9 +1129,10 @@ export default function HeroSectionEditor({
                           disabled={isUploading || disabled}
                           onClick={() => {
                             const { w, h } = imageDimensions[index];
-                            // 根据图片宽高比和 16:9 屏幕估算合适的 vh
-                            const aspectVh = Math.round((h / w) * (16 / 9) * 100);
-                            const clamped = Math.min(Math.max(aspectVh, 20), 100);
+                            const vw = window.innerWidth;
+                            const vHeight = window.innerHeight;
+                            const aspectVh = Math.round((h / w) * (vw / vHeight) * 100);
+                            const clamped = Math.min(Math.max(aspectVh, 20), 300);
                             updateHeroSlide(index, { heightVh: clamped });
                           }}
                         >
@@ -1182,7 +1183,7 @@ export default function HeroSectionEditor({
                   <input
                     type="range"
                     min="20"
-                    max="100"
+                    max="300"
                     value={slide?.heightVh ?? (heroSection?.type === "hero" ? (heroSection.props.layout?.heightVh ?? 100) : 100)}
                     onChange={(e) =>
                       updateHeroSlide(index, { heightVh: parseInt(e.target.value) })

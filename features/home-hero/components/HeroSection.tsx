@@ -99,12 +99,21 @@ export default function HeroSection({
   const sectionRef = useRef<HTMLElement | null>(null);
   const { progress, vh } = useStickyProgress(sectionRef);
 
-  // 当前 slide 的可见高度：优先使用 slide 级别的 heightVh，否则 fallback 到 section 全局值
+  // 当前 slide 的图片总高度（用于视差滚动距离），允许 20-300vh
   const currentSlideHeightVh = current?.heightVh != null
-    ? Math.min(Math.max(current.heightVh, 20), 100)
+    ? Math.min(Math.max(current.heightVh, 20), 300)
     : visibleHeightVh;
-  // 视差由用户通过 layout.parallax 显式控制
-  const currentScrollHeightVh = parallaxEnabled ? 150 : currentSlideHeightVh;
+
+  // 视差模式：
+  //   section 高度 = 图片总高度（提供滚动距离）
+  //   可见窗口 = layout.heightVh（sticky，用户在视口中看到的区域）
+  //   视差距离 = 图片总高度 - 可见窗口
+  // 非视差模式：
+  //   section 高度 = 可见窗口 = visibleHeightVh（忽略 per-slide heightVh）
+  const sectionHeightVh = parallaxEnabled
+    ? Math.max(currentSlideHeightVh, visibleHeightVh)
+    : visibleHeightVh;
+  const viewportHeightVh = visibleHeightVh;
 
   return (
     <section
@@ -112,18 +121,16 @@ export default function HeroSection({
       id="top"
       className="relative w-full"
       style={{
-        // 全屏视差时：section 150vh 高（多出 50vh 供视差滚动）
-        // 非全屏时：section 高度 = 可见高度（无视差）
-        height: `${currentScrollHeightVh}vh`,
+        height: `${sectionHeightVh}vh`,
         backgroundColor: backgroundColorWithOpacity,
         transition: "height 0.4s ease",
       }}
     >
       <div
         className={parallaxEnabled ? "sticky top-0 w-full overflow-hidden" : "relative w-full overflow-hidden"}
-        style={{ height: `${currentSlideHeightVh}vh`, transition: "height 0.4s ease" }}
+        style={{ height: `${viewportHeightVh}vh`, transition: "height 0.4s ease" }}
       >
-        {/* 背景图片轮播：仅在有多张图片时显示 */}
+        {/* 背景图片轮播 */}
         {current && current.src && (
           <HeroBackground
             src={current.src}
@@ -133,7 +140,7 @@ export default function HeroSection({
             objectPosition={current.objectPosition}
             progress={progress}
             vh={vh}
-            imageHeightVh={currentScrollHeightVh}
+            imageHeightVh={sectionHeightVh}
           />
         )}
 

@@ -138,7 +138,7 @@ nextjs-portal {
 .editorial-shell {
   position: relative;
   min-height: 100vh;
-  overflow: hidden;
+  overflow: clip;
   color: var(--editorial-text);
   background:
     radial-gradient(circle at 14% 20%, rgba(201, 169, 110, 0.18), transparent 28%),
