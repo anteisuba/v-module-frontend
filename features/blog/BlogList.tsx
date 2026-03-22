@@ -106,10 +106,11 @@ export default function BlogList({ posts, userSlug, backgroundStyle }: BlogListP
         </div>
 
         {posts.length === 0 ? (
-          <div className="reveal editorial-panel px-6 py-16 text-center">
-            <p className="font-serif text-3xl font-light text-white">暂无已发布的博客文章</p>
-            <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-white/56">
-              提示：请确保在编辑博客时勾选&quot;已发布&quot;选项
+          <div className="reveal editorial-panel px-6 py-20 text-center">
+            <p className="font-serif text-5xl font-extralight tracking-widest text-white/25">{'\u2726'}</p>
+            <p className="mt-6 font-serif text-3xl font-light text-white">尚未发布任何文章</p>
+            <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-white/50">
+              创作者正在酝酿中，敬请期待。
             </p>
           </div>
         ) : (

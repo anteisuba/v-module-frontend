@@ -150,10 +150,11 @@ export default function ProductList({ products, userSlug, backgroundStyle }: Pro
         </div>
 
         {products.length === 0 ? (
-          <div className="reveal editorial-panel px-6 py-16 text-center">
-            <p className="font-serif text-3xl font-light text-white">暂无已发布的商品</p>
-            <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-white/56">
-              提示：请确保商品状态设置为“已发布”
+          <div className="reveal editorial-panel px-6 py-20 text-center">
+            <p className="font-serif text-5xl font-extralight tracking-widest text-white/25">{'\u2726'}</p>
+            <p className="mt-6 font-serif text-3xl font-light text-white">商品即将上架</p>
+            <p className="mx-auto mt-4 max-w-xl text-sm leading-7 text-white/50">
+              创作者正在准备中，敬请关注。
             </p>
           </div>
         ) : (

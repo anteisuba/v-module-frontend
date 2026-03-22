@@ -207,7 +207,7 @@ export default function OrdersPage() {
   return (
     <main
       data-testid="admin-orders-page"
-      className="relative min-h-screen w-full overflow-hidden"
+      className="editorial-shell--light relative min-h-screen w-full overflow-hidden"
     >
       {/* 背景 */}
       <div className="absolute inset-0">
@@ -215,7 +215,7 @@ export default function OrdersPage() {
           className="absolute inset-0 bg-cover bg-center"
           style={{ backgroundImage: "url(/login/login-c.jpeg)" }}
         />
-        <div className="absolute inset-0 bg-white/70" />
+        <div className="absolute inset-0 bg-white/88" />
         <div className="absolute inset-0 bg-gradient-to-b from-black/10 via-transparent to-black/15" />
       </div>
 
@@ -226,7 +226,7 @@ export default function OrdersPage() {
         </div>
 
         {/* 头部 */}
-        <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+        <div className="mb-6 mt-14 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
           <div>
             <h1 className="text-2xl font-bold text-[color:var(--editorial-text)]">订单管理</h1>
             <p className="mt-1 text-sm text-[color:var(--editorial-muted)]">管理您的所有订单</p>
@@ -335,11 +335,17 @@ export default function OrdersPage() {
 
         {/* 订单列表 */}
         {orders.length === 0 ? (
-          <div className="rounded-2xl border border-black/10 bg-white/55 p-12 text-center backdrop-blur-xl">
-            <p className="text-[color:var(--editorial-muted)]">
+          <div className="rounded-2xl border border-black/10 bg-white/55 p-16 text-center backdrop-blur-xl">
+            <p className="font-serif text-4xl font-extralight tracking-widest text-black/15">{'\u2726'}</p>
+            <p className="mt-4 text-lg font-medium text-[color:var(--editorial-text)]">
               {debouncedQuery || statusFilter !== "ALL"
                 ? "当前筛选条件下没有订单"
                 : "暂无订单"}
+            </p>
+            <p className="mt-2 text-sm text-[color:var(--editorial-muted)]">
+              {debouncedQuery || statusFilter !== "ALL"
+                ? "尝试调整筛选条件查看更多"
+                : "当有买家下单后，订单将在这里显示"}
             </p>
           </div>
         ) : (

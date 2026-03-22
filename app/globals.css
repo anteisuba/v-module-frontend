@@ -119,7 +119,7 @@ h6,
   font-family: var(--font-display), Georgia, serif;
   font-weight: 300;
   letter-spacing: 0.02em;
-  line-height: 0.95;
+  line-height: 1.1;
 }
 
 button {
@@ -223,12 +223,13 @@ nextjs-portal {
 
 .editorial-hero-title {
   font-size: var(--text-hero);
+  font-weight: 400;
   letter-spacing: var(--tracking-hero);
 }
 
 .editorial-subtitle {
   max-width: 38rem;
-  color: color-mix(in srgb, var(--editorial-text) 86%, transparent);
+  color: color-mix(in srgb, var(--editorial-text) 92%, transparent);
   font-size: 1rem;
   line-height: 1.9;
 }

@@ -315,11 +315,15 @@ function ShopPageContent() {
       description: t("admin.editorScaffold.panels.list.description"),
       content:
         products.length === 0 ? (
-          <div className="rounded-2xl border border-black/10 bg-white/55 p-12 text-center backdrop-blur-xl">
-            <p className="text-[color:var(--editorial-muted)]">{t("shop.list.empty")}</p>
+          <div className="rounded-2xl border border-black/10 bg-white/55 p-16 text-center backdrop-blur-xl">
+            <p className="font-serif text-4xl font-extralight tracking-widest text-black/15">{'\u2726'}</p>
+            <p className="mt-4 text-lg font-medium text-[color:var(--editorial-text)]">{t("shop.list.empty")}</p>
+            <p className="mt-2 text-sm text-[color:var(--editorial-muted)]">
+              上架你的第一件商品，开启你的店铺
+            </p>
             <button
               onClick={() => router.push("/admin/shop/new")}
-              className="mt-4 rounded-lg bg-black px-4 py-2 text-sm font-medium text-white hover:bg-black/90"
+              className="mt-6 rounded-lg bg-black px-5 py-2.5 text-sm font-medium text-white hover:bg-black/90"
             >
               {t("shop.create")}
             </button>
