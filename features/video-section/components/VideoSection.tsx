@@ -21,7 +21,6 @@ export default function VideoSection({ props }: VideoSectionPropsInternal) {
   const paddingY = layout?.paddingY ?? 64;
   const backgroundColor = layout?.backgroundColor || "#000000";
   const backgroundOpacity = layout?.backgroundOpacity ?? 1;
-  const maxWidth = layout?.maxWidth || "7xl";
   const aspectRatio = layout?.aspectRatio || "16:9";
   
   // 显示配置
@@ -42,20 +41,6 @@ export default function VideoSection({ props }: VideoSectionPropsInternal) {
   
   const rgb = hexToRgb(backgroundColor);
   const backgroundColorWithOpacity = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${backgroundOpacity})`;
-  
-  // 将 maxWidth 字符串转换为样式
-  const maxWidthStyle: React.CSSProperties =
-    maxWidth === "full"
-      ? { maxWidth: "100%" }
-      : maxWidth === "7xl"
-        ? { maxWidth: "80rem" }
-        : maxWidth === "6xl"
-          ? { maxWidth: "72rem" }
-          : maxWidth === "5xl"
-            ? { maxWidth: "64rem" }
-            : maxWidth === "4xl"
-              ? { maxWidth: "56rem" }
-              : { maxWidth: "80rem" };
   
   // 宽高比类名
   const aspectRatioClass =

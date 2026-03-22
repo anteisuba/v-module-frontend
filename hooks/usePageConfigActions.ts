@@ -54,8 +54,6 @@ export function usePageConfigActions({
     } finally {
       setSaving(false);
     }
-  // configRef 永远指向最新 config，不需要放进 deps
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setConfig, themeColor, fontFamily, onError, onToast]);
 
   const publish = useCallback(async () => {
@@ -86,8 +84,6 @@ export function usePageConfigActions({
     } finally {
       setPublishing(false);
     }
-  // configRef 永远指向最新 config，不需要放进 deps
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [setConfig, themeColor, fontFamily, onError, onToast]);
 
   return {

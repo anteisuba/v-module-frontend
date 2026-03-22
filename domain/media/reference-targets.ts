@@ -24,9 +24,7 @@ function getPageConfigTarget(field: string): MediaAssetReferenceTarget {
   if (field.startsWith("background.")) {
     return {
       href: buildHref("/admin/cms", {
-        tab: "page",
         panel: "background",
-        focus: "page-background",
       }),
     };
   }
@@ -34,9 +32,7 @@ function getPageConfigTarget(field: string): MediaAssetReferenceTarget {
   if (field.startsWith("logo.")) {
     return {
       href: buildHref("/admin/cms", {
-        tab: "page",
-        panel: "hero",
-        focus: "hero-logo",
+        section: "hero",
       }),
     };
   }
@@ -44,9 +40,7 @@ function getPageConfigTarget(field: string): MediaAssetReferenceTarget {
   if (field.startsWith("newsBackground.")) {
     return {
       href: buildHref("/admin/cms", {
-        tab: "content",
         panel: "articles",
-        focus: "news-background",
       }),
     };
   }
@@ -90,9 +84,7 @@ function getPageConfigTarget(field: string): MediaAssetReferenceTarget {
   if (field.includes(".props.slides[")) {
     return {
       href: buildHref("/admin/cms", {
-        tab: "page",
-        panel: "hero",
-        focus: "hero-slides",
+        section: "hero",
       }),
     };
   }
@@ -100,9 +92,7 @@ function getPageConfigTarget(field: string): MediaAssetReferenceTarget {
   if (field.includes(".props.items[")) {
     return {
       href: buildHref("/admin/cms", {
-        tab: "content",
-        panel: "news",
-        focus: "news-items",
+        panel: "articles",
       }),
     };
   }
@@ -134,10 +124,8 @@ export function getMediaAssetReferenceTarget(
     case "NEWS_ARTICLE_BACKGROUND":
       return {
         href: buildHref("/admin/cms", {
-          tab: "content",
           panel: "articles",
           articleId: reference.entityId,
-          focus: "news-article-background",
         }),
       };
     default:

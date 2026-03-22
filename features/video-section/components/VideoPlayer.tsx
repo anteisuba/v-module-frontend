@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { useEffect, useMemo, useState, type ComponentProps } from "react";
+import { useMemo, useState, type ComponentProps } from "react";
 import BilibiliPlayer from "./BilibiliPlayer";
 import { detectPlatform, normalizeVideoUrl } from "../utils/urlParser";
 import type { VideoItem, VideoPlatform } from "../types";

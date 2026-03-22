@@ -50,11 +50,6 @@ export default function HeroSection({
   // 实际渲染时通过 style 动态覆盖。
   const globalHeightVh = Math.min(Math.max(layout?.heightVh ?? 100, 30), 100);
 
-  // 当可见高度 = 100vh 时自动开启视差：图片额外高出 50vh，供滚动时移动
-  // 当可见高度 < 100vh 时图片精确填满可见区域，无视差
-  const parallaxEnabled = globalHeightVh >= 100;
-  const HERO_SCROLL_HEIGHT_VH = parallaxEnabled ? 150 : globalHeightVh;
-  const HERO_IMAGE_HEIGHT_VH = HERO_SCROLL_HEIGHT_VH;
   // visibleHeightVh 保留兼容
   const visibleHeightVh = globalHeightVh;
   const backgroundColor = layout?.backgroundColor || "#000000";
