@@ -21,6 +21,7 @@ const HeroSectionPropsSchema = z.object({
         alt: z.string().optional(),
         href: z.string().optional(),
         objectPosition: z.string().optional(), // 图片位置
+        heightVh: z.number().min(20).max(100).optional(), // 单张 slide 高度（vh）
       })
     )
     .max(10), // 允许空数组，最多 10 张
@@ -31,6 +32,7 @@ const HeroSectionPropsSchema = z.object({
       heightVh: z.number().min(50).max(300).optional(), // 高度（vh），50-300
       backgroundColor: z.string().optional(), // 背景颜色
       backgroundOpacity: z.number().min(0).max(1).optional(), // 背景透明度 0-1
+      parallax: z.boolean().optional(), // 是否开启视差滚动
     })
     .optional(),
   carousel: z
@@ -189,6 +191,7 @@ export const PageConfigSchema = z.object({
       src: z.string().optional(),
       alt: z.string().optional(),
       opacity: z.number().min(0).max(1).optional(), // Logo 透明度 0-1
+      size: z.number().min(24).max(120).optional(), // Logo 显示尺寸（px）
     })
     .optional(),
   socialLinks: z.array(SocialLinkItemSchema).max(10).optional(), // 最多 10 个社交链接

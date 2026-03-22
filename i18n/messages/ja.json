@@ -521,8 +521,9 @@
       "backgroundColor": "背景色",
       "backgroundColorHelp": "Hero エリアの背景色を選択",
       "backgroundOpacity": "背景透明度：",
-      "parallax": "パララックス",
-      "heightHint": "100vh = 全画面、パララックススクロール自動有効"
+      "parallax": "パララックススクロール",
+      "parallaxHint": "パララックススクロール効果を有効にする",
+      "heightHint": "Hero エリアの表示高さを制御"
     },
     "slides": {
       "title": "スライド画像",
@@ -541,7 +542,10 @@
       "noImage": "画像がありません",
       "height": "表示高さ",
       "heightDefault": "グローバルに従う",
-      "heightReset": "リセット"
+      "heightReset": "リセット",
+      "originalSize": "元のサイズ",
+      "detectSize": "画像サイズを検出",
+      "fitImage": "画像に合わせる"
     }
   },
   "newsSectionEditor": {

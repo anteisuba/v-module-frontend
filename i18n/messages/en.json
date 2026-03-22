@@ -521,8 +521,9 @@
       "backgroundColor": "Background Color",
       "backgroundColorHelp": "Select the background color for the Hero section",
       "backgroundOpacity": "Background Opacity:",
-      "parallax": "parallax",
-      "heightHint": "100vh = full screen with automatic parallax scroll"
+      "parallax": "Parallax Scroll",
+      "parallaxHint": "Enable parallax scrolling effect for hero images",
+      "heightHint": "Controls the visible height of the Hero section"
     },
     "slides": {
       "title": "Carousel Images",
@@ -541,7 +542,10 @@
       "noImage": "No image",
       "height": "Display Height",
       "heightDefault": "Follow Global",
-      "heightReset": "Reset"
+      "heightReset": "Reset",
+      "originalSize": "Original Size",
+      "detectSize": "Detect Image Size",
+      "fitImage": "Fit to Image"
     }
   },
   "newsSectionEditor": {

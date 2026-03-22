@@ -53,8 +53,8 @@ export default async function PreviewPage({
 
   return (
     <ThemeProvider themeColor={themeColor} fontFamily={fontFamily}>
-      {/* FloatingMenu：与公开页保持一致，使用 draftConfig 中的 logo/showLogo */}
-      <FloatingMenu logo={config.logo} showLogo={config.showLogo !== false} />
+      {/* FloatingMenu：Menu 按钮，Logo 由 HeroSection 内部渲染 */}
+      <FloatingMenu />
       <Suspense fallback={<div className="flex h-screen items-center justify-center text-sm text-gray-400">Loading…</div>}>
         <PageRenderer config={config} />
       </Suspense>

@@ -521,8 +521,9 @@
       "backgroundColor": "背景颜色",
       "backgroundColorHelp": "选择 Hero 区域的背景颜色",
       "backgroundOpacity": "背景透明度：",
-      "parallax": "视差",
-      "heightHint": "100vh = 全屏，自动开启视差滚动效果"
+      "parallax": "视差滚动",
+      "parallaxHint": "开启后图片会随滚动产生视差效果",
+      "heightHint": "控制 Hero 区域的可见高度"
     },
     "slides": {
       "title": "轮播图片",
@@ -541,7 +542,10 @@
       "noImage": "暂无图片",
       "height": "显示高度",
       "heightDefault": "跟随全局",
-      "heightReset": "恢复默认"
+      "heightReset": "恢复默认",
+      "originalSize": "原始尺寸",
+      "detectSize": "检测图片尺寸",
+      "fitImage": "适配图片"
     }
   },
   "newsSectionEditor": {

@@ -20,9 +20,10 @@ export type HeroSectionProps = {
   subtitle?: string;
   // 布局配置
   layout?: {
-    heightVh?: number; // 高度（vh单位），默认 150
+    heightVh?: number; // 高度（vh单位），默认 100
     backgroundColor?: string; // 背景颜色，默认 "black"
     backgroundOpacity?: number; // 背景透明度（0-1），默认 1
+    parallax?: boolean; // 是否开启视差滚动，默认 false
   };
   // 轮播配置
   carousel?: {

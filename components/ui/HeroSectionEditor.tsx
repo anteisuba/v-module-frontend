@@ -89,6 +89,7 @@ export default function HeroSectionEditor({
   const [deleteSocialLinkIndex, setDeleteSocialLinkIndex] = useState<number | null>(null);
   const [logoPickerOpen, setLogoPickerOpen] = useState(false);
   const [slidePickerIndex, setSlidePickerIndex] = useState<number | null>(null);
+  const [imageDimensions, setImageDimensions] = useState<Record<number, { w: number; h: number }>>({}); // 图片自然尺寸缓存
   useScrollToElement(focusTarget === "hero-logo", "hero-logo-editor");
   useScrollToElement(focusTarget === "hero-slides", "hero-slides-editor");
   // 获取 hero section
@@ -821,11 +822,6 @@ export default function HeroSectionEditor({
               </label>
               <span className="text-xs font-semibold text-black">
                 {Math.min(heroSection?.props.layout?.heightVh ?? 100, 100)} vh
-                {(heroSection?.props.layout?.heightVh ?? 100) >= 100 && (
-                  <span className="ml-1.5 text-[9px] font-normal text-black/40 uppercase tracking-wide">
-                    {t("heroEditor.layout.parallax")}
-                  </span>
-                )}
               </span>
             </div>
             <input
@@ -856,9 +852,42 @@ export default function HeroSectionEditor({
               className="w-full h-2 bg-black/10 rounded-lg appearance-none cursor-pointer accent-black"
               disabled={disabled}
             />
-            <p className="text-[10px] text-black/40">
-              {t("heroEditor.layout.heightHint")}
-            </p>
+          </div>
+          {/* 视差开关 */}
+          <div className="flex items-center justify-between">
+            <div>
+              <label className="text-xs font-medium text-black">
+                {t("heroEditor.layout.parallax")}
+              </label>
+              <p className="text-[10px] text-black/40">
+                {t("heroEditor.layout.parallaxHint")}
+              </p>
+            </div>
+            <ToggleSwitch
+              enabled={heroSection?.props.layout?.parallax === true}
+              onChange={() => {
+                const heroSection = ensureHeroSection();
+                const current = heroSection.type === "hero" ? heroSection.props.layout?.parallax : false;
+                onConfigChange({
+                  ...config,
+                  sections: config.sections.map((s) =>
+                    s.id === heroSection.id && s.type === "hero"
+                      ? {
+                          ...s,
+                          props: {
+                            ...s.props,
+                            layout: {
+                              ...s.props.layout,
+                              parallax: !current,
+                            },
+                          },
+                        }
+                      : s
+                  ),
+                });
+              }}
+              disabled={disabled}
+            />
           </div>
           {/* 背景透明度 */}
           <div className="space-y-2">
@@ -1085,6 +1114,50 @@ export default function HeroSectionEditor({
                     </div>
                   )}
                 </div>
+
+                {/* 图片原始尺寸检测 */}
+                {slide?.src && (
+                  <div className="mb-2">
+                    {imageDimensions[index] ? (
+                      <div className="flex items-center justify-between">
+                        <span className="text-[10px] text-black/40">
+                          {t("heroEditor.slides.originalSize")}：{imageDimensions[index].w} × {imageDimensions[index].h}px
+                        </span>
+                        <button
+                          type="button"
+                          className="text-[10px] text-black/50 hover:text-black/80 underline"
+                          disabled={isUploading || disabled}
+                          onClick={() => {
+                            const { w, h } = imageDimensions[index];
+                            // 根据图片宽高比和 16:9 屏幕估算合适的 vh
+                            const aspectVh = Math.round((h / w) * (16 / 9) * 100);
+                            const clamped = Math.min(Math.max(aspectVh, 20), 100);
+                            updateHeroSlide(index, { heightVh: clamped });
+                          }}
+                        >
+                          {t("heroEditor.slides.fitImage")}
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        className="text-[10px] text-black/50 hover:text-black/80 underline"
+                        onClick={() => {
+                          const img = new window.Image();
+                          img.onload = () => {
+                            setImageDimensions((prev) => ({
+                              ...prev,
+                              [index]: { w: img.naturalWidth, h: img.naturalHeight },
+                            }));
+                          };
+                          img.src = slide.src;
+                        }}
+                      >
+                        {t("heroEditor.slides.detectSize")}
+                      </button>
+                    )}
+                  </div>
+                )}
 
                 {/* 图片高度设置 */}
                 <div className="mb-3">

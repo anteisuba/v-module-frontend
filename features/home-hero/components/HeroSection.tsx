@@ -25,7 +25,7 @@ export default function HeroSection({
   carousel,
 }: {
   initialSlides?: HeroSlide[];
-  logo?: { src?: string; alt?: string; opacity?: number };
+  logo?: { src?: string; alt?: string; opacity?: number; size?: number };
   socialLinks?: SocialLinkItem[];
   title?: string;
   subtitle?: string;
@@ -38,6 +38,7 @@ export default function HeroSection({
     heightVh?: number;
     backgroundColor?: string;
     backgroundOpacity?: number;
+    parallax?: boolean;
   };
   carousel?: {
     autoplayInterval?: number;
@@ -46,16 +47,12 @@ export default function HeroSection({
 }) {
   // 可见高度：优先使用当前 slide 的 heightVh，否则使用 section 级别的 heightVh
   // 兼容旧配置：旧版 heightVh 可能 > 100（视差模式），一律 clamp 到 100
-  // 注意：current 在 useHeroSlides 里计算，这里先用全局值初始化；
-  // 实际渲染时通过 style 动态覆盖。
   const globalHeightVh = Math.min(Math.max(layout?.heightVh ?? 100, 30), 100);
 
-  // 当可见高度 = 100vh 时自动开启视差：图片额外高出 50vh，供滚动时移动
-  // 当可见高度 < 100vh 时图片精确填满可见区域，无视差
-  const parallaxEnabled = globalHeightVh >= 100;
+  // 视差由用户显式控制，默认关闭
+  const parallaxEnabled = layout?.parallax === true;
   const HERO_SCROLL_HEIGHT_VH = parallaxEnabled ? 150 : globalHeightVh;
   const HERO_IMAGE_HEIGHT_VH = HERO_SCROLL_HEIGHT_VH;
-  // visibleHeightVh 保留兼容
   const visibleHeightVh = globalHeightVh;
   const backgroundColor = layout?.backgroundColor || "#000000";
   const backgroundOpacity = layout?.backgroundOpacity ?? 1;
@@ -108,8 +105,8 @@ export default function HeroSection({
   const currentSlideHeightVh = current?.heightVh != null
     ? Math.min(Math.max(current.heightVh, 20), 100)
     : visibleHeightVh;
-  const currentParallaxEnabled = currentSlideHeightVh >= 100;
-  const currentScrollHeightVh = currentParallaxEnabled ? 150 : currentSlideHeightVh;
+  // 视差由用户通过 layout.parallax 显式控制
+  const currentScrollHeightVh = parallaxEnabled ? 150 : currentSlideHeightVh;
 
   return (
     <section
@@ -125,7 +122,7 @@ export default function HeroSection({
       }}
     >
       <div
-        className={currentParallaxEnabled ? "sticky top-0 w-full overflow-hidden" : "relative w-full overflow-hidden"}
+        className={parallaxEnabled ? "sticky top-0 w-full overflow-hidden" : "relative w-full overflow-hidden"}
         style={{ height: `${currentSlideHeightVh}vh`, transition: "height 0.4s ease" }}
       >
         {/* 背景图片轮播：仅在有多张图片时显示 */}
