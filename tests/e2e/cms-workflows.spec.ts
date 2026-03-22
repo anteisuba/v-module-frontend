@@ -7,6 +7,7 @@ import {
   createPageConfig,
   fulfillJson,
   mockCurrentUser,
+  setPublicSiteState,
 } from "./utils/admin";
 
 type DraftSaveRequest = {
@@ -139,6 +140,24 @@ test("saves a CMS draft and publishes the updated page", async ({ page }) => {
   expect(getHeroTitleFromConfig(saveRequests[1].draftConfig)).toBe("直播预告");
   expect(saveRequests[1]?.draftConfig?.hasPublished).toBe(true);
   expect(getHeroTitleFromConfig(publishRequests[0].publishedConfig)).toBe("直播预告");
+
+  // Explicitly set e2e cookie before navigating to public page
+  // (route.fulfill set-cookie may not persist reliably across navigations)
+  await setPublicSiteState(page.context(), {
+    pages: [
+      {
+        slug: "creator",
+        displayName: "Creator",
+        themeColor: currentThemeColor,
+        fontFamily: currentFontFamily,
+        publishedConfig: currentDraft,
+        blogPosts: [],
+        products: [],
+      },
+    ],
+    blogFeed: [],
+    shopCatalog: [],
+  });
 
   await page.goto("/u/creator");
   await page.waitForLoadState("networkidle");
