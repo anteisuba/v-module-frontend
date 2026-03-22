@@ -2,44 +2,127 @@
 
 [![CI](https://github.com/anteisuba/v-module-frontend/actions/workflows/ci.yml/badge.svg)](https://github.com/anteisuba/v-module-frontend/actions/workflows/ci.yml)
 
-`v-module-frontend` 是一个面向 VTuber / 创作者的多用户站点系统，基于 Next.js App Router 提供公开主页、后台 CMS、新闻、博客、商店和订单基础链路。
+A multi-tenant creator site system for VTubers and content creators. Each user gets a customizable public page, a CMS back-office, blog, news, storefront, and order management — all powered by a single Next.js application.
 
-## 技术栈与前提
+## Preview
 
-- Next.js 16 + React 19 + TypeScript
-- Prisma + PostgreSQL
-- `iron-session`、Zod、`next-intl`
-- Node.js `>=20`
-- pnpm `>=8`
+### Public Creator Page
 
-## 快速启动
+![Public Page](./public/readme/public-page.png)
 
-1. `docker compose up -d`
-2. 参考 [`env.example`](./env.example) 配置环境变量
-3. `pnpm install`
-4. `pnpm db:migrate`
-5. `pnpm db:seed`
-6. `pnpm dev`
+### Admin Dashboard
 
-## 当前状态快照
+![Dashboard](./public/readme/dashboard.png)
 
-- 2026-03-14 基线：`pnpm build`、`pnpm check`、`pnpm test`、`pnpm lint` 通过；GitHub Actions 已接入 PR / push 持续集成，README 已展示 CI badge
-- 已覆盖链路：认证、公开页配置、新闻、博客、评论审核、商品、订单、媒体上传 / 媒体库、Stripe Checkout / Webhook / Connect / 对账 / 结算
-- 主要缺口：Stripe Connect 运维闭环增强，以及更细粒度的 CI / flaky 治理
+<details>
+<summary>More screenshots</summary>
 
-## 文档入口
+#### Login
 
-- 人类文档入口：[`docs/README.md`](./docs/README.md)
-- AI 北极星入口：[`CLAUDE.md`](./CLAUDE.md)
-- 中文项目概览：[`docs/zh-CN/overview/project-overview.md`](./docs/zh-CN/overview/project-overview.md)
-- 中文当前状态：[`docs/zh-CN/overview/current-status.md`](./docs/zh-CN/overview/current-status.md)
-- 中文开发命令：[`docs/zh-CN/development/setup-and-commands.md`](./docs/zh-CN/development/setup-and-commands.md)
-- 中文后续待办：[`docs/zh-CN/overview/backlog.md`](./docs/zh-CN/overview/backlog.md)
+![Login](./public/readme/login.png)
 
-## 文档分层说明
+#### CMS Page Editor
 
-- `docs/` 是人类维护者的正式长文档层
-- 根 [`CLAUDE.md`](./CLAUDE.md)、局部 `CLAUDE.md`、[`.claude/skills/`](./.claude/skills) 和 [`.claude/hooks/`](./.claude/hooks) 是 AI / 代理快速建立上下文的入口
-- 旧 `document/` 目录已退役，现行说明以 `docs/` 和当前代码为准
+![CMS Editor](./public/readme/cms-editor.png)
 
-Japanese readers should start from [`docs/README.md`](./docs/README.md).
+#### Blog Management
+
+![Blog Admin](./public/readme/blog-admin.png)
+
+#### Shop Management
+
+![Shop Admin](./public/readme/shop-admin.png)
+
+#### Order Management
+
+![Orders](./public/readme/orders.png)
+
+#### Media Library
+
+![Media Library](./public/readme/media-library.png)
+
+#### Public Blog
+
+![Public Blog](./public/readme/public-blog.png)
+
+#### Public Shop
+
+![Public Shop](./public/readme/public-shop.png)
+
+</details>
+
+## Features
+
+- **Creator Pages** — Config-driven public pages (`/u/[slug]`) with Hero, news carousel, video, social links, and theme customization
+- **CMS** — Draft / publish workflow with per-section editors (background, theme color, Hero, video, gallery, navigation)
+- **Blog** — Post editor, public listing, likes, comments with moderation (pending / approved / rejected)
+- **News** — Article management with public listing and detail pages
+- **Shop** — Product catalog, public storefront, Stripe Checkout integration
+- **Orders** — Seller dashboard with search, status filters, CSV export, refunds, and dispute tracking
+- **Payments** — Stripe Checkout, Webhooks, Connect (seller onboarding, destination charges, payouts), reconciliation, and settlement
+- **Media Library** — Unified asset management with reference tracking, batch tagging, and in-place replacement
+- **i18n** — Chinese, Japanese, and English via `next-intl`
+
+## Tech Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | Next.js 16 (App Router, Turbopack) + React 19 |
+| Language | TypeScript 5 |
+| Database | PostgreSQL + Prisma ORM |
+| Auth | iron-session |
+| Validation | Zod |
+| Payments | Stripe (Checkout, Connect, Webhooks) |
+| i18n | next-intl |
+| Email | Resend / SMTP |
+| Storage | Local filesystem or Cloudflare R2 |
+| Testing | Vitest (111 tests) + Playwright (11 e2e specs, 3-browser matrix) |
+| CI/CD | GitHub Actions + Vercel |
+
+## Getting Started
+
+**Prerequisites:** Node.js >= 22, pnpm >= 10, Docker (for PostgreSQL)
+
+```bash
+# 1. Start PostgreSQL
+docker compose up -d
+
+# 2. Configure environment
+cp env.example .env
+# Edit .env with your DATABASE_URL, Stripe keys, etc.
+
+# 3. Install & setup
+pnpm install
+pnpm db:migrate
+pnpm db:seed
+
+# 4. Run
+pnpm dev
+```
+
+Open [http://localhost:3000](http://localhost:3000). Seed account: `test@example.com` / `123456`.
+
+## Project Structure
+
+```
+app/              Next.js pages & API routes
+  admin/          Back-office (dashboard, CMS, blog, shop, orders, media, comments)
+  api/            REST endpoints (user, page, blog, news, shop, payments, media)
+  u/[slug]/       Public creator page
+features/         Feature-level UI components (hero, blog, shop, page renderer)
+domain/           Business services, types, and queries
+components/       Shared UI and editor components
+lib/              Session, env, context, API clients, utilities
+prisma/           Schema, migrations, seed
+i18n/             Locale files (zh, ja, en)
+tests/            Vitest unit tests + Playwright e2e
+docs/             Project documentation (zh-CN, ja)
+```
+
+## Documentation
+
+- [Full documentation](./docs/README.md)
+- [Project overview (zh-CN)](./docs/zh-CN/overview/project-overview.md)
+- [Current status (zh-CN)](./docs/zh-CN/overview/current-status.md)
+- [Setup & commands (zh-CN)](./docs/zh-CN/development/setup-and-commands.md)
+- [Backlog (zh-CN)](./docs/zh-CN/overview/backlog.md)
