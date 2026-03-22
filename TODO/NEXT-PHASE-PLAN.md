@@ -1,7 +1,7 @@
 # 下一阶段执行计划（视觉自由度之后）
 
 > 创建日期：2026-03-23
-> 状态：🔄 进行中（Phase A 已完成，Phase B 待实施）
+> 状态：🔄 进行中（Phase A+B 已完成，Phase C 待实施）
 > 前置：视觉自由度计划已完成（代码层面）
 
 ---
@@ -23,24 +23,21 @@
 
 ---
 
-## Phase B（~1h CC）：SEO + 动态 OG 图片
+## Phase B（~1h CC）：SEO + 动态 OG 图片 ✅
 
-让站点可被搜索引擎发现，分享卡片反映主题风格。
+> 已完成：2026-03-23（commit `57baa33`）
 
 ### B1: SEO 基础
-- [ ] 各页面 meta tags（Next.js Metadata API）
-- [ ] Open Graph tags（title、description、image）
-- [ ] `sitemap.xml` 自动生成（Next.js `sitemap.ts`）
-- [ ] `robots.txt` 精细化配置
+- [x] 各页面 meta tags（Next.js Metadata API）
+- [x] Open Graph tags（title、description、image）
+- [x] `sitemap.xml` 自动生成（Next.js `sitemap.ts`）
+- [x] `robots.txt` 精细化配置
 
 ### B2: 动态 OG 图片
-- [ ] `app/u/[slug]/opengraph-image.tsx` — 使用 `next/og`（Satori）
-- [ ] 读取用户主题色 + 背景色 + 站点标题
-- [ ] 预加载预设字体的 .woff 文件
-- [ ] ISR 缓存策略（publish 时 revalidate）
-
-**价值**：公开页是创作者门面，没有 SEO = 没有自然流量。OG 图片让分享看起来专业。
-**风险**：Satori 字体加载在 Edge 有限制，只支持预加载的 .woff。
+- [x] `app/u/[slug]/opengraph-image.tsx` — 使用 `next/og`（Satori）
+- [x] 读取用户主题色 + 背景色 + 站点标题
+- [ ] 预加载预设字体的 .woff 文件（使用系统 sans-serif，后续可升级）
+- [ ] ISR 缓存策略（publish 时 revalidate）（后续优化）
 
 ---
 

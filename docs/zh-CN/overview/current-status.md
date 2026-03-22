@@ -71,6 +71,7 @@
 - 国际化基础：存在 `zh`、`ja`、`en` 文案文件与语言切换器；当前代码中引用的全部 key（含 `newsSectionEditor.layout.paddingX`、`mediaLibrary.usage.galleryImage`）已在三个语言文件中补全
 - 视觉自由度：主题预设系统（Elegant Dark / Warm Natural / Cool Modern）+ Section 变体 + 字体选择器 + Showcase 页面；公开页可通过 CMS 一键切换整体视觉风格
 - Cloudflare Turnstile：所有公开写入入口（评论、结账、登录、注册、密码重置）已接入 invisible 模式验证码
+- SEO 基础设施：动态 sitemap.xml（用户页、博客、商品、新闻）、robots.txt、各公开页 metadata 和 Open Graph 标签、用户公开页动态 OG 图片（读取主题色和配置）
 
 ## 部分完成 / 存在缺口
 
@@ -83,7 +84,6 @@
 - 购物车与多商品结账
 - 库存预警
 - 直播日程 `ScheduleBlock`
-- SEO 基础（meta tags、sitemap、robots、动态 OG 图片）
 - PayPal / 本地支付方式
 - 更完整的监控、日志和错误追踪
 
