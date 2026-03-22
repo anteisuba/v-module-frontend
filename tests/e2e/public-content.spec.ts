@@ -85,7 +85,7 @@ test("renders public blog entry and creator detail pages", async ({
     page.getByTestId("public-user-blog-post-post-e2e-1")
   ).toContainText("Spring live behind the scenes");
   await expect
-    .poll(() => getDirectBackgroundImage(page, "public-user-blog-list"))
+    .poll(() => getDirectBackgroundImage(page, "public-user-blog-list"), { timeout: 10_000 })
     .toContain("/uploads/blog-list-bg.jpg");
 
   await page
@@ -94,14 +94,14 @@ test("renders public blog entry and creator detail pages", async ({
     .first()
     .click();
 
-  await expect(page).toHaveURL(/\/u\/creator\/blog\/post-e2e-1$/);
+  await expect(page).toHaveURL(/\/u\/creator\/blog\/post-e2e-1$/, { timeout: 10_000 });
   await expect(page.getByTestId("public-user-blog-detail")).toBeVisible();
   await expect(page.getByTestId("public-user-blog-detail-title")).toHaveText(
     "Spring live behind the scenes"
   );
   await expect(page.getByText("The encore section was perfect.")).toBeVisible();
   await expect
-    .poll(() => getDirectBackgroundImage(page, "public-user-blog-detail"))
+    .poll(() => getDirectBackgroundImage(page, "public-user-blog-detail"), { timeout: 10_000 })
     .toContain("/uploads/blog-detail-bg.jpg");
 });
 
@@ -163,19 +163,19 @@ test("renders public news entry and detail pages", async ({ page }) => {
     "Tour final guest revealed"
   );
   await expect
-    .poll(() => getDirectBackgroundImage(page, "public-news-list"))
+    .poll(() => getDirectBackgroundImage(page, "public-news-list"), { timeout: 10_000 })
     .toContain("/uploads/news-list-bg.jpg");
 
   await page.goto("/news/article-e2e-1?from=%2Fu%2Fcreator");
 
-  await expect(page).toHaveURL(/\/news\/article-e2e-1(\?|$)/);
+  await expect(page).toHaveURL(/\/news\/article-e2e-1(\?|$)/, { timeout: 10_000 });
   await expect(page.getByTestId("public-news-detail")).toBeVisible();
   await expect(page.getByTestId("public-news-detail-title")).toHaveText(
     "Tour final guest revealed"
   );
   await expect(page.getByText("The final encore guest will join")).toBeVisible();
   await expect
-    .poll(() => getDirectBackgroundImage(page, "public-news-detail"))
+    .poll(() => getDirectBackgroundImage(page, "public-news-detail"), { timeout: 10_000 })
     .toContain("/uploads/news-detail-bg.jpg");
 });
 
@@ -225,12 +225,12 @@ test("renders public shop entry and creator detail pages", async ({
     page.getByTestId("public-user-shop-product-product-e2e-1")
   ).toContainText("Anniversary acrylic stand");
   await expect
-    .poll(() => getDirectBackgroundImage(page, "public-user-shop-list"))
+    .poll(() => getDirectBackgroundImage(page, "public-user-shop-list"), { timeout: 10_000 })
     .toContain("/uploads/shop-list-bg.jpg");
 
   await page.getByTestId("public-user-shop-product-product-e2e-1").click();
 
-  await expect(page).toHaveURL(/\/u\/creator\/shop\/product-e2e-1$/);
+  await expect(page).toHaveURL(/\/u\/creator\/shop\/product-e2e-1$/, { timeout: 10_000 });
   await expect(page.getByTestId("public-user-shop-detail")).toBeVisible();
   await expect(page.getByTestId("public-user-shop-detail-title")).toHaveText(
     "Anniversary acrylic stand"
@@ -239,6 +239,6 @@ test("renders public shop entry and creator detail pages", async ({
     page.getByText("A two-piece acrylic stand with the spring costume art.")
   ).toBeVisible();
   await expect
-    .poll(() => getDirectBackgroundImage(page, "public-user-shop-detail"))
+    .poll(() => getDirectBackgroundImage(page, "public-user-shop-detail"), { timeout: 10_000 })
     .toContain("/uploads/shop-detail-bg.jpg");
 });

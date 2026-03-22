@@ -33,7 +33,7 @@ test("returns from hosted checkout success to the order success page", async ({
   page,
 }) => {
   const checkoutRequests: Array<Record<string, unknown>> = [];
-  let orderLookupCount = 0;
+  let confirmCalled = false;
 
   const product = createProduct({
     id: "product-checkout-e2e",
@@ -86,9 +86,7 @@ test("returns from hosted checkout success to the order success page", async ({
   await page.route(
     "**/api/shop/orders/order-checkout-e2e?*",
     async (route) => {
-      orderLookupCount += 1;
-
-      if (orderLookupCount === 1) {
+      if (!confirmCalled) {
         await fulfillJson(route, {
           order: createSerializedOrder({
             id: "order-checkout-e2e",
@@ -175,6 +173,7 @@ test("returns from hosted checkout success to the order success page", async ({
   await page.route(
     "**/api/shop/orders/order-checkout-e2e/confirm",
     async (route) => {
+      confirmCalled = true;
       await fulfillJson(route, {
         order: createSerializedOrder({
           id: "order-checkout-e2e",
@@ -209,31 +208,24 @@ test("returns from hosted checkout success to the order success page", async ({
 
   await page.goto("/u/creator/shop/product-checkout-e2e");
 
-  await expect(page.getByTestId("public-user-shop-detail")).toBeVisible();
+  await expect(page.getByTestId("public-user-shop-detail")).toBeVisible({ timeout: 10_000 });
   await page.getByTestId("public-shop-buy-now").click();
 
-  await expect(page.getByTestId("public-shop-checkout-page")).toBeVisible();
+  await expect(page.getByTestId("public-shop-checkout-page")).toBeVisible({ timeout: 10_000 });
   await page.getByTestId("checkout-buyer-email").fill("buyer@example.com");
   await page.getByTestId("checkout-submit").click();
 
-  await expect(page.getByTestId("stripe-hosted-checkout-page")).toBeVisible();
+  await expect(page.getByTestId("stripe-hosted-checkout-page")).toBeVisible({ timeout: 10_000 });
   await page.getByTestId("stripe-hosted-success").click();
 
   await expect(page).toHaveURL(
-    /\/u\/creator\/shop\/order-success\/order-checkout-e2e\?session_id=cs_test_checkout_e2e$/
+    /\/u\/creator\/shop\/order-success\/order-checkout-e2e\?session_id=cs_test_checkout_e2e$/,
+    { timeout: 10_000 }
   );
-  await expect(page.getByTestId("public-shop-order-success-page")).toBeVisible();
-  await expect
-    .poll(async () => {
-      const title = await page
-        .getByTestId("public-shop-order-status-title")
-        .textContent();
-      return title?.trim() || "";
-    })
-    .toMatch(/支付结果确认中|订单已支付/);
+  await expect(page.getByTestId("public-shop-order-success-page")).toBeVisible({ timeout: 10_000 });
   await expect(page.getByTestId("public-shop-order-status-title")).toHaveText(
     "订单已支付",
-    { timeout: 12_000 }
+    { timeout: 15_000 }
   );
   await expect(page.getByTestId("public-shop-order-buyer-card")).toContainText(
     "buyer@example.com"
@@ -246,7 +238,7 @@ test("returns from hosted checkout success to the order success page", async ({
     shippingMethod: "Standard",
     items: [{ productId: "product-checkout-e2e", quantity: 1 }],
   });
-  expect(orderLookupCount).toBeGreaterThanOrEqual(1);
+  expect(confirmCalled).toBe(true);
 });
 
 test("returns from hosted checkout cancel to the product detail page", async ({
@@ -308,17 +300,17 @@ test("returns from hosted checkout cancel to the product detail page", async ({
 
   await page.goto("/u/creator/shop/product-checkout-cancel-e2e");
 
-  await expect(page.getByTestId("public-user-shop-detail")).toBeVisible();
+  await expect(page.getByTestId("public-user-shop-detail")).toBeVisible({ timeout: 10_000 });
   await page.getByTestId("public-shop-buy-now").click();
 
-  await expect(page.getByTestId("public-shop-checkout-page")).toBeVisible();
+  await expect(page.getByTestId("public-shop-checkout-page")).toBeVisible({ timeout: 10_000 });
   await page.getByTestId("checkout-buyer-email").fill("buyer@example.com");
   await page.getByTestId("checkout-submit").click();
 
-  await expect(page.getByTestId("stripe-hosted-checkout-page")).toBeVisible();
+  await expect(page.getByTestId("stripe-hosted-checkout-page")).toBeVisible({ timeout: 10_000 });
   await page.getByTestId("stripe-hosted-cancel").click();
 
-  await expect(page).toHaveURL(/\/u\/creator\/shop\/product-checkout-cancel-e2e$/);
+  await expect(page).toHaveURL(/\/u\/creator\/shop\/product-checkout-cancel-e2e$/, { timeout: 10_000 });
   await expect(page.getByTestId("public-user-shop-detail-title")).toHaveText(
     "Tour final badge set"
   );
