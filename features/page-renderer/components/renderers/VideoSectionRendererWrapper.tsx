@@ -22,11 +22,13 @@ const VideoSectionRenderer = dynamic(
 interface VideoSectionRendererWrapperProps {
   props: VideoSectionProps;
   id: string;
+  variant?: string;
 }
 
 export default function VideoSectionRendererWrapper({
   props,
   id,
+  variant,
 }: VideoSectionRendererWrapperProps) {
-  return <VideoSectionRenderer props={props} id={id} />;
+  return <VideoSectionRenderer props={props} id={id} variant={variant} />;
 }

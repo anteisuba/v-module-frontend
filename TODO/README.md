@@ -1,8 +1,14 @@
 # TODO 总览
 
-> 最后更新：2026-03-16
+> 最后更新：2026-03-22
 
 本目录汇总所有待办事项和优化方向，按优先级和领域分文件组织。
+
+## 当前重点
+
+| 文件 | 内容 | 状态 |
+| --- | --- | --- |
+| [VISUAL-FREEDOM-PLAN.md](./VISUAL-FREEDOM-PLAN.md) | 视觉自由度计划（Theme Presets + Section Variants） | 🔄 审查通过，待实施 |
 
 ## 文件索引
 
@@ -13,6 +19,7 @@
 | [P2-features.md](./P2-features.md) | 新功能开发 | 📋 待排期 |
 | [P3-polish.md](./P3-polish.md) | 打磨与优化 | 📋 待排期 |
 | [OPTIMIZATION.md](./OPTIMIZATION.md) | 代码质量与架构优化 | 🔧 持续改进 |
+| [NEXT-PLAN.md](./NEXT-PLAN.md) | 原下一阶段计划 | ⏸️ 已替代 |
 
 ## 当前项目健康度
 

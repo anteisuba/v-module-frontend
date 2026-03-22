@@ -3,6 +3,7 @@
 "use client";
 
 import VideoPlayer from "./VideoPlayer";
+import { hexToRgba } from "@/utils/color";
 import type { VideoSectionProps } from "@/domain/page-config/types";
 
 interface VideoSectionPropsInternal {
@@ -19,28 +20,14 @@ export default function VideoSection({ props }: VideoSectionPropsInternal) {
   // 布局配置
   const paddingX = layout?.paddingX ?? 24;
   const paddingY = layout?.paddingY ?? 64;
-  const backgroundColor = layout?.backgroundColor || "#000000";
+  const backgroundColor = layout?.backgroundColor; // undefined → CSS 变量生效
   const backgroundOpacity = layout?.backgroundOpacity ?? 1;
   const aspectRatio = layout?.aspectRatio || "16:9";
-  
+
   // 显示配置
   const columns = display?.columns || 1;
   const gap = display?.gap || "md";
-  
-  // 将背景颜色和透明度转换为 rgba
-  const hexToRgb = (hex: string) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result
-      ? {
-          r: parseInt(result[1], 16),
-          g: parseInt(result[2], 16),
-          b: parseInt(result[3], 16),
-        }
-      : { r: 0, g: 0, b: 0 };
-  };
-  
-  const rgb = hexToRgb(backgroundColor);
-  const backgroundColorWithOpacity = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${backgroundOpacity})`;
+  const backgroundColorWithOpacity = hexToRgba(backgroundColor, backgroundOpacity);
   
   // 宽高比类名
   const aspectRatioClass =

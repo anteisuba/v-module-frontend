@@ -7,6 +7,7 @@ import { useHeroSlides } from "../hooks/useHeroSlides";
 import { useStickyProgress } from "@/lib/hooks/useStickyProgress";
 import HeroThumbStrip from "./HeroThumbStrip";
 import type { HeroSlide } from "../types";
+import { hexToRgba } from "@/utils/color";
 
 import type { SocialLinkItem, LogoPosition, SocialLinksPosition } from "@/domain/page-config/types";
 
@@ -52,23 +53,9 @@ export default function HeroSection({
   // 视差由用户显式控制，默认关闭
   const parallaxEnabled = layout?.parallax === true;
   const visibleHeightVh = globalHeightVh;
-  const backgroundColor = layout?.backgroundColor || "#000000";
+  const backgroundColor = layout?.backgroundColor; // undefined → CSS 变量生效
   const backgroundOpacity = layout?.backgroundOpacity ?? 1;
-
-  // 将背景颜色和透明度转换为 rgba
-  const hexToRgb = (hex: string) => {
-    const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-    return result
-      ? {
-          r: parseInt(result[1], 16),
-          g: parseInt(result[2], 16),
-          b: parseInt(result[3], 16),
-        }
-      : { r: 0, g: 0, b: 0 };
-  };
-
-  const rgb = hexToRgb(backgroundColor);
-  const backgroundColorWithOpacity = `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${backgroundOpacity})`;
+  const backgroundColorWithOpacity = hexToRgba(backgroundColor, backgroundOpacity);
 
   const slides = useMemo(() => {
     // 如果没有传入图片，返回空数组（不显示图片）

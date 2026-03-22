@@ -132,42 +132,19 @@ const MenuSectionPropsSchema = z.object({
     .optional(),
 });
 
+const sectionBase = {
+  id: z.string(),
+  enabled: z.boolean(),
+  order: z.number().int().min(0),
+  variant: z.string().optional(),
+};
+
 const SectionConfigSchema = z.discriminatedUnion("type", [
-  z.object({
-    id: z.string(),
-    type: z.literal("hero"),
-    props: HeroSectionPropsSchema,
-    enabled: z.boolean(),
-    order: z.number().int().min(0),
-  }),
-  z.object({
-    id: z.string(),
-    type: z.literal("gallery"),
-    props: GallerySectionPropsSchema,
-    enabled: z.boolean(),
-    order: z.number().int().min(0),
-  }),
-  z.object({
-    id: z.string(),
-    type: z.literal("news"),
-    props: NewsSectionPropsSchema,
-    enabled: z.boolean(),
-    order: z.number().int().min(0),
-  }),
-  z.object({
-    id: z.string(),
-    type: z.literal("video"),
-    props: VideoSectionPropsSchema,
-    enabled: z.boolean(),
-    order: z.number().int().min(0),
-  }),
-  z.object({
-    id: z.string(),
-    type: z.literal("menu"),
-    props: MenuSectionPropsSchema,
-    enabled: z.boolean(),
-    order: z.number().int().min(0),
-  }),
+  z.object({ ...sectionBase, type: z.literal("hero"), props: HeroSectionPropsSchema }),
+  z.object({ ...sectionBase, type: z.literal("gallery"), props: GallerySectionPropsSchema }),
+  z.object({ ...sectionBase, type: z.literal("news"), props: NewsSectionPropsSchema }),
+  z.object({ ...sectionBase, type: z.literal("video"), props: VideoSectionPropsSchema }),
+  z.object({ ...sectionBase, type: z.literal("menu"), props: MenuSectionPropsSchema }),
 ]);
 
 const SocialLinkItemSchema = z.object({
@@ -178,7 +155,22 @@ const SocialLinkItemSchema = z.object({
   enabled: z.boolean(),
 });
 
+const hexColorRegex = /^#[0-9A-Fa-f]{6}$/;
+
+const ThemeConfigSchema = z.object({
+  presetId: z.enum(["editorial", "vivid", "mono"]).optional(),
+  primaryColor: z.string().regex(hexColorRegex).optional(),
+  backgroundColor: z.string().regex(hexColorRegex).optional(),
+  surfaceColor: z.string().regex(hexColorRegex).optional(),
+  textColor: z.string().regex(hexColorRegex).optional(),
+  headingFont: z.string().optional(),
+  bodyFont: z.string().optional(),
+  borderRadius: z.string().optional(),
+  overlay: z.string().optional(),
+}).optional();
+
 export const PageConfigSchema = z.object({
+  theme: ThemeConfigSchema,
   background: BackgroundConfigSchema,
   newsBackground: BackgroundConfigSchema.optional(), // 新闻页面背景
   blogBackground: BackgroundConfigSchema.optional(), // 博客列表页面背景

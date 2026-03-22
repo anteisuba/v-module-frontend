@@ -85,7 +85,16 @@ export default function PageRenderer({ config }: { config: PageConfig }) {
       style={backgroundStyle}
       data-testid="public-page-renderer"
     >
-      <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08),rgba(8,8,6,0.38)_52%,rgba(8,8,6,0.6))]" />
+      {config.theme?.overlay && config.theme.overlay !== "none" && (
+        <div
+          className="absolute inset-0"
+          style={{ background: config.theme.overlay }}
+        />
+      )}
+      {/* 旧数据无 theme 时保持现有暗色 overlay */}
+      {!config.theme?.overlay && (
+        <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(0,0,0,0.08),rgba(8,8,6,0.38)_52%,rgba(8,8,6,0.6))]" />
+      )}
 
       {groups.map((group, gi) => {
         if (group.kind === "full") {

@@ -37,6 +37,7 @@ import MenuSectionEditor from "@/components/ui/MenuSectionEditor";
 import GallerySectionEditor from "@/components/ui/GallerySectionEditor";
 import DraftPreviewPanel from "@/components/ui/DraftPreviewPanel";
 import { SectionLayoutControl } from "@/components/ui/SectionLayoutControl";
+import { SectionVariantSelector } from "@/components/ui/SectionVariantSelector";
 import { pageApi } from "@/lib/api";
 import { useUser } from "@/lib/context/UserContext";
 import { useToast } from "@/hooks/useToast";
@@ -45,7 +46,8 @@ import { usePageConfig } from "@/hooks/usePageConfig";
 import { usePageConfigActions } from "@/hooks/usePageConfigActions";
 import { useKeyboardShortcuts } from "@/hooks/useKeyboardShortcuts";
 import { useI18n } from "@/lib/i18n/context";
-import type { SectionConfig, SectionType, PageConfig } from "@/domain/page-config/types";
+import type { SectionConfig, SectionType, PageConfig, ThemePresetId } from "@/domain/page-config/types";
+import { THEME_PRESETS } from "@/domain/page-config/presets";
 
 // ────────────────────────────────────────────────────────────────────
 // Composer Target 状态类型
@@ -194,35 +196,94 @@ function ComposerContent({
     }
 
     if (target.panelId === "theme") {
+      const currentPresetId = config.theme?.presetId || "editorial";
+      const handlePresetSelect = (presetId: ThemePresetId) => {
+        const preset = THEME_PRESETS[presetId];
+        setConfig({ ...config, theme: { ...preset } });
+        if (preset.primaryColor) setThemeColor(preset.primaryColor);
+      };
       return (
         <AdminEditorCard className="rounded-3xl border-black/5 bg-white/70 p-5 shadow-sm">
-          <div className="space-y-4">
+          <div className="space-y-5">
+            {/* Preset Selector */}
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold uppercase tracking-wider text-black/60">
+                Theme Preset
+              </label>
+              <div className="grid grid-cols-3 gap-2">
+                {(Object.keys(THEME_PRESETS) as ThemePresetId[]).map((id) => {
+                  const preset = THEME_PRESETS[id];
+                  const isActive = currentPresetId === id;
+                  return (
+                    <button
+                      key={id}
+                      type="button"
+                      onClick={() => handlePresetSelect(id)}
+                      disabled={disabled}
+                      className={`flex flex-col items-center gap-1.5 rounded-xl border-2 p-3 transition-all ${
+                        isActive
+                          ? "border-blue-500 bg-blue-50"
+                          : "border-transparent bg-black/5 hover:bg-black/8"
+                      }`}
+                    >
+                      {/* 6-swatch palette preview (inspired by twpf.jp) */}
+                      <div className="grid grid-cols-3 gap-0.5">
+                        <div className="h-4 w-4 rounded-sm border border-black/10" style={{ backgroundColor: preset.backgroundColor }} />
+                        <div className="h-4 w-4 rounded-sm border border-black/10" style={{ backgroundColor: preset.primaryColor }} />
+                        <div className="h-4 w-4 rounded-sm border border-black/10" style={{ backgroundColor: preset.textColor }} />
+                        <div className="h-4 w-4 rounded-sm border border-black/10" style={{ backgroundColor: preset.surfaceColor }} />
+                        <div className="h-4 w-4 rounded-sm border border-black/10" style={{ backgroundColor: preset.primaryColor, opacity: 0.5 }} />
+                        <div className="h-4 w-4 rounded-sm border border-black/10" style={{ backgroundColor: preset.backgroundColor, filter: "brightness(1.2)" }} />
+                      </div>
+                      <span className="text-[11px] font-medium capitalize text-black/70">
+                        {id}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+            {/* Accent Color Override */}
             <ColorPicker
               label={t("cms.themeSettings.themeColor")}
               value={themeColor}
-              onChange={setThemeColor}
+              onChange={(color) => {
+                setThemeColor(color);
+                setConfig({
+                  ...config,
+                  theme: { ...config.theme, primaryColor: color },
+                });
+              }}
               helpText={t("cms.themeSettings.themeColorHelp")}
               disabled={disabled}
             />
+            {/* Preview */}
             <div className="space-y-2">
               <label className="block text-xs font-medium text-black">
                 {t("cms.themeSettings.preview")}
               </label>
-              <div className="flex items-center gap-3">
+              <div
+                className="flex items-center gap-3 rounded-lg p-3"
+                style={{
+                  backgroundColor: config.theme?.backgroundColor || "#0d0d0b",
+                  color: config.theme?.textColor || "#e8e4d9",
+                }}
+              >
                 <button
                   type="button"
-                  className="btn-themed rounded-lg px-4 py-2 text-sm font-medium"
-                  style={
-                    {
-                      "--theme-primary": themeColor,
-                      "--theme-primary-foreground": "#ffffff",
-                    } as CSSProperties
-                  }
+                  className="rounded-lg px-4 py-2 text-sm font-medium"
+                  style={{
+                    backgroundColor: config.theme?.primaryColor || themeColor,
+                    color: "#ffffff",
+                  }}
                   disabled
                 >
                   {t("cms.themeSettings.previewButton")}
                 </button>
-                <span className="text-sm underline" style={{ color: themeColor }}>
+                <span
+                  className="text-sm underline"
+                  style={{ color: config.theme?.primaryColor || themeColor }}
+                >
                   {t("cms.themeSettings.previewLink")}
                 </span>
               </div>
@@ -295,17 +356,32 @@ function ComposerContent({
       const colSpan = (section.layout?.colSpan ?? 4) as 1 | 2 | 3 | 4;
       return (
         <div className="space-y-4">
-          <SectionLayoutControl
-            value={colSpan}
-            onChange={(val) =>
-              setConfig({
-                ...config,
-                sections: config.sections.map((s) =>
-                  s.id === section.id ? { ...s, layout: { ...s.layout, colSpan: val } } : s
-                ),
-              })
-            }
-          />
+          <div className="flex items-center gap-3">
+            <SectionLayoutControl
+              value={colSpan}
+              onChange={(val) =>
+                setConfig({
+                  ...config,
+                  sections: config.sections.map((s) =>
+                    s.id === section.id ? { ...s, layout: { ...s.layout, colSpan: val } } : s
+                  ),
+                })
+              }
+            />
+            <SectionVariantSelector
+              sectionType="video"
+              value={section.variant || "grid"}
+              onChange={(v) =>
+                setConfig({
+                  ...config,
+                  sections: config.sections.map((s) =>
+                    s.id === section.id ? { ...s, variant: v } : s
+                  ),
+                })
+              }
+              disabled={disabled}
+            />
+          </div>
           <VideoSectionEditor
             config={config}
             onConfigChange={setConfig}
@@ -321,17 +397,32 @@ function ComposerContent({
       const colSpan = (section.layout?.colSpan ?? 4) as 1 | 2 | 3 | 4;
       return (
         <div className="space-y-4">
-          <SectionLayoutControl
-            value={colSpan}
-            onChange={(val) =>
-              setConfig({
-                ...config,
-                sections: config.sections.map((s) =>
-                  s.id === section.id ? { ...s, layout: { ...s.layout, colSpan: val } } : s
-                ),
-              })
-            }
-          />
+          <div className="flex items-center gap-3">
+            <SectionLayoutControl
+              value={colSpan}
+              onChange={(val) =>
+                setConfig({
+                  ...config,
+                  sections: config.sections.map((s) =>
+                    s.id === section.id ? { ...s, layout: { ...s.layout, colSpan: val } } : s
+                  ),
+                })
+              }
+            />
+            <SectionVariantSelector
+              sectionType="news"
+              value={section.variant || "grid"}
+              onChange={(v) =>
+                setConfig({
+                  ...config,
+                  sections: config.sections.map((s) =>
+                    s.id === section.id ? { ...s, variant: v } : s
+                  ),
+                })
+              }
+              disabled={disabled}
+            />
+          </div>
           <NewsSectionEditor
             config={config}
             onConfigChange={setConfig}
@@ -364,14 +455,29 @@ function ComposerContent({
 
     if (section.type === "gallery") {
       return (
-        <GallerySectionEditor
-          config={config}
-          onConfigChange={setConfig}
-          disabled={disabled}
-          onUploadImage={(file, options) => pageApi.uploadImage(file, options)}
-          onToast={showToast}
-          onError={handleError}
-        />
+        <div className="space-y-4">
+          <SectionVariantSelector
+            sectionType="gallery"
+            value={section.variant || "grid"}
+            onChange={(v) =>
+              setConfig({
+                ...config,
+                sections: config.sections.map((s) =>
+                  s.id === section.id ? { ...s, variant: v } : s
+                ),
+              })
+            }
+            disabled={disabled}
+          />
+          <GallerySectionEditor
+            config={config}
+            onConfigChange={setConfig}
+            disabled={disabled}
+            onUploadImage={(file, options) => pageApi.uploadImage(file, options)}
+            onToast={showToast}
+            onError={handleError}
+          />
+        </div>
       );
     }
   }

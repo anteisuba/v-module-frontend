@@ -1,17 +1,11 @@
 // components/theme/ThemeProvider.tsx
 "use client";
 
-import { createContext, useContext, useEffect } from "react";
+import { createContext, useContext } from "react";
+import type { ThemeConfig } from "@/domain/page-config/types";
 
-export interface ThemeConfig {
-  themeColor: string;
-  fontFamily: string;
-}
-
-const ThemeContext = createContext<ThemeConfig>({
-  themeColor: "#000000",
-  fontFamily: "Inter",
-});
+// Context 只传递 theme 值，CSS 变量由服务端 layout.tsx 注入
+const ThemeContext = createContext<ThemeConfig>({});
 
 export function useTheme() {
   return useContext(ThemeContext);
@@ -19,38 +13,27 @@ export function useTheme() {
 
 interface ThemeProviderProps {
   children: React.ReactNode;
+  theme?: ThemeConfig;
+  /** @deprecated 使用 theme.primaryColor */
   themeColor?: string;
+  /** @deprecated 使用 theme.bodyFont */
   fontFamily?: string;
 }
 
 export function ThemeProvider({
   children,
-  themeColor = "#000000",
-  fontFamily = "Inter",
+  theme,
+  themeColor,
+  fontFamily,
 }: ThemeProviderProps) {
-  // 使用 useEffect 将主题注入到 CSS 变量
-  useEffect(() => {
-    // 注入主题色到 existing CSS 变量
-    document.documentElement.style.setProperty("--theme-primary", themeColor);
-    // 计算 hover 和 active 颜色（简单的颜色变亮/变暗）
-    document.documentElement.style.setProperty("--theme-primary-hover", themeColor);
-    document.documentElement.style.setProperty("--theme-primary-active", themeColor);
-    
-    // 注入字体家族
-    document.documentElement.style.setProperty("--font-sans", fontFamily);
-    
-    // 同时为兼容性保留原变量名
-    document.documentElement.style.setProperty("--theme-color", themeColor);
-    document.documentElement.style.setProperty("--theme-font-family", fontFamily);
-  }, [themeColor, fontFamily]);
-
-
-  const value: ThemeConfig = {
-    themeColor,
-    fontFamily,
+  const value: ThemeConfig = theme ?? {
+    primaryColor: themeColor || "#c9a96e",
+    bodyFont: fontFamily || "var(--font-jost)",
   };
 
   return (
     <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>
   );
 }
+
+export type { ThemeConfig };

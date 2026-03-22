@@ -4,6 +4,8 @@
 import { prisma } from "@/lib/prisma";
 import { getE2EPublicPageState } from "@/lib/e2e/publicPageState";
 import FloatingMenu from "@/features/home-hero/components/FloatingMenu";
+import type { ThemeConfig } from "@/domain/page-config/types";
+import { normalizePageConfig } from "@/utils/pageConfig";
 
 interface UserLayoutProps {
   children: React.ReactNode;
@@ -51,32 +53,51 @@ export default async function UserLayout({
   let themeColor = e2ePublicPageState?.themeColor || "#000000";
   let fontFamily = e2ePublicPageState?.fontFamily || "Inter";
 
+  let theme: ThemeConfig | undefined;
+
   if (!e2ePublicPageState) {
-    // 直接查询页面主题设置
     const page = await prisma.page.findUnique({
       where: { slug },
       select: {
         themeColor: true,
         fontFamily: true,
+        publishedConfig: true,
       },
     });
 
     themeColor = page?.themeColor || "#000000";
     fontFamily = page?.fontFamily || "Inter";
+
+    // 从 publishedConfig 中提取 theme（如果存在）
+    const config = normalizePageConfig(page?.publishedConfig);
+    theme = config.theme;
   }
 
-  // 计算主题色相关的变体
-  const themeHover = adjustBrightness(themeColor, 20);
-  const themeActive = adjustBrightness(themeColor, 40);
-  const themeForeground = isLightColor(themeColor) ? "#000000" : "#ffffff";
+  // theme JSON 优先于 DB 列
+  const primaryColor = theme?.primaryColor || themeColor;
+  const resolvedBodyFont = theme?.bodyFont || `var(--font-jost)`;
+  const resolvedHeadingFont = theme?.headingFont || `var(--font-cormorant)`;
 
-  // 注入 CSS 变量
+  // 计算主题色相关的变体
+  const themeHover = adjustBrightness(primaryColor, 20);
+  const themeActive = adjustBrightness(primaryColor, 40);
+  const themeForeground = isLightColor(primaryColor) ? "#000000" : "#ffffff";
+
+  // 注入 CSS 变量 — 覆写 globals.css 中的 --color-* 变量
   const themeStyles = {
-    "--theme-primary": themeColor,
+    "--theme-primary": primaryColor,
     "--theme-primary-foreground": themeForeground,
     "--theme-primary-hover": themeHover,
     "--theme-primary-active": themeActive,
-    "--theme-font-family": fontFamily,
+    "--theme-font-family": resolvedBodyFont,
+    // 覆写 editorial/color 变量实现主题切换
+    ...(theme?.backgroundColor && { "--color-bg": theme.backgroundColor }),
+    ...(theme?.surfaceColor && { "--color-surface": theme.surfaceColor }),
+    ...(theme?.textColor && { "--color-text": theme.textColor }),
+    ...(theme?.primaryColor && { "--color-accent": theme.primaryColor, "--color-accent-foreground": themeForeground }),
+    ...(resolvedHeadingFont && { "--font-display": resolvedHeadingFont }),
+    ...(resolvedBodyFont && { "--font-body": resolvedBodyFont }),
+    ...(theme?.borderRadius && { "--radius": theme.borderRadius }),
   } as React.CSSProperties;
 
   return (

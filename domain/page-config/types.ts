@@ -105,11 +105,11 @@ export type MenuSectionProps = {
 };
 
 export type SectionConfig =
-  | { id: string; type: 'hero'; props: HeroSectionProps; enabled: boolean; order: number; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } }
-  | { id: string; type: 'gallery'; props: GallerySectionProps; enabled: boolean; order: number; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } }
-  | { id: string; type: 'news'; props: NewsSectionProps; enabled: boolean; order: number; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } }
-  | { id: string; type: 'video'; props: VideoSectionProps; enabled: boolean; order: number; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } }
-  | { id: string; type: 'menu'; props: MenuSectionProps; enabled: boolean; order: number; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } };
+  | { id: string; type: 'hero'; props: HeroSectionProps; enabled: boolean; order: number; variant?: string; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } }
+  | { id: string; type: 'gallery'; props: GallerySectionProps; enabled: boolean; order: number; variant?: string; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } }
+  | { id: string; type: 'news'; props: NewsSectionProps; enabled: boolean; order: number; variant?: string; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } }
+  | { id: string; type: 'video'; props: VideoSectionProps; enabled: boolean; order: number; variant?: string; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } }
+  | { id: string; type: 'menu'; props: MenuSectionProps; enabled: boolean; order: number; variant?: string; layout?: { colSpan: 1 | 2 | 3 | 4; rowSpan?: number } };
 
 
 export type SocialLinkItem = {
@@ -123,7 +123,26 @@ export type SocialLinkItem = {
 export type LogoPosition = 'top-left' | 'top-center';
 export type SocialLinksPosition = 'top-right' | 'bottom-center';
 
+// 主题预设标识
+export type ThemePresetId = 'editorial' | 'vivid' | 'mono';
+
+// 主题配置（存储在 PageConfig JSON 中）
+export type ThemeConfig = {
+  presetId?: ThemePresetId;
+  primaryColor?: string;      // 强调色 → --color-accent, --theme-primary
+  backgroundColor?: string;   // 页面背景 → --color-bg
+  surfaceColor?: string;      // 卡片背景 → --color-surface
+  textColor?: string;         // 正文颜色 → --color-text
+  headingFont?: string;       // 标题字体 → --font-display
+  bodyFont?: string;          // 正文字体 → --font-body
+  borderRadius?: string;      // 圆角 → --radius
+  overlay?: string;           // 全局 overlay CSS gradient 或 "none"
+};
+
 export type PageConfig = {
+  // 主题配置
+  theme?: ThemeConfig;
+
   // 页面背景（全局）
   background: BackgroundConfig;
   

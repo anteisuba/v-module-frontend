@@ -1,7 +1,8 @@
 // utils/pageConfig.ts
 
-import type { BackgroundConfig, PageConfig, SectionConfig } from "@/domain/page-config/types";
+import type { BackgroundConfig, PageConfig, SectionConfig, ThemeConfig } from "@/domain/page-config/types";
 import { EMPTY_PAGE_CONFIG } from "@/domain/page-config/constants";
+import { THEME_PRESETS, DEFAULT_PRESET } from "@/domain/page-config/presets";
 
 type LegacyLinksSection = {
   id: string;
@@ -48,14 +49,21 @@ function isRenderableSection(section: unknown): section is SectionConfig {
 
 export function normalizePageConfig(config: unknown): PageConfig {
   if (!isRecord(config)) {
-    return EMPTY_PAGE_CONFIG;
+    return { ...EMPTY_PAGE_CONFIG, theme: { ...THEME_PRESETS[DEFAULT_PRESET] } };
   }
 
   const source = config as NormalizablePageConfig;
 
+  // Normalize theme: merge with preset defaults
+  const rawTheme = isRecord(source.theme) ? (source.theme as ThemeConfig) : undefined;
+  const presetId = rawTheme?.presetId ?? DEFAULT_PRESET;
+  const presetDefaults = THEME_PRESETS[presetId] ?? THEME_PRESETS[DEFAULT_PRESET];
+  const theme: ThemeConfig = { ...presetDefaults, ...rawTheme, presetId };
+
   return {
     ...EMPTY_PAGE_CONFIG,
     ...source,
+    theme,
     background: isRecord(source.background)
       ? (source.background as BackgroundConfig)
       : EMPTY_PAGE_CONFIG.background,

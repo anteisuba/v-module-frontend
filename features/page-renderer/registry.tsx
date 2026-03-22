@@ -31,6 +31,7 @@ export function renderSection(section: SectionConfig, pageConfig?: PageConfig): 
         key={section.id}
         id={section.id}
         props={section.props}
+        variant={section.variant}
       />
     );
   }
@@ -42,6 +43,7 @@ export function renderSection(section: SectionConfig, pageConfig?: PageConfig): 
         key={section.id}
         id={section.id}
         props={section.props}
+        variant={section.variant}
       />
     );
   }
@@ -53,6 +55,7 @@ export function renderSection(section: SectionConfig, pageConfig?: PageConfig): 
         key={section.id}
         id={section.id}
         props={section.props}
+        variant={section.variant}
       />
     );
   }
